@@ -1,5 +1,6 @@
 package com.trailtasks;
-
+import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage; // ⬅️ This!
+import com.facebook.react.bridge.JSIModulePackage;
 import android.app.Application;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
@@ -18,6 +19,11 @@ public class MainApplication extends Application implements ReactApplication {
         public boolean getUseDeveloperSupport() {
           return BuildConfig.DEBUG;
         }
+
+        @Override
+     protected JSIModulePackage getJSIModulePackage() {
+       return new WatermelonDBJSIPackage(); // ⬅️ This!
+     }
 
         @Override
         protected List<ReactPackage> getPackages() {
