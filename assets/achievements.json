@@ -1,0 +1,20 @@
+[
+	{
+		"achievement_id": 1,
+		"achievement_name": "Hiker Extraordinaire",
+		"achievement_description": "Hiked 50 miles",
+		"achievement_image_url": "https://example.com/achievement1.png"
+	},
+	{
+		"achievement_id": 2,
+		"achievement_name": "Hiker Novice",
+		"achievement_description": "Hiked 20 miles",
+		"achievement_image_url": "https://example.com/achievement2.png"
+	},
+	{
+		"achievement_id": 3,
+		"achievement_name": "First of Many",
+		"achievement_description": "First 1.0 Miles",
+		"achievement_image_url": "https://example.com/achievement2.png"
+	}
+]
