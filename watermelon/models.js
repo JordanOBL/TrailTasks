@@ -27,6 +27,7 @@ export class Trail extends Model {
     completed_hikes: {type: 'belongs_to', key: 'trail_id'},
   };
   //fields
+
   @field('trail_name') trailName;
   @field('trail_distance') trailDistance;
   @field('trail_lat') trailLat;
