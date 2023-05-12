@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
@@ -24,6 +24,10 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+
+import {Platform} from 'react-native';
+
+import useWatermelonDb from './watermelon/getWatermelonDb';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -56,11 +60,22 @@ function Section({children, title}: SectionProps): JSX.Element {
 }
 
 function App(): JSX.Element {
+  const watermelonDatabase = useWatermelonDb();
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+
+  useEffect(() =>
+  {
+    // if (watermelonDatabase !== undefined)
+    // {
+      
+    // }
+    // Do something with the Watermelon database instance
+    console.log('Watermelon database:', watermelonDatabase);
+  }, [watermelonDatabase]);
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -78,7 +93,7 @@ function App(): JSX.Element {
           }}>
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits. Jordan
+            screen and then come back to see your edits. Jordan TEST
           </Section>
           <Section title="See Your Changes">
             <ReloadInstructions />
