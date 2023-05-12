@@ -73,7 +73,7 @@ function App(): JSX.Element {
   useEffect(() => {
     // Do something with the Watermelon database instance
     if (watermelonDatabase) {
-      // ...
+      
       const alltrail = async () => {
         const alltrails = await insertInitialData(watermelonDatabase);
         console.log(alltrails);
@@ -87,6 +87,7 @@ function App(): JSX.Element {
     console.log('Watermelon database:', watermelonDatabase);
     // console.log(watermelonDatabase.get('trails'));
   }, [watermelonDatabase]);
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
