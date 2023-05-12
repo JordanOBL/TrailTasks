@@ -1,9 +1,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 
-
 async function insertInitialData(watermelonDatabase: Database) {
   try {
-
     const trailsinDB = watermelonDatabase
       .get('trails')
       .query(Q.where('trail_id', 5))

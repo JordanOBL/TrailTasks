@@ -5,6 +5,7 @@ import {
   children,
   field,
   text,
+  writer,
 } from '@nozbe/watermelondb/decorators';
 
 export class Park extends Model {
@@ -63,6 +64,31 @@ export class User extends Model {
   @field('current_trail_start_at') currentTrailStartAt;
 
   @relation('trails', 'current_trail_id') trail;
+
+  @writer async addUser(
+    user_id,
+    username,
+    first_name,
+    last_name,
+    email,
+    password,
+    current_trail_start,
+  ) {
+    const newUser = await this.collections.get('users').create(user => {
+      user.user_id.set(user_id);
+      user.username.set(username);
+      user.first_name.set(first_name);
+      user.last_name.set(last_name);
+      user.email.set(email);
+      user.password.set(password);
+      user.push_notifications_enabled.set(true);
+      user.theme_preference.set('light');
+      user.current_trail_id.set(1);
+      user.current_trail_progress.set(0.0);
+      user.current_trail_start.set(current_trail_start);
+    });
+    return newUser;
+  }
 }
 
 export class Park_State extends Model {
