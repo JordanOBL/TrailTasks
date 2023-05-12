@@ -18,3 +18,5 @@
 		"achievement_image_url": "https://example.com/achievement2.png"
 	}
 ]
+
+INSERT INTO achievements (id, achievement_name, achievement_description, achievement_image_url) VALUES (1, 'Hiker Extraordinaire', 'Hiked 50 miles', 'https://example.com/achievement1.png'),(2, 'Hiker Novice', 'Hiked 20 miles', 'https://example.com/achievement2.png'), (3, 'First of Many', 'First 1.0 Miles', 'https://example.com/achievement2.png');

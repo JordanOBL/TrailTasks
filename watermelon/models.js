@@ -11,21 +11,23 @@ import {
 export class Park extends Model {
   static table = 'parks';
   static associations = {
-    trails: {type: 'belongs_to', key: 'park_id'},
-    parks_states: {type: 'belongs_to', key: 'park_id'},
+    trails: {type: 'has_many', foriegnKey: 'park_id'},
+    parks_states: {type: 'has_many', foriegnKey: 'park_id'},
   };
 
   @field('park_name') parkName;
   @field('park_type') parkType;
   @field('park_image_url') parkImageUrl;
+
+  @children('trails') trails;
 }
 
 export class Trail extends Model {
   static table = 'trails';
   static associations = {
-    parks: {type: 'has_many', foriegnKey: 'park_id'},
-    users: {type: 'belongs_to', key: 'trail_id'},
-    completed_hikes: {type: 'belongs_to', key: 'trail_id'},
+    parks: {type: 'belongs_to', key: 'park_id'},
+    users: {type: 'has_many', foriegnKey: 'trail_id'},
+    completed_hikes: {type: 'has_many', foriegnkey: 'trail_id'},
   };
   //fields
 
@@ -38,54 +40,60 @@ export class Trail extends Model {
   @field('trail_image_url') trailImageUrl;
   @field('trail_elevation') trailElevation;
 
-  @immutableRelation('parks', 'park_id') park;
-
-  @children('parks') parks;
+  @relation('parks', 'park_id') park;
+  //@immutableRelation('parks', 'park_id') park;
+  @children('users') users;
 }
 export class User extends Model {
   static table = 'users';
   static associations = {
-    users_badges: {type: 'belongs_to', key: 'user_id'},
-    users_achievements: {type: 'belogns_to', key: 'user'},
-    users_miles: {type: 'belongs_to', key: 'user'},
-    trails: {type: 'has_many', foreignKey: 'current_trail_id'},
+    users_badges: {type: 'has_many', foriegnKey: 'user_id'},
+    users_achievements: {type: 'has_many', foriegnKey: 'user_id'},
+    users_miles: {type: 'has_many', key: 'user_id'},
+    trails: {type: 'belongs_to', key: 'trail_id'},
   };
 
-  @field('user_id') userId;
-  @text('username') username;
-  @text('first_name') firstName;
-  @text('last_name') lastName;
-  @text('email') email;
+  @field('username') username;
+  @field('first_name') firstName;
+  @field('last_name') lastName;
+  @field('email') email;
   @field('password') password;
   @field('push_notifications_enabled') pushNotificationsEnabled;
   @field('theme_preference') themePreference;
-  @field('current_trail_id') currentTrailId;
+  @field('trail_id') TrailId;
   @field('current_trail_Progress') currentTrailProgress;
   @field('current_trail_start_at') currentTrailStartAt;
 
-  @relation('trails', 'current_trail_id') trail;
+  @relation('trails', 'current_trail') trail;
+
+  @children('user_sessions') user_sessions;
+  @children('user_badges') user_badges;
+  @children('user_achievements') user_achievements;
+  @children('user_miles') user_miles;
 
   @writer async addUser(
-    user_id,
     username,
     first_name,
     last_name,
     email,
     password,
-    current_trail_start,
+    push_notifications_enabled,
+    theme_preference,
+    trail_id,
+    trail_progress,
+    trail_started_at,
   ) {
     const newUser = await this.collections.get('users').create(user => {
-      user.user_id.set(user_id);
-      user.username.set(username);
+      user.username = username;
       user.first_name.set(first_name);
       user.last_name.set(last_name);
       user.email.set(email);
       user.password.set(password);
       user.push_notifications_enabled.set(true);
       user.theme_preference.set('light');
-      user.current_trail_id.set(1);
-      user.current_trail_progress.set(0.0);
-      user.current_trail_start.set(current_trail_start);
+      user.trail_id.set('1');
+      user.trail_progress.set('0.0');
+      user.trail_started_at.set(trail_started_at);
     });
     return newUser;
   }
@@ -94,7 +102,7 @@ export class User extends Model {
 export class Park_State extends Model {
   static table = 'park_states';
   static associations = {
-    parks: {type: 'has_many', foriegnKey: 'park_id'},
+    parks: {type: 'belongs_to', key: 'park_id'},
   };
 
   @field('park_id') parkId;
@@ -102,34 +110,40 @@ export class Park_State extends Model {
   @field('state_name') stateName;
 
   @immutableRelation('parks', 'park_id') park;
-
-  @children('parks') parks;
 }
 export class Badge extends Model {
   static table = 'badges';
   static associations = {
-    users_badges: {type: 'belongs_to', key: 'badge_id'},
+    users_badges: {type: 'has_many', foriegnKey: 'badge_id'},
   };
 
   @field('badge_name') badgeName;
   @field('badge_description') badgeDescription;
   @field('badge_image_url') badgeImageUrl;
+
+  @immutableRelation('user_badges', 'badge_id') badge;
+
+  @children('user_badges') user_badges;
 }
 
 export class Achievement extends Model {
   static table = 'achievements';
   static associations = {
-    users_achievements: {type: 'belongs_to', key: 'achievement_id'},
+    users_achievements: {type: 'has_many', foriegnKey: 'achievement_id'},
   };
   @field('achievement_name') achievementName;
   @field('uachievement_description') achievementDescription;
   @field('achievement_image_url') AchievementImageUrl;
+
+  @immutableRelation('user_badges', 'badge_id') achievements;
+
+  @children('user_Achievements') user_achievements;
 }
 export class User_Achievement extends Model {
   static table = 'user_achievements';
   static associations = {
-    achievements: {type: 'has_many', foreignKey: 'achievement_id'},
-    users: {type: 'has_many', foreignKey: 'user_id'},
+    achievements: {type: 'belongs_to', key: 'achievement_id'},
+    users: {type: 'belongs_to', key: 'user_id'},
   };
   @field('user_id') userId;
   @field('achievement_id') achievementId;
@@ -139,14 +153,16 @@ export class User_Achievement extends Model {
   @immutableRelation('achievements', 'achievement_id') achievement;
 
   @children('users') users;
+  @children('achievements') achievements;
 }
 
 export class Completed_Hike extends Model {
   static table = 'completed_hikes';
   static associations = {
-    users: {type: 'has_many', foreignKey: 'user_id'},
-    trails: {type: 'has_many', foreignKey: 'trail_id'},
+    users: {type: 'belongs_to', key: 'user_id'},
+    trails: {type: 'belongs_to', key: 'trail_id'},
   };
+
   @field('user_id') userId;
   @field('trail_id') trailId;
   @field('first_completed_at') firstCompletedAt;
@@ -162,9 +178,10 @@ export class Completed_Hike extends Model {
 export class Hiking_Queue extends Model {
   static table = 'hiking_queue';
   static associations = {
-    trails: {type: 'has_many', foreignKey: 'trail_id'},
-    users: {type: 'has_many', foreignKey: 'user_id'},
+    trails: {type: 'belongs_to', key: 'trail_id'},
+    users: {type: 'belongs_to', key: 'user_id'},
   };
+
   @field('user_id') userId;
   @field('trail_id') trailId;
   @field('created_at') createdAt;
@@ -178,7 +195,7 @@ export class Hiking_Queue extends Model {
 export class Users_Miles extends Model {
   static table = 'users_miles';
   static associations = {
-    users: {type: 'has_many', foreignKey: 'user_id'},
+    users: {type: 'belongs_to', key: 'user_id'},
   };
 
   @field('user_id') userId;
@@ -191,8 +208,8 @@ export class Users_Miles extends Model {
 export class User_Badge extends Model {
   static table = 'users_badges';
   static associations = {
-    users: {type: 'has_many', foriegnKey: 'user_id'},
-    badges: {type: 'has_many', foriegnKey: 'badge_id'},
+    users: {type: 'belongs_to', key: 'user_id'},
+    badges: {type: 'belongs_to', key: 'badge_id'},
   };
   @field('user_id') userId;
   @field('badge_id') badgeId;
@@ -211,19 +228,20 @@ export class Session_Category extends Model {
   };
 
   @field('session_category_name') sessionCategoryName;
+
+  @children('user_sessions') user_sessions;
 }
 
 export class User_Session extends Model {
   static table = 'user_sessions';
   static associations = {
-    users: {type: 'has_many', foriegnKey: 'user_id'},
+    users: {type: 'belongs_to', key: 'user_id'},
     session_categories: {
-      type: 'has_many',
-      forienKey: 'session_category_id',
+      type: 'belongs_to',
+      key: 'session_category_id',
     },
   };
 
-  @field('user_session_id') userSessionId;
   @field('user_id') userId;
   @text('session_name') sessionName;
   @text('session_description') sessionDescription;
