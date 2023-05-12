@@ -27,7 +27,7 @@ const useWatermelonDb = (): Database => {
   React.useEffect(() => {
     const adapter = new SQLiteAdapter({
       schema,
-      dbName: 'TrailTasks.db',
+      dbName: 'TrailTasks',
     });
 
     const database = new Database({

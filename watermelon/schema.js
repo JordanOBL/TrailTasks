@@ -37,7 +37,7 @@ const schema = appSchema({
         {name: 'password', type: 'string'},
         {name: 'push_notifications_enabled', type: 'boolean'},
         {name: 'theme_preference', type: 'string'},
-        {name: 'current_trail_id', type: 'string'}, //reference
+        { name: 'current_trail_id', type: 'number'}, //reference
         {name: 'current_trail_progress', type: 'string'},
         {name: 'current_trail_started_at', type: 'string'},
       ],

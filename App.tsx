@@ -7,6 +7,8 @@
 
 import React, {useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
+import RNFS from 'react-native-fs';
+
 import {
   SafeAreaView,
   ScrollView,
@@ -28,6 +30,7 @@ import {
 import {Platform} from 'react-native';
 
 import useWatermelonDb from './watermelon/getWatermelonDb';
+import insertInitialData from './watermelon/insertInitialData';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -67,16 +70,23 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  useEffect(() =>
-  {
-    // if (watermelonDatabase !== undefined)
-    // {
-      
-    // }
+  useEffect(() => {
     // Do something with the Watermelon database instance
+    if (watermelonDatabase) {
+      // ...
+      const alltrail = async () => {
+        const alltrails = await insertInitialData(watermelonDatabase);
+        console.log(alltrails);
+      };
+      // Find the location of the database file
+      const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
+      alltrail();
+      // Log the location of the database file to the console
+      console.log(`The database file is located at: ${dbFilePath}`);
+    }
     console.log('Watermelon database:', watermelonDatabase);
+    // console.log(watermelonDatabase.get('trails'));
   }, [watermelonDatabase]);
-
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
