@@ -6,7 +6,6 @@ const schema = appSchema({
     tableSchema({
       name: 'parks',
       columns: [
-        {name: 'park_id', type: 'number', isIndexed: true},
         {name: 'park_name', type: 'string', isIndexed: true},
         {name: 'park_type', type: 'string'},
         {name: 'park_image_url', type: 'string', isOptional: true},
@@ -15,7 +14,6 @@ const schema = appSchema({
     tableSchema({
       name: 'trails',
       columns: [
-        {name: 'trail_id', type: 'string', isIndexed: true},
         {name: 'trail_name', type: 'string', isIndexed: true},
         {name: 'trail_distance', type: 'number'},
         {name: 'trail_lat', type: 'number'},
@@ -29,7 +27,6 @@ const schema = appSchema({
     tableSchema({
       name: 'users',
       columns: [
-        {name: 'user_id', type: 'string', isIndexed: true}, // indexed means that we can search the column based on the title
         {name: 'username', type: 'string'},
         {name: 'first_name', type: 'string'},
         {name: 'last_name', type: 'string'},
@@ -37,7 +34,7 @@ const schema = appSchema({
         {name: 'password', type: 'string'},
         {name: 'push_notifications_enabled', type: 'boolean'},
         {name: 'theme_preference', type: 'string'},
-        {name: 'current_trail_id', type: 'number'}, //reference
+        {name: 'trail_id', type: 'string'}, //reference
         {name: 'current_trail_progress', type: 'string'},
         {name: 'current_trail_started_at', type: 'string'},
       ],
@@ -46,7 +43,7 @@ const schema = appSchema({
       name: 'park_states',
       columns: [
         {name: 'park_id', type: 'string'}, //ref
-        {name: 'state_abbreviation', type: 'string'},
+        {name: 'state_code', type: 'string'},
         {name: 'state', type: 'string', isIndexed: true},
       ],
     }),
@@ -96,7 +93,7 @@ const schema = appSchema({
       name: 'users_miles',
       columns: [
         {name: 'user_id', type: 'string'}, //reference user,
-        {name: 'total_miles', type: 'number'},
+        {name: 'total_miles', type: 'string'},
       ],
     }),
     tableSchema({
@@ -113,7 +110,6 @@ const schema = appSchema({
     tableSchema({
       name: 'user_sessions',
       columns: [
-        {name: 'user_session_id', type: 'string', isIndexed: true},
         {name: 'user_id', type: 'string'}, //ref
         {name: 'session_name', type: 'string'},
         {

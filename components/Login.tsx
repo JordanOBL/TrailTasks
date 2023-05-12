@@ -13,39 +13,49 @@ const Login = () => {
   const [error, setError] = React.useState<any>(null);
   // const [username, setUsername] = React.useState<string>('');
 
-  const emailRef = React.useRef<any>(null);
-  const passwordRef = React.useRef<any>(null);
+  const emailRef = React.useRef<any>();
+  const passwordRef = React.useRef<any>();
 
   const checkExistingUser = async () => {
-    const ExistingUser = await watermelonDatabase
-      .get('users')
-      .query(
-        Q.or(
-          Q.where('email', emailRef.current.value),
-          Q.where('password', passwordRef.current.value),
-        ),
-      )
-      .fetch();
-    return ExistingUser;
+    try {
+      const existingUser = await watermelonDatabase
+        .get('users')
+        // .query(Q.and(Q.where('email', email), Q.where('password', password)))
+        .query(Q.where('email', email))
+        .fetch();
+      if (existingUser.length > 0) {
+        await watermelonDatabase.localStorage.set(
+          'user_id',
+          existingUser[0].id,
+        );
+        return existingUser[0];
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleLogin = async (): Promise<void> => {
-    if (email.trim() === '' || password.trim() === '') {
-      setError('All fields are required');
-      return;
-    }
-    // add your WatermelonDB logic here
-    //check for exitsing user
-    const ExistingUser = await checkExistingUser();
+    try {
+      if (email.trim() === '' || password.trim() === '') {
+        setError('All fields are required');
+        return;
+      }
+      // add your WatermelonDB logic here
+      //check for exitsing user
+      const existingUser = await checkExistingUser();
 
-    //create new user
-    if (ExistingUser.length === 0) {
-      setError('Invalid Email or Password');
-      return;
+      //create new user
+      if (!existingUser) {
+        setError('Invalid Email or Password');
+        return;
+      }
+      console.log('successful Login', existingUser);
+      //! SET WATERMELON LOCAL STORAGE
+      //! NAVIGATE TO HOME SCREEN
+    } catch (err) {
+      console.error('Error in handling Login', err);
     }
-    console.log('successful Login', {ExistingUser});
-    //! SET WATERMELON LOCAL STORAGE
-    //! NAVIGATE TO HOME SCREEN
   };
 
   return (
@@ -56,6 +66,7 @@ const Login = () => {
         onChangeText={value => setEmail(value)}
         placeholder="Email"
         keyboardType="email-address"
+        textContentType="emailAddress"
       />
       <TextInput
         ref={passwordRef}
@@ -63,6 +74,7 @@ const Login = () => {
         onChangeText={value => setPassword(value)}
         placeholder="Password"
         secureTextEntry={true}
+        textContentType="password"
       />
 
       <Pressable onPress={() => handleLogin()}>

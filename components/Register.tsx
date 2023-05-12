@@ -23,16 +23,18 @@ const Register = () => {
   const usernameRef = React.useRef<any>(null);
 
   const checkExistingUser = async () => {
-    const ExistingUser = await watermelonDatabase
-      .get('users')
-      .query(
-        Q.or(
-          Q.where('email', emailRef.current.value),
-          Q.where('username', usernameRef.current.value),
-        ),
-      )
-      .fetch();
-    return ExistingUser;
+    try {
+      const ExistingUser = await watermelonDatabase
+        .get('users')
+        .query(Q.or(Q.where('email', email), Q.where('username', username)))
+        .fetch();
+      return ExistingUser;
+    } catch (err) {
+      console.error(
+        'Error in checking for existing user in user register',
+        err,
+      );
+    }
   };
   const createNewUser = async () => {
     const current_trail_start = formatDateTime(new Date());
@@ -40,16 +42,16 @@ const Register = () => {
     const newUser = await watermelonDatabase.write(async () => {
       const createdUser = await watermelonDatabase.get('users').create(user => {
         //!crypto.randomUUID for user_id
-        user.first_name = firstNameRef.current!.value;
-        user.last_name = lastNameRef.current!.value;
-        user.email = emailRef.current!.value;
-        user.password = passwordRef.current!.value;
-        user.username = usernameRef.current?.value;
-        user.push_notifications_enabled.set(true);
-        user.theme_preference.set('light');
-        user.current_trail_id.set(1);
-        user.current_trail_progress.set(0.0);
-        user.current_trail_start.set(current_trail_start);
+        user.first_name = firstName;
+        user.last_name = lastName;
+        user.email = email;
+        user.password = password;
+        user.username = username;
+        user.push_notifications_enabled = true;
+        user.theme_preference = 'light';
+        user.current_trail_id = 1;
+        user.current_trail_progress = '0.0';
+        user.current_trail_start = current_trail_start;
       });
 
       //const createdUser = user.createUser(user.user_id,
@@ -59,52 +61,55 @@ const Register = () => {
       // email,
       // password,
       // current_trail_start)
-
+      console.log(createdUser);
       return createdUser;
     });
     console.log({newUser});
-    // if (newUser) {
-    //   await watermelonDatabase.localStorage.set('user_id', newUser.user_id);
-    //   await watermelonDatabase.localStorage.set('username', newUser.username);
-    // }
+    if (newUser.id.length > 0) {
+      await watermelonDatabase.localStorage.set('user_id', newUser._id);
+      await watermelonDatabase.localStorage.set('username', newUser._username);
+    }
   };
 
   const handleRegister = async (): Promise<void> => {
-    if (
-      firstName.trim() === '' ||
-      lastName.trim() === '' ||
-      email.trim() === '' ||
-      password.trim() === '' ||
-      confirmPassword.trim() === ''
-    ) {
-      setError('All fields are required');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    // add your WatermelonDB logic here
-    //check for exitsing user
-    const ExistingUser = await checkExistingUser();
-
-    //create new user
-    if (ExistingUser.length === 0) {
-      const createdUser = await createNewUser();
-      if (createdUser!) {
-        console.log('user successfully registered');
-        //? set user_id and name in watermelonDatabase.localStorage
+    try {
+      if (
+        firstName.trim() === '' ||
+        lastName.trim() === '' ||
+        email.trim() === '' ||
+        password.trim() === '' ||
+        confirmPassword.trim() === ''
+      ) {
+        setError('All fields are required');
         return;
       }
-    } else if (ExistingUser && ExistingUser.email === emailRef.current.value) {
-      setError('User Already Exists With Provided Email, Please Login');
-      return;
-    } else if (
-      ExistingUser &&
-      ExistingUser.username === usernameRef.current?.value
-    ) {
-      setError('User Already Exists With Username, Please Choose New Username');
-      return;
+      if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      // add your WatermelonDB logic here
+      //check for exitsing user
+      const ExistingUser = await checkExistingUser();
+      console.log({ExistingUser});
+      //create new user
+      if (ExistingUser.length === 0) {
+        const createdUser = await createNewUser();
+        if (createdUser!) {
+          console.log('user successfully registered');
+          //? set user_id and name in watermelonDatabase.localStorage
+          return;
+        }
+      } else if (ExistingUser && ExistingUser.email === emailRef.current.text) {
+        setError('User Already Exists With Provided Email, Please Login');
+        return;
+      } else if (ExistingUser && ExistingUser.username === username) {
+        setError(
+          'User Already Exists With Username, Please Choose New Username',
+        );
+        return;
+      }
+    } catch (err) {
+      console.error('Error in handle Register', err);
     }
   };
 
@@ -113,40 +118,40 @@ const Register = () => {
       <TextInput
         ref={firstNameRef}
         value={firstName}
-        onChangeText={value => setFirstName(value)}
+        onChangeText={text => setFirstName(text)}
         placeholder="First Name"
       />
       <TextInput
         ref={lastNameRef}
         value={lastName}
-        onChangeText={value => setLastName(value)}
+        onChangeText={text => setLastName(text)}
         placeholder="Last Name"
       />
       <TextInput
         ref={emailRef}
         value={email}
-        onChangeText={value => setEmail(value)}
+        onChangeText={text => setEmail(text)}
         placeholder="Email"
         keyboardType="email-address"
       />
       <TextInput
         ref={passwordRef}
         value={password}
-        onChangeText={value => setPassword(value)}
+        onChangeText={text => setPassword(text)}
         placeholder="Password"
         secureTextEntry={true}
       />
       <TextInput
         ref={confirmPasswordRef}
         value={confirmPassword}
-        onChangeText={value => setConfirmPassword(value)}
+        onChangeText={text => setConfirmPassword(text)}
         placeholder="Confirm Password"
         secureTextEntry={true}
       />
       <TextInput
         ref={usernameRef}
         value={username}
-        onChangeText={value => setUsername(value)}
+        onChangeText={text => setUsername(text)}
         placeholder="Username"
       />
       <Pressable onPress={() => handleRegister()}>
