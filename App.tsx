@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import type {PropsWithChildren} from 'react';
+//import type {PropsWithChildren} from 'react';
 import RNFS from 'react-native-fs';
 import {
   SafeAreaView,
@@ -8,44 +8,43 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-  View,
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {Platform} from 'react-native';
+//import {Platform} from 'react-native';
 //import useWatermelonDb from './watermelon/getWatermelonDb';
 import watermelonDatabase from './watermelon/getWatermelonDb';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+// type SectionProps = PropsWithChildren<{
+//   title: string;
+// }>;
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+// function Section({children, title}: SectionProps): JSX.Element {
+//   const isDarkMode = useColorScheme() === 'dark';
+//   return (
+//     <View style={styles.sectionContainer}>
+//       <Text
+//         style={[
+//           styles.sectionTitle,
+//           {
+//             color: isDarkMode ? Colors.white : Colors.black,
+//           },
+//         ]}>
+//         {title}
+//       </Text>
+//       <Text
+//         style={[
+//           styles.sectionDescription,
+//           {
+//             color: isDarkMode ? Colors.light : Colors.dark,
+//           },
+//         ]}>
+//         {children}
+//       </Text>
+//     </View>
+//   );
+// }
 
 function App(): JSX.Element {
   const [user, setUser] = React.useState<any>(null);

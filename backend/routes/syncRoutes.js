@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import SyncController from '../controllers/SyncController';
+import SyncController from '../controllers/syncController';
 
 export const router = new Router();
 

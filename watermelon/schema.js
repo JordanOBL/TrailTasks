@@ -64,7 +64,7 @@ const schema = appSchema({
       ],
     }),
     tableSchema({
-      name: 'user_achievements',
+      name: 'users_achievements',
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'achievement_id', type: 'string'}, //ref
@@ -108,7 +108,7 @@ const schema = appSchema({
       columns: [{name: 'session_category_name', type: 'string'}],
     }),
     tableSchema({
-      name: 'user_sessions',
+      name: 'users_sessions',
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'session_name', type: 'string'},
