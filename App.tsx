@@ -72,33 +72,32 @@ function App(): JSX.Element {
   const checkForExistingUser = async () => {
     try {
       const userId = await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
-      const username = await watermelonDatabase.localStorage.get('username');
-      console.log('User info from local Storage', {userId, username});
+      console.log('User info from local Storage', {userId});
 
-      if (userId || username) {
+      if (userId) {
         console.log('FOUND USER!');
-        setUser({userId, username});
+        setUser({userId});
       }
       return;
     } catch (error) {
       console.error('Error in checkForUser function, app.tsx', error);
     }
   };
-  const getTrails = async () => {
-    const alltrails = await insertInitialData(watermelonDatabase);
-    console.log(alltrails);
-  };
+  // const getTrails = async () => {
+  //   const alltrails = await insertInitialData(watermelonDatabase);
+  //   console.log(alltrails);
+  // };
 
-  const getUserFirstName = async () => {
-    const firstName = await watermelonDatabase
-      .get('users')
-      .query(Q.where('first_name', 'C'))
-      .fetch();
+  // const getUserFirstName = async () => {
+  //   const firstName = await watermelonDatabase
+  //     .get('users')
+  //     .query(Q.where('first_name', 'C'))
+  //     .fetch();
 
-    if (firstName.length > 0) {
-      console.log(firstName);
-    }
-  };
+  //   if (firstName.length > 0) {
+  //     console.log(firstName);
+  //   }
+  // };
   const handleLogOut = async () => {
     try {
       await watermelonDatabase.localStorage.remove('user_id');
@@ -115,8 +114,8 @@ function App(): JSX.Element {
       try {
         console.log('Watermelon database:', watermelonDatabase);
         await checkForExistingUser();
-        await getTrails();
-        await getUserFirstName();
+        // await getTrails();
+        // await getUserFirstName();
         // Find the location of the database file
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         // Log the location of the database file to the console
