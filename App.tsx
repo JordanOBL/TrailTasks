@@ -1,10 +1,8 @@
 import React, {useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import RNFS from 'react-native-fs';
-
 import {
   SafeAreaView,
-  ScrollView,
   Pressable,
   StatusBar,
   StyleSheet,
@@ -12,19 +10,10 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {Platform} from 'react-native';
-
-import useWatermelonDb from './watermelon/getWatermelonDb';
-
+//import useWatermelonDb from './watermelon/getWatermelonDb';
+import watermelonDatabase from './watermelon/getWatermelonDb';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 
@@ -61,7 +50,7 @@ function Section({children, title}: SectionProps): JSX.Element {
 function App(): JSX.Element {
   const [user, setUser] = React.useState<any>(null);
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-  const watermelonDatabase = useWatermelonDb();
+  //const watermelonDatabase = useWatermelonDb();
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -135,10 +124,10 @@ function App(): JSX.Element {
     }
 
     // console.log(watermelonDatabase.get('trails'));
-  }, [watermelonDatabase]);
+  }, [user]);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={[backgroundStyle, styles.container]}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
@@ -165,6 +154,9 @@ function App(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
