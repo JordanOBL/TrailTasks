@@ -27,7 +27,7 @@ import useWatermelonDb from './watermelon/getWatermelonDb';
 import insertInitialData from './watermelon/insertInitialData';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
-import {Database} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -88,6 +88,17 @@ function App(): JSX.Element {
     const alltrails = await insertInitialData(watermelonDatabase);
     console.log(alltrails);
   };
+
+  const getUserFirstName = async () => {
+    const firstName = await watermelonDatabase
+      .get('users')
+      .query(Q.where('first_name', 'C'))
+      .fetch();
+
+    if (firstName.length > 0) {
+      console.log(firstName);
+    }
+  };
   const handleLogOut = async () => {
     try {
       await watermelonDatabase.localStorage.remove('user_id');
@@ -105,6 +116,7 @@ function App(): JSX.Element {
         console.log('Watermelon database:', watermelonDatabase);
         await checkForExistingUser();
         await getTrails();
+        await getUserFirstName();
         // Find the location of the database file
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         // Log the location of the database file to the console
@@ -118,7 +130,7 @@ function App(): JSX.Element {
     }
 
     // console.log(watermelonDatabase.get('trails'));
-  }, [watermelonDatabase, user]);
+  }, [watermelonDatabase]);
 
   return (
     <SafeAreaView style={backgroundStyle}>

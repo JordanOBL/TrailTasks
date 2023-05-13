@@ -3,6 +3,7 @@ import * as React from 'react';
 import {Database, Q} from '@nozbe/watermelondb';
 import useWatermelonDb from '../watermelon/getWatermelonDb';
 import {formatDateTime} from './DateTime';
+import {User} from '../watermelon/models';
 
 const Register = () => {
   const watermelonDatabase: Database = useWatermelonDb();
@@ -41,16 +42,16 @@ const Register = () => {
     //!BCYPT PASSWORD BEFORE ADDING TO DB
     const newUser = await watermelonDatabase.write(async () => {
       const createdUser = await watermelonDatabase.get('users').create(user => {
-        user.first_name = firstName;
-        user.last_name = lastName;
+        user.firstName = firstName;
+        user.lastName = lastName;
         user.email = email;
         user.password = password;
         user.username = username;
-        user.push_notifications_enabled = true;
-        user.theme_preference = 'light';
-        user.trail_id = '1';
-        user.trail_progress = '0.0';
-        user.trail_started_at = current_trail_start;
+        user.pushNotificationsEnabled = true;
+        user.themePreference = 'light';
+        user.trailId = '1';
+        user.trailProgress = '0.0';
+        user.trailStartedAt = current_trail_start;
       });
 
       //const createdUser = user.createUser(user.user_id,
