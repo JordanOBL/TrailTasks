@@ -1,11 +1,18 @@
-import {StyleSheet, Text, View, Pressable, TextInput} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  Pressable,
+  TextInput,
+} from 'react-native';
 import * as React from 'react';
-import {Database, Q} from '@nozbe/watermelondb';
-import useWatermelonDb from '../watermelon/getWatermelonDb';
+import {Q} from '@nozbe/watermelondb';
+//import useWatermelonDb from '../watermelon/getWatermelonDb';
+import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {formatDateTime} from './DateTime';
 
 const Register = () => {
-  const watermelonDatabase: Database = useWatermelonDb();
+  //const watermelonDatabase: Database = useWatermelonDb();
 
   const [firstName, setFirstName] = React.useState<string>('');
   const [lastName, setLastName] = React.useState<string>('');
@@ -114,7 +121,7 @@ const Register = () => {
   };
 
   return (
-    <View>
+    <SafeAreaView style={styles.container}>
       <TextInput
         ref={firstNameRef}
         value={firstName}
@@ -158,13 +165,16 @@ const Register = () => {
         <Text>Create Account</Text>
       </Pressable>
       <Text style={styles.error}>{error || ''}</Text>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export default Register;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   error: {
     color: 'red',
   },
