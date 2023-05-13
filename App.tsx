@@ -15,6 +15,7 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import watermelonDatabase from './watermelon/getWatermelonDb';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
+import SyncIndicator from './components/'
 
 // type SectionProps = PropsWithChildren<{
 //   title: string;
@@ -131,6 +132,7 @@ function App(): JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
+      <SyncIndicator />
       {user && user.userId ? (
         <Text>LOGGED IN!</Text>
       ) : isRegistering ? (
