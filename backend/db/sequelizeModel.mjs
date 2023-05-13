@@ -22,7 +22,17 @@ export const Park = sequelize.define(
     park_type: {type: DataTypes.STRING, allowNull: false},
     park_image_url: {type: DataTypes.STRING},
   },
-  {tableName: 'parks'}
+  {
+    tableName: 'parks',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['park_name'],
+      },
+    ],
+  }
 );
 export const Trail = sequelize.define(
   'Trail',
@@ -33,14 +43,23 @@ export const Trail = sequelize.define(
     trail_lat: {type: DataTypes.DECIMAL, allowNull: true},
     trail_long: {type: DataTypes.DECIMAL, allowNull: true},
     trail_difficulty: {type: DataTypes.STRING, allowNull: false},
-    park_id: {type: DataTypes.STRING, allowNull: false}, //ref
     trail_image_url: {
       type: DataTypes.STRING,
       allowNull: true,
     },
     trail_elevation: {type: DataTypes.INTEGER, allowNull: true},
   },
-  {tableName: 'trails'}
+  {
+    tableName: 'trails',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['trail_name'],
+      },
+    ],
+  }
 );
 export const User = sequelize.define(
   'User',
@@ -57,7 +76,6 @@ export const User = sequelize.define(
       allowNull: false,
       defaultValue: 'light',
     },
-    trail_id: {type: DataTypes.STRING, allowNull: false, defaultValue: '1'},
     trail_progress: {
       type: DataTypes.DECIMAL,
       allowNull: false,
@@ -65,13 +83,22 @@ export const User = sequelize.define(
     },
     trail_started_at: {type: DataTypes.STRING, allowNull: false},
   },
-  {tableName: 'users'}
+  {
+    tableName: 'users',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['username', 'email'],
+      },
+    ],
+  }
 );
 export const Park_State = sequelize.define(
   'Park_State',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    park_id: {type: DataTypes.STRING, allowNull: false}, //ref
     state_code: {type: DataTypes.STRING, allowNull: false},
     state: {type: DataTypes.STRING, allowNull: false},
   },
@@ -88,7 +115,17 @@ export const Badge = sequelize.define(
       allowNull: true,
     },
   },
-  {tableName: 'badges'}
+  {
+    tableName: 'badges',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['badge_name'],
+      },
+    ],
+  }
 );
 export const Achievement = sequelize.define(
   'Achievement',
@@ -101,14 +138,22 @@ export const Achievement = sequelize.define(
       allowNull: true,
     },
   },
-  {tableName: 'achievements'}
+  {
+    tableName: 'achievements',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['achievement_name'],
+      },
+    ],
+  }
 );
 export const User_Achievement = sequelize.define(
   'User_Achievement',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    user_id: {type: DataTypes.STRING, allowNull: false}, //ref
-    achievement_id: {type: DataTypes.STRING, allowNull: false}, //ref
     completed_at: {type: DataTypes.DATE, allowNull: false},
   },
   {tableName: 'users_achievements', underscored: true}
@@ -117,8 +162,6 @@ export const Completed_Hike = sequelize.define(
   'Completed_Hike',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    user_id: {type: DataTypes.STRING, allowNull: false}, //ref
-    trail_id: {type: DataTypes.STRING, allowNull: false}, //ref
     first_completed_at: {type: DataTypes.STRING, allowNull: false},
     last_completed_at: {type: DataTypes.STRING, allowNull: false},
     best_completed_time: {type: DataTypes.STRING, allowNull: false},
@@ -129,9 +172,6 @@ export const Hiking_Queue = sequelize.define(
   'Hiking_Queue',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    user_id: {type: DataTypes.STRING, allowNull: false}, //ref
-    trail_id: {type: DataTypes.STRING, allowNull: false}, //ref
-    created_at: {type: DataTypes.DATE},
   },
   {tableName: 'hiking_queue', underscored: true}
 );
@@ -139,17 +179,25 @@ export const User_Miles = sequelize.define(
   'User_Miles',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    user_id: {type: DataTypes.STRING, allowNull: false}, //reference user,
+
     total_miles: {type: DataTypes.DECIMAL, allowNull: false},
   },
-  {tableName: 'users_miles'}
+  {
+    tableName: 'users_miles',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['user_id'],
+      },
+    ],
+  }
 );
 export const User_Badge = sequelize.define(
   'User_Badge',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    user_id: {type: DataTypes.STRING, allowNull: false}, //reference user,
-    badge_id: {type: DataTypes.STRING, allowNull: false}, //ref
   },
   {tableName: 'users_badges', underscored: true}
 );
@@ -165,13 +213,11 @@ export const User_Session = sequelize.define(
   'User_Session',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    user_id: {type: DataTypes.STRING, allowNull: false},
     session_name: {type: DataTypes.STRING, allowNull: false},
     session_description: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    session_category_id: {type: DataTypes.STRING, allowNull: false},
     date_added: {type: DataTypes.STRING, allowNull: false},
     total_session_time: {
       type: DataTypes.INTEGER,
