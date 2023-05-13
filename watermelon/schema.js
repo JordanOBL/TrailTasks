@@ -35,8 +35,8 @@ const schema = appSchema({
         {name: 'push_notifications_enabled', type: 'boolean'},
         {name: 'theme_preference', type: 'string'},
         {name: 'trail_id', type: 'string'}, //reference
-        {name: 'current_trail_progress', type: 'string'},
-        {name: 'current_trail_started_at', type: 'string'},
+        {name: 'trail_progress', type: 'string'},
+        {name: 'trail_started_at', type: 'string'},
       ],
     }),
     tableSchema({

@@ -60,11 +60,11 @@ export class User extends Model {
   @field('password') password;
   @field('push_notifications_enabled') pushNotificationsEnabled;
   @field('theme_preference') themePreference;
-  @field('trail_id') TrailId;
-  @field('current_trail_Progress') currentTrailProgress;
-  @field('current_trail_start_at') currentTrailStartAt;
+  @field('trail_id') trailId;
+  @field('trail_progress') trailProgress;
+  @field('trail_started_at') trailStartedAt;
 
-  @relation('trails', 'current_trail') trail;
+  @relation('trails', 'trail_id') trail;
 
   @children('user_sessions') user_sessions;
   @children('user_badges') user_badges;

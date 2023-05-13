@@ -28,6 +28,10 @@ const Login = () => {
           'user_id',
           existingUser[0].id,
         );
+        await watermelonDatabase.localStorage.set(
+          'username',
+          existingUser[0].username,
+        );
         return existingUser[0];
       }
     } catch (err) {

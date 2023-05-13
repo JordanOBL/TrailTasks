@@ -4,7 +4,7 @@ async function insertInitialData(watermelonDatabase: Database) {
   try {
     const trailsinDB = watermelonDatabase
       .get('trails')
-      .query(Q.where('trail_id', 5))
+      .query(Q.where('id', 5))
       .fetch();
     // const trails = await trailsinDB.query().fetch();
     return trailsinDB;

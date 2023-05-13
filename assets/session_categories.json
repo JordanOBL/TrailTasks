@@ -19,22 +19,22 @@
 	{ "session_category_name": "Yoga" }
 ]
 
-// INSERT INTO session_categories (id, session_category_name) VALUES
-// 							(1, 'Chores'),
-// 							(2, 'Cooking'),
-// 							(3, 'Drawing'),
-// 							(4, 'Driving'),
-// 							(5, 'Errands'),
-// 							(6, 'Family'),
-// 							(7, 'Meditating'),	
-// 							(8, 'Other'),
-// 							(9, 'Outdoors'),
-// 							(10,'Pets'),	
-// 							(11, 'Reading'),
-// 							(12, 'Social'),
-// 							(13, 'Sports'),
-// 							(14, 'Study'),
-// 							(15, 'Work'),
-// 							(16, 'Workout'),
-// 							(17, 'Writing'),
-// 							(18, 'Yoga');
+INSERT INTO session_categories (id, session_category_name) VALUES
+							(1, 'Chores'),
+							(2, 'Cooking'),
+							(3, 'Drawing'),
+							(4, 'Driving'),
+							(5, 'Errands'),
+							(6, 'Family'),
+							(7, 'Meditating'),	
+							(8, 'Other'),
+							(9, 'Outdoors'),
+							(10,'Pets'),	
+							(11, 'Reading'),
+							(12, 'Social'),
+							(13, 'Sports'),
+							(14, 'Study'),
+							(15, 'Work'),
+							(16, 'Workout'),
+							(17, 'Writing'),
+							(18, 'Yoga');
