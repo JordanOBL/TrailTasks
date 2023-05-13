@@ -1,0 +1,104 @@
+CREATE TABLE parks (
+  id TEXT PRIMARY KEY,
+  park_name TEXT,
+  park_type TEXT,
+  park_image_url TEXT
+);
+
+CREATE TABLE trails (
+  id TEXT PRIMARY KEY,
+  trail_name TEXT,
+  trail_distance NUMERIC,
+  trail_lat NUMERIC,
+  trail_long NUMERIC,
+  trail_difficulty TEXT,
+  park_id TEXT REFERENCES parks(id) ON DELETE CASCADE,
+  trail_image_url TEXT,
+  trail_elevation NUMERIC
+);
+
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  username TEXT,
+  first_name TEXT,
+  last_name TEXT,
+  email TEXT,
+  password TEXT,
+  push_notifications_enabled BOOLEAN,
+  theme_preference TEXT,
+  trail_id TEXT REFERENCES trails(id) ON DELETE SET NULL,
+  trail_progress TEXT,
+  trail_started_at TEXT
+);
+
+CREATE TABLE park_states (
+  id TEXT PRIMARY KEY,
+  park_id TEXT REFERENCES parks(id) ON DELETE CASCADE,
+  state_code TEXT,
+  state TEXT
+);
+
+CREATE TABLE badges (
+  id TEXT PRIMARY KEY,
+  badge_name TEXT,
+  badge_description TEXT,
+  badge_image_url TEXT
+);
+
+CREATE TABLE achievements (
+  id TEXT PRIMARY KEY,
+  achievement_name TEXT,
+  achievement_description TEXT,
+  achievement_image_url TEXT
+);
+
+CREATE TABLE user_achievements (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  achievement_id TEXT REFERENCES achievements(id) ON DELETE CASCADE,
+  completed_at TEXT
+);
+
+CREATE TABLE completed_hikes (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  trail_id TEXT REFERENCES trails(id) ON DELETE CASCADE,
+  first_completed_at TEXT,
+  last_completed_at TEXT,
+  best_completed_time TEXT
+);
+
+CREATE TABLE hiking_queue (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  trail_id TEXT REFERENCES trails(id) ON DELETE CASCADE,
+  created_at BIGINT
+);
+
+CREATE TABLE users_miles (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  total_miles NUMERIC
+);
+
+CREATE TABLE users_badges (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  badge_id TEXT REFERENCES badges(id) ON DELETE CASCADE
+);
+
+CREATE TABLE session_categories (
+  id TEXT PRIMARY KEY,
+  session_category_name TEXT
+);
+
+CREATE TABLE user_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  session_name TEXT,
+  session_description TEXT,
+  session_category_id TEXT REFERENCES session_categories(id) ON DELETE SET NULL,
+  date_added TEXT,
+  total_session_time NUMERIC,
+  total_distance_hiked NUMERIC
+);

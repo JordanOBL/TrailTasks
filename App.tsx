@@ -24,10 +24,9 @@ import {
 import {Platform} from 'react-native';
 
 import useWatermelonDb from './watermelon/getWatermelonDb';
-import insertInitialData from './watermelon/insertInitialData';
+
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
-import {Database, Q} from '@nozbe/watermelondb';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -107,11 +106,18 @@ function App(): JSX.Element {
       console.error('Error in handleLogOut function, app.tsx', error);
     }
   };
+  const getPgTables = async () => {
+    console.log('gettingPgTables');
+    const response = await fetch('http://localhost:5500/api/tables');
+    const data = await response.json();
+    console.log(data.rows);
+  };
 
   useEffect(() => {
     // Do something with the Watermelon database instance
     const onLoad = async () => {
       try {
+        await getPgTables();
         console.log('Watermelon database:', watermelonDatabase);
         await checkForExistingUser();
         // await getTrails();
@@ -124,7 +130,7 @@ function App(): JSX.Element {
         console.log('Error in onload in APP useEffect', err);
       }
     };
-    if (!user) {
+    if (!user && watermelonDatabase) {
       onLoad();
     }
 

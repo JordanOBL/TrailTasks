@@ -4,7 +4,7 @@ import React from 'react';
 
 const LoginScreen = () => {
   return (
-    <View>
+    <View style={styles.container}>
       <Text>LoginScreen</Text>
       <Login />
     </View>
@@ -13,4 +13,6 @@ const LoginScreen = () => {
 
 export default LoginScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {flex: 1},
+});

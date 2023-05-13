@@ -4,7 +4,7 @@ import React from 'react';
 
 const RegisterScreen = () => {
   return (
-    <View>
+    <View style={styles.container}>
       <Text>RegisterScreen</Text>
       <Register />
     </View>
@@ -13,4 +13,6 @@ const RegisterScreen = () => {
 
 export default RegisterScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {flex: 1},
+});
