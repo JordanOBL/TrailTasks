@@ -113,12 +113,12 @@ function App(): JSX.Element {
         console.log('Error in onload in APP useEffect', err);
       }
     };
-    if (watermelonDatabase) {
+    if (!user) {
       onLoad();
     }
 
     // console.log(watermelonDatabase.get('trails'));
-  }, [watermelonDatabase]);
+  }, [watermelonDatabase, user]);
 
   return (
     <SafeAreaView style={backgroundStyle}>

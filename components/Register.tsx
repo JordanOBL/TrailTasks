@@ -15,12 +15,12 @@ const Register = () => {
   const [error, setError] = React.useState<any>(null);
   const [username, setUsername] = React.useState<string>('');
 
-  const firstNameRef = React.useRef<any>(null);
-  const lastNameRef = React.useRef<any>(null);
-  const emailRef = React.useRef<any>(null);
-  const passwordRef = React.useRef<any>(null);
-  const confirmPasswordRef = React.useRef<any>(null);
-  const usernameRef = React.useRef<any>(null);
+  const firstNameRef = React.useRef<any>();
+  const lastNameRef = React.useRef<any>();
+  const emailRef = React.useRef<any>();
+  const passwordRef = React.useRef<any>();
+  const confirmPasswordRef = React.useRef<any>();
+  const usernameRef = React.useRef<any>();
 
   const checkExistingUser = async () => {
     try {
@@ -41,7 +41,6 @@ const Register = () => {
     //!BCYPT PASSWORD BEFORE ADDING TO DB
     const newUser = await watermelonDatabase.write(async () => {
       const createdUser = await watermelonDatabase.get('users').create(user => {
-        //!crypto.randomUUID for user_id
         user.first_name = firstName;
         user.last_name = lastName;
         user.email = email;
@@ -49,9 +48,9 @@ const Register = () => {
         user.username = username;
         user.push_notifications_enabled = true;
         user.theme_preference = 'light';
-        user.current_trail_id = 1;
-        user.current_trail_progress = '0.0';
-        user.current_trail_start = current_trail_start;
+        user.trail_id = '1';
+        user.trail_progress = '0.0';
+        user.trail_started_at = current_trail_start;
       });
 
       //const createdUser = user.createUser(user.user_id,
@@ -61,13 +60,13 @@ const Register = () => {
       // email,
       // password,
       // current_trail_start)
-      console.log(createdUser);
+      console.log({createdUser});
       return createdUser;
     });
     console.log({newUser});
     if (newUser.id.length > 0) {
-      await watermelonDatabase.localStorage.set('user_id', newUser._id);
-      await watermelonDatabase.localStorage.set('username', newUser._username);
+      await watermelonDatabase.localStorage.set('user_id', newUser.id);
+      await watermelonDatabase.localStorage.set('username', newUser.username);
     }
   };
 
@@ -99,10 +98,12 @@ const Register = () => {
           //? set user_id and name in watermelonDatabase.localStorage
           return;
         }
-      } else if (ExistingUser && ExistingUser.email === emailRef.current.text) {
+      } else if (ExistingUser && ExistingUser[0].email === email) {
+        console.log(ExistingUser[0].email);
         setError('User Already Exists With Provided Email, Please Login');
         return;
-      } else if (ExistingUser && ExistingUser.username === username) {
+      } else if (ExistingUser && ExistingUser[0].username === username) {
+        console.log(ExistingUser[0].username);
         setError(
           'User Already Exists With Username, Please Choose New Username',
         );
