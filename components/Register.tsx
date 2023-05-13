@@ -3,7 +3,6 @@ import * as React from 'react';
 import {Database, Q} from '@nozbe/watermelondb';
 import useWatermelonDb from '../watermelon/getWatermelonDb';
 import {formatDateTime} from './DateTime';
-import {User} from '../watermelon/models';
 
 const Register = () => {
   const watermelonDatabase: Database = useWatermelonDb();
@@ -104,7 +103,6 @@ const Register = () => {
         setError('User Already Exists With Provided Email, Please Login');
         return;
       } else if (ExistingUser && ExistingUser[0].username === username) {
-        console.log(ExistingUser[0].username);
         setError(
           'User Already Exists With Username, Please Choose New Username',
         );
