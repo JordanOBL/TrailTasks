@@ -47,6 +47,8 @@ import SyncIndicator from './components/SyncIndicator';
 //   );
 // }
 
+
+
 function App(): JSX.Element {
   const [user, setUser] = React.useState<any>(null);
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
@@ -71,10 +73,6 @@ function App(): JSX.Element {
       console.error('Error in checkForUser function, app.tsx', error);
     }
   };
-  // const getTrails = async () => {
-  //   const alltrails = await insertInitialData(watermelonDatabase);
-  //   console.log(alltrails);
-  // };
 
   // const getUserFirstName = async () => {
   //   const firstName = await watermelonDatabase
@@ -116,7 +114,7 @@ function App(): JSX.Element {
         //await seedPgTables();
         console.log('Watermelon database:', watermelonDatabase);
         await checkForExistingUser();
-        // await getTrails();
+
         // await getUserFirstName();
         // Find the location of the database file
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
@@ -143,7 +141,7 @@ function App(): JSX.Element {
       {user && user.userId ? (
         <Text>LOGGED IN!</Text>
       ) : isRegistering ? (
-        <RegisterScreen />
+        <RegisterScreen setUser={setUser} />
       ) : (
         <LoginScreen />
       )}
