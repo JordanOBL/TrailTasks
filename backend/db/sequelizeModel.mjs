@@ -76,6 +76,7 @@ export const User = sequelize.define(
       allowNull: false,
       defaultValue: 'light',
     },
+    trail_id: {type: DataTypes.STRING, allowNull: false, defaultValue: '1'},
     trail_progress: {
       type: DataTypes.DECIMAL,
       allowNull: false,
@@ -233,8 +234,8 @@ export const User_Session = sequelize.define(
   {tableName: 'users_sessions', underscored: true}
 );
 
-Trail.hasOne(User, {foreignKey: 'trail_id'});
-User.belongsTo(Trail);
+User.belongsTo(Trail, {foreignKey: 'trail_id'});
+Trail.hasMany(User, {foreignKey: 'trail_id'});
 
 Session_Category.hasOne(User_Session, {foreignKey: 'session_category_id'});
 User_Session.belongsTo(Session_Category);
@@ -263,9 +264,9 @@ Trail.belongsToMany(User, {through: 'hiking_queue'});
 User.hasMany(User_Session, {foriegnKey: 'id'});
 User_Session.belongsTo(User);
 
-const SYNC = async () => {
-  await sequelize.sync({force: true});
+export const SYNC = async () => {
+  await sequelize.sync();
   console.log('All models were synchronized successfully.');
 };
 
-SYNC();
+

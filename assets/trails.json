@@ -1,17 +1,17 @@
 [
 	{
-		"trail_id": 1,
+		"id": "1",
 		"trail_name": "Old Faithful trail",
 		"trail_distance": "2.2",
 		"trail_lat": "44.4601",
 		"trail_long": "-110.8281",
 		"trail_difficulty": "short",
 		"park_id": "61",
-		"trail_image_url": "https://www.nps.gov/articles/images/19255d.jpg?maxwtrail_idth=1300&maxheight=1300&autorotate=false",
+		"trail_image_url": "https://www.nps.gov/articles/images/19255d.jpg?maxwidth=1300&maxheight=1300&autorotate=false",
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 2,
+		"id": "2",
 		"trail_name": "Mount Washburn trail",
 		"trail_distance": "6.2",
 		"trail_lat": "44.8938",
@@ -22,18 +22,18 @@
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 3,
+		"id": "3",
 		"trail_name": "Fairy Falls trail",
 		"trail_distance": "8.3",
 		"trail_lat": "44.6677",
 		"trail_long": "-110.8656",
 		"trail_difficulty": "moderate",
 		"park_id": "61",
-		"trail_image_url": "https://www.nps.gov/common/uploads/cropped_image/primary/6E135C3B-1DD8-B71B-0B48ABBCAE1A44D6.jpg?wtrail_idth=1300&quality=90&mode=crop",
+		"trail_image_url": "https://www.nps.gov/common/uploads/cropped_image/primary/6E135C3B-1DD8-B71B-0B48ABBCAE1A44D6.jpg?width=1300&quality=90&mode=crop",
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 4,
+		"id": "4",
 		"trail_name": "Yosemite Falls trail",
 		"trail_distance": "7.2",
 		"trail_lat": "37.7459",
@@ -44,18 +44,18 @@
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 5,
+		"id": "5",
 		"trail_name": "Half Dome trail",
 		"trail_distance": "14.2",
 		"trail_lat": "37.746",
 		"trail_long": "-119.5336",
 		"trail_difficulty": "long",
 		"park_id": "62",
-		"trail_image_url": "https://www.myyosemitepark.com/wp-content/uploads/2021/12/YO-HalfDome-cables-trail_distance_Ordelhetrail_ide_1500.jpg",
+		"trail_image_url": "https://www.myyosemitepark.com/wp-content/uploads/2021/12/YO-HalfDome-cables-trail_distance_Ordelheide_1500.jpg",
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 6,
+		"id": "6",
 		"trail_name": "Mist trail",
 		"trail_distance": "3",
 		"trail_lat": "37.7324",
@@ -66,7 +66,7 @@
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 7,
+		"id": "7",
 		"trail_name": "Jordan Pond Path",
 		"trail_distance": "3.3",
 		"trail_lat": "44.3276",
@@ -77,9 +77,9 @@
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 8,
-		"trail_name": "Lower Sauma Rtrail_idge Trail",
-		"length": "1.5",
+		"id": "8",
+		"trail_name": "Lower Sauma Ridge Trail",
+		"trail_distance": "1.5",
 		"trail_lat": "-14.2462",
 		"trail_long": "-170.6858",
 		"trail_difficulty": "short",
@@ -88,9 +88,9 @@
 		"trail_elevation": "0"
 	},
 	{
-		"trail_id": 9,
+		"id": "9",
 		"trail_name": "Park Avenue Trail",
-		"length": "2",
+		"trail_distance": "2",
 		"trail_lat": "38.7343",
 		"trail_long": "-109.5943",
 		"trail_difficulty": "short",
@@ -99,9 +99,9 @@
 		"trail_elevation": "320"
 	},
 	{
-		"trail_id": 10,
+		"id": "10",
 		"trail_name": "Door Trail",
-		"length": "0.75",
+		"trail_distance": "0.75",
 		"trail_lat": "43.7226",
 		"trail_long": "-102.4842",
 		"trail_difficulty": "short",
@@ -110,9 +110,9 @@
 		"trail_elevation": "30"
 	},
 	{
-		"trail_id": 11,
+		"id": "11",
 		"trail_name": "Lost Mine Trail",
-		"length": "4.8",
+		"trail_distance": "4.8",
 		"trail_lat": "29.2708",
 		"trail_long": "-103.3219",
 		"trail_difficulty": "short",
@@ -121,9 +121,9 @@
 		"trail_elevation": "1100"
 	},
 	{
-		"trail_id": 12,
+		"id": "12",
 		"trail_name": "Jones Lagoon Trail",
-		"length": "1.5",
+		"trail_distance": "1.5",
 		"trail_lat": "25.5015",
 		"trail_long": "-80.2105",
 		"trail_difficulty": "short",

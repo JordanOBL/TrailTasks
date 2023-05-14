@@ -15,7 +15,7 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import watermelonDatabase from './watermelon/getWatermelonDb';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
-import SyncIndicator from './components/'
+import SyncIndicator from './components/SyncIndicator';
 
 // type SectionProps = PropsWithChildren<{
 //   title: string;
@@ -95,18 +95,25 @@ function App(): JSX.Element {
       console.error('Error in handleLogOut function, app.tsx', error);
     }
   };
-  const getPgTables = async () => {
-    console.log('gettingPgTables');
-    const response = await fetch('http://localhost:5500/api/tables');
-    const data = await response.json();
-    console.log(data.rows);
+  const seedPgTables = async () => {
+    try {
+      console.log('seedingPgTables');
+      const response = await fetch('http://localhost:5500/api/seed');
+      const data = await response.json();
+      console.log(data);
+    } catch (error: any) {
+      console.error(
+        'Error in gettingPGTables function, app.tsx',
+        error.message
+      );
+    }
   };
 
   useEffect(() => {
     // Do something with the Watermelon database instance
     const onLoad = async () => {
       try {
-        await getPgTables();
+        //await seedPgTables();
         console.log('Watermelon database:', watermelonDatabase);
         await checkForExistingUser();
         // await getTrails();
@@ -132,7 +139,7 @@ function App(): JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <SyncIndicator />
+      {/* <SyncIndicator /> */}
       {user && user.userId ? (
         <Text>LOGGED IN!</Text>
       ) : isRegistering ? (
