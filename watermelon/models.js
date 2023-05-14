@@ -192,7 +192,7 @@ export class Hiking_Queue extends Model {
   @children('users') users;
   @children('trails') trails;
 }
-export class Users_Miles extends Model {
+export class User_Miles extends Model {
   static table = 'users_miles';
   static associations = {
     users: {type: 'belongs_to', key: 'user_id'},
