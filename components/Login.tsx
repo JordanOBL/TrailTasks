@@ -13,17 +13,11 @@ interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
 }
 const Login = ({setUser}: Props) => {
-  // const watermelonDatabase: Database = useWatermelonDb();
 
-  // const [firstName, setFirstName] = React.useState<string>('');
-  // const [lastName, setLastName] = React.useState<string>('');
   const [email, setEmail] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
   const [error, setError] = React.useState<any>(null);
   // const [username, setUsername] = React.useState<string>('');
-
-  const emailRef = React.useRef<any>();
-  const passwordRef = React.useRef<any>();
 
   const checkExistingUser = async () => {
     try {
@@ -63,7 +57,6 @@ const Login = ({setUser}: Props) => {
         setError('Invalid Email or Password');
         return;
       }
-      console.log('successful Login', existingUser);
       setUser({userId: existingUser._raw.id});
     } catch (err) {
       console.error('Error in handling Login', err);
@@ -73,7 +66,6 @@ const Login = ({setUser}: Props) => {
   return (
     <SafeAreaView style={styles.container}>
       <TextInput
-        ref={emailRef}
         value={email}
         onChangeText={(value) => setEmail(value)}
         placeholder="Email"
@@ -81,7 +73,6 @@ const Login = ({setUser}: Props) => {
         textContentType="emailAddress"
       />
       <TextInput
-        ref={passwordRef}
         value={password}
         onChangeText={(value) => setPassword(value)}
         placeholder="Password"

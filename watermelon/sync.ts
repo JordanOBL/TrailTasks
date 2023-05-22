@@ -4,13 +4,13 @@ import {watermelonDatabase as database} from './getWatermelonDb';
 // on *nix system, you would find it out by running the ifconfig command
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
-//const SYNC_API_URL = 'http://localhost:5500';
+
 export async function sync() {
   await synchronize({
     database,
     //log: logger.newLog(),
     pullChanges: async ({lastPulledAt, schemaVersion = 1, migration = null}) => {
-      //*successfully pulls new users from pg database!!!
+
       //get new changees in the database
       const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
       console.log(lastPulledAt, schemaVersion)
@@ -18,14 +18,8 @@ export async function sync() {
       if (!response.ok) {
         throw new Error(await response.text());
       }
-      console.log('here in sync p');
       const { changes, timestamp } = await response.json();
       const validTimestamp = Date.parse(timestamp);
-      console.log('pulling created users from pg', changes?.users?.createdUsers[0]);
-      console.log(
-        'pulling updated users from pg',
-        changes?.users?.updatedUsers[0]
-      );
       if (changes?.users?.createdUsers?.length > 0) {
         await Promise.all(
           changes.users.createdUsers.map(
