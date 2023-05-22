@@ -762,7 +762,7 @@ app.get('/pull', async (req, res) => {
       timestamp: new Date(),
     };
 
-    console.log('responseData', responseData.changes.users);
+    console.log('responseData', responseData);
     return res.json(responseData);
   } else {
     const createdParks = await Park.findAll({
@@ -811,41 +811,56 @@ app.get('/pull', async (req, res) => {
       timestamp: new Date(),
     };
 
-    console.log('responseData', responseData.changes.users);
+    console.log('responseData', responseData);
     return res.json(responseData);
   }
 });
 
 //pull changes from users watermelon database
-app.post('/push', async (req, res) => {
-  const changes = await req.body.changes;
-  console.log('here on server in push');
-  console.log('sending changes to pg', {changes});
-  if (changes?.users?.created[0] !== undefined) {
-    console.log('new user in sync on back end');
-    const users = await User.bulkCreate(changes.users.created);
-    console.log('usersCreated in pg', users);
-  }
-  if (changes?.users?.updated[0] !== undefined) {
-    const updateQueries = changes.users.updated.map((remoteEntry) => {
-      console.log({remoteEntry});
-      return User.update(remoteEntry, {
+app.post('/push', async (req, res) =>
+{
+  try
+  {
+    
+
+    const changes = await req.body.changes;
+    console.log('here on server in push');
+    console.log('sending changes to pg', { changes });
+    if (changes?.users?.created[0] !== undefined)
+    {
+      console.log('new user in sync on back end');
+      const users = await User.bulkCreate(changes.users.created);
+      console.log('usersCreated in pg', users);
+    }
+    if (changes?.users?.updated[0] !== undefined)
+    {
+      const updateQueries = changes.users.updated.map((remoteEntry) =>
+      {
+        console.log({ remoteEntry });
+        return User.update(remoteEntry, {
+          where: {
+            id: remoteEntry.id,
+          },
+        });
+      });
+      await Promise.all(updateQueries);
+    }
+    if (changes?.users?.deleted[0])
+    {
+      await User.destroy({
         where: {
-          id: remoteEntry.id,
+          id: changes.users.deleted,
         },
       });
-    });
-    await Promise.all(updateQueries);
-  }
-  if (changes?.users?.deleted[0]) {
-    await User.destroy({
-      where: {
-        id: changes.users.deleted,
-      },
-    });
+    }
+  } catch (err)
+  {
+    console.error('Error in server /push', err);
   }
   res.sendStatus(200);
 });
+
+
 const connect = async () => {
   try {
     await SYNC();

@@ -51,7 +51,7 @@ const Register = ({setUser}: Props) => {
 
   const createNewUser = async () => {
     try {
-      const current_trail_start = formatDateTime(new Date());
+      const current_trail_start = new Date().toISOString();
       //!BCYPT PASSWORD BEFORE ADDING TO DB
       const newUser = await watermelonDatabase.write(async () => {
         const createdUser = await watermelonDatabase
@@ -67,8 +67,9 @@ const Register = ({setUser}: Props) => {
             user.trailId = '1';
             user.trailProgress = '0.0';
             user.trailStartedAt = current_trail_start;
-            // user.updated_at = new Date();
-            // user.created_at = new Date();
+            user.createdAt = current_trail_start;
+            user.updatedAt = current_trail_start;
+           
           });
         
         return createdUser;
@@ -190,3 +191,4 @@ const styles = StyleSheet.create({
     color: 'red',
   },
 });
+
