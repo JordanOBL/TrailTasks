@@ -37,6 +37,8 @@ const schema = appSchema({
         {name: 'trail_id', type: 'string'}, //reference
         {name: 'trail_progress', type: 'string'},
         {name: 'trail_started_at', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({

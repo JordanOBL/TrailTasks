@@ -6,11 +6,13 @@ import {
   TextInput,
 } from 'react-native';
 import * as React from 'react';
-import {Model, Q} from '@nozbe/watermelondb';
+import {Q} from '@nozbe/watermelondb';
 //import useWatermelonDb from '../watermelon/getWatermelonDb';
 import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {formatDateTime} from './DateTime';
-import {User} from '../watermelon/models';
+import {sync} from '../watermelon/sync';
+import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
+const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
 }
@@ -46,40 +48,40 @@ const Register = ({setUser}: Props) => {
       );
     }
   };
-  const createNewUser = async () => {
-    const current_trail_start = formatDateTime(new Date());
-    //!BCYPT PASSWORD BEFORE ADDING TO DB
-    const newUser = await watermelonDatabase.write(async () => {
-      const createdUser = await watermelonDatabase
-        .get('users')
-        .create((user: Model) => {
-          User.firstName = firstName;
-          User.lastName = lastName;
-          user.email = email;
-          user.password = password;
-          user.username = username;
-          user.pushNotificationsEnabled = true;
-          user.themePreference = 'light';
-          user.trailId = '1';
-          user.trailProgress = '0.0';
-          user.trailStartedAt = current_trail_start;
-        });
 
-      //const createdUser = user.createUser(user.user_id,
-      // username,
-      // firstName,
-      // lastName,
-      // email,
-      // password,
-      // current_trail_start)
-      console.log({createdUser});
-      return createdUser;
-    });
-    console.log({newUser});
-    if (newUser.id.length > 0) {
-      await watermelonDatabase.localStorage.set('user_id', newUser.id);
-      await watermelonDatabase.localStorage.set('username', newUser.username);
-      setUser({userId: newUser.id});
+  const createNewUser = async () => {
+    try {
+      const current_trail_start = formatDateTime(new Date());
+      //!BCYPT PASSWORD BEFORE ADDING TO DB
+      const newUser = await watermelonDatabase.write(async () => {
+        const createdUser = await watermelonDatabase
+          .get('users')
+          .create((user) => {
+            user.firstName = firstName;
+            user.lastName = lastName;
+            user.email = email;
+            user.password = password;
+            user.username = username;
+            user.pushNotificationsEnabled = true;
+            user.themePreference = 'light';
+            user.trailId = '1';
+            user.trailProgress = '0.0';
+            user.trailStartedAt = current_trail_start;
+            // user.updated_at = new Date();
+            // user.created_at = new Date();
+          });
+        
+        return createdUser;
+      });
+      // console.log({newUser});
+      if (newUser.id.length > 0) {
+        await watermelonDatabase.localStorage.set('user_id', newUser.id);
+        await watermelonDatabase.localStorage.set('username', newUser.username);
+        setUser({userId: newUser.id}); 
+        return newUser
+      }
+    } catch (err) {
+      console.error('error creating new registered user', err);
     }
   };
 
@@ -99,20 +101,16 @@ const Register = ({setUser}: Props) => {
         setError('Passwords do not match');
         return;
       }
-      // add your WatermelonDB logic here
       //check for exitsing user
       const ExistingUser = await checkExistingUser();
-      console.log({ExistingUser});
       //create new user
-      if (ExistingUser.length === 0) {
+      if (ExistingUser!.length === 0) {
         const createdUser = await createNewUser();
         if (createdUser!) {
-          console.log('user successfully registered');
           //? set user_id and name in watermelonDatabase.localStorage
           return;
         }
       } else if (ExistingUser && ExistingUser[0].email === email) {
-        console.log(ExistingUser[0].email);
         setError('User Already Exists With Provided Email, Please Login');
         return;
       } else if (ExistingUser && ExistingUser[0].username === username) {
@@ -167,7 +165,14 @@ const Register = ({setUser}: Props) => {
         onChangeText={(text) => setUsername(text)}
         placeholder="Username"
       />
-      <Pressable onPress={() => handleRegister()}>
+      <Pressable
+        onPress={() =>
+          handleRegister().then(() =>
+            sync()
+              .then((res) => console.log(res))
+              .catch((err) => console.error(err))
+          )
+        }>
         <Text>Create Account</Text>
       </Pressable>
       <Text style={styles.error}>{error || ''}</Text>

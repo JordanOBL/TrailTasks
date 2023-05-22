@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable quotes */
 import express from 'express';
 import cors from 'cors';
 import bodyparser from 'body-parser';
@@ -10,7 +12,7 @@ import {
   User,
   SYNC,
 } from '../backend/db/sequelizeModel.mjs';
-//import routes from "../routes/syncRoutes";
+import router from './routes/syncRoutes.mjs';
 // import pool from "./db/config.js";
 import {Sequelize} from 'sequelize';
 // import pkg from "pg";
@@ -23,7 +25,7 @@ const PGDBNAME = 'trailtasks';
 const PGPORT = 5433;
 const PGPASSWORD = '4046';
 
-const sequelize = new Sequelize(PGDBNAME, PGUSER, PGPASSWORD, {
+export const sequelize = new Sequelize(PGDBNAME, PGUSER, PGPASSWORD, {
   host: PGHOST,
   port: PGPORT,
   dialect: 'postgres',
@@ -35,7 +37,14 @@ app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended: true}));
 app.use(cors());
 
-//app.use("/api/sync", routes);
+//app.use("/api/sync", router);
+
+const getSafeLastPulledAt = (lastPulledAt) => {
+  if (lastPulledAt) {
+    return new Date(parseInt(lastPulledAt, 10));
+  }
+  return new Date();
+};
 
 app.get('/api/seed', async (req, res) => {
   console.log('seeding postgres table...');
@@ -729,6 +738,114 @@ app.get('/api/seed', async (req, res) => {
   res.status(200).json(trails);
 });
 
+//send updated and new changes to the user that were done after 'lastPulledAt
+//*currently successfully send new users to users watermelon database !
+app.get('/pull', async (req, res) => {
+  const lastPulledAt = getSafeLastPulledAt(req.query.lastPulledAt);
+  console.log('in pull on the server', lastPulledAt);
+  if (!lastPulledAt) {
+    const createdUsers = await User.findAll({});
+    const createdParks = await Park.findAll({});
+    const responseData = {
+      changes: {
+        parks: {
+          createdParks: createdParks,
+          updatedParks: [],
+          deleted: [],
+        },
+        users: {
+          createdUsers: createdUsers,
+          updatedUsers: [],
+          deleted: [],
+        },
+      },
+      timestamp: new Date(),
+    };
+
+    console.log('responseData', responseData.changes.users);
+    return res.json(responseData);
+  } else {
+    const createdParks = await Park.findAll({
+      where: {
+        createdAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
+    const createdUsers = await User.findAll({
+      where: {
+        createdAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
+    console.log({createdUsers});
+    const updatedParks = await Park.findAll({
+      where: {
+        updatedAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
+    const updatedUsers = await User.findAll({
+      where: {
+        updatedAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
+
+    const responseData = {
+      changes: {
+        parks: {
+          createdParks: createdParks,
+          updatedParks: updatedParks,
+          deleted: [],
+        },
+        users: {
+          createdUsers: createdUsers,
+          updatedUsers: updatedUsers,
+          deleted: [],
+        },
+      },
+      timestamp: new Date(),
+    };
+
+    console.log('responseData', responseData.changes.users);
+    return res.json(responseData);
+  }
+});
+
+//pull changes from users watermelon database
+app.post('/push', async (req, res) => {
+  const changes = await req.body.changes;
+  console.log('here on server in push');
+  console.log('sending changes to pg', {changes});
+  if (changes?.users?.created[0] !== undefined) {
+    console.log('new user in sync on back end');
+    const users = await User.bulkCreate(changes.users.created);
+    console.log('usersCreated in pg', users);
+  }
+  if (changes?.users?.updated[0] !== undefined) {
+    const updateQueries = changes.users.updated.map((remoteEntry) => {
+      console.log({remoteEntry});
+      return User.update(remoteEntry, {
+        where: {
+          id: remoteEntry.id,
+        },
+      });
+    });
+    await Promise.all(updateQueries);
+  }
+  if (changes?.users?.deleted[0]) {
+    await User.destroy({
+      where: {
+        id: changes.users.deleted,
+      },
+    });
+  }
+  res.sendStatus(200);
+});
 const connect = async () => {
   try {
     await SYNC();
