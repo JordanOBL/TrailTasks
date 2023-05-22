@@ -6,6 +6,8 @@ import {
   field,
   text,
   writer,
+  date,
+  readonly,
 } from '@nozbe/watermelondb/decorators';
 
 export class Park extends Model {
@@ -63,6 +65,8 @@ export class User extends Model {
   @field('trail_id') trailId;
   @field('trail_progress') trailProgress;
   @field('trail_started_at') trailStartedAt;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 
   @relation('trails', 'trail_id') trail;
 

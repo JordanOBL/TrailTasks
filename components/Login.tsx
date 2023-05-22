@@ -9,7 +9,10 @@ import * as React from 'react';
 import {Q} from '@nozbe/watermelondb';
 //import useWatermelonDb from '../watermelon/getWatermelonDb';
 import watermelonDatabase from '../watermelon/getWatermelonDb';
-const Login = () => {
+interface Props {
+  setUser: React.Dispatch<React.SetStateAction<any>>;
+}
+const Login = ({setUser}: Props) => {
   // const watermelonDatabase: Database = useWatermelonDb();
 
   // const [firstName, setFirstName] = React.useState<string>('');
@@ -32,11 +35,11 @@ const Login = () => {
       if (existingUser.length > 0) {
         await watermelonDatabase.localStorage.set(
           'user_id',
-          existingUser[0].id,
+          existingUser[0].id
         );
         await watermelonDatabase.localStorage.set(
           'username',
-          existingUser[0].username,
+          existingUser[0].username
         );
         return existingUser[0];
       }
@@ -61,8 +64,7 @@ const Login = () => {
         return;
       }
       console.log('successful Login', existingUser);
-      //! SET WATERMELON LOCAL STORAGE
-      //! NAVIGATE TO HOME SCREEN
+      setUser({userId: existingUser._raw.id});
     } catch (err) {
       console.error('Error in handling Login', err);
     }
@@ -73,7 +75,7 @@ const Login = () => {
       <TextInput
         ref={emailRef}
         value={email}
-        onChangeText={value => setEmail(value)}
+        onChangeText={(value) => setEmail(value)}
         placeholder="Email"
         keyboardType="email-address"
         textContentType="emailAddress"
@@ -81,7 +83,7 @@ const Login = () => {
       <TextInput
         ref={passwordRef}
         value={password}
-        onChangeText={value => setPassword(value)}
+        onChangeText={(value) => setPassword(value)}
         placeholder="Password"
         secureTextEntry={true}
         textContentType="password"

@@ -268,5 +268,3 @@ export const SYNC = async () => {
   await sequelize.sync();
   console.log('All models were synchronized successfully.');
 };
-
-

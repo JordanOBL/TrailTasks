@@ -1,6 +1,6 @@
-import React, {useEffect} from 'react';
+import React, {useEffect} from "react";
 //import type {PropsWithChildren} from 'react';
-import RNFS from 'react-native-fs';
+import RNFS from "react-native-fs";
 import {
   SafeAreaView,
   Pressable,
@@ -8,14 +8,18 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-} from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+} from "react-native";
+import {Colors} from "react-native/Libraries/NewAppScreen";
 //import {Platform} from 'react-native';
 //import useWatermelonDb from './watermelon/getWatermelonDb';
-import watermelonDatabase from './watermelon/getWatermelonDb';
-import LoginScreen from './Screens/LoginScreen';
-import RegisterScreen from './Screens/RegisterScreen';
-import SyncIndicator from './components/SyncIndicator';
+import watermelonDatabase from "./watermelon/getWatermelonDb";
+import LoginScreen from "./Screens/LoginScreen";
+import RegisterScreen from "./Screens/RegisterScreen";
+import SyncIndicator from "./components/SyncIndicator";
+import { sync } from './watermelon/sync';
+import User from './watermelon/models'
+import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
+
 
 // type SectionProps = PropsWithChildren<{
 //   title: string;
@@ -47,13 +51,11 @@ import SyncIndicator from './components/SyncIndicator';
 //   );
 // }
 
-
-
 function App(): JSX.Element {
   const [user, setUser] = React.useState<any>(null);
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
   //const watermelonDatabase = useWatermelonDb();
-  const isDarkMode = useColorScheme() === 'dark';
+  const isDarkMode = useColorScheme() === "dark";
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -61,16 +63,16 @@ function App(): JSX.Element {
 
   const checkForExistingUser = async () => {
     try {
-      const userId = await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
-      console.log('User info from local Storage', {userId});
+      const userId = await watermelonDatabase.localStorage.get("user_id"); // string or undefined if no value for this key
+      console.log("User info from local Storage", {userId});
 
       if (userId) {
-        console.log('FOUND USER!');
+        console.log("FOUND USER!");
         setUser({userId});
       }
       return;
     } catch (error) {
-      console.error('Error in checkForUser function, app.tsx', error);
+      console.error("Error in checkForUser function, app.tsx", error);
     }
   };
 
@@ -86,11 +88,11 @@ function App(): JSX.Element {
   // };
   const handleLogOut = async () => {
     try {
-      await watermelonDatabase.localStorage.remove('user_id');
-      await watermelonDatabase.localStorage.remove('username');
+      await watermelonDatabase.localStorage.remove("user_id");
+      await watermelonDatabase.localStorage.remove("username");
       setUser(null);
     } catch (error) {
-      console.error('Error in handleLogOut function, app.tsx', error);
+      console.error("Error in handleLogOut function, app.tsx", error);
     }
   };
   const seedPgTables = async () => {
@@ -106,22 +108,32 @@ function App(): JSX.Element {
       );
     }
   };
+async function checkUnsyncedChanges() {
+  const database = watermelonDatabase;
+  await hasUnsyncedChanges({database});
+}
 
-  useEffect(() => {
+  useEffect(() =>
+  {
+    
     // Do something with the Watermelon database instance
     const onLoad = async () => {
       try {
-        //await seedPgTables();
-        console.log('Watermelon database:', watermelonDatabase);
-        await checkForExistingUser();
-
+        const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
+        console.log(`The database file is located at: ${dbFilePath}`);
+         //await seedPgTables();
+        console.log("Watermelon database:", watermelonDatabase);
+        //console.log(watermelonDatabase.withChangesForTables(["parks"]));
+        //await checkForExistingUser();
+        await sync();
+        // await checkUnsyncedChanges()
         // await getUserFirstName();
         // Find the location of the database file
-        const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
+
         // Log the location of the database file to the console
-        console.log(`The database file is located at: ${dbFilePath}`);
-      } catch (err) {
-        console.log('Error in onload in APP useEffect', err);
+        
+      } catch (err: any) {
+        console.log("Error in onload in APP useEffect", err.message);
       }
     };
     if (!user && watermelonDatabase) {
@@ -143,7 +155,7 @@ function App(): JSX.Element {
       ) : isRegistering ? (
         <RegisterScreen setUser={setUser} />
       ) : (
-        <LoginScreen />
+        <LoginScreen setUser={setUser} />
       )}
       <Pressable onPress={() => setisRegistering((prev: boolean) => !prev)}>
         <Text>{isRegistering ? 'Login' : 'Create an Account'}</Text>
@@ -169,15 +181,15 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   sectionDescription: {
     marginTop: 8,
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: "400",
   },
   highlight: {
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });
 
