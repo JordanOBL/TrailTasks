@@ -743,7 +743,7 @@ app.get('/api/seed', async (req, res) => {
 app.get('/pull', async (req, res) => {
   const lastPulledAt = getSafeLastPulledAt(req.query.lastPulledAt);
   console.log('in pull on the server', lastPulledAt);
-  if (!lastPulledAt) {
+  if (!lastPulledAt || lastPulledAt === 0) {
     const createdUsers = await User.findAll({});
     const createdParks = await Park.findAll({});
     const responseData = {
@@ -821,16 +821,11 @@ app.post('/push', async (req, res) =>
 {
   try
   {
-    
-
     const changes = await req.body.changes;
-    console.log('here on server in push');
     console.log('sending changes to pg', { changes });
     if (changes?.users?.created[0] !== undefined)
     {
-      console.log('new user in sync on back end');
       const users = await User.bulkCreate(changes.users.created);
-      console.log('usersCreated in pg', users);
     }
     if (changes?.users?.updated[0] !== undefined)
     {

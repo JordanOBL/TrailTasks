@@ -125,7 +125,7 @@ async function checkUnsyncedChanges() {
         console.log("Watermelon database:", watermelonDatabase);
         //console.log(watermelonDatabase.withChangesForTables(["parks"]));
         //await checkForExistingUser();
-        await sync();
+        //await sync();
         // await checkUnsyncedChanges()
         // await getUserFirstName();
         // Find the location of the database file
@@ -139,8 +139,6 @@ async function checkUnsyncedChanges() {
     if (!user && watermelonDatabase) {
       onLoad();
     }
-
-    // console.log(watermelonDatabase.get('trails'));
   }, [user]);
 
   return (
@@ -149,7 +147,7 @@ async function checkUnsyncedChanges() {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      {/* <SyncIndicator /> */}
+      <SyncIndicator />
       {user && user.userId ? (
         <Text>LOGGED IN!</Text>
       ) : isRegistering ? (
