@@ -13,6 +13,7 @@ export async function sync() {
       //*successfully pulls new users from pg database!!!
       //get new changees in the database
       const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
+      console.log(lastPulledAt, schemaVersion)
       const response = await fetch(`http://localhost:5500/pull?${urlParams}`);
       if (!response.ok) {
         throw new Error(await response.text());
