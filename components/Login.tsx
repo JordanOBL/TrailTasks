@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import * as React from 'react';
 import {Q} from '@nozbe/watermelondb';
-//import useWatermelonDb from '../watermelon/getWatermelonDb';
+
 import watermelonDatabase from '../watermelon/getWatermelonDb';
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;

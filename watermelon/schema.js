@@ -96,6 +96,8 @@ const schema = appSchema({
       columns: [
         {name: 'user_id', type: 'string'}, //reference user,
         {name: 'total_miles', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
