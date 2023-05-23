@@ -1,20 +1,31 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
 import Login from '../components/Login';
 import React from 'react';
-interface Props {
+interface Props
+{
   setUser: React.Dispatch<React.SetStateAction<any>>;
+  setisRegistering: React.Dispatch<React.SetStateAction<any>>;
+  isRegistering: boolean;
 }
-const LoginScreen = ({setUser}: Props) => {
+
+const LoginScreen = ({setUser, setisRegistering, isRegistering}: Props) => {
   return (
-    <View style={styles.container}>
-      <Text>LoginScreen</Text>
-      <Login setUser={setUser} />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <Login
+        setUser={setUser}
+        setisRegistering={setisRegistering}
+        isRegistering={isRegistering}
+      />
+    </SafeAreaView>
   );
 };
 
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  container: {flex: 1},
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

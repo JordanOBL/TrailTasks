@@ -15,8 +15,10 @@ import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
+  setisRegistering: React.Dispatch<React.SetStateAction<any>>;
+  isRegistering: boolean;
 }
-const Register = ({setUser}: Props) => {
+const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   //const watermelonDatabase: Database = useWatermelonDb();
 
   const [firstName, setFirstName] = React.useState<string>('');
@@ -69,27 +71,25 @@ const Register = ({setUser}: Props) => {
             user.trailStartedAt = current_trail_start;
             user.createdAt = current_trail_start;
             user.updatedAt = current_trail_start;
-           
-          })
-        
-        if (createdUser)
-        {
-          const userMiles = await watermelonDatabase.get('users_miles').create((user_miles) =>
-          {
-            user_miles.userId = createdUser._raw.id;
-            user_miles.totalMiles = "0.00";
-          })
-          
+          });
+
+        if (createdUser) {
+          const userMiles = await watermelonDatabase
+            .get('users_miles')
+            .create((user_miles) => {
+              user_miles.userId = createdUser._raw.id;
+              user_miles.totalMiles = '0.00';
+            });
         }
-        
+
         return createdUser;
       });
-     
+
       if (newUser.id.length > 0) {
         await watermelonDatabase.localStorage.set('user_id', newUser.id);
         await watermelonDatabase.localStorage.set('username', newUser.username);
-        setUser({userId: newUser.id}); 
-        return newUser
+        setUser({userId: newUser.id});
+        return newUser;
       }
     } catch (err) {
       console.error('error creating new registered user', err);
@@ -117,9 +117,8 @@ const Register = ({setUser}: Props) => {
       //create new user
       if (ExistingUser!.length === 0) {
         const createdUser = await createNewUser();
-        
+
         if (createdUser!) {
-          
           return;
         }
       } else if (ExistingUser && ExistingUser[0].email === email) {
@@ -143,12 +142,14 @@ const Register = ({setUser}: Props) => {
         value={firstName}
         onChangeText={(text) => setFirstName(text)}
         placeholder="First Name"
+        style={styles.input}
       />
       <TextInput
         ref={lastNameRef}
         value={lastName}
         onChangeText={(text) => setLastName(text)}
         placeholder="Last Name"
+        style={styles.input}
       />
       <TextInput
         ref={emailRef}
@@ -156,6 +157,7 @@ const Register = ({setUser}: Props) => {
         onChangeText={(text) => setEmail(text)}
         placeholder="Email"
         keyboardType="email-address"
+        style={styles.input}
       />
       <TextInput
         ref={passwordRef}
@@ -163,6 +165,7 @@ const Register = ({setUser}: Props) => {
         onChangeText={(text) => setPassword(text)}
         placeholder="Password"
         secureTextEntry={true}
+        style={styles.input}
       />
       <TextInput
         ref={confirmPasswordRef}
@@ -170,12 +173,14 @@ const Register = ({setUser}: Props) => {
         onChangeText={(text) => setConfirmPassword(text)}
         placeholder="Confirm Password"
         secureTextEntry={true}
+        style={styles.input}
       />
       <TextInput
         ref={usernameRef}
         value={username}
         onChangeText={(text) => setUsername(text)}
         placeholder="Username"
+        style={styles.input}
       />
       <Pressable
         onPress={() =>
@@ -184,8 +189,16 @@ const Register = ({setUser}: Props) => {
               .then((res) => console.log(res))
               .catch((err) => console.error(err))
           )
-        }>
-        <Text>Create Account</Text>
+        }
+        style={styles.button}>
+        <Text style={{fontSize: 20, color: 'white'}}>Create Account</Text>
+      </Pressable>
+      <Pressable
+        onPress={() => setisRegistering((prev: boolean) => !prev)}
+        style={[styles.button, {backgroundColor: 'blue'}]}>
+        <Text style={{color: 'white'}}>
+          {isRegistering ? 'Login' : 'Create an Account'}
+        </Text>
       </Pressable>
       <Text style={styles.error}>{error || ''}</Text>
     </SafeAreaView>
@@ -197,9 +210,22 @@ export default Register;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  input: {
+    padding: 10,
+    fontSize: 30,
+  },
+  button: {
+    padding: 10,
+    marginTop: 20,
+    borderWidth: 2,
+    borderColor: 'green',
+    borderRadius: 10,
+    backgroundColor: 'green',
   },
   error: {
     color: 'red',
   },
 });
-

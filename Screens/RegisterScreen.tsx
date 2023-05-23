@@ -3,12 +3,17 @@ import Register from '../components/Register';
 import React from 'react';
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
+  setisRegistering: React.Dispatch<React.SetStateAction<any>>;
+  isRegistering: boolean;
 }
-const RegisterScreen = ({setUser}: Props) => {
+const RegisterScreen = ({setUser, setisRegistering, isRegistering}: Props) => {
   return (
     <View style={styles.container}>
-      <Text>RegisterScreen</Text>
-      <Register setUser={setUser} />
+      <Register
+        setUser={setUser}
+        setisRegistering={setisRegistering}
+        isRegistering={isRegistering}
+      />
     </View>
   );
 };

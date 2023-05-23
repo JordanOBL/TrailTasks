@@ -9,11 +9,14 @@ import * as React from 'react';
 import {Q} from '@nozbe/watermelondb';
 
 import watermelonDatabase from '../watermelon/getWatermelonDb';
-interface Props {
+interface Props
+{
   setUser: React.Dispatch<React.SetStateAction<any>>;
+  setisRegistering: React.Dispatch<React.SetStateAction<any>>;
+  isRegistering: boolean;
 }
-const Login = ({setUser}: Props) => {
 
+const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
   const [email, setEmail] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
   const [error, setError] = React.useState<any>(null);
@@ -71,6 +74,7 @@ const Login = ({setUser}: Props) => {
         placeholder="Email"
         keyboardType="email-address"
         textContentType="emailAddress"
+        style={styles.input}
       />
       <TextInput
         value={password}
@@ -78,10 +82,18 @@ const Login = ({setUser}: Props) => {
         placeholder="Password"
         secureTextEntry={true}
         textContentType="password"
+        style={styles.input}
       />
 
-      <Pressable onPress={() => handleLogin()}>
-        <Text>Login</Text>
+      <Pressable onPress={() => handleLogin()} style={styles.button}>
+        <Text style={{fontSize: 20, color: 'white'}}>Login</Text>
+      </Pressable>
+      <Pressable
+        onPress={() => setisRegistering((prev: boolean) => !prev)}
+        style={[styles.button, {backgroundColor: "blue"}]}>
+        <Text style={{color: 'white'}}>
+          {isRegistering ? 'Login' : 'Create an Account'}
+        </Text>
       </Pressable>
       <Text style={styles.error}>{error || ''}</Text>
     </SafeAreaView>
@@ -92,6 +104,22 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  input: {
+    padding: 10,
+    fontSize: 30,
+  
+  },
+  button: {
+    padding: 10,
+    marginTop: 20,
+    borderWidth: 2,
+    borderColor: 'green',
+    borderRadius: 10,
+    backgroundColor: 'green'
+
   },
   error: {
     color: 'red',
