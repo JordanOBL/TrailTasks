@@ -70,11 +70,21 @@ const Register = ({setUser}: Props) => {
             user.createdAt = current_trail_start;
             user.updatedAt = current_trail_start;
            
-          });
+          })
+        
+        if (createdUser)
+        {
+          const userMiles = await watermelonDatabase.get('users_miles').create((user_miles) =>
+          {
+            user_miles.userId = createdUser._raw.id;
+            user_miles.totalMiles = "0.00";
+          })
+          
+        }
         
         return createdUser;
       });
-      // console.log({newUser});
+     
       if (newUser.id.length > 0) {
         await watermelonDatabase.localStorage.set('user_id', newUser.id);
         await watermelonDatabase.localStorage.set('username', newUser.username);
@@ -107,8 +117,9 @@ const Register = ({setUser}: Props) => {
       //create new user
       if (ExistingUser!.length === 0) {
         const createdUser = await createNewUser();
+        
         if (createdUser!) {
-          //? set user_id and name in watermelonDatabase.localStorage
+          
           return;
         }
       } else if (ExistingUser && ExistingUser[0].email === email) {

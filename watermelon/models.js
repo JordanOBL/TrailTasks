@@ -204,6 +204,8 @@ export class User_Miles extends Model {
 
   @field('user_id') userId;
   @field('total_miles') totalMiles;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 
   @immutableRelation('users', 'user_id') user;
 

@@ -11,6 +11,7 @@ import {
   Trail,
   User,
   SYNC,
+  User_Miles,
 } from '../backend/db/sequelizeModel.mjs';
 import router from './routes/syncRoutes.mjs';
 // import pool from "./db/config.js";
@@ -749,13 +750,13 @@ app.get('/pull', async (req, res) => {
     const responseData = {
       changes: {
         parks: {
-          createdParks: createdParks,
-          updatedParks: [],
+          created: createdParks,
+          updated: [],
           deleted: [],
         },
         users: {
-          createdUsers: createdUsers,
-          updatedUsers: [],
+          created: createdUsers,
+          updated: [],
           deleted: [],
         },
       },
@@ -780,6 +781,14 @@ app.get('/pull', async (req, res) => {
       },
     });
     console.log({createdUsers});
+    const createdUserMiles = await User_Miles.findAll({
+      where: {
+        createdAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
+    console.log({createdUserMiles});
     const updatedParks = await Park.findAll({
       where: {
         updatedAt: {
@@ -794,17 +803,29 @@ app.get('/pull', async (req, res) => {
         },
       },
     });
+    const updatedUserMiles = await User_Miles.findAll({
+      where: {
+        updatedAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
 
     const responseData = {
       changes: {
         parks: {
-          createdParks: createdParks,
-          updatedParks: updatedParks,
+          created: createdParks,
+          updated: updatedParks,
           deleted: [],
         },
         users: {
-          createdUsers: createdUsers,
-          updatedUsers: updatedUsers,
+          created: createdUsers,
+          updated: updatedUsers,
+          deleted: [],
+        },
+        users_miles: {
+          created: createdUserMiles,
+          updated: updatedUserMiles,
           deleted: [],
         },
       },
@@ -827,12 +848,29 @@ app.post('/push', async (req, res) =>
     {
       const users = await User.bulkCreate(changes.users.created);
     }
+    if (changes?.users_miles?.created[0] !== undefined)
+    {
+      const users_miles = await User_Miles.bulkCreate(changes.users_miles.created);
+    }
     if (changes?.users?.updated[0] !== undefined)
     {
       const updateQueries = changes.users.updated.map((remoteEntry) =>
       {
         console.log({ remoteEntry });
         return User.update(remoteEntry, {
+          where: {
+            id: remoteEntry.id,
+          },
+        });
+      });
+      await Promise.all(updateQueries);
+    }
+    if (changes?.users_miles?.updated[0] !== undefined)
+    {
+      const updateQueries = changes.users_miles.updated.map((remoteEntry) =>
+      {
+        console.log({ remoteEntry });
+        return User_Miles.update({...remoteEntry}, {
           where: {
             id: remoteEntry.id,
           },
