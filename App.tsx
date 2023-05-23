@@ -18,7 +18,8 @@ import RegisterScreen from "./Screens/RegisterScreen";
 import SyncIndicator from "./components/SyncIndicator";
 import { sync } from './watermelon/sync';
 import User from './watermelon/models'
-import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
+import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
+import {NavigationContainer} from '@react-navigation/native';
 
 
 // type SectionProps = PropsWithChildren<{
@@ -108,10 +109,10 @@ function App(): JSX.Element {
       );
     }
   };
-async function checkUnsyncedChanges() {
-  const database = watermelonDatabase;
-  await hasUnsyncedChanges({database});
-}
+// async function checkUnsyncedChanges() {
+//   const database = watermelonDatabase;
+//   await hasUnsyncedChanges({database});
+// }
 
   useEffect(() =>
   {
@@ -142,35 +143,37 @@ async function checkUnsyncedChanges() {
   }, [user]);
 
   return (
-    <SafeAreaView style={[backgroundStyle, styles.container]}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      {/* <SyncIndicator /> */}
-      {user && user.userId ? (
-        <Text>LOGGED IN!</Text>
-      ) : isRegistering ? (
-        <RegisterScreen
-          setUser={setUser}
-          setisRegistering={setisRegistering}
-          isRegistering={isRegistering}
+    <NavigationContainer>
+      <SafeAreaView style={[backgroundStyle, styles.container]}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
         />
-      ) : (
-        <LoginScreen
-          setUser={setUser}
-          setisRegistering={setisRegistering}
-          isRegistering={isRegistering}
-        />
-      )}
-      {user ? (
-        <Pressable onPress={() => handleLogOut()} style={styles.button}>
-          <Text>Logout</Text>
-        </Pressable>
-      ) : (
-        <></>
-      )}
-    </SafeAreaView>
+        {/* <SyncIndicator /> */}
+        {user && user.userId ? (
+          <Text>LOGGED IN!</Text>
+        ) : isRegistering ? (
+          <RegisterScreen
+            setUser={setUser}
+            setisRegistering={setisRegistering}
+            isRegistering={isRegistering}
+          />
+        ) : (
+          <LoginScreen
+            setUser={setUser}
+            setisRegistering={setisRegistering}
+            isRegistering={isRegistering}
+          />
+        )}
+        {user ? (
+          <Pressable onPress={() => handleLogOut()} style={styles.button}>
+            <Text>Logout</Text>
+          </Pressable>
+        ) : (
+          <></>
+        )}
+      </SafeAreaView>
+    </NavigationContainer>
   );
 }
 
