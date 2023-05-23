@@ -151,15 +151,20 @@ async function checkUnsyncedChanges() {
       {user && user.userId ? (
         <Text>LOGGED IN!</Text>
       ) : isRegistering ? (
-        <RegisterScreen setUser={setUser} />
+        <RegisterScreen
+          setUser={setUser}
+          setisRegistering={setisRegistering}
+          isRegistering={isRegistering}
+        />
       ) : (
-        <LoginScreen setUser={setUser} />
+        <LoginScreen
+          setUser={setUser}
+          setisRegistering={setisRegistering}
+          isRegistering={isRegistering}
+        />
       )}
-      <Pressable onPress={() => setisRegistering((prev: boolean) => !prev)}>
-        <Text>{isRegistering ? 'Login' : 'Create an Account'}</Text>
-      </Pressable>
       {user ? (
-        <Pressable onPress={() => handleLogOut()}>
+        <Pressable onPress={() => handleLogOut()} style={styles.button}>
           <Text>Logout</Text>
         </Pressable>
       ) : (
@@ -179,15 +184,23 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   sectionDescription: {
     marginTop: 8,
     fontSize: 18,
-    fontWeight: "400",
+    fontWeight: '400',
   },
   highlight: {
-    fontWeight: "700",
+    fontWeight: '700',
+  },
+  button: {
+    padding: 10,
+    marginTop: 20,
+    borderWidth: 2,
+    borderColor: 'green',
+    borderRadius: 10,
+    backgroundColor: 'green',
   },
 });
 
