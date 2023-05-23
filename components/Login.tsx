@@ -39,7 +39,7 @@ const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
       />
 
       <Pressable
-        onPress={() => handleLogin(email, password, setUser, setError)}
+        onPress={() => handleLogin({email, password, setUser, setError})}
         style={styles.button}>
         <Text style={{fontSize: 20, color: 'white'}}>Login</Text>
       </Pressable>
