@@ -11,13 +11,9 @@ const LeaderboardsScreen = () => {
   const user = getUser();
   const leaderboard = useLeaderboard();
 
-  // React.useEffect(() => {
-  //   let intervalid = setInterval(() => sync(),5000)
-  //   return () => (clearInterval(intervalid))
-  // }, []);
   return (
-    <View>
-      {(user && leaderboard) && <SyncIndicator />}
+    <View style={styles.container}>
+      {(user && leaderboard) && <SyncIndicator delay={5000} />}
       <Leaderboard user={user} milesLeaderboard={leaderboard!} />
     </View>
   );
@@ -25,4 +21,8 @@ const LeaderboardsScreen = () => {
 
 export default LeaderboardsScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    padding: 20
+  }
+});

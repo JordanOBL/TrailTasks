@@ -106,7 +106,6 @@ function App(): JSX.Element {
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
         //await seedPgTables();
-        console.log('Watermelon database:', watermelonDatabase);
         await checkForLoggedInUser(setUser, watermelonDatabase);
         // await sync();
         // await checkUnsyncedChanges()
@@ -128,7 +127,8 @@ function App(): JSX.Element {
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
               backgroundColor={backgroundStyle.backgroundColor}
             />
-            {/* <SyncIndicator /> */}
+            {/* <SyncIndicator delay={0} />  */}
+            <Text style={styles.title}>Trail Tasks</Text>
             {user && user.userId ? (
               <TabNavigator setUser={setUser} />
             ) : isRegistering ? (
@@ -154,6 +154,16 @@ function App(): JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'rgb(31,33,35)',
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 40,
+    textAlign: 'center',
+    position: 'absolute',
+    top: 100,
+    left: 110,
+    color: 'rgb(7,254,213)',
   },
   sectionContainer: {
     marginTop: 32,
@@ -170,14 +180,6 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
-  },
-  button: {
-    padding: 10,
-    marginTop: 20,
-    borderWidth: 2,
-    borderColor: 'green',
-    borderRadius: 10,
-    backgroundColor: 'green',
   },
 });
 

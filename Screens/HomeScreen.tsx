@@ -21,7 +21,7 @@ const user = getUser();
     </View>
   ) : (
     <View style={styles.Container}>
-      <SyncIndicator />
+      <SyncIndicator delay={3000} />
       <Text style={styles.H1}>Hey, {user.username}</Text>
       <View style={styles.Container}>
         <View
