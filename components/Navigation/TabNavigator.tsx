@@ -6,7 +6,7 @@ import { HomeStack } from './NavigationStacks';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 const Tab = createBottomTabNavigator();
-const TabNavigator = () => {
+const TabNavigator = ({ setUser }: any) => {
   return (
 		<Tab.Navigator
 			screenOptions={({ route }) => ({
@@ -36,6 +36,7 @@ const TabNavigator = () => {
 			<Tab.Screen
 				name="Home"
 				component={HomeStack}
+				initialParams={{setUser}}
 			/>
 			<Tab.Screen
 				name="Explore"

@@ -1,7 +1,8 @@
-import watermelonDatabase from '../watermelon/getWatermelonDb';
-import {Q} from '@nozbe/watermelondb';
 
-export const checkExistingUser = async (email: string, password: string) => {
+import { Database, Q } from '@nozbe/watermelondb';
+
+//*this function checks for a user in the database matching users login input
+export const checkExistingUser = async (email: string, password: string, watermelonDatabase: Database) => {
   try {
     const existingUser = await watermelonDatabase
       .get('users')
@@ -21,8 +22,9 @@ export const checkExistingUser = async (email: string, password: string) => {
   }
 };
 
+//*This funtion persits logged in user from local storrage
 export const checkForLoggedInUser = async (
-  setUser: React.Dispatch<React.SetStateAction<any>>
+  setUser: React.Dispatch<React.SetStateAction<any>>, watermelonDatabase: Database
 ) => {
   try {
     const userId = await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
@@ -43,11 +45,13 @@ export const handleLogin = async ({
   password,
   setUser,
   setError,
+  watermelonDatabase
 }: {
   email: string;
   password: string;
   setUser: React.Dispatch<React.SetStateAction<any>>;
-  setError: React.Dispatch<React.SetStateAction<any>>;
+    setError: React.Dispatch<React.SetStateAction<any>>;
+  watermelonDatabase: Database
 }): Promise<void> => {
   try {
     if (email.trim() === '' || password.trim() === '') {
@@ -55,7 +59,7 @@ export const handleLogin = async ({
       return;
     }
     //check for exitsing user
-    const existingUser = await checkExistingUser(email, password);
+    const existingUser = await checkExistingUser(email, password, watermelonDatabase);
 
     if (!existingUser) {
       setError('Invalid Email or Password');

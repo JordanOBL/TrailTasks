@@ -1,5 +1,6 @@
 import {synchronize} from '@nozbe/watermelondb/sync';
-import {watermelonDatabase as database} from './getWatermelonDb';
+import { watermelonDatabase as database } from './getWatermelonDb';
+import { User } from './models';
 // your_local_machine_ip_address usually looks like 192.168.0.x
 // on *nix system, you would find it out by running the ifconfig command
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
@@ -23,35 +24,27 @@ export async function sync() {
       if (changes?.users?.createdUsers?.length > 0) {
         await Promise.all(
           changes.users.createdUsers.map(
-            async (createdUser: {
-              id: any;
-              username: any;
-              first_name: any;
-              last_name: any;
-              email: any;
-              password: any;
-              push_notifications_enabled: any;
-              theme_preference: any;
-              trail_id: any;
-              trail_progress: any;
-              trail_started_at: any;
-              createdAt: any;
-              updatedAt: any;
-            }) => {
+            async (createdUser: User) => {
               await database.write(async () => {
                 try {
-                  const newUser = await database.get('users').create((user) => {
+                  const newUser = await database.get('users').create((user: any) => {
                     user.id = createdUser.id;
                     user.username = createdUser.username;
+                    //@ts-expect-error
                     user.firstName = createdUser.first_name;
+                    //@ts-expect-error
                     user.lastName = createdUser.last_name;
                     user.email = createdUser.email;
                     user.password = createdUser.password;
-                    user.pushNotificationsEnabled =
+                    user.pushNotificationsEnabled = //@ts-expect-error
                       createdUser.push_notifications_enabled;
+                    //@ts-expect-error
                     user.themePreference = createdUser.theme_preference;
+                    //@ts-expect-error
                     user.trailId = createdUser.trail_id;
+                    //@ts-expect-error
                     user.trailProgress = createdUser.trail_progress;
+                    //@ts-expect-error
                     user.trailStartedAt = createdUser.trail_started_at;
                     user.createdAt = createdUser.createdAt;
                     user.updatedAt = createdUser.updatedAt;

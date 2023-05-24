@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import * as React from 'react';
 import {handleLogin} from '../helpers/loginHelpers';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
@@ -14,7 +15,10 @@ interface Props {
   isRegistering: boolean;
 }
 
-const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
+const Login = ({ setUser, setisRegistering, isRegistering }: Props) =>
+{
+  const watermelonDatabase = useDatabase();
+
   const [email, setEmail] = React.useState<string>('');
   const [password, setPassword] = React.useState<string>('');
   const [error, setError] = React.useState<any>(null);
@@ -39,7 +43,7 @@ const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
       />
 
       <Pressable
-        onPress={() => handleLogin({email, password, setUser, setError})}
+        onPress={() => handleLogin({email, password, setUser, setError, watermelonDatabase})}
         style={styles.button}>
         <Text style={{fontSize: 20, color: 'white'}}>Login</Text>
       </Pressable>

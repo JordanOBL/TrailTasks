@@ -1,12 +1,16 @@
-import watermelonDatabase from '../watermelon/getWatermelonDb';
-import {Q} from '@nozbe/watermelondb';
+//import watermelonDatabase from '../watermelon/getWatermelonDb';
+import { Q } from '@nozbe/watermelondb';
+import { formatDateTime } from '../components/formatDateTime';
+import { User, User_Miles } from '../watermelon/models';
 
 const checkExistingUser = async ({
   username,
   email,
+  watermelonDatabase
 }: {
   username: string;
   email: string;
+  watermelonDatabase: any;
 }) => {
   try {
     const ExistingUser = await watermelonDatabase
@@ -27,6 +31,7 @@ const createNewUser = async ({
   username,
   setUser,
   setError,
+  watermelonDatabase
 }: {
   firstName: string;
   lastName: string;
@@ -35,14 +40,15 @@ const createNewUser = async ({
   username: string;
   setUser: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
+  watermelonDatabase: any;
 }) => {
   try {
-    const current_trail_start = new Date().toUTCString();
+    const current_trail_start = formatDateTime(new Date());
     //!BCYPT PASSWORD BEFORE ADDING TO DB
     const newUser = await watermelonDatabase.write(async () => {
       const createdUser = await watermelonDatabase
         .get('users')
-        .create((user) => {
+        .create((user: User) => {
           //@ts-ignore
           user.firstName = firstName;
           //@ts-ignore
@@ -72,7 +78,7 @@ const createNewUser = async ({
       if (createdUser) {
         const userMiles = await watermelonDatabase
           .get('users_miles')
-          .create((user_miles) => {
+          .create((user_miles: User_Miles) => {
             //@ts-ignore
             user_miles.userId = createdUser._raw.id;
             //@ts-ignore
@@ -104,6 +110,7 @@ export const handleRegister = async ({
   username,
   setUser,
   setError,
+  watermelonDatabase,
 }: {
   firstName: string;
   lastName: string;
@@ -113,6 +120,7 @@ export const handleRegister = async ({
   username: string;
   setUser: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
+  watermelonDatabase: any;
 }): Promise<void> => {
   try {
     if (
@@ -130,7 +138,7 @@ export const handleRegister = async ({
       return;
     }
     //check for exitsing user
-    const ExistingUser = await checkExistingUser({username, email});
+    const ExistingUser = await checkExistingUser({username, email, watermelonDatabase});
     //create new user
     if (ExistingUser!.length === 0) {
       const createdUser = await createNewUser({
@@ -141,6 +149,7 @@ export const handleRegister = async ({
         username,
         setUser,
         setError,
+        watermelonDatabase
       });
 
       if (createdUser!) {

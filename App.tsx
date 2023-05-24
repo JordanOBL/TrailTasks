@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler';
+import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import React, {useEffect} from 'react';
 import {checkForLoggedInUser} from './helpers/loginHelpers';
 import RNFS from 'react-native-fs';
@@ -13,7 +14,7 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 //import {Platform} from 'react-native';
 
-import watermelonDatabase from './watermelon/getWatermelonDb';
+
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import SyncIndicator from './components/SyncIndicator';
@@ -23,8 +24,28 @@ import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
 import {NavigationContainer, DarkTheme} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import TabNavigator from './components/Navigation/TabNavigator';
-import {handleLogOut} from './helpers/logoutHelpers';
+
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {Database} from '@nozbe/watermelondb';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import schema from './watermelon/schema';
+// import your Models here
+import {
+  Park,
+  Trail,
+  User,
+  Park_State,
+  Badge,
+  Achievement,
+  User_Achievement,
+  Completed_Hike,
+  Hiking_Queue,
+  User_Miles,
+  User_Badge,
+  Session_Category,
+  User_Session,
+} from './watermelon/models';
+
 function App(): JSX.Element {
   const [user, setUser] = React.useState<any>(null);
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
@@ -35,6 +56,31 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const adapter = new SQLiteAdapter({
+    schema,
+    dbName: 'TrailTasks',
+  });
+
+  const watermelonDatabase = new Database({
+    adapter,
+    modelClasses: [
+      Park,
+      Trail,
+      User,
+      Park_State,
+      Badge,
+      Achievement,
+      User_Achievement,
+      Completed_Hike,
+      Hiking_Queue,
+      User_Miles,
+      User_Badge,
+      Session_Category,
+      User_Session,
+    ],
+  });
+
+  //insert postgres tables
   const seedPgTables = async () => {
     try {
       console.log('seedingPgTables');
@@ -61,7 +107,7 @@ function App(): JSX.Element {
         console.log(`The database file is located at: ${dbFilePath}`);
         //await seedPgTables();
         console.log('Watermelon database:', watermelonDatabase);
-        await checkForLoggedInUser(setUser);
+        await checkForLoggedInUser(setUser, watermelonDatabase);
         // await sync();
         // await checkUnsyncedChanges()
       } catch (err: any) {
@@ -75,39 +121,32 @@ function App(): JSX.Element {
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
-      <NavigationContainer theme={DarkTheme}>
-        <SafeAreaView style={[backgroundStyle, styles.container]}>
-          <StatusBar
-            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-            backgroundColor={backgroundStyle.backgroundColor}
-          />
-          {/* <SyncIndicator /> */}
-          {user && user.userId ? (
-            <TabNavigator />
-          ) : isRegistering ? (
-            <RegisterScreen
-              setUser={setUser}
-              setisRegistering={setisRegistering}
-              isRegistering={isRegistering}
+      <DatabaseProvider database={watermelonDatabase}>
+        <NavigationContainer theme={DarkTheme}>
+          <SafeAreaView style={[backgroundStyle, styles.container]}>
+            <StatusBar
+              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+              backgroundColor={backgroundStyle.backgroundColor}
             />
-          ) : (
-            <LoginScreen
-              setUser={setUser}
-              setisRegistering={setisRegistering}
-              isRegistering={isRegistering}
-            />
-          )}
-          {user ? (
-            <Pressable
-              onPress={() => handleLogOut(setUser)}
-              style={styles.button}>
-              <Text>Logout</Text>
-            </Pressable>
-          ) : (
-            <></>
-          )}
-        </SafeAreaView>
-      </NavigationContainer>
+            {/* <SyncIndicator /> */}
+            {user && user.userId ? (
+              <TabNavigator setUser={setUser} />
+            ) : isRegistering ? (
+              <RegisterScreen
+                setUser={setUser}
+                setisRegistering={setisRegistering}
+                isRegistering={isRegistering}
+              />
+            ) : (
+              <LoginScreen
+                setUser={setUser}
+                setisRegistering={setisRegistering}
+                isRegistering={isRegistering}
+              />
+            )}
+          </SafeAreaView>
+        </NavigationContainer>
+      </DatabaseProvider>
     </GestureHandlerRootView>
   );
 }

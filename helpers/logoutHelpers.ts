@@ -1,6 +1,7 @@
-import watermelonDatabase from "../watermelon/getWatermelonDb";
+import { Database } from "@nozbe/watermelondb";
+
 export const handleLogOut = async (
-  setUser: React.Dispatch<React.SetStateAction<any>>
+  setUser: React.Dispatch<React.SetStateAction<any>>, watermelonDatabase: Database
 ) => {
   try {
     await watermelonDatabase.localStorage.remove('user_id');

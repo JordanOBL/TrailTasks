@@ -5,14 +5,16 @@ import DistanceProgressBar from '../components/Timer/DistanceProgressBar';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
 import getUser from '../helpers/getUser';
+import { handleLogOut } from '../helpers/logoutHelpers';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 
 
-const HomeScreen = ({ navigation }: any) =>
+const HomeScreen = ({ navigation, route}: any) =>
 {
-	
+	const watermelonDatabase = useDatabase();
 const user = getUser();
-console.log(user)
+  const { setUser } = route.params
 	return !user ? (
     <View>
       <Text>Loading Your Data...</Text>
@@ -102,6 +104,13 @@ console.log(user)
             </Text>
             <Text style={{color: 'rgb(221,224,226)'}}>Your Rank: ?</Text>
           </Pressable>
+          
+            <Pressable
+              onPress={async () => handleLogOut(setUser, watermelonDatabase)}
+              style={styles.LinkContainer}>
+              <Text style={[styles.H2, { color: 'red' }]}>Logout</Text>
+            </Pressable>
+        
         </ScrollView>
       </View>
     </View>

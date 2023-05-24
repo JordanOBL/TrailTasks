@@ -1,21 +1,26 @@
 import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import watermelonDatabase from '../watermelon/getWatermelonDb';
-import { User } from '../watermelon/models';
-import { Q } from '@nozbe/watermelondb';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+
+import {User} from '../watermelon/models';
+import {Q} from '@nozbe/watermelondb';
 
 const getUser = () => {
   const [user, setUser] = React.useState<any>(null);
+  const watermelonDatabase = useDatabase();
+
   React.useEffect(() => {
     const userFromDB = async (): Promise<void> => {
-      try
-      {
-        const userId: string | void = await watermelonDatabase.localStorage.get('user_id');
-        if (userId)
-        {
-          const thisUser = await watermelonDatabase.get('users').query(Q.where("id", userId)).fetch();
-          if (thisUser[0] !== undefined)
-          {
+      try {
+        const userId: string | void = await watermelonDatabase.localStorage.get(
+          'user_id'
+        );
+        if (userId) {
+          const thisUser = await watermelonDatabase
+            .get('users')
+            .query(Q.where('id', userId))
+            .fetch();
+          if (thisUser[0] !== undefined) {
             setUser(thisUser[0]);
           }
         }
@@ -25,7 +30,7 @@ const getUser = () => {
     };
     userFromDB();
   }, []);
-  return user
+  return user;
 };
 
 export default getUser;
