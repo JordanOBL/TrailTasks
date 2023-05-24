@@ -2,7 +2,11 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {sync} from '../watermelon/sync';
 
-const SyncIndicator = () => {
+interface Props
+{
+  delay: number
+}
+const SyncIndicator = ({delay} : Props) => {
   const [syncState, setSyncState] = useState<string>('Syncing data...');
 
   useEffect(() => {
@@ -15,7 +19,7 @@ const SyncIndicator = () => {
         console.error(e);
         setSyncState('Sync failed!')
       });
-    }, 2000)
+    }, delay)
   });
 
   if (!syncState) {
@@ -33,7 +37,7 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 5,
     alignItems: 'center',
-    backgroundColor: 'orange',
+    backgroundColor: 'rgb(7,254,213)',
     color: 'white',
   },
 });

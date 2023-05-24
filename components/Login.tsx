@@ -43,15 +43,28 @@ const Login = ({ setUser, setisRegistering, isRegistering }: Props) =>
       />
 
       <Pressable
-        onPress={() => handleLogin({email, password, setUser, setError, watermelonDatabase})}
-        style={styles.button}>
-        <Text style={{fontSize: 20, color: 'white'}}>Login</Text>
+        onPress={() =>
+          handleLogin({email, password, setUser, setError, watermelonDatabase})
+        }
+        disabled={!email || !password}
+        style={[
+          styles.button,
+          {
+            backgroundColor: !email || !password ? 'grey' : 'rgb(7,254,213)',
+          },
+        ]}>
+        <Text style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
+          Login
+        </Text>
       </Pressable>
       <Pressable
         onPress={() => setisRegistering((prev: boolean) => !prev)}
-        style={[styles.button, {backgroundColor: 'blue'}]}>
-        <Text style={{color: 'white'}}>
-          {isRegistering ? 'Login' : 'Create an Account'}
+        style={[
+          styles.button,
+          {backgroundColor: 'rgb(61,63,65)', borderWidth: 0},
+        ]}>
+        <Text style={{color: 'black', fontWeight: 'bold'}}>
+          {isRegistering ? 'Login' : 'Create Account'}
         </Text>
       </Pressable>
       <Text style={styles.error}>{error || ''}</Text>
@@ -69,14 +82,18 @@ const styles = StyleSheet.create({
   input: {
     padding: 10,
     fontSize: 30,
+    color: 'rgb(7,254,213)'
   },
   button: {
     padding: 10,
     marginTop: 20,
-    borderWidth: 2,
-    borderColor: 'green',
+    fontWeight: 'bold',
     borderRadius: 10,
-    backgroundColor: 'green',
+    borderWidth: 1,
+    borderColor: 'rgb(7,254,213)',
+    backgroundColor: 'rgb(7,254,213)',
+    width: 200,
+    alignItems: 'center',
   },
   error: {
     color: 'red',
