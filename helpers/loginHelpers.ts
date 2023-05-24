@@ -17,7 +17,24 @@ export const checkExistingUser = async (email: string, password: string) => {
       return existingUser[0];
     }
   } catch (err) {
-    console.log(err);
+    console.log('error in checkexisting user function', err);
+  }
+};
+
+export const checkForLoggedInUser = async (
+  setUser: React.Dispatch<React.SetStateAction<any>>
+) => {
+  try {
+    const userId = await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
+    console.log('User info from local Storage', {userId});
+
+    if (userId) {
+      console.log('FOUND USER!');
+      setUser({userId});
+    }
+    return;
+  } catch (error) {
+    console.error('Error in checkForUser function, app.tsx', error);
   }
 };
 

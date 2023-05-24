@@ -1,6 +1,7 @@
-import React, {useEffect} from "react";
-//import type {PropsWithChildren} from 'react';
-import RNFS from "react-native-fs";
+import 'react-native-gesture-handler';
+import React, {useEffect} from 'react';
+import {checkForLoggedInUser} from './helpers/loginHelpers';
+import RNFS from 'react-native-fs';
 import {
   SafeAreaView,
   Pressable,
@@ -8,94 +9,32 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-} from "react-native";
-import {Colors} from "react-native/Libraries/NewAppScreen";
+} from 'react-native';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 //import {Platform} from 'react-native';
-//import useWatermelonDb from './watermelon/getWatermelonDb';
-import watermelonDatabase from "./watermelon/getWatermelonDb";
-import LoginScreen from "./Screens/LoginScreen";
-import RegisterScreen from "./Screens/RegisterScreen";
-import SyncIndicator from "./components/SyncIndicator";
-import { sync } from './watermelon/sync';
-import User from './watermelon/models'
-import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
-import {NavigationContainer} from '@react-navigation/native';
 
-
-// type SectionProps = PropsWithChildren<{
-//   title: string;
-// }>;
-
-// function Section({children, title}: SectionProps): JSX.Element {
-//   const isDarkMode = useColorScheme() === 'dark';
-//   return (
-//     <View style={styles.sectionContainer}>
-//       <Text
-//         style={[
-//           styles.sectionTitle,
-//           {
-//             color: isDarkMode ? Colors.white : Colors.black,
-//           },
-//         ]}>
-//         {title}
-//       </Text>
-//       <Text
-//         style={[
-//           styles.sectionDescription,
-//           {
-//             color: isDarkMode ? Colors.light : Colors.dark,
-//           },
-//         ]}>
-//         {children}
-//       </Text>
-//     </View>
-//   );
-// }
-
+import watermelonDatabase from './watermelon/getWatermelonDb';
+import LoginScreen from './Screens/LoginScreen';
+import RegisterScreen from './Screens/RegisterScreen';
+import SyncIndicator from './components/SyncIndicator';
+import {sync} from './watermelon/sync';
+// import User from './watermelon/models'
+import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
+import {NavigationContainer, DarkTheme} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import TabNavigator from './components/Navigation/TabNavigator';
+import {handleLogOut} from './helpers/logoutHelpers';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 function App(): JSX.Element {
   const [user, setUser] = React.useState<any>(null);
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-  //const watermelonDatabase = useWatermelonDb();
-  const isDarkMode = useColorScheme() === "dark";
+
+  const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  const checkForExistingUser = async () => {
-    try {
-      const userId = await watermelonDatabase.localStorage.get("user_id"); // string or undefined if no value for this key
-      console.log("User info from local Storage", {userId});
-
-      if (userId) {
-        console.log("FOUND USER!");
-        setUser({userId});
-      }
-      return;
-    } catch (error) {
-      console.error("Error in checkForUser function, app.tsx", error);
-    }
-  };
-
-  // const getUserFirstName = async () => {
-  //   const firstName = await watermelonDatabase
-  //     .get('users')
-  //     .query(Q.where('first_name', 'C'))
-  //     .fetch();
-
-  //   if (firstName.length > 0) {
-  //     console.log(firstName);
-  //   }
-  // };
-  const handleLogOut = async () => {
-    try {
-      await watermelonDatabase.localStorage.remove("user_id");
-      await watermelonDatabase.localStorage.remove("username");
-      setUser(null);
-    } catch (error) {
-      console.error("Error in handleLogOut function, app.tsx", error);
-    }
-  };
   const seedPgTables = async () => {
     try {
       console.log('seedingPgTables');
@@ -109,32 +48,24 @@ function App(): JSX.Element {
       );
     }
   };
-// async function checkUnsyncedChanges() {
-//   const database = watermelonDatabase;
-//   await hasUnsyncedChanges({database});
-// }
+  // async function checkUnsyncedChanges() {
+  //   const database = watermelonDatabase;
+  //   await hasUnsyncedChanges({database});
+  // }
 
-  useEffect(() =>
-  {
-    
+  useEffect(() => {
     // Do something with the Watermelon database instance
     const onLoad = async () => {
       try {
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
-         //await seedPgTables();
-        console.log("Watermelon database:", watermelonDatabase);
-        //console.log(watermelonDatabase.withChangesForTables(["parks"]));
-        //await checkForExistingUser();
-        await sync();
+        //await seedPgTables();
+        console.log('Watermelon database:', watermelonDatabase);
+        await checkForLoggedInUser(setUser);
+        // await sync();
         // await checkUnsyncedChanges()
-        // await getUserFirstName();
-        // Find the location of the database file
-
-        // Log the location of the database file to the console
-        
       } catch (err: any) {
-        console.log("Error in onload in APP useEffect", err.message);
+        console.log('Error in onload in APP useEffect', err.message);
       }
     };
     if (!user && watermelonDatabase) {
@@ -143,37 +74,41 @@ function App(): JSX.Element {
   }, [user]);
 
   return (
-    <NavigationContainer>
-      <SafeAreaView style={[backgroundStyle, styles.container]}>
-        <StatusBar
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={backgroundStyle.backgroundColor}
-        />
-        {/* <SyncIndicator /> */}
-        {user && user.userId ? (
-          <Text>LOGGED IN!</Text>
-        ) : isRegistering ? (
-          <RegisterScreen
-            setUser={setUser}
-            setisRegistering={setisRegistering}
-            isRegistering={isRegistering}
+    <GestureHandlerRootView style={{flex: 1}}>
+      <NavigationContainer theme={DarkTheme}>
+        <SafeAreaView style={[backgroundStyle, styles.container]}>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor={backgroundStyle.backgroundColor}
           />
-        ) : (
-          <LoginScreen
-            setUser={setUser}
-            setisRegistering={setisRegistering}
-            isRegistering={isRegistering}
-          />
-        )}
-        {user ? (
-          <Pressable onPress={() => handleLogOut()} style={styles.button}>
-            <Text>Logout</Text>
-          </Pressable>
-        ) : (
-          <></>
-        )}
-      </SafeAreaView>
-    </NavigationContainer>
+          {/* <SyncIndicator /> */}
+          {user && user.userId ? (
+            <TabNavigator />
+          ) : isRegistering ? (
+            <RegisterScreen
+              setUser={setUser}
+              setisRegistering={setisRegistering}
+              isRegistering={isRegistering}
+            />
+          ) : (
+            <LoginScreen
+              setUser={setUser}
+              setisRegistering={setisRegistering}
+              isRegistering={isRegistering}
+            />
+          )}
+          {user ? (
+            <Pressable
+              onPress={() => handleLogOut(setUser)}
+              style={styles.button}>
+              <Text>Logout</Text>
+            </Pressable>
+          ) : (
+            <></>
+          )}
+        </SafeAreaView>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
