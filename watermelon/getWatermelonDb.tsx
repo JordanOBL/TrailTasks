@@ -20,11 +20,7 @@ import {
   User_Session,
 } from './models';
 
-// const useWatermelonDb = (): Database => {
-// const [watermelonDatabase, setWatermelonDatabase] =
-//   React.useState<Database>();
 
-// React.useEffect(() => {
 const adapter = new SQLiteAdapter({
   schema,
   dbName: 'TrailTasks',
@@ -49,12 +45,6 @@ export const watermelonDatabase = new Database({
   ],
 });
 
-//   setWatermelonDatabase(database);
-// }, []);
 
-// return watermelonDatabase!;
-//};
-
-// export default useWatermelonDb;
 
 export default watermelonDatabase;
