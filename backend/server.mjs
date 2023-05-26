@@ -823,6 +823,13 @@ app.get('/pull', async (req, res) => {
         },
       },
     });
+    const createdSessionCategories = await Session_Category.findAll({
+      where: {
+        createdAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
     // console.log({createdUserMiles});
     // const updatedParks = await Park.findAll({
     //   where: {
@@ -875,6 +882,11 @@ app.get('/pull', async (req, res) => {
         },
         achievements: {
           created: createdAchievements,
+          updated: [],
+          deleted: [],
+        },
+        session_categories: {
+          created: createdSessionCategories,
           updated: [],
           deleted: [],
         },
