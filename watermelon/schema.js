@@ -15,9 +15,9 @@ const schema = appSchema({
       name: 'trails',
       columns: [
         {name: 'trail_name', type: 'string', isIndexed: true},
-        {name: 'trail_distance', type: 'number'},
-        {name: 'trail_lat', type: 'number'},
-        {name: 'trail_long', type: 'number'},
+        {name: 'trail_distance', type: 'string'},
+        {name: 'trail_lat', type: 'string'},
+        {name: 'trail_long', type: 'string'},
         {name: 'trail_difficulty', type: 'string', isIndexed: true},
         {name: 'park_id', type: 'string'}, //ref
         {name: 'trail_image_url', type: 'string', isOptional: true},
@@ -124,7 +124,7 @@ const schema = appSchema({
         {name: 'session_category_id', type: 'string'}, //ref
         {name: 'date_added', type: 'string', isIndexed: true},
         {name: 'total_session_time', type: 'number'},
-        {name: 'total_distance_hiked', type: 'number'},
+        {name: 'total_distance_hiked', type: 'string'},
       ],
     }),
   ],

@@ -1,5 +1,6 @@
 import {Database} from '@nozbe/watermelondb';
 import {formatDateTime} from '../formatDateTime';
+import { sync } from '../../watermelon/sync';
 
 export const onAddToQueueClick = async ({
   user_id,
@@ -52,9 +53,9 @@ export const replaceCurrentTrail = async ({
 }: {
   watermelonDatabase: Database;
   user: any;
-  replacementCurrentTrailId: number | null;
+  replacementCurrentTrailId: number | string | null;
   setReplacementCurrentTrailId: React.Dispatch<
-    React.SetStateAction<number | null>
+    React.SetStateAction<number | null | string>
   >;
   setShowReplaceCurrentTrailModal: React.Dispatch<
     React.SetStateAction<boolean>
@@ -65,18 +66,27 @@ export const replaceCurrentTrail = async ({
   //else
   //setReplacementTrailId(null)
   //setReplaceCurrentTrailModal(false)
-  const now: Date = new Date();
-  const formattedDateTime: string = formatDateTime(now);
+  try
+  {
+    const now = new Date();
+    const formattedDateTime: string = formatDateTime(now);
+    console.log({replacementCurrentTrailId})
   await watermelonDatabase.write(async () => {
     const userToUpdate = await watermelonDatabase.get('users').find(user.id);
     await userToUpdate.update(() => {
-      user.trail_id = replacementCurrentTrailId;
-      user.trail_progress = 0.0;
-      user.trail_start_date = formattedDateTime;
+      user.trailId = replacementCurrentTrailId;
+      user.trailProgress = "0.0";
+      user.trailStartDate = formattedDateTime;
     });
   });
   setReplacementCurrentTrailId(null);
-  setShowReplaceCurrentTrailModal(false);
+    setShowReplaceCurrentTrailModal(false);
+    await sync(watermelonDatabase)
+  } catch (err)
+  {
+    console.log('Error in "replaceCurrentTrail" helper function', err)
+  }
+  
 };
 
 //onPress "start Now" (number)
@@ -108,7 +118,7 @@ export const startNowClick = async ({
       const userToUpdate = await watermelonDatabase.get('users').find(user.id);
       await userToUpdate.update(() => {
         user.trail_id = selected_trail_id;
-        user.trail_progress = 0.0;
+        user.trail_progress = "0.0";
         user.trail_start_date = formattedDateTime;
       });
     });
