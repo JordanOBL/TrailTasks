@@ -1,12 +1,12 @@
 //import watermelonDatabase from '../watermelon/getWatermelonDb';
-import { Q } from '@nozbe/watermelondb';
-import { formatDateTime } from '../components/formatDateTime';
-import { User, User_Miles } from '../watermelon/models';
+import {Q} from '@nozbe/watermelondb';
+import {formatDateTime} from './formatDateTime';
+import {User, User_Miles} from '../watermelon/models';
 
 const checkExistingUser = async ({
   username,
   email,
-  watermelonDatabase
+  watermelonDatabase,
 }: {
   username: string;
   email: string;
@@ -31,7 +31,7 @@ const createNewUser = async ({
   username,
   setUser,
   setError,
-  watermelonDatabase
+  watermelonDatabase,
 }: {
   firstName: string;
   lastName: string;
@@ -138,7 +138,11 @@ export const handleRegister = async ({
       return;
     }
     //check for exitsing user
-    const ExistingUser = await checkExistingUser({username, email, watermelonDatabase});
+    const ExistingUser = await checkExistingUser({
+      username,
+      email,
+      watermelonDatabase,
+    });
     //create new user
     if (ExistingUser!.length === 0) {
       const createdUser = await createNewUser({
@@ -149,7 +153,7 @@ export const handleRegister = async ({
         username,
         setUser,
         setError,
-        watermelonDatabase
+        watermelonDatabase,
       });
 
       if (createdUser!) {

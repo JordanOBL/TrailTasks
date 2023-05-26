@@ -12,8 +12,9 @@ import {
   User,
   SYNC,
   User_Miles,
+  User_Session,
 } from '../backend/db/sequelizeModel.mjs';
-import router from './routes/syncRoutes.mjs';
+
 // import pool from "./db/config.js";
 import {Sequelize} from 'sequelize';
 // import pkg from "pg";
@@ -41,10 +42,12 @@ app.use(cors());
 //app.use("/api/sync", router);
 
 const getSafeLastPulledAt = (lastPulledAt) => {
-  if (lastPulledAt) {
-    return new Date(parseInt(lastPulledAt, 10));
+  console.log('last pulled at exists and it is', lastPulledAt);
+  if (lastPulledAt !== 'null') {
+    return new Date(parseInt(lastPulledAt, 10)).toISOString();
   }
-  return new Date();
+
+  return new Date(0).toISOString();
 };
 
 app.get('/api/seed', async (req, res) => {
@@ -742,30 +745,41 @@ app.get('/api/seed', async (req, res) => {
 //send updated and new changes to the user that were done after 'lastPulledAt
 //*currently successfully send new users to users watermelon database !
 app.get('/pull', async (req, res) => {
-  const lastPulledAt = getSafeLastPulledAt(req.query.lastPulledAt);
-  console.log('in pull on the server', lastPulledAt);
-  if (!lastPulledAt || lastPulledAt === 0) {
-    const createdUsers = await User.findAll({});
-    const createdParks = await Park.findAll({});
-    const responseData = {
-      changes: {
-        parks: {
-          created: createdParks,
-          updated: [],
-          deleted: [],
-        },
-        users: {
-          created: createdUsers,
-          updated: [],
-          deleted: [],
-        },
-      },
-      timestamp: new Date(),
-    };
+  try {
+    console.log(req.query);
+    let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
+    console.log({lastPulledAt});
+    // if (!lastPulledAt || lastPulledAt == null)
+    //   const createdUsers = await User.findAll({});
+    //   console.log('first Users Pull', createdUsers);
+    //   const createdParks = await Park.findAll({});
+    //   console.log('first Parks Pull', createdParks);
+    //   const createdTrails = await Trail.findAll({});
+    //   console.log('first Trails Pull', createdTrails);
+    //   const responseData = {
+    //     changes: {
+    //       parks: {
+    //         created: createdParks,
+    //         updated: [],
+    //         deleted: [],
+    //       },
+    //       users: {
+    //         created: createdUsers,
+    //         updated: [],
+    //         deleted: [],
+    //       },
+    //       trails: {
+    //         created: createdTrails,
+    //         updated: [],
+    //         deleted: [],
+    //       },
+    //     },
+    //     timestamp: new Date(),
+    //   };
 
-    console.log('responseData', responseData);
-    return res.json(responseData);
-  } else {
+    //   console.log('responseData', responseData);
+    //   return res.json(responseData);
+    // } else {
     const createdParks = await Park.findAll({
       where: {
         createdAt: {
@@ -788,111 +802,146 @@ app.get('/pull', async (req, res) => {
         },
       },
     });
-    console.log({createdUserMiles});
-    const updatedParks = await Park.findAll({
+    const createdTrails = await Trail.findAll({
       where: {
-        updatedAt: {
+        createdAt: {
           [Sequelize.Op.gt]: lastPulledAt,
         },
       },
     });
-    const updatedUsers = await User.findAll({
+    const createdAchievements = await Achievement.findAll({
       where: {
-        updatedAt: {
+        createdAt: {
           [Sequelize.Op.gt]: lastPulledAt,
         },
       },
     });
-    const updatedUserMiles = await User_Miles.findAll({
+    const createdParkStates = await Park_State.findAll({
       where: {
-        updatedAt: {
+        createdAt: {
           [Sequelize.Op.gt]: lastPulledAt,
         },
       },
     });
+    // console.log({createdUserMiles});
+    // const updatedParks = await Park.findAll({
+    //   where: {
+    //     updatedAt: {
+    //       [Sequelize.Op.gt]: lastPulledAt,
+    //     },
+    //   },
+    // });
+    // const updatedUsers = await User.findAll({
+    //   where: {
+    //     updatedAt: {
+    //       [Sequelize.Op.gt]: lastPulledAt,
+    //     },
+    //   },
+    // });
+    // const updatedUserMiles = await User_Miles.findAll({
+    //   where: {
+    //     updatedAt: {
+    //       [Sequelize.Op.gt]: lastPulledAt,
+    //     },
+    //   },
+    // });
 
     const responseData = {
       changes: {
         parks: {
           created: createdParks,
-          updated: updatedParks,
+          updated: [],
           deleted: [],
         },
         users: {
           created: createdUsers,
-          updated: updatedUsers,
+          updated: [],
           deleted: [],
         },
         users_miles: {
           created: createdUserMiles,
-          updated: updatedUserMiles,
+          updated: [],
+          deleted: [],
+        },
+        trails: {
+          created: createdTrails,
+          updated: [],
+          deleted: [],
+        },
+        park_states: {
+          created: createdParkStates,
+          updated: [],
+          deleted: [],
+        },
+        achievements: {
+          created: createdAchievements,
+          updated: [],
           deleted: [],
         },
       },
-      timestamp: new Date(),
+      timestamp: Date.now(),
     };
 
     console.log('responseData', responseData);
     return res.json(responseData);
+  } catch (err) {
+    console.log('Error in server /pull', err);
   }
 });
 
 //pull changes from users watermelon database
-app.post('/push', async (req, res) =>
-{
-  try
-  {
+app.post('/push', async (req, res) => {
+  try {
     const changes = await req.body.changes;
-    console.log('sending changes to pg', { changes });
-    if (changes?.users?.created[0] !== undefined)
-    {
-      const users = await User.bulkCreate(changes.users.created);
-    }
-    if (changes?.users_miles?.created[0] !== undefined)
-    {
-      const users_miles = await User_Miles.bulkCreate(changes.users_miles.created);
-    }
-    if (changes?.users?.updated[0] !== undefined)
-    {
-      const updateQueries = changes.users.updated.map((remoteEntry) =>
-      {
-        console.log({ remoteEntry });
-        return User.update(remoteEntry, {
+    const lastPulledAt = req.query.last_pulled_at;
+    console.log('sending changes to pg', {changes, lastPulledAt});
+    if (lastPulledAt !== 'null') {
+      if (changes?.users?.created[0] !== undefined) {
+        const users = await User.bulkCreate(changes.users.created);
+      }
+      if (changes?.users_miles?.created[0] !== undefined) {
+        const users_miles = await User_Miles.bulkCreate(
+          changes.users_miles.created
+        );
+      }
+      if (changes?.users?.updated[0] !== undefined) {
+        const updateQueries = changes.users.updated.map((remoteEntry) => {
+          console.log({remoteEntry});
+          return User.update(remoteEntry, {
+            where: {
+              id: remoteEntry.id,
+            },
+          });
+        });
+        await Promise.all(updateQueries);
+      }
+      if (changes?.users_miles?.updated[0] !== undefined) {
+        const updateQueries = changes.users_miles.updated.map((remoteEntry) => {
+          console.log({remoteEntry});
+          return User_Miles.update(
+            {...remoteEntry},
+            {
+              where: {
+                id: remoteEntry.id,
+              },
+            }
+          );
+        });
+        await Promise.all(updateQueries);
+      }
+      if (changes?.users?.deleted[0]) {
+        await User.destroy({
           where: {
-            id: remoteEntry.id,
+            id: changes.users.deleted,
           },
         });
-      });
-      await Promise.all(updateQueries);
+      }
     }
-    if (changes?.users_miles?.updated[0] !== undefined)
-    {
-      const updateQueries = changes.users_miles.updated.map((remoteEntry) =>
-      {
-        console.log({ remoteEntry });
-        return User_Miles.update({...remoteEntry}, {
-          where: {
-            id: remoteEntry.id,
-          },
-        });
-      });
-      await Promise.all(updateQueries);
-    }
-    if (changes?.users?.deleted[0])
-    {
-      await User.destroy({
-        where: {
-          id: changes.users.deleted,
-        },
-      });
-    }
-  } catch (err)
-  {
+  } catch (err) {
     console.error('Error in server /push', err);
   }
   res.sendStatus(200);
 });
-
 
 const connect = async () => {
   try {
