@@ -22,16 +22,33 @@ import getTrails from '../helpers/Trails/getTrails';
 import { UserContext } from '../App';
 import TrailCard from './Trails/TrailCard';
 interface Props {
-  sectionTitle: string;
   trails: any
+  user: any
 }
-const NearbyTrails = ({sectionTitle, trails}: Props) => {
+const NearbyTrails = ({trails, user}: Props) => {
   const watermelonDatabase = useDatabase();
-  const {user, setUser} = React.useContext(UserContext);
+  const {userId, setUserId} = React.useContext(UserContext);
   const [showReplaceCurrentTrailModal, setShowReplaceCurrentTrailModal] =
     React.useState<boolean>(false);
   const [replacementCurrentTrailId, setReplacementCurrentTrailId] =
-    React.useState<number | null>(null);
+    React.useState<number | string | null>(null);
+  
+  const filterTrails = (title: string, trailsArr: any): any => {
+    if (title === 'Short Trails') {
+      return trailsArr.filter(
+        (trail: any) => trail.trail_difficulty === 'short'
+      );
+    } else if (title === 'Moderate Trails') {
+      return trailsArr.filter(
+        (trail: any) => trail.trail_difficulty === 'moderate'
+      );
+    } else if (title === 'Long Trails') {
+      return trailsArr.filter(
+        (trail: any) => trail.trail_difficulty === 'long'
+      );
+    } else return trails;
+  };
+  
   
   return showReplaceCurrentTrailModal ? (
     <Modal
@@ -80,12 +97,73 @@ const NearbyTrails = ({sectionTitle, trails}: Props) => {
           borderColor: 'rgb(31,33,35)',
           padding: 10,
         }}>
-        <Text style={styles.H2}>{sectionTitle}</Text>
+        <Text style={styles.H2}>All Trails</Text>
         <ScrollView horizontal>
-          {trails ? (
+          {trails && user ? (
             trails.map((trail: any) => (
-             <TrailCard key={trail.id} setReplacementCurrentTrailId={setReplacementCurrentTrailId}
-                setShowReplaceCurrentTrailModal={setShowReplaceCurrentTrailModal} trail={trail} />
+              <TrailCard
+                user={user}
+                key={trail.id}
+                setReplacementCurrentTrailId={setReplacementCurrentTrailId}
+                setShowReplaceCurrentTrailModal={
+                  setShowReplaceCurrentTrailModal
+                }
+                trail={trail}
+              />
+            ))
+          ) : (
+            <Text>Loading...</Text>
+          )}
+        </ScrollView>
+        <Text style={styles.H2}>Short Trails</Text>
+        <ScrollView horizontal>
+          {trails && user ? (
+            filterTrails('Short Trails', trails).map((trail: any) => (
+              <TrailCard
+                user={user}
+                key={trail.id}
+                setReplacementCurrentTrailId={setReplacementCurrentTrailId}
+                setShowReplaceCurrentTrailModal={
+                  setShowReplaceCurrentTrailModal
+                }
+                trail={trail}
+              />
+            ))
+          ) : (
+            <Text>Loading...</Text>
+          )}
+        </ScrollView>
+        <Text style={styles.H2}>Moderate Trails</Text>
+        <ScrollView horizontal>
+          {trails && user ? (
+            filterTrails('Moderate Trails', trails).map((trail: any) => (
+              <TrailCard
+                user={user}
+                key={trail.id}
+                setReplacementCurrentTrailId={setReplacementCurrentTrailId}
+                setShowReplaceCurrentTrailModal={
+                  setShowReplaceCurrentTrailModal
+                }
+                trail={trail}
+              />
+            ))
+          ) : (
+            <Text>Loading...</Text>
+          )}
+        </ScrollView>
+        <Text style={styles.H2}>Long Trails</Text>
+        <ScrollView horizontal>
+          {trails && user ? (
+            filterTrails('Long Trails', trails).map((trail: any) => (
+              <TrailCard
+                user={user}
+                key={trail.id}
+                setReplacementCurrentTrailId={setReplacementCurrentTrailId}
+                setShowReplaceCurrentTrailModal={
+                  setShowReplaceCurrentTrailModal
+                }
+                trail={trail}
+              />
             ))
           ) : (
             <Text>Loading...</Text>

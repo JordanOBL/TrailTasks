@@ -1,47 +1,40 @@
 import {ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
 import NearbyTrails from '../components/NearbyTrails';
-import React from 'react';
+import React, {useContext, useState} from 'react';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import getTrails from '../helpers/Trails/getTrails';
+import {UserContext} from '../App';
+import {sync} from '../watermelon/sync';
 
 const ExploreScreen = () => {
   const watermelonDatabase = useDatabase();
+  const {userId, setUserId} = useContext(UserContext);
   const {trails, setTrails} = getTrails(watermelonDatabase);
+  const [user, setUser] = useState<any>(null);
 
-  const filterTrails = (title: string, trailsArr: any): any => {
-    if (title === 'Short Trails') {
-      return trailsArr.filter(
-        (trail: any) => trail.trail_difficulty === 'short'
-      );
-    } else if (title === 'Moderate Trails') {
-      return trailsArr.filter(
-        (trail: any) => trail.trail_difficulty === 'moderate'
-      );
-    } else if (title === 'Long Trails') {
-      return trailsArr.filter((trail: any) => trail.trail_difficulty === 'long');
-    } else return trails;
-  };
+  async function getLoggedInUser() {
+    try {
+      const loggedInUser = await watermelonDatabase.get('users').find(userId);
 
+      if (loggedInUser) {
+        setUser(loggedInUser);
+        await sync(watermelonDatabase);
+      }
+    } catch (err) {
+      console.log('error in getloggeduser function in Homescreen', err);
+    }
+  }
+  React.useEffect(() => {
+    getLoggedInUser();
+  }, [user, trails]);
+  
   return (
     <SafeAreaView>
-      {/* <Text style={{color: 'white', padding: 10, fontSize: 18, fontWeight: 'bold'}}>FIND / ADD NEW TRAILS</Text> */}
-      {trails ? (
+      {trails && user ? (
         <ScrollView>
           <NearbyTrails
-            trails={filterTrails('all trails', [...trails])}
-            sectionTitle={'Latest Trails'}
-          />
-          <NearbyTrails
-            trails={filterTrails('Short Trails', [...trails])}
-            sectionTitle={'Short Trails'}
-          />
-          <NearbyTrails
-            trails={filterTrails('Moderate Trails', [...trails])}
-            sectionTitle={'Moderate Trails'}
-          />
-          <NearbyTrails
-            trails={filterTrails('Long Trails', [...trails])}
-            sectionTitle={'Long Trails'}
+            user={user}
+            trails={trails}
           />
         </ScrollView>
       ) : (

@@ -1,24 +1,29 @@
-import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native'
-import React, {useContext} from 'react'
-import { onDeleteFromQueueClick, onAddToQueueClick, startNowClick } from '../../helpers/HikingQueue/QueueHelpers';
-import { formatDateTime } from '../../helpers/formatDateTime';
-import { useDatabase } from '@nozbe/watermelondb/hooks';
-import { UserContext } from '../../App';
+import {ImageBackground, Pressable, StyleSheet, Text, View} from 'react-native';
+import React, {useContext} from 'react';
+import {
+  onDeleteFromQueueClick,
+  onAddToQueueClick,
+  startNowClick,
+} from '../../helpers/HikingQueue/QueueHelpers';
+import {formatDateTime} from '../../helpers/formatDateTime';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import {UserContext} from '../../App';
 import CapitalizeWord from '../../helpers/capitalizeWord';
 interface Props {
   trail: any;
-  setReplacementCurrentTrailId: any,
-  setShowReplaceCurrentTrailModal:any
+  setReplacementCurrentTrailId: any;
+  setShowReplaceCurrentTrailModal: any;
+  user: any;
 }
 const TrailCard = ({
+  user,
   trail,
   setReplacementCurrentTrailId,
   setShowReplaceCurrentTrailModal,
 }: Props) => {
   const watermelonDatabase = useDatabase();
-  //@ts-expect-error
-  const {user, setUser} = useContext(UserContext);
-  return (
+
+  return user ? (
     <View
       key={trail.id}
       style={{
@@ -27,7 +32,6 @@ const TrailCard = ({
         marginRight: 40,
         marginVertical: 10,
         padding: 10,
-        
       }}>
       <ImageBackground
         source={
@@ -142,7 +146,7 @@ const TrailCard = ({
           <Pressable
             style={{
               backgroundColor:
-              user._raw.trail_id == trail.id ? 'gray' : 'rgb(7,254,213)',
+                user._raw.trail_id == trail.id ? 'gray' : 'rgb(7,254,213)',
               width: '50%',
               borderRadius: 10,
               paddingVertical: 5,
@@ -152,7 +156,6 @@ const TrailCard = ({
               startNowClick({
                 selected_trail_id: trail.id,
                 current_trail_id: user._raw.trail_id,
-                setUser: setUser,
                 watermelonDatabase,
                 user,
                 setReplacementCurrentTrailId,
@@ -167,18 +170,18 @@ const TrailCard = ({
                 fontSize: 16,
                 textAlign: 'center',
               }}>
-              {user._raw.trail_id == trail.id
-                ? 'In Progress'
-                : 'Start Now'}
+              {user._raw.trail_id == trail.id ? 'In Progress' : 'Start Now'}
             </Text>
           </Pressable>
         </View>
       </View>
     </View>
+  ) : (
+    <Text>Loading...</Text>
   );
 };
 
-export default TrailCard
+export default TrailCard;
 
 const styles = StyleSheet.create({
   Container: {

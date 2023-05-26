@@ -32,7 +32,7 @@ function App(): JSX.Element {
   //const [user, setUser] = React.useState<any>(null);
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-  const [user, setUser] = useState<any>(null);
+  const [userId, setUserId] = useState<any>(null);
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -64,7 +64,7 @@ function App(): JSX.Element {
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
         //await seedPgTables();
-        await checkForLoggedInUser(setUser, watermelonDatabase);
+        await checkForLoggedInUser(setUserId, watermelonDatabase);
         await sync(watermelonDatabase);
         
       } catch (err: any)
@@ -78,7 +78,7 @@ function App(): JSX.Element {
 
 
   return (
-    <UserContext.Provider value={{user, setUser}}>
+    <UserContext.Provider value={{userId, setUserId}}>
       <GestureHandlerRootView style={{flex: 1}}>
         <NavigationContainer theme={DarkTheme}>
           <SafeAreaView style={[backgroundStyle, styles.container]}>
@@ -88,17 +88,17 @@ function App(): JSX.Element {
             />
             {/* <SyncIndicator delay={3000} />  */}
             <Text style={styles.title}>Trail Tasks</Text>
-            {user != null ? (
+            {userId != null ? (
               <TabNavigator  />
             ) : isRegistering ? (
               <RegisterScreen
-                setUser={setUser}
+                setUserId={setUserId}
                 setisRegistering={setisRegistering}
                 isRegistering={isRegistering}
               />
             ) : (
               <LoginScreen
-                setUser={setUser}
+                setUserId={setUserId}
                 setisRegistering={setisRegistering}
                 isRegistering={isRegistering}
               />
