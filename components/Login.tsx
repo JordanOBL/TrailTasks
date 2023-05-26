@@ -10,12 +10,12 @@ import {handleLogin} from '../helpers/loginHelpers';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 interface Props {
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setUserId: React.Dispatch<React.SetStateAction<any>>;
   setisRegistering: React.Dispatch<React.SetStateAction<any>>;
   isRegistering: boolean;
 }
 
-const Login = ({ setUser, setisRegistering, isRegistering}: Props) =>
+const Login = ({ setUserId, setisRegistering, isRegistering}: Props) =>
 {
   const watermelonDatabase = useDatabase();
 
@@ -44,7 +44,7 @@ const Login = ({ setUser, setisRegistering, isRegistering}: Props) =>
 
       <Pressable
         onPress={() =>
-          handleLogin({email, password, setUser, setError, watermelonDatabase})
+          handleLogin({email, password, setUserId, setError, watermelonDatabase})
         }
         disabled={!email || !password}
         style={[

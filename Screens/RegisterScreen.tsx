@@ -2,15 +2,15 @@ import {StyleSheet, Text, View} from 'react-native';
 import Register from '../components/Register';
 import React from 'react';
 interface Props {
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setUserId: React.Dispatch<React.SetStateAction<any>>;
   setisRegistering: React.Dispatch<React.SetStateAction<any>>;
   isRegistering: boolean;
 }
-const RegisterScreen = ({setUser, setisRegistering, isRegistering}: Props) => {
+const RegisterScreen = ({setUserId, setisRegistering, isRegistering}: Props) => {
   return (
     <View style={styles.container}>
       <Register
-        setUser={setUser}
+        setUserId={setUserId}
         setisRegistering={setisRegistering}
         isRegistering={isRegistering}
       />

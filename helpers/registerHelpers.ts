@@ -29,7 +29,7 @@ const createNewUser = async ({
   email,
   password,
   username,
-  setUser,
+  setUserId,
   setError,
   watermelonDatabase,
 }: {
@@ -38,7 +38,7 @@ const createNewUser = async ({
   email: string;
   password: string;
   username: string;
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setUserId: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
   watermelonDatabase: any;
 }) => {
@@ -93,7 +93,7 @@ const createNewUser = async ({
       await watermelonDatabase.localStorage.set('user_id', newUser.id);
       //@ts-ignore
       await watermelonDatabase.localStorage.set('username', newUser.username);
-      setUser({userId: newUser.id});
+      setUserId({userId: newUser.id});
       return newUser;
     }
   } catch (err) {
@@ -108,7 +108,7 @@ export const handleRegister = async ({
   password,
   confirmPassword,
   username,
-  setUser,
+  setUserId,
   setError,
   watermelonDatabase,
 }: {
@@ -118,7 +118,7 @@ export const handleRegister = async ({
   password: string;
   confirmPassword: string;
   username: string;
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setUserId: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
   watermelonDatabase: any;
 }): Promise<void> => {
@@ -151,7 +151,7 @@ export const handleRegister = async ({
         email,
         password,
         username,
-        setUser,
+        setUserId,
         setError,
         watermelonDatabase,
       });

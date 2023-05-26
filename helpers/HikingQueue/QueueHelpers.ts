@@ -94,14 +94,12 @@ export const startNowClick = async ({
   watermelonDatabase,
   selected_trail_id,
   current_trail_id,
-  setUser,
   user,
   setReplacementCurrentTrailId,
   setShowReplaceCurrentTrailModal,
 }: {
   selected_trail_id: number;
   current_trail_id: number | null;
-  setUser: (prev: any) => void;
   user: any;
   watermelonDatabase: Database;
   setReplacementCurrentTrailId: React.Dispatch<React.SetStateAction<number | null>>;

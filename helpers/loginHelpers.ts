@@ -29,7 +29,7 @@ export const checkExistingUser = async (
 
 //*This funtion persits logged in user from local storrage
 export const checkForLoggedInUser = async (
-  setUser: React.Dispatch<React.SetStateAction<any>>,
+  setUserId: React.Dispatch<React.SetStateAction<any>>,
   watermelonDatabase: Database
 ) => {
   try {
@@ -44,7 +44,7 @@ export const checkForLoggedInUser = async (
         .fetch();
       if (thisUser[0] !== undefined) {
         console.log(thisUser);
-        setUser(thisUser[0]);
+        setUserId(userId);
       }
     }
   } catch (error) {
@@ -55,13 +55,13 @@ export const checkForLoggedInUser = async (
 export const handleLogin = async ({
   email,
   password,
-  setUser,
+  setUserId,
   setError,
   watermelonDatabase,
 }: {
   email: string;
   password: string;
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setUserId: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
   watermelonDatabase: Database;
 }): Promise<void> => {
@@ -82,7 +82,7 @@ export const handleLogin = async ({
       return;
     }
     //set user info in app state
-    setUser(existingUser);
+    setUserId(existingUser._raw.id);
   } catch (err) {
     console.error('Error in handling Login', err);
   }
