@@ -1,18 +1,20 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import {sync} from '../watermelon/sync';
+import { Database } from '@nozbe/watermelondb';
 
 interface Props
 {
   delay: number
+  database: Database
 }
-const SyncIndicator = ({delay} : Props) => {
+const SyncIndicator = ({delay, database} : Props) => {
   const [syncState, setSyncState] = useState<string>('Syncing data...');
 
   useEffect(() => {
-    setTimeout(() =>
+    let timeoutId = setTimeout(() =>
     {
-      sync()
+      sync(database)
       .then(() => setSyncState(''))
       .catch((e) =>
       {
@@ -20,6 +22,8 @@ const SyncIndicator = ({delay} : Props) => {
         setSyncState('Sync failed!')
       });
     }, delay)
+
+    return () => clearTimeout(timeoutId)
   });
 
   if (!syncState) {

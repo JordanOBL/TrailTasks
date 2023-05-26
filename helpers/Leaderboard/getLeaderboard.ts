@@ -1,4 +1,4 @@
-import {User_Miles} from '../watermelon/models';
+import {User_Miles} from '../../watermelon/models';
 import React from 'react';
 //import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {useDatabase} from '@nozbe/watermelondb/hooks';

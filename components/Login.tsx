@@ -15,7 +15,7 @@ interface Props {
   isRegistering: boolean;
 }
 
-const Login = ({ setUser, setisRegistering, isRegistering }: Props) =>
+const Login = ({ setUser, setisRegistering, isRegistering}: Props) =>
 {
   const watermelonDatabase = useDatabase();
 

@@ -4,24 +4,28 @@ import SyncIndicator from '../components/SyncIndicator';
 import DistanceProgressBar from '../components/Timer/DistanceProgressBar';
 import { useFocusEffect } from '@react-navigation/native';
 import { Pressable } from 'react-native';
-import getUser from '../helpers/getUser';
+
 import { handleLogOut } from '../helpers/logoutHelpers';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
+import { useDatabase } from '@nozbe/watermelondb/hooks';
+import { UserContext } from '../App';
+import getCurrentTrail from '../helpers/Trails/getCurrentTrail';
 
 
 
-const HomeScreen = ({ navigation, route}: any) =>
+const HomeScreen = ({ navigation}: any) =>
 {
-	const watermelonDatabase = useDatabase();
-const user = getUser();
-  const { setUser } = route.params
+  const { user, setUser } = React.useContext(UserContext)
+  const watermelonDatabase = useDatabase();
+  const { currentTrail, setCurrentTrail } = getCurrentTrail(user, watermelonDatabase);
+
+
 	return !user ? (
     <View>
       <Text>Loading Your Data...</Text>
     </View>
   ) : (
     <View style={styles.Container}>
-      <SyncIndicator delay={3000} />
+      {/* <SyncIndicator delay={3000} /> */}
       <Text style={styles.H1}>Hey, {user.username}</Text>
       <View style={styles.Container}>
         <View
@@ -29,14 +33,14 @@ const user = getUser();
             padding: 10,
             marginBottom: 10,
             backgroundColor: 'rgb(28,29,31)',
-            borderColor: 'rgb(41,184,169)',
+            borderColor: 'rgb(7,254,213)',
             borderWidth: 1,
             borderRadius: 10,
           }}>
-          <Text style={[styles.H2, {margin: 0, color: 'rgb(41, 184, 169)'}]}>
+          <Text style={[styles.H2, {margin: 0, color: 'rgb(7,254,213)'}]}>
             Current Trail:
           </Text>
-          <Text style={styles.trailText}>{user.current_trail_name}</Text>
+          <Text style={styles.trailText}>{currentTrail?._raw.trail_name}</Text>
           <DistanceProgressBar
           // trailDistance={user.current_trail_distance}
           // trailProgress={user.current_trail_progress}
@@ -52,10 +56,6 @@ const user = getUser();
             style={styles.LinkContainer}
             onPress={() => navigation.navigate('Stats')}>
             <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>Stats</Text>
-            <Text style={{color: 'rgb(221,224,226)'}}>
-              {/* Overall Miles Hiked: {user.total_miles.toFixed(2)}{' '} */}
-              mi.
-            </Text>
           </Pressable>
           <Pressable
             style={styles.LinkContainer}
@@ -75,10 +75,6 @@ const user = getUser();
             <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
               Friends
             </Text>
-            <Text style={{color: 'rgb(221,224,226)'}}>
-              {/* //!FRIEND LIST COUNT */}
-              10
-            </Text>
           </Pressable>
           <Pressable
             style={styles.LinkContainer}
@@ -86,7 +82,6 @@ const user = getUser();
             <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
               Achievements
             </Text>
-            <Text style={{color: 'rgb(221,224,226)'}}>Latest Achievement:</Text>
           </Pressable>
           <Pressable
             style={styles.LinkContainer}
@@ -94,7 +89,6 @@ const user = getUser();
             <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
               Completed Trails
             </Text>
-            <Text style={{color: 'rgb(221,224,226)'}}>Completed: {0}</Text>
           </Pressable>
           <Pressable
             style={styles.LinkContainer}
@@ -102,15 +96,13 @@ const user = getUser();
             <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
               Leaderboards
             </Text>
-            <Text style={{color: 'rgb(221,224,226)'}}>Your Rank: ?</Text>
           </Pressable>
-          
-            <Pressable
-              onPress={async () => handleLogOut(setUser, watermelonDatabase)}
-              style={styles.LinkContainer}>
-              <Text style={[styles.H2, { color: 'red' }]}>Logout</Text>
-            </Pressable>
-        
+
+          <Pressable
+            onPress={async () => handleLogOut(setUser, watermelonDatabase)}
+            style={styles.LinkContainer}>
+            <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
+          </Pressable>
         </ScrollView>
       </View>
     </View>
@@ -156,6 +148,6 @@ const styles = StyleSheet.create({
 		color: 'rgb(221,224,226)',
 		fontWeight: '900',
 		marginBottom: 10,
-		padding: 10,
+		padding: 20,
 	},
 });

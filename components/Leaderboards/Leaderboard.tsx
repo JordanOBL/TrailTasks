@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, FlatList, Pressable } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, FlatList } from 'react-native';
 import React from 'react';
 import UserRow from './userRow';
 
@@ -21,12 +21,7 @@ const Leaderboard = ({ milesLeaderboard, user }: Props) =>
         <>
           <View>
             <Text
-              style={{
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: 16,
-                marginBottom: 10,
-              }}>
+              style={styles.sectionTitle}>
               Your Rank:{' '}
             </Text>
             {milesLeaderboard.map(
@@ -42,16 +37,13 @@ const Leaderboard = ({ milesLeaderboard, user }: Props) =>
             )}
           </View>
           <Text
-            style={{
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: 16,
-              marginVertical: 10,
-            }}>
+            style={styles.sectionTitle}>
             All Users:{' '}
           </Text>
+          <SafeAreaView style={{marginBottom: 400}}>
           <FlatList
             data={milesLeaderboard}
+            
             renderItem={({item, index}) => (
               <UserRow
                 key={item.user_id}
@@ -60,7 +52,7 @@ const Leaderboard = ({ milesLeaderboard, user }: Props) =>
                 user={user}
               />
             )}
-          />
+          /></SafeAreaView>
         </>
       ) : (
         <Text> Connect to Internet</Text>
@@ -72,4 +64,11 @@ const Leaderboard = ({ milesLeaderboard, user }: Props) =>
 
 export default Leaderboard;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  sectionTitle: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginVertical: 10,
+  },
+});

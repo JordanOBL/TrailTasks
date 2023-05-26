@@ -1,13 +1,12 @@
 import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
+
 
 import {User} from '../watermelon/models';
-import {Q} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 
-const getUser = () => {
-  const [user, setUser] = React.useState<any>(null);
-  const watermelonDatabase = useDatabase();
+const getUser = (watermelonDatabase: Database) => {
+  const [user, setUser] = React.useState<User | null>(null);
 
   React.useEffect(() => {
     const userFromDB = async (): Promise<void> => {
@@ -20,17 +19,22 @@ const getUser = () => {
             .get('users')
             .query(Q.where('id', userId))
             .fetch();
-          if (thisUser[0] !== undefined) {
+          if (thisUser[0] !== undefined)
+          {
+            console.log(thisUser)
             setUser(thisUser[0]);
           }
+        } else
+        {
+          setUser(null)
         }
       } catch (err) {
-        console.error(err);
+        console.error('error in getUser helper funtion', err);
       }
     };
     userFromDB();
-  }, []);
-  return user;
+  }, [user]);
+  return {user, setUser};
 };
 
 export default getUser;
