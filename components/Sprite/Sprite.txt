@@ -1,0 +1,11 @@
+- add today for search filer, 1 day is currently yesterday
+When youre hiking zombie is walking
+zombie runs for .01 miles when pace increased
+zombie attacks pace indicator whem speed is decreased
+zombie dies when session ends
+zombie idles when Paused
+zombie does a backflip when trail is completed
+
+store
+zombie emotes
+zombie accessories

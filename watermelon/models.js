@@ -6,6 +6,8 @@ import {
   field,
   text,
   writer,
+  date,
+  readonly,
 } from '@nozbe/watermelondb/decorators';
 
 export class Park extends Model {
@@ -63,13 +65,15 @@ export class User extends Model {
   @field('trail_id') trailId;
   @field('trail_progress') trailProgress;
   @field('trail_started_at') trailStartedAt;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 
   @relation('trails', 'trail_id') trail;
 
-  @children('user_sessions') user_sessions;
-  @children('user_badges') user_badges;
-  @children('user_achievements') user_achievements;
-  @children('user_miles') user_miles;
+  @children('users_sessions') users_sessions;
+  @children('users_badges') users_badges;
+  @children('users_achievements') users_achievements;
+  @children('users_miles') users_miles;
 
   @writer async addUser(
     username,
@@ -81,9 +85,9 @@ export class User extends Model {
     theme_preference,
     trail_id,
     trail_progress,
-    trail_started_at,
+    trail_started_at
   ) {
-    const newUser = await this.collections.get('users').create(user => {
+    const newUser = await this.collections.get('users').create((user) => {
       user.username = username;
       user.first_name.set(first_name);
       user.last_name.set(last_name);
@@ -121,9 +125,9 @@ export class Badge extends Model {
   @field('badge_description') badgeDescription;
   @field('badge_image_url') badgeImageUrl;
 
-  @immutableRelation('user_badges', 'badge_id') badge;
+  @immutableRelation('users_badges', 'badge_id') badge;
 
-  @children('user_badges') user_badges;
+  @children('users_badges') users_badges;
 }
 
 export class Achievement extends Model {
@@ -132,15 +136,15 @@ export class Achievement extends Model {
     users_achievements: {type: 'has_many', foriegnKey: 'achievement_id'},
   };
   @field('achievement_name') achievementName;
-  @field('uachievement_description') achievementDescription;
+  @field('achievement_description') achievementDescription;
   @field('achievement_image_url') AchievementImageUrl;
 
-  @immutableRelation('user_badges', 'badge_id') achievements;
+  @immutableRelation('users_achievements', 'achievement_id') achievement;
 
-  @children('user_Achievements') user_achievements;
+  @children('users_achievements') users_achievements;
 }
 export class User_Achievement extends Model {
-  static table = 'user_achievements';
+  static table = 'users_achievements';
   static associations = {
     achievements: {type: 'belongs_to', key: 'achievement_id'},
     users: {type: 'belongs_to', key: 'user_id'},
@@ -192,7 +196,7 @@ export class Hiking_Queue extends Model {
   @children('users') users;
   @children('trails') trails;
 }
-export class Users_Miles extends Model {
+export class User_Miles extends Model {
   static table = 'users_miles';
   static associations = {
     users: {type: 'belongs_to', key: 'user_id'},
@@ -200,6 +204,8 @@ export class Users_Miles extends Model {
 
   @field('user_id') userId;
   @field('total_miles') totalMiles;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 
   @immutableRelation('users', 'user_id') user;
 
@@ -229,11 +235,11 @@ export class Session_Category extends Model {
 
   @field('session_category_name') sessionCategoryName;
 
-  @children('user_sessions') user_sessions;
+  @children('users_sessions') user_sessions;
 }
 
 export class User_Session extends Model {
-  static table = 'user_sessions';
+  static table = 'users_sessions';
   static associations = {
     users: {type: 'belongs_to', key: 'user_id'},
     session_categories: {

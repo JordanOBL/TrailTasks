@@ -15,9 +15,9 @@ const schema = appSchema({
       name: 'trails',
       columns: [
         {name: 'trail_name', type: 'string', isIndexed: true},
-        {name: 'trail_distance', type: 'number'},
-        {name: 'trail_lat', type: 'number'},
-        {name: 'trail_long', type: 'number'},
+        {name: 'trail_distance', type: 'string'},
+        {name: 'trail_lat', type: 'string'},
+        {name: 'trail_long', type: 'string'},
         {name: 'trail_difficulty', type: 'string', isIndexed: true},
         {name: 'park_id', type: 'string'}, //ref
         {name: 'trail_image_url', type: 'string', isOptional: true},
@@ -37,6 +37,8 @@ const schema = appSchema({
         {name: 'trail_id', type: 'string'}, //reference
         {name: 'trail_progress', type: 'string'},
         {name: 'trail_started_at', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
@@ -64,7 +66,7 @@ const schema = appSchema({
       ],
     }),
     tableSchema({
-      name: 'user_achievements',
+      name: 'users_achievements',
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'achievement_id', type: 'string'}, //ref
@@ -94,6 +96,8 @@ const schema = appSchema({
       columns: [
         {name: 'user_id', type: 'string'}, //reference user,
         {name: 'total_miles', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
@@ -108,7 +112,7 @@ const schema = appSchema({
       columns: [{name: 'session_category_name', type: 'string'}],
     }),
     tableSchema({
-      name: 'user_sessions',
+      name: 'users_sessions',
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'session_name', type: 'string'},
@@ -120,7 +124,7 @@ const schema = appSchema({
         {name: 'session_category_id', type: 'string'}, //ref
         {name: 'date_added', type: 'string', isIndexed: true},
         {name: 'total_session_time', type: 'number'},
-        {name: 'total_distance_hiked', type: 'number'},
+        {name: 'total_distance_hiked', type: 'string'},
       ],
     }),
   ],
