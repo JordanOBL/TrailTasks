@@ -1,16 +1,25 @@
 import {StyleSheet, Text, View} from 'react-native';
 import Register from '../components/Register';
 import React from 'react';
-
-const RegisterScreen = () => {
+interface Props {
+  setUserId: React.Dispatch<React.SetStateAction<any>>;
+  setisRegistering: React.Dispatch<React.SetStateAction<any>>;
+  isRegistering: boolean;
+}
+const RegisterScreen = ({setUserId, setisRegistering, isRegistering}: Props) => {
   return (
-    <View>
-      <Text>RegisterScreen</Text>
-      <Register />
+    <View style={styles.container}>
+      <Register
+        setUserId={setUserId}
+        setisRegistering={setisRegistering}
+        isRegistering={isRegistering}
+      />
     </View>
   );
 };
 
 export default RegisterScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {flex: 1},
+});
