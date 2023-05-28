@@ -18,7 +18,9 @@ const HomeScreen = ({navigation}: any) => {
   const watermelonDatabase = useDatabase();
 
   async function getLoggedInUser() {
-    try {
+    try
+    {
+      console.log({userId})
       const loggedInUser = await watermelonDatabase
         .get('users')
         .query(
@@ -32,6 +34,7 @@ const HomeScreen = ({navigation}: any) => {
         .unsafeFetchRaw();
       if (loggedInUser?.length > 0)
       {
+        console.log(loggedInUser)
         setLoggedInUser(loggedInUser[0]);
         await sync(watermelonDatabase);
       }
@@ -39,7 +42,6 @@ const HomeScreen = ({navigation}: any) => {
       console.log('error in getloggeduser function in Homescreen', err);
     }
   }
-
   useFocusEffect(
     React.useCallback(() => {
       getLoggedInUser();
@@ -53,7 +55,7 @@ const HomeScreen = ({navigation}: any) => {
   );
   return !loggedInUser ? (
     <View>
-      <Text>Loading Your Data...</Text>
+      <Text style={{ color: 'white'}}>Loading Your Data...</Text>
     </View>
   ) : (
     <View style={styles.Container}>
