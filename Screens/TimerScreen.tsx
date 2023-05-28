@@ -5,6 +5,7 @@ const TimerScreen = () => {
   return (
     <View>
       <Text>TimerScreen</Text>
+      
     </View>
   )
 }

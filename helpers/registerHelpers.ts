@@ -93,7 +93,7 @@ const createNewUser = async ({
       await watermelonDatabase.localStorage.set('user_id', newUser.id);
       //@ts-ignore
       await watermelonDatabase.localStorage.set('username', newUser.username);
-      setUserId({userId: newUser.id});
+      setUserId( newUser.id);
       return newUser;
     }
   } catch (err) {
