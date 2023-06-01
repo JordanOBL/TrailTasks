@@ -4,27 +4,31 @@ import NewSessionOptions from '../components/Timer/NewSessionOptions';
 import SessionTimer from '../components/Timer/SessionTimer';
 import {UserContext} from '../App';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import getJoinedUserTrail from '../helpers/Timer/getJoinedUserTrail';
 
 const TimerScreen = () => {
   const {userId} = React.useContext(UserContext);
-  const [timerState, setTimerState] = React.useState({
-    pomodoroTime: null,
-    shortBreakTime: null,
-    longBreakTime: null,
-    elapsedPomodoroTime: 0,
-    elapsedShortBreakTime: 0,
-    elapsedLongBreakTime: 0,
-    isPaused: false,
-  });
+  const watermelonDatabase = useDatabase();
+  const {joinedUserTrail} = getJoinedUserTrail(watermelonDatabase, userId);
+  // const [timerState, setTimerState] = React.useState({
+  //   pomodoroTime: null,
+  //   shortBreakTime: null,
+  //   longBreakTime: null,
+  // });
 
   const [sessionDetails, setSessionDetails] = React.useState({
     isSessionStarted: false,
+    isPaused: false,
     sessionName: '',
     sessionDescription: '',
     sessionCategoryId: null,
-    initialPomodoroTime: null,
-    initialShortBreakTime: null,
-    initialLongBreakTime: null,
+    initialPomodoroTime: 1500,
+    initialShortBreakTime: 300,
+    initialLongBreakTime: 2700,
+    elapsedPomodoroTime: 0,
+    elapsedShortBreakTime: 0,
+    elapsedLongBreakTime: 0,
     sets: null,
     currentSet: 1,
     pace: 2,
@@ -36,6 +40,10 @@ const TimerScreen = () => {
     isLoading: false,
     isError: false,
   });
+  React.useEffect(() => {
+    console.log(sessionDetails);
+  }, [sessionDetails]);
+
   return (
     <SafeAreaView style={styles.container}>
       {sessionDetails.isLoading ? (
@@ -46,7 +54,13 @@ const TimerScreen = () => {
           setSessionDetails={setSessionDetails}
         />
       ) : (
-        <SessionTimer timerState={timerState} setTimerState={setTimerState} />
+        <SessionTimer
+          // timerState={timerState}
+          // setTimerState={setTimerState}
+          sessionDetails={sessionDetails}
+          setSessionDetails={setSessionDetails}
+          joinedUserTrail={joinedUserTrail}
+        />
       )}
     </SafeAreaView>
   );
