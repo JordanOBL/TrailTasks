@@ -28,7 +28,7 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
   const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
   
-
+React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
   return (
     <SafeAreaView style={styles.container}>
       <View style={[styles.dropdownContainer, {width: '100%'}]}>
@@ -43,7 +43,9 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
             fontSize: 18,
             padding: 10,
           }}
-          onChangeText={(value) => NewSessionHandlers.SessionNameChange(setSessionDetails, value)}
+          onChangeText={(value) =>
+            NewSessionHandlers.SessionNameChange(setSessionDetails, value)
+          }
           placeholder="New Session Name"
           placeholderTextColor={'rgb(131,33,35)'}
         />
@@ -56,7 +58,9 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
           onSelect={(selectedItem, index) => {
             console.log(selectedItem, index);
             NewSessionHandlers.SelectSessionCategoryId(
-              setSessionDetails, selectedItem.session_category_id
+              setSessionDetails,
+              selectedItem.session_category_id,
+              watermelonDatabase
             );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -91,7 +95,8 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
           data={timeOptions}
           onSelect={(selectedItem, index) => {
             NewSessionHandlers.InitialPomodoroTimeChange(
-              setSessionDetails, selectedItem.value
+              setSessionDetails,
+              selectedItem.value
             );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -100,8 +105,16 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
           rowTextForSelection={(item, index) => {
             return item.label;
           }}
-          defaultButtonText={'25 minutes'}
-          defaultValue={'25 minutes'}
+          defaultButtonText={
+            sessionDetails.initialPomodoroTime
+              ? `${sessionDetails.initialPomodoroTime / 60} minutes`
+              : '25 minutes'
+          }
+          defaultValue={
+            sessionDetails.initialPomodoroTime
+              ? sessionDetails.initialPomodoroTime 
+              : 1500
+          }
           buttonStyle={styles.dropdownButtonStyle}
           buttonTextStyle={styles.dropdownButtonText}
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
@@ -113,7 +126,10 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
         <SelectDropdown
           data={timeOptions}
           onSelect={(selectedItem, index) => {
-            NewSessionHandlers.InitailShortBreakChange(setSessionDetails, selectedItem.value);
+            NewSessionHandlers.InitailShortBreakChange(
+              setSessionDetails,
+              selectedItem.value
+            );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -121,8 +137,16 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
           rowTextForSelection={(item, index) => {
             return item.label;
           }}
-          defaultButtonText={'5 minutes'}
-          defaultValue={'5 minutes'}
+          defaultButtonText={
+            sessionDetails.initialShortBreakTime
+              ? `${sessionDetails.initialShortBreakTime / 60} minutes`
+              : '5 minutes'
+          }
+          defaultValue={
+            sessionDetails.initialShortBreakTime
+              ? sessionDetails.initialShortBreakTime
+              : 300
+          }
           buttonStyle={styles.dropdownButtonStyle}
           buttonTextStyle={styles.dropdownButtonText}
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
@@ -134,7 +158,10 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
         <SelectDropdown
           data={timeOptions}
           onSelect={(selectedItem, index) => {
-            NewSessionHandlers.InitialLongBreakChange(selectedItem.value);
+            NewSessionHandlers.InitialLongBreakChange(
+              setSessionDetails,
+              selectedItem.value
+            );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -142,8 +169,16 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
           rowTextForSelection={(item, index) => {
             return item.label;
           }}
-          defaultButtonText={'45 minutes'}
-          defaultValue={'45 minutes'}
+          defaultButtonText={
+            sessionDetails.initialLongBreakTime
+              ? `${sessionDetails.initialLongBreakTime / 60} minutes`
+              : '45 minutes'
+          }
+          defaultValue={
+            sessionDetails.initialLongBreak
+              ? sessionDetails.initialLongBreakTime
+              : 2700
+          }
           buttonStyle={styles.dropdownButtonStyle}
           buttonTextStyle={styles.dropdownButtonText}
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
@@ -152,7 +187,12 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
       <Pressable
         onPress={() => {
           if (sessionDetails.isSessionStarted === false) {
-            NewSessionHandlers.StartSessionClick(setSessionDetails, sessionDetails, userId, watermelonDatabase);
+            NewSessionHandlers.StartSessionClick(
+              setSessionDetails,
+              sessionDetails,
+              userId,
+              watermelonDatabase
+            );
           }
         }}
         style={[
