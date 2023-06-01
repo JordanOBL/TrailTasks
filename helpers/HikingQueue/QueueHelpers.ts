@@ -16,8 +16,11 @@ export const onAddToQueueClick = async ({
   //const date = new Date().getUTCDate()
   const newHikingQueue = await watermelonDatabase
     .get('hiking_queue')
-    .create((hikingQueue) => {
+    .create((hikingQueue) =>
+    {
+      //@ts-ignore
       hikingQueue.userId = user_id;
+      //@ts-ignore
       hikingQueue.trailId = selected_trail_id;
     });
 };
