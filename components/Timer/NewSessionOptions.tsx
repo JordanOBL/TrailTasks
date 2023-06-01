@@ -12,122 +12,22 @@ import SelectDropdown from 'react-native-select-dropdown';
 import {User_Session} from '../../watermelon/models';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {formatDateTime} from '../../helpers/formatDateTime';
-import {UserContext} from '../../App';
+import { UserContext } from '../../App';
+import sessionCategories from '../../helpers/Session/sessionCategories';
+import timeOptions from '../../helpers/Session/timeOptions';
+import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 
-const timeOptions = [
-  {label: '5 minutes', value: 300},
-  {label: '10 minutes', value: 600},
-  {label: '15 minutes', value: 900},
-  {label: '20 minutes', value: 1200},
-  {label: '25 minutes', value: 1500},
-  {label: '30 minutes', value: 1800},
-  {label: '35 minutes', value: 2100},
-  {label: '40 minutes', value: 2400},
-  {label: '45 minutes', value: 2700},
-  {label: '50 minutes', value: 3000},
-  {label: '55 minutes', value: 3300},
-  {label: '1 hour', value: 3600},
-];
-
-const sessionCategories = [
-  {session_category_id: '1', session_category_name: 'Chores'},
-  {session_category_id: '2', session_category_name: 'Cooking'},
-  {session_category_id: '3', session_category_name: 'Drawing'},
-  {session_category_id: '4', session_category_name: 'Driving'},
-  {session_category_id: '5', session_category_name: 'Errands'},
-  {session_category_id: '6', session_category_name: 'Family'},
-  {session_category_id: '7', session_category_name: 'Meditating'},
-  {session_category_id: '8', session_category_name: 'Other'},
-  {session_category_id: '9', session_category_name: 'Outdoors'},
-  {session_category_id: '10', session_category_name: 'Pets'},
-  {session_category_id: '11', session_category_name: 'Reading'},
-  {session_category_id: '12', session_category_name: 'Social'},
-  {session_category_id: '13', session_category_name: 'Sports'},
-  {session_category_id: '14', session_category_name: 'Study'},
-  {session_category_id: '15', session_category_name: 'Work'},
-  {session_category_id: '16', session_category_name: 'Workout'},
-  {session_category_id: '17', session_category_name: 'Writing'},
-  {session_category_id: '18', session_category_name: 'Yoga'},
-];
 interface Props {
   sessionDetails: any;
   setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const NewSessionOptions = ({sessionDetails, setSessionDetails}: Props) => {
+const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
+{
+  //@ts-ignore
   const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
-  const handleSelectSessionCategoryId = (sessionCategoryId: string) => {
-    setSessionDetails((prev: any) => {
-      return {...prev, sessionCategoryId: sessionCategoryId};
-    });
-  };
-
-  const handleSessionNameChange = (value: string) => {
-    setSessionDetails((prev: any) => {
-      return {...prev, sessionName: value};
-    });
-  };
-
-  const handleInitialPomodoroTimeChange = (value: number) => {
-    setSessionDetails((prev: any) => {
-      return {...prev, initialPomodoroTime: value};
-    });
-  };
-
-  const handleInitailShortBreakChange = (value: number) => {
-    setSessionDetails((prev: any) => {
-      return {...prev, initialShortBreak: value};
-    });
-  };
-
-  const handleInitialLongBreakChange = (value: number) => {
-    setSessionDetails((prev: any) => {
-      return {...prev, initialLongBreak: value};
-    });
-  };
-
-  async function handleStartSessionClick() {
-    try {
-      setSessionDetails((prev: any) => {
-        return {...prev, isLoading: true};
-      });
-      let newSession = null;
-      //@ts-ignore
-      await watermelonDatabase.write(async () => {
-        newSession = await watermelonDatabase
-          .get('users_sessions')
-          //@ts-ignore
-          .create((userSession: User_Session) => {
-            userSession.userId = userId;
-            userSession.sessionName = sessionDetails.sessionName;
-            userSession.sessionDescription = '';
-            userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
-            userSession.totalSessionTime = '0';
-            userSession.totalDistanceHiked = '0.00';
-            userSession.dateAdded = formatDateTime(new Date());
-          });
-      });
-      if (newSession !== null) {
-        setSessionDetails((prev: any) => {
-          return {...prev, isSessionStarted: true, isLoading: false};
-        });
-      } else {
-        setSessionDetails((prev: any) => {
-          return {
-            ...prev,
-            isLoading: false,
-            isError: 'Error creating new Session in handleStartSession func',
-          };
-        });
-      }
-    } catch (err) {
-      console.error(
-        'Error creating new Session in handleStartSessionClick',
-        err
-      );
-    }
-  }
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -143,7 +43,7 @@ const NewSessionOptions = ({sessionDetails, setSessionDetails}: Props) => {
             fontSize: 18,
             padding: 10,
           }}
-          onChangeText={(value) => handleSessionNameChange(value)}
+          onChangeText={(value) => NewSessionHandlers.SessionNameChange(setSessionDetails, value)}
           placeholder="New Session Name"
           placeholderTextColor={'rgb(131,33,35)'}
         />
@@ -155,7 +55,9 @@ const NewSessionOptions = ({sessionDetails, setSessionDetails}: Props) => {
           data={sessionCategories}
           onSelect={(selectedItem, index) => {
             console.log(selectedItem, index);
-            handleSelectSessionCategoryId(selectedItem.session_category_id);
+            NewSessionHandlers.SelectSessionCategoryId(
+              setSessionDetails, selectedItem.session_category_id
+            );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             // text represented after item is selected
@@ -188,7 +90,9 @@ const NewSessionOptions = ({sessionDetails, setSessionDetails}: Props) => {
         <SelectDropdown
           data={timeOptions}
           onSelect={(selectedItem, index) => {
-            handleInitialPomodoroTimeChange(selectedItem.value);
+            NewSessionHandlers.InitialPomodoroTimeChange(
+              setSessionDetails, selectedItem.value
+            );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -209,7 +113,7 @@ const NewSessionOptions = ({sessionDetails, setSessionDetails}: Props) => {
         <SelectDropdown
           data={timeOptions}
           onSelect={(selectedItem, index) => {
-            handleInitailShortBreakChange(selectedItem.value);
+            NewSessionHandlers.InitailShortBreakChange(setSessionDetails, selectedItem.value);
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -230,7 +134,7 @@ const NewSessionOptions = ({sessionDetails, setSessionDetails}: Props) => {
         <SelectDropdown
           data={timeOptions}
           onSelect={(selectedItem, index) => {
-            handleInitialLongBreakChange(selectedItem.value);
+            NewSessionHandlers.InitialLongBreakChange(selectedItem.value);
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -248,7 +152,7 @@ const NewSessionOptions = ({sessionDetails, setSessionDetails}: Props) => {
       <Pressable
         onPress={() => {
           if (sessionDetails.isSessionStarted === false) {
-            handleStartSessionClick();
+            NewSessionHandlers.StartSessionClick(setSessionDetails, sessionDetails, userId, watermelonDatabase);
           }
         }}
         style={[
