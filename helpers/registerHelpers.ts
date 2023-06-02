@@ -84,6 +84,10 @@ const createNewUser = async ({
             //@ts-ignore
             user_miles.totalMiles = '0.00';
           });
+        if (userMiles)
+        {
+          await watermelonDatabase.localStorage.set('user_miles_id', userMiles.id);
+        }
       }
 
       return createdUser;

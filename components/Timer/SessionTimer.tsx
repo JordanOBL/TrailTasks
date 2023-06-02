@@ -1,30 +1,34 @@
 import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import formatCountdown from '../../helpers/Timer/formatCountdown';
-import {SessionDetails} from '../../types/session';
+import {JoinedUserTrail, SessionDetails} from '../../types/session';
 import {
   Hike,
   endSession,
   longBreak,
   pauseSession,
   resumeSession,
+  save,
   shortBreak,
   skipBreak,
 } from '../../helpers/Timer/timerFlow';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
+import {UserContext} from '../../App';
 
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  joinedUserTrail: any;
+  joinedUserTrail: JoinedUserTrail;
+  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>;
 }
 const SessionTimer = ({
-  // timerState,
-  // setTimerState,
   setSessionDetails,
   sessionDetails,
+  setJoinedUserTrail,
   joinedUserTrail,
 }: Props) => {
+  //@ts-ignore
+  const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
   let pomodoroCountdown = formatCountdown(
     sessionDetails.initialPomodoroTime,
@@ -49,7 +53,6 @@ const SessionTimer = ({
 
   React.useEffect(() => {
     let intervalId: any;
-    console.log(sessionDetails);
     if (
       sessionDetails.isPaused === false &&
       sessionDetails.currentSet <= sessionDetails.sets
@@ -58,7 +61,12 @@ const SessionTimer = ({
         sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
       ) {
         intervalId = setInterval(() => {
-          Hike(setSessionDetails, sessionDetails);
+          Hike(watermelonDatabase, userId,
+            setSessionDetails,
+            sessionDetails,
+            setJoinedUserTrail,
+            joinedUserTrail
+          );
         }, 1000);
       } else if (
         sessionDetails.elapsedShortBreakTime <
@@ -109,7 +117,14 @@ const SessionTimer = ({
       <Text style={{color: 'white'}}>{totalFormattedSessionTime}</Text>
       <Pressable
         onPress={() =>
-          endSession(watermelonDatabase, setSessionDetails, sessionDetails)
+          endSession(
+            watermelonDatabase,
+            userId,
+            setSessionDetails,
+            sessionDetails,
+            setJoinedUserTrail,
+            joinedUserTrail
+          )
         }>
         <Text style={{color: 'white'}}>End Session</Text>
       </Pressable>
@@ -123,11 +138,27 @@ const SessionTimer = ({
         <Pressable
           onPress={() => {
             sessionDetails.isPaused === false
-              ? pauseSession(setSessionDetails)
+              ? pauseSession(
+                  watermelonDatabase,
+                  userId,
+                  setSessionDetails,
+                  sessionDetails,
+                  setJoinedUserTrail,
+                  joinedUserTrail
+                ).then(() =>
+                  save(
+                    watermelonDatabase,
+                    userId,
+                    setSessionDetails,
+                    sessionDetails,
+                    setJoinedUserTrail,
+                    joinedUserTrail
+                  )
+                )
               : resumeSession(setSessionDetails);
           }}>
           <Text style={{color: 'white'}}>
-            { sessionDetails.isPaused === false
+            {sessionDetails.isPaused === false
               ? 'Pause Session'
               : 'Resume Session'}
           </Text>

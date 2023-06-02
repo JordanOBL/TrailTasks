@@ -24,9 +24,9 @@ const getJoinedUserTrail = (watermelonDatabase: Database, userId: string ) => {
           )
           .unsafeFetchRaw();
         if (userTrailResponse !== undefined) {
-          console.log(userTrailResponse);
+          console.log(userTrailResponse[0]);
           //@ts-ignore
-          setJoinedUserTrail(userTrailResponse);
+          setJoinedUserTrail(userTrailResponse[0]);
         }
         //}
       } catch (err) {
@@ -34,8 +34,8 @@ const getJoinedUserTrail = (watermelonDatabase: Database, userId: string ) => {
       }
     };
     userTrailResponse();
-  }, []);
-  return {joinedUserTrail};
+  }, [setJoinedUserTrail]);
+  return {joinedUserTrail, setJoinedUserTrail};
 };
 
 export default getJoinedUserTrail;

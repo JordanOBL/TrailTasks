@@ -13,7 +13,19 @@ export const checkExistingUser = async (
       .get('users')
       .query(Q.where('email', email), Q.where('password', password))
       .fetch();
-    if (existingUser.length > 0) {
+    if (existingUser.length > 0)
+    {
+      //get usersMilesId
+      const usersMiles = await watermelonDatabase.get('users_miles')
+      .query(Q.where('user_id', existingUser[0].id))
+        .fetch();
+      if (usersMiles.length > 0)
+      {
+        await watermelonDatabase.localStorage.set(
+          'users_miles_id',
+          usersMiles[0].id
+        );
+      }
       await watermelonDatabase.localStorage.set('user_id', existingUser[0].id);
       await watermelonDatabase.localStorage.set(
         'username',
