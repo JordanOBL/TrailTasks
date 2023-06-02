@@ -22,7 +22,6 @@ function formatCountdown(
   elapsedTimeInSeconds: number
 ): string
 {
-  console.log(initialTimeInSeconds, elapsedTimeInSeconds);
   const Minutes = Math.floor(
     (initialTimeInSeconds - elapsedTimeInSeconds) / 60
   );
