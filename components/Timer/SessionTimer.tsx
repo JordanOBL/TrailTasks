@@ -6,14 +6,14 @@ import {
   Hike,
   endSession,
   longBreak,
+  pauseSession,
+  resumeSession,
   shortBreak,
   skipBreak,
 } from '../../helpers/Timer/timerFlow';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 interface Props {
-  // timerState: any;
-  // setTimerState: React.Dispatch<React.SetStateAction<any>>;
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   joinedUserTrail: any;
@@ -62,7 +62,7 @@ const SessionTimer = ({
         }, 1000);
       } else if (
         sessionDetails.elapsedShortBreakTime <
-          sessionDetails.initialShortBreakTime
+        sessionDetails.initialShortBreakTime
       ) {
         intervalId = setInterval(() => {
           shortBreak(setSessionDetails, sessionDetails);
@@ -119,6 +119,20 @@ const SessionTimer = ({
           <Text style={{color: 'white'}}>Skip Break</Text>
         </Pressable>
       )}
+      {
+        <Pressable
+          onPress={() => {
+            sessionDetails.isPaused === false
+              ? pauseSession(setSessionDetails)
+              : resumeSession(setSessionDetails);
+          }}>
+          <Text style={{color: 'white'}}>
+            { sessionDetails.isPaused === false
+              ? 'Pause Session'
+              : 'Resume Session'}
+          </Text>
+        </Pressable>
+      }
     </SafeAreaView>
   );
 };
