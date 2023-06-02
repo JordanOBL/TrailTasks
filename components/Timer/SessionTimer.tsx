@@ -14,6 +14,7 @@ import {
 } from '../../helpers/Timer/timerFlow';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {UserContext} from '../../App';
+import DistanceProgressBar from '../DistanceProgressBar';
 
 interface Props {
   sessionDetails: SessionDetails;
@@ -164,6 +165,7 @@ const SessionTimer = ({
           </Text>
         </Pressable>
       }
+      <DistanceProgressBar sessionDetails={sessionDetails} pace={sessionDetails.pace} trailDistance={Number(joinedUserTrail.trail_distance)}  trailProgress={Number(joinedUserTrail.trail_progress)}/>
     </SafeAreaView>
   );
 };
