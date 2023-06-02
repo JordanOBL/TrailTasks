@@ -8,16 +8,15 @@ import {useDatabase} from '@nozbe/watermelondb/hooks';
 import getJoinedUserTrail from '../helpers/Timer/getJoinedUserTrail';
 import {SessionDetails} from '../types/session';
 
-const TimerScreen = () => {
+const TimerScreen = () =>
+{
+  //@ts-ignore
   const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
-  const {joinedUserTrail} = getJoinedUserTrail(watermelonDatabase, userId);
-  // const [timerState, setTimerState] = React.useState({
-  //   pomodoroTime: null,
-  //   shortBreakTime: null,
-  //   longBreakTime: null,
-  // });
-
+  const {joinedUserTrail, setJoinedUserTrail} = getJoinedUserTrail(
+    watermelonDatabase,
+    userId
+  );
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
     isSessionStarted: false,
     isPaused: false,
@@ -37,7 +36,8 @@ const TimerScreen = () => {
     strikes: 0,
     endSessionModal: false,
     totalSessionTime: 0,
-    totalDistanceHiked: 0,
+    presaveDistanceHiked: 0.00,
+    totalDistanceHiked: 0.00,
     isLoading: false,
     isError: false,
   });
@@ -56,6 +56,7 @@ const TimerScreen = () => {
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
           joinedUserTrail={joinedUserTrail}
+          setJoinedUserTrail={setJoinedUserTrail}
         />
       )}
     </SafeAreaView>

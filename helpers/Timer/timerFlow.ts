@@ -3,8 +3,10 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import {formatDateTime} from '../formatDateTime';
 import {User, User_Miles, User_Session} from '../../watermelon/models';
-import {SessionDetails} from '../../types/session';
+import {JoinedUserTrail, SessionDetails} from '../../types/session';
 import {Vibration} from 'react-native';
+import nextHundredthMileSeconds from './nextHundrethMileSeconds';
+
 export async function createSession({
   database,
   userId,
@@ -22,12 +24,19 @@ export async function createSession({
     const newSession = await database
       .get('users_sessions')
       .create((userSession) => {
+        //@ts-ignore
         userSession.userId = userId;
+        //@ts-ignore
         userSession.sessionName = sessionName;
+        //@ts-ignore
         userSession.sessionDescription = sessionDescription;
+        //@ts-ignore
         userSession.sessionCategoryId = sessionCategoryId.toString();
+        //@ts-ignore
         userSession.dateAdded = formatDateTime(new Date());
+        //@ts-ignore
         userSession.totalSessionTime = 0;
+        //@ts-ignore
         userSession.totalDistanceHiked = '0.00';
       });
   } catch (err) {
@@ -38,47 +47,100 @@ export async function createSession({
   }
 }
 
-//updating a session
+//increase distance hiked
+export function increaseDistanceHiked(
+  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>,
+  joinedUserTrail: JoinedUserTrail,
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  sessionDetails: SessionDetails
+) {
+  //UPDATE CURRENT TRAILDISTANCE in session when user walks .01 miles
 
-//update users_miles
-export async function save({
-  database,
-  userId,
-  sessionDetails
-}: {
-  database: Database;
-  userId: string;
-  sessionDetails: SessionDetails;
-}) {
+  //increase state current_trail_distance, user total miles by .01 every .01 miles (pace dependent)
+  console.log({
+    0: sessionDetails.totalDistanceHiked,
+    1: sessionDetails.presaveDistanceHiked,
+    2: joinedUserTrail.trail_progress,
+    4: sessionDetails.pace,
+  });
+  setJoinedUserTrail((prev: any) => {
+    return {
+      ...prev,
+      trail_progress: (Number(prev.trail_progress) + 0.01).toFixed(2),
+    };
+  });
+  setSessionDetails((prev: SessionDetails) => {
+    return {
+      ...prev,
+      totalDistanceHiked: Number((prev.totalDistanceHiked + 0.01).toFixed(2)),
+      presaveDistanceHiked: Number(
+        (prev.presaveDistanceHiked + 0.01).toFixed(2)
+      ),
+    };
+  });
+}
+
+//update users_miles / user
+export async function save(
+  database: Database,
+  userId: string,
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  sessionDetails: SessionDetails,
+  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>,
+  joinedUserTrail: JoinedUserTrail
+) {
   try {
-    await database.write(async () =>
-    {
+    const sessionId: any = await database.localStorage.get('sessionId');
+    const userMilesId: string = await database.localStorage.get(
+      'users_miles_id'
+    );
+
+    const savedSession = await database.write(async () => {
       //save users miles
-      const userMiles: User_Miles = await database
-        .get('users_miles')
-        .query(Q.where('user_id', userId))
-        .fetch();
-      await userMiles.update(() => {
-        userMiles.totalMiles = (
-          Number(userMiles.totalMiles) +
-          Math.abs(Number(userMiles.totalMiles) - Number(totalDistanceHiked))
+      //@ts-ignore
+      const userMiles = await database.get('users_miles').find(userMilesId);
+      console.log(userMiles);
+      const updatedUserMiles = await userMiles.update(() => {
+        //@ts-ignore
+        userMiles.totalMiles = //@ts-ignore
+        (
+          Number(userMiles.totalMiles) + sessionDetails.presaveDistanceHiked
         ).toFixed(2);
       });
+      //console.log({updatedUserMiles})
       //save user trail progress
+      //@ts-ignore
       const user: User = await database.get('users').find(userId);
       await user.update(() => {
-        user.trailProgress = trailProgress;
+        user.trailProgress = joinedUserTrail.trail_progress;
       });
+      //save user session
+      const userSession = await database.get('users_sessions').find(sessionId);
+
+      const updatedSession = await userSession.update(() => {
+        //@ts-ignore
+        userSession.totalSessionTime = sessionDetails.totalSessionTime;
+        //@ts-ignore
+        userSession.totalDistanceHiked =
+          sessionDetails.totalDistanceHiked.toFixed(2);
+      });
+      return updatedSession;
     });
+    if (savedSession) {
+      setSessionDetails((prev) => {
+        return {...prev, presaveDistanceHiked: 0.0};
+      });
+      return savedSession;
+    }
   } catch (err) {
     console.log(
-      'Error updating user miles and user in "updateUsersMilesAndUser" helper func',
+      'Error updating user miles and user in "save" helper func',
       err
     );
   }
 }
 
-//update userInfo
+//update new trail
 export async function startNewTrail({
   database,
   userId,
@@ -90,6 +152,7 @@ export async function startNewTrail({
 }) {
   try {
     await database.write(async () => {
+      //@ts-ignore
       const user: User = await database.get('users').find(userId);
       await user.update(() => {
         user.trailId = trailId;
@@ -100,10 +163,11 @@ export async function startNewTrail({
   }
 }
 
+//reset Session State
 function resetSessionState(
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>
 ) {
-  cb((prev: any) => {
+  cb((prev: SessionDetails) => {
     return {
       isSessionStarted: false,
       isPaused: false,
@@ -123,6 +187,7 @@ function resetSessionState(
       strikes: 0,
       endSessionModal: false,
       totalSessionTime: 0,
+      presaveDistanceHiked: 0,
       totalDistanceHiked: 0,
       isLoading: false,
       isError: false,
@@ -130,7 +195,7 @@ function resetSessionState(
   });
 }
 
-//resume a session
+//resume paused session
 export function resumeSession(
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>
 ) {
@@ -139,40 +204,45 @@ export function resumeSession(
   });
 }
 
-//pause a session
-export function pauseSession(
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>
+//pause session
+export async function pauseSession(
+  database: Database,
+  userId: string,
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  sessionDetails: SessionDetails,
+  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>,
+  joinedUserTrail: JoinedUserTrail
 ) {
-  cb((prev) => {
+  await setSessionDetails((prev) => {
     return {...prev, isPaused: true};
   });
+  return true;
 }
 
 //end a session
 export async function endSession(
   database: Database,
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  sessionDetails: SessionDetails
+  userId: string,
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  sessionDetails: SessionDetails,
+  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>,
+  joinedUserTrail: JoinedUserTrail
 ) {
   try {
-    const sessionId: any = await database.localStorage.get('sessionId');
-    console.log({sessionId});
-    const updatedEndedSession = await database.write(async () => {
-      const userSession = await database.get('users_sessions').find(sessionId);
-      //@ts-ignore
-      const updatedSession = await userSession.update(() => {
-        userSession.totalSessionTime = sessionDetails.totalSessionTime;
-        userSession.totalDistanceHiked =
-          sessionDetails.totalDistanceHiked.toFixed(2);
-      });
-      return updatedSession;
-    });
-    if (updatedEndedSession) {
-      resetSessionState(cb);
+    const savedSession = await save(
+      database,
+      userId,
+      setSessionDetails,
+      sessionDetails,
+      setJoinedUserTrail,
+      joinedUserTrail
+    );
+    if (savedSession) {
+      resetSessionState(setSessionDetails);
     }
   } catch (err: any) {
     console.log(`Error in End Session helper function`, err);
-    cb((prev) => {
+    setSessionDetails((prev) => {
       return {...prev, isError: err.message};
     });
   }
@@ -249,30 +319,80 @@ const speedModifier = (
 };
 //hiking
 export async function Hike(
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  sessionDetails: SessionDetails
+  database: Database,
+  userId: string,
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  sessionDetails: SessionDetails,
+  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>,
+  joinedUserTrail: JoinedUserTrail
 ) {
-  //increase sessiondetailes elaposedPomodorotime every second
-  if (
-    sessionDetails.elapsedPomodoroTime ===
-    sessionDetails.initialPomodoroTime / 2 - 1
-  ) {
-    speedModifier(cb, sessionDetails);
+  try {
+    //increase sessiondetailes elaposedPomodorotime every second
+    if (
+      sessionDetails.elapsedPomodoroTime ===
+      sessionDetails.initialPomodoroTime / 2 - 1
+    ) {
+      speedModifier(setSessionDetails, sessionDetails);
+    }
+    if (
+      sessionDetails.totalDistanceHiked > 0 &&
+      sessionDetails.totalDistanceHiked.toFixed(2).split('.')[1] === '00'
+    ) {
+      save(
+        database,
+        userId,
+        setSessionDetails,
+        sessionDetails,
+        setJoinedUserTrail,
+        joinedUserTrail
+      );
+    }
+    if (
+      sessionDetails.elapsedPomodoroTime %
+        nextHundredthMileSeconds(sessionDetails.pace) ==
+        0 &&
+      Number(joinedUserTrail.trail_progress) <
+        Number(joinedUserTrail.trail_distance)
+    ) {
+      //increase distance hiked
+      increaseDistanceHiked(
+        setJoinedUserTrail,
+        joinedUserTrail,
+        setSessionDetails,
+        sessionDetails
+      );
+    }
+    //finish hiking if time runs out
+    if (
+      sessionDetails.elapsedPomodoroTime ===
+      sessionDetails.initialPomodoroTime - 1
+    ) {
+      speedModifier(setSessionDetails, sessionDetails);
+
+      const savedSession = await save(
+        database,
+        userId,
+        setSessionDetails,
+        sessionDetails,
+        setJoinedUserTrail,
+        joinedUserTrail
+      );
+      if (savedSession) {
+        setSessionDetails((prev: SessionDetails) => {
+          return {
+            ...prev,
+            elapsedShortBreakTime: 0,
+            elapsedLongBreakTime: 0,
+            currentSet: prev.currentSet + 1,
+            presaveDistanceHiked: 0,
+          };
+        });
+      }
+    }
+    increaseElapsedTime(setSessionDetails, 'pomodoroTime');
+  } catch (err) {
+    console.log('Error in Hike helper func', err);
   }
-  if (
-    sessionDetails.elapsedPomodoroTime ===
-    sessionDetails.initialPomodoroTime - 1
-  ) {
-    cb((prev) => {
-      return {
-        ...prev,
-        elapsedShortBreakTime: 0,
-        elapsedLongBreakTime: 0,
-        currentSet: prev.currentSet + 1,
-      };
-    });
-  }
-  increaseElapsedTime(cb, 'pomodoroTime');
 }
 
 //shortBreak
