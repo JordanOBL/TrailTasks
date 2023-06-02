@@ -1,5 +1,6 @@
 import {Database} from '@nozbe/watermelondb';
 import {formatDateTime} from '../formatDateTime';
+import {SessionDetails} from '../../types/session';
 
 const NewSessionHandlers: any = {};
 
@@ -11,9 +12,8 @@ NewSessionHandlers.checkLocalStorageSessionSettings = async (
     'category ' + sessionCategoryId + ' settings'
   );
 
-  if (recentSettings)
-  {
-    console.log('recentSettings', JSON.parse(recentSettings))
+  if (recentSettings) {
+    //@ts-ignore
     return JSON.parse(recentSettings);
   }
   return undefined;
@@ -29,8 +29,7 @@ NewSessionHandlers.SelectSessionCategoryId = async (
       sessionCategoryId,
       database
     );
-  if (recentSettings)
-  {
+  if (recentSettings) {
     cb((prev: any) => {
       return {...prev, ...recentSettings};
     });
@@ -42,7 +41,7 @@ NewSessionHandlers.SelectSessionCategoryId = async (
 };
 
 NewSessionHandlers.SessionNameChange = (
-  cb: React.Dispatch<React.SetStateAction<any>>,
+  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   value: string
 ) => {
   cb((prev: any) => {
@@ -51,7 +50,7 @@ NewSessionHandlers.SessionNameChange = (
 };
 
 NewSessionHandlers.InitialPomodoroTimeChange = (
-  cb: React.Dispatch<React.SetStateAction<any>>,
+  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   value: number
 ) => {
   cb((prev: any) => {
@@ -60,7 +59,7 @@ NewSessionHandlers.InitialPomodoroTimeChange = (
 };
 
 NewSessionHandlers.InitailShortBreakChange = (
-  cb: React.Dispatch<React.SetStateAction<any>>,
+  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   value: number
 ) => {
   cb((prev: any) => {
@@ -69,8 +68,8 @@ NewSessionHandlers.InitailShortBreakChange = (
 };
 
 NewSessionHandlers.InitialLongBreakChange = (
-  cb: React.Dispatch<React.SetStateAction<any>>,
-  value:  number
+  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  value: number
 ) => {
   cb((prev: any) => {
     return {...prev, initialLongBreakTime: value};
@@ -78,8 +77,8 @@ NewSessionHandlers.InitialLongBreakChange = (
 };
 
 NewSessionHandlers.StartSessionClick = async (
-  cb: React.Dispatch<React.SetStateAction<any>>,
-  sessionDetails: any,
+  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  sessionDetails: SessionDetails,
   userId: string,
   database: Database
 ) => {
@@ -102,7 +101,7 @@ NewSessionHandlers.StartSessionClick = async (
           userSession.totalDistanceHiked = '0.00';
           userSession.dateAdded = formatDateTime(new Date());
         });
-       return newSession;
+      return newSession;
     });
     if (newSession !== null) {
       console.log(newSession);

@@ -1,12 +1,21 @@
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import formatCountdown from '../../helpers/Timer/formatCountdown';
+import {SessionDetails} from '../../types/session';
+import {
+  Hike,
+  endSession,
+  longBreak,
+  shortBreak,
+  skipBreak,
+} from '../../helpers/Timer/timerFlow';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 interface Props {
   // timerState: any;
   // setTimerState: React.Dispatch<React.SetStateAction<any>>;
-  sessionDetails: any;
-  setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
+  sessionDetails: SessionDetails;
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   joinedUserTrail: any;
 }
 const SessionTimer = ({
@@ -16,11 +25,7 @@ const SessionTimer = ({
   sessionDetails,
   joinedUserTrail,
 }: Props) => {
-  React.useEffect(() => {
-    //if elapsedworkTime < initialPomodoroTime
-    //countdown()
-    //update()
-  });
+  const watermelonDatabase = useDatabase();
   let pomodoroCountdown = formatCountdown(
     sessionDetails.initialPomodoroTime,
     sessionDetails.elapsedPomodoroTime
@@ -33,41 +38,88 @@ const SessionTimer = ({
     sessionDetails.initialLongBreakTime,
     sessionDetails.elapsedLongBreakTime
   );
-  console.log(pomodoroCountdown + shortBreakCountdown + longBreakCountdown);
+
+  let totalFormattedSessionTime = formatCountdown(
+    sessionDetails.totalSessionTime,
+    0
+  );
+
+  let canHike =
+    sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime;
+
+  React.useEffect(() => {
+    let intervalId: any;
+    console.log(sessionDetails);
+    if (
+      sessionDetails.isPaused === false &&
+      sessionDetails.currentSet <= sessionDetails.sets
+    ) {
+      if (
+        sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
+      ) {
+        intervalId = setInterval(() => {
+          Hike(setSessionDetails, sessionDetails);
+        }, 1000);
+      } else if (
+        sessionDetails.elapsedShortBreakTime <
+          sessionDetails.initialShortBreakTime
+      ) {
+        intervalId = setInterval(() => {
+          shortBreak(setSessionDetails, sessionDetails);
+        }, 1000);
+      }
+    } else if (
+      sessionDetails.isPaused === false &&
+      sessionDetails.currentSet > sessionDetails.sets
+    ) {
+      if (
+        sessionDetails.elapsedLongBreakTime <
+        sessionDetails.initialLongBreakTime
+      ) {
+        intervalId = setInterval(() => {
+          longBreak(setSessionDetails, sessionDetails);
+        }, 1000);
+      }
+    }
+    return () => clearInterval(intervalId);
+  }, [sessionDetails]);
+
   return (
-    <View>
-      <Text>SessionTimer</Text>
+    <SafeAreaView>
+      <Text
+        style={{
+          color: sessionDetails.isPaused
+            ? 'rgb(81,83,85)'
+            : sessionDetails.isSessionStarted && !canHike
+            ? 'rgb(217,49,7)'
+            : 'rgb(7,254,213)',
+          fontSize: 60,
+          fontWeight: 'bold',
+          marginTop: 20,
+          textAlign: 'center',
+        }}>
+        {sessionDetails.isPaused === true
+          ? 'Paused'
+          : canHike === true && sessionDetails.currentSet <= sessionDetails.sets
+          ? pomodoroCountdown
+          : sessionDetails.currentSet <= sessionDetails.sets
+          ? shortBreakCountdown
+          : longBreakCountdown}
+      </Text>
+      <Text style={{color: 'white'}}>{totalFormattedSessionTime}</Text>
       <Pressable
         onPress={() =>
-          setSessionDetails((prev: any) => {
-            return {
-              isSessionStarted: false,
-              isPaused: false,
-              sessionName: '',
-              sessionDescription: '',
-              sessionCategoryId: null,
-              initialPomodoroTime: 1500,
-              initialShortBreakTime: 300,
-              initialLongBreakTime: 2700,
-              elapsedPomodoroTime: 0,
-              elapsedShortBreakTime: 0,
-              elapsedLongBreakTime: 0,
-              sets: null,
-              currentSet: 1,
-              pace: 2,
-              completedHike: false,
-              strikes: 0,
-              endSessionModal: false,
-              totalSessionTime: 0,
-              totalDistanceHiked: 0,
-              isLoading: false,
-              isError: false,
-            };
-          })
+          endSession(watermelonDatabase, setSessionDetails, sessionDetails)
         }>
         <Text style={{color: 'white'}}>End Session</Text>
       </Pressable>
-    </View>
+      {sessionDetails.elapsedPomodoroTime >=
+        sessionDetails.initialPomodoroTime && (
+        <Pressable onPress={() => skipBreak(setSessionDetails, sessionDetails)}>
+          <Text style={{color: 'white'}}>Skip Break</Text>
+        </Pressable>
+      )}
+    </SafeAreaView>
   );
 };
 

@@ -6,6 +6,7 @@ import {UserContext} from '../App';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import getJoinedUserTrail from '../helpers/Timer/getJoinedUserTrail';
+import {SessionDetails} from '../types/session';
 
 const TimerScreen = () => {
   const {userId} = React.useContext(UserContext);
@@ -17,7 +18,7 @@ const TimerScreen = () => {
   //   longBreakTime: null,
   // });
 
-  const [sessionDetails, setSessionDetails] = React.useState({
+  const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
     isSessionStarted: false,
     isPaused: false,
     sessionName: '',
@@ -29,7 +30,7 @@ const TimerScreen = () => {
     elapsedPomodoroTime: 0,
     elapsedShortBreakTime: 0,
     elapsedLongBreakTime: 0,
-    sets: null,
+    sets: 3,
     currentSet: 1,
     pace: 2,
     completedHike: false,
@@ -40,9 +41,6 @@ const TimerScreen = () => {
     isLoading: false,
     isError: false,
   });
-  React.useEffect(() => {
-    console.log(sessionDetails);
-  }, [sessionDetails]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,8 +53,6 @@ const TimerScreen = () => {
         />
       ) : (
         <SessionTimer
-          // timerState={timerState}
-          // setTimerState={setTimerState}
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
           joinedUserTrail={joinedUserTrail}
