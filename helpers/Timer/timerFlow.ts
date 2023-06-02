@@ -41,19 +41,19 @@ export async function createSession({
 //updating a session
 
 //update users_miles
-export async function updateUserMilesAndUser({
+export async function save({
   database,
   userId,
-  trailProgress,
-  totalDistanceHiked,
+  sessionDetails
 }: {
   database: Database;
   userId: string;
-  trailProgress: string;
-  totalDistanceHiked: string;
+  sessionDetails: SessionDetails;
 }) {
   try {
-    await database.write(async () => {
+    await database.write(async () =>
+    {
+      //save users miles
       const userMiles: User_Miles = await database
         .get('users_miles')
         .query(Q.where('user_id', userId))
@@ -64,6 +64,7 @@ export async function updateUserMilesAndUser({
           Math.abs(Number(userMiles.totalMiles) - Number(totalDistanceHiked))
         ).toFixed(2);
       });
+      //save user trail progress
       const user: User = await database.get('users').find(userId);
       await user.update(() => {
         user.trailProgress = trailProgress;
