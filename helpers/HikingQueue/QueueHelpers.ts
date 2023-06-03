@@ -78,7 +78,7 @@ export const replaceCurrentTrail = async ({
     const userToUpdate = await watermelonDatabase.get('users').find(user.id);
     await userToUpdate.update(() => {
       user.trailId = replacementCurrentTrailId;
-      user.trailProgress = "0.0";
+      user.trailProgress = '0.0';
       user.trailStartDate = formattedDateTime;
     });
   });
@@ -119,7 +119,7 @@ export const startNowClick = async ({
       const userToUpdate = await watermelonDatabase.get('users').find(user.id);
       await userToUpdate.update(() => {
         user.trail_id = selected_trail_id;
-        user.trail_progress = "0.0";
+        user.trail_progress = '0.0';
         user.trail_start_date = formattedDateTime;
       });
     });

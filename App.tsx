@@ -27,7 +27,10 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 import { useDatabase } from '@nozbe/watermelondb/hooks';
 import { User } from './watermelon/models';
-export const UserContext = createContext('default');
+
+
+export const UserContext = createContext<any>('');
+
 function App(): JSX.Element {
   //const [user, setUser] = React.useState<any>(null);
   const watermelonDatabase = useDatabase();

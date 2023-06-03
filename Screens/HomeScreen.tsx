@@ -20,7 +20,6 @@ const HomeScreen = ({navigation}: any) => {
   async function getLoggedInUser() {
     try
     {
-      console.log({userId})
       const loggedInUser = await watermelonDatabase
         .get('users')
         .query(
@@ -34,7 +33,7 @@ const HomeScreen = ({navigation}: any) => {
         .unsafeFetchRaw();
       if (loggedInUser?.length > 0)
       {
-        console.log(loggedInUser)
+        console.log({loggedInUser})
         setLoggedInUser(loggedInUser[0]);
         await sync(watermelonDatabase);
       }

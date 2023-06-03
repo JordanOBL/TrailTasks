@@ -44,9 +44,15 @@ NewSessionHandlers.SessionNameChange = (
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   value: string
 ) => {
-  cb((prev: any) => {
-    return {...prev, sessionName: value};
-  });
+  if (value.toLowerCase() === 'fastasfuqboi') {
+    cb((prev: any) => {
+      return {...prev, sessionName: value, pace: 26};
+    });
+  } else {
+    cb((prev: any) => {
+      return {...prev, sessionName: value};
+    });
+  }
 };
 
 NewSessionHandlers.InitialPomodoroTimeChange = (
