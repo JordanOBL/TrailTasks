@@ -41,11 +41,11 @@ export const checkExistingUser = async (
 
 //*This funtion persits logged in user from local storrage
 export const checkForLoggedInUser = async (
-  setUserId: React.Dispatch<React.SetStateAction<any>>,
+  setUserId: React.Dispatch<React.SetStateAction<string>>,
   watermelonDatabase: Database
 ) => {
   try {
-    const userId = await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
+    const userId: string | void = await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
     console.log('User info from local Storage', {userId});
 
     if (userId) {

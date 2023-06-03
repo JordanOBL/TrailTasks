@@ -62,19 +62,22 @@ const SessionTimer = ({
         sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
       ) {
         intervalId = setInterval(() => {
-          Hike(watermelonDatabase, userId,
+          Hike({
+            watermelonDatabase,
+            userId,
             setSessionDetails,
             sessionDetails,
             setJoinedUserTrail,
-            joinedUserTrail
-          );
+            joinedUserTrail,
+            canHike,
+          });
         }, 1000);
       } else if (
         sessionDetails.elapsedShortBreakTime <
         sessionDetails.initialShortBreakTime
       ) {
         intervalId = setInterval(() => {
-          shortBreak(setSessionDetails, sessionDetails);
+          shortBreak(setSessionDetails, sessionDetails, canHike);
         }, 1000);
       }
     } else if (
@@ -86,7 +89,7 @@ const SessionTimer = ({
         sessionDetails.initialLongBreakTime
       ) {
         intervalId = setInterval(() => {
-          longBreak(setSessionDetails, sessionDetails);
+          longBreak(setSessionDetails, sessionDetails, canHike);
         }, 1000);
       }
     }
@@ -115,17 +118,21 @@ const SessionTimer = ({
           ? shortBreakCountdown
           : longBreakCountdown}
       </Text>
-      <Text style={{color: 'white'}}>{totalFormattedSessionTime}</Text>
+      <Text style={{color: 'white'}}>Strikes: {sessionDetails.strikes}</Text>
+      
+      <Text style={{color: 'white'}}>
+        Total Session Time {totalFormattedSessionTime}
+      </Text>
       <Pressable
         onPress={() =>
-          endSession(
+          endSession({
             watermelonDatabase,
             userId,
             setSessionDetails,
             sessionDetails,
             setJoinedUserTrail,
-            joinedUserTrail
-          )
+            joinedUserTrail,
+          })
         }>
         <Text style={{color: 'white'}}>End Session</Text>
       </Pressable>
@@ -146,15 +153,16 @@ const SessionTimer = ({
                   sessionDetails,
                   setJoinedUserTrail,
                   joinedUserTrail
-                ).then(() =>
-                  save(
+                ).then((paused) =>
+                  save({
                     watermelonDatabase,
                     userId,
                     setSessionDetails,
                     sessionDetails,
                     setJoinedUserTrail,
-                    joinedUserTrail
-                  )
+                    joinedUserTrail,
+                    paused,
+                  })
                 )
               : resumeSession(setSessionDetails);
           }}>
@@ -165,7 +173,12 @@ const SessionTimer = ({
           </Text>
         </Pressable>
       }
-      <DistanceProgressBar sessionDetails={sessionDetails} pace={sessionDetails.pace} trailDistance={Number(joinedUserTrail.trail_distance)}  trailProgress={Number(joinedUserTrail.trail_progress)}/>
+      <DistanceProgressBar
+        sessionDetails={sessionDetails}
+        pace={sessionDetails.pace}
+        trailDistance={Number(joinedUserTrail.trail_distance)}
+        trailProgress={Number(joinedUserTrail.trail_progress)}
+      />
     </SafeAreaView>
   );
 };
