@@ -1,7 +1,7 @@
 import {StyleSheet, Text, View, ScrollView} from 'react-native';
 import * as React from 'react';
 import SyncIndicator from '../components/SyncIndicator';
-import DistanceProgressBar from '../components/Timer/DistanceProgressBar';
+import DistanceProgressBar from '../components/DistanceProgressBar';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {Pressable} from 'react-native';
 
@@ -55,7 +55,7 @@ const HomeScreen = ({navigation}: any) => {
   );
   return !loggedInUser ? (
     <View>
-      <Text style={{ color: 'white'}}>Loading Your Data...</Text>
+      <Text style={{color: 'white'}}>Loading Your Data...</Text>
     </View>
   ) : (
     <View style={styles.Container}>
@@ -76,8 +76,8 @@ const HomeScreen = ({navigation}: any) => {
           </Text>
           <Text style={styles.trailText}>{loggedInUser?.trail_name}</Text>
           <DistanceProgressBar
-          // trailDistance={user.current_trail_distance}
-          // trailProgress={user.current_trail_progress}
+            trailDistance={Number(loggedInUser.trail_distance)}
+            trailProgress={Number(loggedInUser.trail_progress)}
           />
         </View>
         <ScrollView
