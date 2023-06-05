@@ -2,17 +2,23 @@ import {StyleSheet, Text, View, SafeAreaView, FlatList} from 'react-native';
 import React from 'react';
 import EnhancedUserMile from './UserMile';
 import withObservables from '@nozbe/with-observables';
-import { User } from '../../watermelon/models';
+import {User} from '../../watermelon/models';
+import {Pressable} from 'react-native';
 interface Props {
   usersMilesCollection: any;
   userMiles: any;
-  user: User
+  user: User;
 }
 
 const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
-  console.log({ userMiles });
-  
-
+  const updateUserMiles = async (miles: any) => {
+    try {
+      const updated = await userMiles.updateTotalMiles(miles);
+      console.log({updated});
+    } catch (err) {
+      console.log('error in update user', err);
+    }
+  };
   const sortUsersMiles = (usersMilesCollection: any) => {
     return usersMilesCollection.sort((a: any, b: any) => {
       const aMiles = parseFloat(a.totalMiles);
@@ -50,6 +56,9 @@ const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
           }
         })}
       </View>
+      <Pressable onPress={() => updateUserMiles({miles: 0.01})}>
+        <Text style={{color: 'white'}}>Increase UserMiles</Text>
+      </Pressable>
       <Text style={styles.sectionTitle}>All Users: </Text>
       <SafeAreaView style={{marginBottom: 400}}>
         <FlatList
@@ -64,8 +73,6 @@ const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
           )}
         />
       </SafeAreaView>
-
-      <Text> Connect to Internet</Text>
     </SafeAreaView>
   );
 };

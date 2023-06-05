@@ -63,7 +63,7 @@ function App(): JSX.Element {
         console.log(`The database file is located at: ${dbFilePath}`);
         //await seedPgTables();
         await checkForLoggedInUser(setUser, watermelonDatabase);
-
+        console.log('sync in app')
         await sync(watermelonDatabase);
       } catch (err) {
         console.log('Error in onload in APP useEffect', err);
@@ -71,7 +71,7 @@ function App(): JSX.Element {
     };
 
     onLoad();
-  }, [user]);
+  }, []);
 
   return (
     <UserContext.Provider value={{user, setUser}}>
@@ -98,8 +98,6 @@ function App(): JSX.Element {
                     setUser={setUser}
                 setisRegistering={setisRegistering}
                 isRegistering={isRegistering}
-                
-               
               />
             )}
           </SafeAreaView>

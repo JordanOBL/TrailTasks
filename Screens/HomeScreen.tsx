@@ -24,21 +24,28 @@ interface Props {
 const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
   const {userId, setUserId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
-  
 
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
- 
-  
 
   React.useEffect(() => {
-    async  function isConnected()
-    {
-      const {connection} = await checkInternetConnection()
-      setIsConnected(connection?.isConnected)
+    async function isConnected() {
+      const {connection} = await checkInternetConnection();
+      setIsConnected(connection?.isConnected);
     }
-    
-    isConnected()
+
+    isConnected();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      sync(watermelonDatabase)
+
+      return async () => {
+
+        console.log('Timer Screen was unfocused');
+      };
+    }, [watermelonDatabase])
+  );
 
   return !user || !currentTrail ? (
     <View>
@@ -47,10 +54,25 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
   ) : (
     <View style={styles.Container}>
       {/* <SyncIndicator delay={3000} /> */}
-      <View style={{backgroundColor: 'transparent'}}>
-        <Text style={{color: isConnected ? 'green' : 'gray'}}>{isConnected ? 'Online' : 'Offline'}</Text>
+      <View
+        style={{
+          backgroundColor: 'transparent',
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          marginVertical: 10,
+          paddingHorizontal: 10,
+        }}>
+        <Text style={styles.H1}>Hello, {user.username}</Text>
+        <Text
+          style={{
+            color: isConnected ? 'green' : 'gray',
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+          }}>
+          {isConnected ? 'Online' : 'Offline'}
+        </Text>
       </View>
-      <Text style={styles.H1}>Hey, {user.username}</Text>
       <View style={styles.Container}>
         <View
           style={{
@@ -157,9 +179,8 @@ const styles = StyleSheet.create({
   H1: {
     color: 'rgb(249,253,255)',
     fontSize: 26,
-    fontWeight: '900',
-    marginVertical: 10,
-    padding: 10,
+    fontWeight: '800',
+    padding: 5,
   },
   H2: {
     color: 'rgb(249,253,255)',
