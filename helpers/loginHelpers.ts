@@ -6,58 +6,64 @@ export const checkExistingUser = async (
   email: string,
   password: string,
   watermelonDatabase: Database
-  
 ) => {
   try {
     const existingUser = await watermelonDatabase
       .get('users')
       .query(Q.where('email', email), Q.where('password', password))
       .fetch();
-    if (existingUser.length > 0)
-    {
-      //get usersMilesId
-      const usersMiles = await watermelonDatabase.get('users_miles')
-      .query(Q.where('user_id', existingUser[0].id))
-        .fetch();
-      if (usersMiles.length > 0)
-      {
-        await watermelonDatabase.localStorage.set(
-          'users_miles_id',
-          usersMiles[0].id
-        );
-      }
-      await watermelonDatabase.localStorage.set('user_id', existingUser[0].id);
-      await watermelonDatabase.localStorage.set(
-        'username',
-        //@ts-ignore
-        existingUser[0].username
-      );
-      return existingUser[0];
-    }
+
+    return existingUser[0];
   } catch (err) {
     console.log('error in checkexisting user function', err);
   }
 };
 
-//*This funtion persits logged in user from local storrage
-export const checkForLoggedInUser = async (
-  setUserId: React.Dispatch<React.SetStateAction<string>>,
+const setLocalStorageUserAndMiles = async (
+  existingUser: any,
   watermelonDatabase: Database
 ) => {
   try {
-    const userId: string | void = await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
+    await watermelonDatabase.localStorage.set('user_id', existingUser.id);
+    console.log('Set localStorage userId');
+    await watermelonDatabase.localStorage.set(
+      'username',
+      //@ts-ignore
+      existingUser.username
+    );
+    console.log('Set localStorage username');
+    //get usersMilesId
+    const usersMiles = await watermelonDatabase
+      .get('users_miles')
+      .query(Q.where('user_id', existingUser.id))
+      .fetch();
+    if (usersMiles.length > 0) {
+      await watermelonDatabase.localStorage.set(
+        'users_miles_id',
+        usersMiles[0].id
+      );
+      console.log('Set localStorage UsersMilesId');
+    }
+    return true;
+  } catch (err) {
+    console.log('Error setting localStorageUserMilesId', err);
+  }
+};
+
+//*This funtion persits logged in user from local storrage
+export const checkForLoggedInUser = async (
+  setUser: React.Dispatch<React.SetStateAction<any>>,
+  watermelonDatabase: Database
+) => {
+  try {
+    const userId: string | void = await watermelonDatabase.localStorage.get(
+      'user_id'
+    ); // string or undefined if no value for this key
     console.log('User info from local Storage', {userId});
 
     if (userId) {
-      console.log('FOUND USER!');
-      const thisUser = await watermelonDatabase
-        .get('users')
-        .query(Q.where('id', `${userId}`))
-        .fetch();
-      if (thisUser[0] !== undefined) {
-        console.log(thisUser);
-        setUserId(userId);
-      }
+      let user = await watermelonDatabase.collections.get('users').find(userId);
+      setUser(user);
     }
   } catch (error) {
     console.error('Error in checkForUser function, app.tsx', error);
@@ -67,13 +73,13 @@ export const checkForLoggedInUser = async (
 export const handleLogin = async ({
   email,
   password,
-  setUserId,
+  setUser,
   setError,
   watermelonDatabase,
 }: {
   email: string;
   password: string;
-  setUserId: React.Dispatch<React.SetStateAction<any>>;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
   watermelonDatabase: Database;
 }): Promise<void> => {
@@ -93,8 +99,14 @@ export const handleLogin = async ({
       setError('Invalid Email or Password');
       return;
     }
-    //set user info in app state
-    setUserId(existingUser._raw.id);
+    const response = await setLocalStorageUserAndMiles(
+      existingUser,
+      watermelonDatabase
+    );
+    if (response) {
+      setUser(existingUser);
+      return;
+    }
   } catch (err) {
     console.error('Error in handling Login', err);
   }

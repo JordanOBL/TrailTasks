@@ -12,11 +12,11 @@ import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 import {handleRegister} from '../helpers/registerHelpers';
 interface Props {
-  setUserId: React.Dispatch<React.SetStateAction<any>>;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
   setisRegistering: React.Dispatch<React.SetStateAction<any>>;
   isRegistering: boolean;
 }
-const Register = ({setUserId, setisRegistering, isRegistering}: Props) => {
+const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   const watermelonDatabase = useDatabase();
   const [firstName, setFirstName] = React.useState<string>('');
   const [lastName, setLastName] = React.useState<string>('');
@@ -90,7 +90,7 @@ const Register = ({setUserId, setisRegistering, isRegistering}: Props) => {
             password,
             confirmPassword,
             username,
-            setUserId,
+            setUser,
             setError,
             watermelonDatabase,
           }).then(() =>
