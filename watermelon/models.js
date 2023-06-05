@@ -58,7 +58,7 @@ export class User extends Model {
   static associations = {
     users_badges: {type: 'has_many', foriegnKey: 'user_id'},
     users_achievements: {type: 'has_many', foriegnKey: 'user_id'},
-    users_miles: {type: 'has_many', key: 'user_id'},
+    users_sessions: {type: 'has_many', key: 'user_id'},
     trails: {type: 'belongs_to', key: 'trail_id'},
   };
 
@@ -77,10 +77,10 @@ export class User extends Model {
 
   @relation('trails', 'trail_id') trail;
 
-  @children('users_sessions') users_sessions;
-  @children('users_badges') users_badges;
-  @children('users_achievements') users_achievements;
-  @children('users_miles') users_miles;
+  @children('users_sessions') usersSessions;
+  @children('users_badges') usersBadges;
+  @children('users_achievements') usersAchievements;
+  @children('users_miles') usersMiles;
 
   //get all users completed Trails
   @lazy
@@ -94,19 +94,28 @@ export class User extends Model {
     .get('trails')
     .query(Q.on('hiking_queue', 'user_id', this.id));
 
-  //get all users achievements
   @lazy
-  usersAchievements = this.collections
-    .get('achievements')
-    .query(Q.on('users_achievements', 'user_id', this.id));
+  currentTrail = this.collections
+    .get('trails')
+    .query(Q.where('id', this.trailId));
 
-  //get all users badges
-  @lazy
-  usersBadges = this.collections
-    .get('users_badges')
-    .query(Q.on('users_badges', 'user_id', this.id));
+  //get all users achievements
+  // @lazy
+  // usersAchievements = this.collections
+  //   .get('achievements')
+  //   .query(Q.on('users_achievements', 'user_id', this.id));
+
+  // //get all users badges
+  // @lazy
+  // usersBadges = this.collections
+  //   .get('users_badges')
+  //   .query(Q.on('users_badges', 'user_id', this.id))o;
 
   // Actions ---------------
+  @writer
+  getTrail() {
+    return this.collections.get('trails').find(this.trailId);
+  }
   // getUser
   @writer async getUser() {
     return {
