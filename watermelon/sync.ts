@@ -6,14 +6,24 @@ import {User, Park} from './models';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import {Database} from '@nozbe/watermelondb';
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
+import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
+//singleton
 let isRunning = false;
 
 export async function sync(database: Database) {
-  if (!isRunning) {
-    isRunning = true;
+  try {
+    //check internet Connection
+    const {connection} = await checkInternetConnection();
+    console.log('check connetion to sync', connection);
 
-    try {
+    //set locatStorage connection status
+    await database.localStorage.set('isConnected', connection.isConnected);
+
+    if (!isRunning && connection.isConnected) {
+      //stop more than one instance
+      isRunning = true;
+
       // const isNotFirstSync = await database.localStorage.get('isFirstSync')
       await synchronize({
         database,
@@ -65,9 +75,11 @@ export async function sync(database: Database) {
         sendCreatedAsUpdated: true,
       });
       isRunning = false;
-    } catch (err) {
-      isRunning = false;
-      console.log('Caught Error in watermelon sync', err);
-    }
-  } else console.log('Sync ALready Running');
+    } else if (isRunning === true) console.log('Sync ALready Running');
+    else if (!connection.isConnected)
+      console.log('not connected to internet for sync');
+  } catch (err) {
+    isRunning = false;
+    console.log('Caught Error in watermelon sync', err);
+  }
 }
