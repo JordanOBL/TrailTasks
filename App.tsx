@@ -25,9 +25,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import TabNavigator from './components/Navigation/TabNavigator';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
-import { useDatabase } from '@nozbe/watermelondb/hooks';
-import { User } from './watermelon/models';
-
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import {User} from './watermelon/models';
 
 export const UserContext = createContext<any>('');
 
@@ -36,11 +35,12 @@ function App(): JSX.Element {
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
   const [userId, setUserId] = useState<any>(null);
+  const [user, setUser] = useState<any>();
+  const [currentTrail, setCurrentTrail] = useState<any>();
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  
 
   //insert postgres tables
   // const seedPgTables = async () => {
@@ -54,62 +54,71 @@ function App(): JSX.Element {
   //       'Error in gettingPGTables function, app.tsx',
   //       error.message
   //     );
-  //   }
-  // };
-
-  useEffect(() =>
-  {
+  //   } };
+  useEffect(() => {
     // Do something with the Watermelon database instance
-    const onLoad = async () =>
-    {
-      try
-      {
+    const onLoad = async () => {
+      try {
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
         //await seedPgTables();
-        await checkForLoggedInUser(setUserId, watermelonDatabase);
-        await sync(watermelonDatabase);
-        
-      } catch (err: any)
-      {
-        console.log('Error in onload in APP useEffect', err.message);
+        //await checkForLoggedInUser(setUserId, watermelonDatabase);
+
+        const userId: string | void = await watermelonDatabase.localStorage.get(
+          'user_id'
+        );
+        if (userId) {
+          let user = await watermelonDatabase.collections
+            .get('users').find(userId)
+
+          //user = await user.getUser();
+          console.log({user});
+          const userCurrentTrail = await watermelonDatabase.collections
+            .get('trails')
+            .find(user.trailId);
+          console.log(userCurrentTrail);
+          setUser(user);
+          setCurrentTrail(userCurrentTrail);
+        }
+       await sync(watermelonDatabase);
+      } catch (err) {
+        console.log('Error in onload in APP useEffect', err);
       }
     };
-  
-    onLoad();
-  },[])
 
+    onLoad();
+  }, []);
 
   return (
-    <UserContext.Provider value={{userId, setUserId}}>
-      <GestureHandlerRootView style={{flex: 1}}>
-        <NavigationContainer theme={DarkTheme}>
-          <SafeAreaView style={[backgroundStyle, styles.container]}>
-            <StatusBar
-              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-              backgroundColor={backgroundStyle.backgroundColor}
+    // <UserContext.Provider value={{userId, setUserId}}>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <NavigationContainer theme={DarkTheme}>
+        <SafeAreaView style={[backgroundStyle, styles.container]}>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor={backgroundStyle.backgroundColor}
+          />
+          {/* <SyncIndicator delay={3000} />  */}
+          <Text style={styles.title}>Trail Tasks</Text>
+          {user != null ? (
+            <TabNavigator user={user} currentTrail={currentTrail} />
+          ) : isRegistering ? (
+            <RegisterScreen
+              setUserId={setUserId}
+              setisRegistering={setisRegistering}
+              isRegistering={isRegistering}
             />
-            {/* <SyncIndicator delay={3000} />  */}
-            <Text style={styles.title}>Trail Tasks</Text>
-            {userId != null ? (
-              <TabNavigator  />
-            ) : isRegistering ? (
-              <RegisterScreen
-                setUserId={setUserId}
-                setisRegistering={setisRegistering}
-                isRegistering={isRegistering}
-              />
-            ) : (
-              <LoginScreen
-                setUserId={setUserId}
-                setisRegistering={setisRegistering}
-                isRegistering={isRegistering}
-              />
-            )}
-          </SafeAreaView>
-        </NavigationContainer>
-      </GestureHandlerRootView>
-    </UserContext.Provider>
+          ) : (
+            <LoginScreen
+              setUserId={setUserId}
+              setisRegistering={setisRegistering}
+              isRegistering={isRegistering}
+            />
+          )}
+        </SafeAreaView>
+      </NavigationContainer>
+    </GestureHandlerRootView>
+    //   </UserContext.Provider>
   );
 }
 
