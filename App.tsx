@@ -34,9 +34,9 @@ function App(): JSX.Element {
   //const [user, setUser] = React.useState<any>(null);
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-  const [userId, setUserId] = useState<any>(null);
+
   const [user, setUser] = useState<any>();
-  const [currentTrail, setCurrentTrail] = useState<any>();
+
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -62,63 +62,49 @@ function App(): JSX.Element {
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
         //await seedPgTables();
-        //await checkForLoggedInUser(setUserId, watermelonDatabase);
+        await checkForLoggedInUser(setUser, watermelonDatabase);
 
-        const userId: string | void = await watermelonDatabase.localStorage.get(
-          'user_id'
-        );
-        if (userId) {
-          let user = await watermelonDatabase.collections
-            .get('users').find(userId)
-
-          //user = await user.getUser();
-          console.log({user});
-          const userCurrentTrail = await watermelonDatabase.collections
-            .get('trails')
-            .find(user.trailId);
-          console.log(userCurrentTrail);
-          setUser(user);
-          setCurrentTrail(userCurrentTrail);
-        }
-       await sync(watermelonDatabase);
+        await sync(watermelonDatabase);
       } catch (err) {
         console.log('Error in onload in APP useEffect', err);
       }
     };
 
     onLoad();
-  }, []);
+  }, [user]);
 
   return (
-    // <UserContext.Provider value={{userId, setUserId}}>
-    <GestureHandlerRootView style={{flex: 1}}>
-      <NavigationContainer theme={DarkTheme}>
-        <SafeAreaView style={[backgroundStyle, styles.container]}>
-          <StatusBar
-            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-            backgroundColor={backgroundStyle.backgroundColor}
-          />
-          {/* <SyncIndicator delay={3000} />  */}
-          <Text style={styles.title}>Trail Tasks</Text>
-          {user != null ? (
-            <TabNavigator user={user} currentTrail={currentTrail} />
-          ) : isRegistering ? (
-            <RegisterScreen
-              setUserId={setUserId}
-              setisRegistering={setisRegistering}
-              isRegistering={isRegistering}
+    <UserContext.Provider value={{user, setUser}}>
+      <GestureHandlerRootView style={{flex: 1}}>
+        <NavigationContainer theme={DarkTheme}>
+          <SafeAreaView style={[backgroundStyle, styles.container]}>
+            <StatusBar
+              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+              backgroundColor={backgroundStyle.backgroundColor}
             />
-          ) : (
-            <LoginScreen
-              setUserId={setUserId}
-              setisRegistering={setisRegistering}
-              isRegistering={isRegistering}
-            />
-          )}
-        </SafeAreaView>
-      </NavigationContainer>
-    </GestureHandlerRootView>
-    //   </UserContext.Provider>
+            {/* <SyncIndicator delay={3000} />  */}
+            <Text style={styles.title}>Trail Tasks</Text>
+            {user != null ? (
+              <TabNavigator user={user} setUser={setUser} />
+            ) : isRegistering ? (
+                <RegisterScreen
+                setUser={setUser}
+                setisRegistering={setisRegistering}
+                isRegistering={isRegistering}
+              />
+            ) : (
+                  <LoginScreen
+                    setUser={setUser}
+                setisRegistering={setisRegistering}
+                isRegistering={isRegistering}
+                
+               
+              />
+            )}
+          </SafeAreaView>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </UserContext.Provider>
   );
 }
 

@@ -18,8 +18,9 @@ interface Props {
   user: User;
   currentTrail?: any;
   navigation: any;
+  setUser: any;
 }
-const HomeScreen = ({navigation, user, currentTrail}: Props) => {
+const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
   const {userId, setUserId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
 
@@ -45,7 +46,6 @@ const HomeScreen = ({navigation, user, currentTrail}: Props) => {
             Current Trail:
           </Text>
           <Text style={styles.trailText}>{user.trailId}</Text>
-
           <DistanceProgressBar user={user} trail={currentTrail} />
         </View>
         <ScrollView
@@ -100,14 +100,14 @@ const HomeScreen = ({navigation, user, currentTrail}: Props) => {
             </Text>
           </Pressable>
           <Pressable
-            onPress={async () => handleLogOut(setUserId, watermelonDatabase)}
+            onPress={async () => handleLogOut(setUser, watermelonDatabase)}
             style={styles.LinkContainer}>
             <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
           </Pressable>
           <Pressable
             onPress={async () =>
               user.updateUserTrail({
-                trailId: '6',
+                trailId: '8',
                 trailStartedAt: formatDateTime(new Date()),
               })
             }

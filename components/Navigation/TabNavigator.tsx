@@ -5,14 +5,14 @@ import TimerScreen from '../../Screens/TimerScreen';
 import {HomeStack} from './NavigationStacks';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { User } from '../../watermelon/models';
+import {User} from '../../watermelon/models';
 const Tab = createBottomTabNavigator();
 interface Props {
-  user: User
-
+  user: User;
+  setUser: any;
 }
 
-const TabNavigator = ({user}:Props) => {
+const TabNavigator = ({user, setUser}: Props) => {
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
@@ -33,7 +33,7 @@ const TabNavigator = ({user}:Props) => {
         tabBarInactiveTintColor: 'gray',
       })}>
       <Tab.Screen name="Home">
-        {() => <HomeStack user={user}  />}
+        {() => <HomeStack user={user} setUser={setUser} />}
       </Tab.Screen>
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Timer" component={TimerScreen} />

@@ -10,16 +10,14 @@ import {User} from '../../watermelon/models';
 const Stack = createStackNavigator();
 interface Props {
   user: User;
+  setUser: any;
 }
-export function HomeStack({user}: Props) {
+export function HomeStack({user, setUser}: Props) {
   return (
     <Stack.Navigator>
       <Stack.Screen name="HomeScreen" options={{headerShown: false}}>
         {(props: any) => (
-          <EnhancedHomeScreen
-            {...props}
-            user={user}
-          />
+          <EnhancedHomeScreen {...props} user={user} setUser={setUser} />
         )}
       </Stack.Screen>
       <Stack.Screen name="Achievements" component={AchievementsScreen} />
