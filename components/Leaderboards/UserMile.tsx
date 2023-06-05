@@ -1,11 +1,14 @@
-import { StyleSheet, Text, View, SafeAreaView } from 'react-native'
-import React from 'react'
-
-interface Props
-{
-  item: any, index: number, user: any
+import {StyleSheet, Text, View, SafeAreaView} from 'react-native';
+import React from 'react';
+import withObservables from '@nozbe/with-observables';
+import { User } from '../../watermelon/models';
+interface Props {
+  userMiles: any;
+  index: number;
+  user: User,
+  otherUser: User
 }
-const UserRow = ({item, index, user}: Props) => {
+const UserMile = ({userMiles, index, user, otherUser}: Props) => {
   return (
     <SafeAreaView
       style={{
@@ -17,7 +20,7 @@ const UserRow = ({item, index, user}: Props) => {
       <View
         style={{
           borderColor:
-            item.user_id === user.id ? 'rgb(7,254,213)' : 'rgb(61,63,65)',
+            userMiles.userId === user.id ? 'rgb(7,254,213)' : 'rgb(61,63,65)',
           borderWidth: 1,
           padding: 5,
           width: '20%',
@@ -26,7 +29,9 @@ const UserRow = ({item, index, user}: Props) => {
         <Text
           style={{
             color:
-              item.user_id === user.id ? 'rgb(7,254,213)' : 'rgb(151,153,155)',
+              userMiles.userId === user.id
+                ? 'rgb(7,254,213)'
+                : 'rgb(151,153,155)',
             fontWeight: 'bold',
             fontSize: 18,
             textAlign: 'center',
@@ -38,7 +43,7 @@ const UserRow = ({item, index, user}: Props) => {
       <View
         style={{
           borderColor:
-            item.user_id === user.id ? 'rgb(7,254,213)' : 'rgb(61,63,65)',
+            userMiles.userId === user.id ? 'rgb(7,254,213)' : 'rgb(61,63,65)',
           borderWidth: 1,
           width: '50%',
           padding: 5,
@@ -47,18 +52,20 @@ const UserRow = ({item, index, user}: Props) => {
         <Text
           style={{
             color:
-              item.user_id == user.id ? 'rgb(7,254,213)' : 'rgb(161,163,165)',
+              userMiles.userId == user.id
+                ? 'rgb(7,254,213)'
+                : 'rgb(161,163,165)',
             fontWeight: 'bold',
             fontSize: 18,
             textAlign: 'center',
           }}>
-          {item.username}
+          {otherUser.username}
         </Text>
       </View>
       <View
         style={{
           borderColor:
-            item.user_id === user.id ? 'rgb(7,254,213)' : 'rgb(61,63,65)',
+            userMiles.userId === user.id ? 'rgb(7,254,213)' : 'rgb(61,63,65)',
           borderWidth: 1,
           width: '30%',
           padding: 5,
@@ -67,18 +74,26 @@ const UserRow = ({item, index, user}: Props) => {
         <Text
           style={{
             color:
-              item.user_id === user.id ? 'rgb(7,254,213)' : 'rgb(161,163,165)',
+              userMiles.userId === user.id
+                ? 'rgb(7,254,213)'
+                : 'rgb(161,163,165)',
             fontWeight: 'bold',
             fontSize: 18,
             textAlign: 'center',
           }}>
-          {item.total_miles} mi.
+          {userMiles.totalMiles} mi.
         </Text>
       </View>
     </SafeAreaView>
   );
-}
+};
 
-export default UserRow
+const enhance = withObservables(['userMiles'], ({userMiles}) => ({
+  userMiles,
+ otherUser : userMiles.user.observe()
+}));
 
-const styles = StyleSheet.create({})
+const EnhancedUserMile = enhance(UserMile);
+export default EnhancedUserMile;
+
+const styles = StyleSheet.create({});

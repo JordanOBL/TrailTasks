@@ -25,7 +25,11 @@ export function HomeStack({user, setUser}: Props) {
       <Stack.Screen name="Stats" component={StatsScreen} />
       <Stack.Screen name="Friends" component={FriendsScreen} />
       <Stack.Screen name="CompletedHikes" component={CompletedHikesScreen} />
-      <Stack.Screen name="Leaderboards" component={LeaderboardsScreen} />
+      <Stack.Screen name="Leaderboards">
+        {(props: any) => (
+          <LeaderboardsScreen {...props}  />
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }

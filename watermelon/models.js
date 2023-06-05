@@ -330,6 +330,7 @@ export class User_Miles extends Model {
   @immutableRelation('users', 'user_id') user;
 
   @children('users') users;
+
 }
 export class User_Badge extends Model {
   static table = 'users_badges';
