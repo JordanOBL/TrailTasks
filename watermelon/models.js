@@ -199,7 +199,7 @@ export class User extends Model {
     return await this.collections
       .get('completed_hikes')
       .create((completedHike) => {
-        completedHike.user_id.set(this);
+        completedHike.userId.set(this);
         completedHike.trailId = trailId;
         completedHike.bestCompletedTime = bestCompletedTime;
         completedHike.firstCompletedAt = firstCompletedAt;
@@ -331,6 +331,13 @@ export class User_Miles extends Model {
 
   @children('users') users;
 
+  @writer async updateTotalMiles({miles}) {
+    return await this.update((userMile) => {
+      userMile.totalMiles = (parseFloat(userMile.totalMiles) + miles).toFixed(
+        2
+      );
+    });
+  }
 }
 export class User_Badge extends Model {
   static table = 'users_badges';

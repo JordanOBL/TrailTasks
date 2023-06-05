@@ -1,9 +1,5 @@
 import {StyleSheet, Text, SafeAreaView} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import withObservables from '@nozbe/with-observables';
-import Leaderboard from '../components/Leaderboards/Leaderboard';
-import getUser from '../helpers/getUser';
-import useLeaderboard from '../helpers/Leaderboard/getLeaderboard';
 import SyncIndicator from '../components/SyncIndicator';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
@@ -17,6 +13,7 @@ const LeaderboardsScreen = () => {
   const [usersMilesCollection, setUsersMilesCollection] = useState<any>(null);
   const [currentUsersMiles, setCurrentUsersMiles] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
+  
   async function getUsersMiles()
   {
     const usersMilesId = await watermelonDatabase.localStorage.get('users_miles_id')
@@ -33,16 +30,19 @@ const LeaderboardsScreen = () => {
     setCurrentUsersMiles(usersMiles);
   }
 
-  useEffect(() => {
-    if (usersMilesCollection == null || currentUsersMiles === null) {
-      getUsersMiles();
+  useEffect(() =>
+  {
+    
+    if (usersMilesCollection == null || currentUsersMiles === null)
+    {
+      console.log('sync in lbs')
+      sync(watermelonDatabase).then(()=>getUsersMiles()).catch(e => console.log('error in leaderboeardscreen useeffect', e));
     }
-  }, [currentUsersMiles, usersMilesCollection]);
+  }, [currentUsersMiles, usersMilesCollection, watermelonDatabase]);
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* {user && leaderboard && <SyncIndicator database={watermelonDatabase} delay={3000} />}
-      <Leaderboard user={user} milesLeaderboard={leaderboard!} /> */}
+      <SyncIndicator database={watermelonDatabase} delay={3000} />
       {currentUsersMiles !== null && usersMilesCollection !== null ? 
       <EnhancedLeaderboard usersMilesCollection={usersMilesCollection} user={user} userMiles={currentUsersMiles} /> : <Text>Loading...</Text>}
     </SafeAreaView>

@@ -23,7 +23,7 @@ export async function sync(database: Database) {
     if (!isRunning && connection.isConnected) {
       //stop more than one instance
       isRunning = true;
-
+      console.log('syncing');
       // const isNotFirstSync = await database.localStorage.get('isFirstSync')
       await synchronize({
         database,
@@ -75,9 +75,11 @@ export async function sync(database: Database) {
         sendCreatedAsUpdated: true,
       });
       isRunning = false;
-    } else if (isRunning === true) console.log('Sync ALready Running');
-    else if (!connection.isConnected)
+    } else if (isRunning === true) {
+      console.log('Sync ALready Running');
+    } else if (!connection.isConnected) {
       console.log('not connected to internet for sync');
+    }
   } catch (err) {
     isRunning = false;
     console.log('Caught Error in watermelon sync', err);
