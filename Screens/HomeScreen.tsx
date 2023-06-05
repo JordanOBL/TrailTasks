@@ -45,7 +45,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
           <Text style={[styles.H2, {margin: 0, color: 'rgb(7,254,213)'}]}>
             Current Trail:
           </Text>
-          <Text style={styles.trailText}>{user.trailId}</Text>
+          <Text style={styles.trailText}>{currentTrail.trailName}</Text>
           <DistanceProgressBar user={user} trail={currentTrail} />
         </View>
         <ScrollView
@@ -107,7 +107,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
           <Pressable
             onPress={async () =>
               user.updateUserTrail({
-                trailId: '8',
+                trailId: '3',
                 trailStartedAt: formatDateTime(new Date()),
               })
             }
