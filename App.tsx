@@ -82,6 +82,7 @@ function App(): JSX.Element {
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
               backgroundColor={backgroundStyle.backgroundColor}
             />
+            
             {/* <SyncIndicator delay={3000} />  */}
             <Text style={styles.title}>Trail Tasks</Text>
             {user != null ? (

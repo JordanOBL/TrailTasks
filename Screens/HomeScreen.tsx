@@ -13,6 +13,7 @@ import {sync} from '../watermelon/sync';
 import {Q} from '@nozbe/watermelondb';
 import {User} from '../watermelon/models';
 import {formatDateTime} from '../helpers/formatDateTime';
+import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
 interface Props {
   user: User;
@@ -23,30 +24,21 @@ interface Props {
 const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
   const {userId, setUserId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
+  
 
-  const [usersMilesCollection, setUsersMilesCollection] = React.useState<any>(null);
-  const [currentUsersMiles, setCurrentUsersMiles] = React.useState<any>(null);
-  async function getUsersMiles() {
-    const usersMilesId = await watermelonDatabase.localStorage.get('users_miles_id');
-    const usersMilesCollection = await watermelonDatabase.collections
-      .get('users_miles')
-      .query()
-      .fetch();
-    const usersMiles = await watermelonDatabase.collections
-      .get('users_miles')
-      .find(usersMilesId);
-    console.log({usersMilesCollection});
-    console.log({ usersMiles });
-    console.log(usersMilesId)
-    setUsersMilesCollection(usersMilesCollection);
-    setCurrentUsersMiles(usersMiles);
-  }
+  const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
+ 
+  
 
   React.useEffect(() => {
-    if (!usersMilesCollection || !currentUsersMiles) {
-      getUsersMiles();
+    async  function isConnected()
+    {
+      const {connection} = await checkInternetConnection()
+      setIsConnected(connection?.isConnected)
     }
-  }, [currentUsersMiles, usersMilesCollection]);
+    
+    isConnected()
+  }, []);
 
   return !user || !currentTrail ? (
     <View>
@@ -55,6 +47,9 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
   ) : (
     <View style={styles.Container}>
       {/* <SyncIndicator delay={3000} /> */}
+      <View style={{backgroundColor: 'transparent'}}>
+        <Text style={{color: isConnected ? 'green' : 'gray'}}>{isConnected ? 'Online' : 'Offline'}</Text>
+      </View>
       <Text style={styles.H1}>Hey, {user.username}</Text>
       <View style={styles.Container}>
         <View
@@ -127,8 +122,8 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
             onPress={async () => handleLogOut(setUser, watermelonDatabase)}
             style={styles.LinkContainer}>
             <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
-            </Pressable>
-         
+          </Pressable>
+
           <Pressable
             onPress={async () =>
               user.updateUserTrail({
