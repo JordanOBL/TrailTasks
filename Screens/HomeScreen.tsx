@@ -24,6 +24,30 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
   const {userId, setUserId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
 
+  const [usersMilesCollection, setUsersMilesCollection] = React.useState<any>(null);
+  const [currentUsersMiles, setCurrentUsersMiles] = React.useState<any>(null);
+  async function getUsersMiles() {
+    const usersMilesId = await watermelonDatabase.localStorage.get('users_miles_id');
+    const usersMilesCollection = await watermelonDatabase.collections
+      .get('users_miles')
+      .query()
+      .fetch();
+    const usersMiles = await watermelonDatabase.collections
+      .get('users_miles')
+      .find(usersMilesId);
+    console.log({usersMilesCollection});
+    console.log({ usersMiles });
+    console.log(usersMilesId)
+    setUsersMilesCollection(usersMilesCollection);
+    setCurrentUsersMiles(usersMiles);
+  }
+
+  React.useEffect(() => {
+    if (!usersMilesCollection || !currentUsersMiles) {
+      getUsersMiles();
+    }
+  }, [currentUsersMiles, usersMilesCollection]);
+
   return !user || !currentTrail ? (
     <View>
       <Text style={{color: 'white'}}>Loading Your Data...</Text>
@@ -103,7 +127,8 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
             onPress={async () => handleLogOut(setUser, watermelonDatabase)}
             style={styles.LinkContainer}>
             <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
-          </Pressable>
+            </Pressable>
+         
           <Pressable
             onPress={async () =>
               user.updateUserTrail({
