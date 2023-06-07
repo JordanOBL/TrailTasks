@@ -31,6 +31,7 @@ export class Trail extends Model {
     parks: {type: 'belongs_to', key: 'park_id'},
     users: {type: 'has_many', foreignKey: 'trail_id'},
     completed_hikes: {type: 'has_many', foreignKey: 'trail_id'},
+    hiking_queue: {type: 'has_many', foreignKey: 'trail_id'},
   };
   //fields
 
@@ -47,11 +48,13 @@ export class Trail extends Model {
 
   ////!possibly show all uses currently hiking the trail at the time
   @children('users') users;
+  @children('completed_hikes') completedHikes;
+  @children('hiking_queue') hikingQueue;
 
-  @lazy
-  completedBy = this.collections
-    .get('users')
-    .query(Q.on('completed_hikes', 'trail_id', this.id));
+  // @lazy
+  // park = this.collections
+  //   .get('parks')
+  //   .query(Q.on('completed_hikes', 'trail_id', this.id));
 }
 
 export class User extends Model {
@@ -219,6 +222,8 @@ export class User extends Model {
       );
     return completedHike[0];
   }
+
+  
 }
 
 export class Park_State extends Model {

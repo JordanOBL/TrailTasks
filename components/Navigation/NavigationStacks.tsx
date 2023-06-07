@@ -24,7 +24,7 @@ export function HomeStack({user, setUser}: Props) {
       <Stack.Screen name="HikingQueue" component={HikingQueueScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
       <Stack.Screen name="Friends" component={FriendsScreen} />
-      <Stack.Screen name="CompletedHikes" options={{headerShown: false}}>
+      <Stack.Screen name="CompletedHikes">
         {(props: any) => (
           <EnhancedCompletedHikesScreen {...props} user={user} setUser={setUser} />
         )}
