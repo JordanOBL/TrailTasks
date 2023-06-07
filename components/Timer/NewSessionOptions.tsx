@@ -9,7 +9,7 @@ import {
 
 import React from 'react';
 import SelectDropdown from 'react-native-select-dropdown';
-import {User_Session} from '../../watermelon/models';
+import {User, User_Session} from '../../watermelon/models';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {formatDateTime} from '../../helpers/formatDateTime';
 import { UserContext } from '../../App';
@@ -20,15 +20,17 @@ import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 interface Props {
   sessionDetails: any;
   setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
+  setUserSession: React.Dispatch<React.SetStateAction<any>>;
+  user: User
 }
 
-const NewSessionOptions = ({ sessionDetails, setSessionDetails }: Props) =>
+const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession , user}: Props) =>
 {
   //@ts-ignore
   const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
   
-React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
+//React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
   return (
     <SafeAreaView style={styles.container}>
       <View style={[styles.dropdownContainer, {width: '100%'}]}>
@@ -56,7 +58,6 @@ React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
         <SelectDropdown
           data={sessionCategories}
           onSelect={(selectedItem, index) => {
-            console.log(selectedItem, index);
             NewSessionHandlers.SelectSessionCategoryId(
               setSessionDetails,
               selectedItem.session_category_id,
@@ -190,9 +191,30 @@ React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
             NewSessionHandlers.StartSessionClick(
               setSessionDetails,
               sessionDetails,
-              userId,
+              user,
               watermelonDatabase
-            );
+            ).then((newSession: User_Session) =>
+            {
+              if (newSession)
+              {
+                setUserSession(newSession)
+                setSessionDetails((prev: any) =>
+                {
+                  return {...prev, isSessionStarted: true, isLoading: false};
+                });
+
+              } else
+              {
+                setSessionDetails((prev: any) => {
+                  return {
+                    ...prev,
+                    isLoading: false,
+                    isError:
+                      'Error creating new Session in handleStartSession func',
+                  };
+                });
+              }
+            })
           }
         }}
         style={[

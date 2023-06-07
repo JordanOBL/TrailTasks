@@ -14,8 +14,8 @@ import {
 export class Park extends Model {
   static table = 'parks';
   static associations = {
-    trails: {type: 'has_many', foriegnKey: 'park_id'},
-    parks_states: {type: 'has_many', foriegnKey: 'park_id'},
+    trails: {type: 'has_many', foreignKey: 'park_id'},
+    parks_states: {type: 'has_many', foreignKey: 'park_id'},
   };
 
   @field('park_name') parkName;
@@ -29,8 +29,8 @@ export class Trail extends Model {
   static table = 'trails';
   static associations = {
     parks: {type: 'belongs_to', key: 'park_id'},
-    users: {type: 'has_many', foriegnKey: 'trail_id'},
-    completed_hikes: {type: 'has_many', foriegnkey: 'trail_id'},
+    users: {type: 'has_many', foreignKey: 'trail_id'},
+    completed_hikes: {type: 'has_many', foreignKey: 'trail_id'},
   };
   //fields
 
@@ -56,10 +56,13 @@ export class Trail extends Model {
 export class User extends Model {
   static table = 'users';
   static associations = {
-    users_badges: {type: 'has_many', foriegnKey: 'user_id'},
-    users_achievements: {type: 'has_many', foriegnKey: 'user_id'},
+    users_badges: {type: 'has_many', foreignKey: 'user_id'},
+    users_achievements: {type: 'has_many', foreignKey: 'user_id'},
     users_sessions: {type: 'has_many', key: 'user_id'},
     trails: {type: 'belongs_to', key: 'trail_id'},
+    completed_hikes: {type: 'has_many', foreignKey: 'user_id'},
+    hiking_queue: {type: 'has_many', foreignKey: 'user_id'},
+    users_miles: {type: 'has_many', foreignKey: 'user_id'},
   };
 
   @field('username') username;
@@ -81,41 +84,15 @@ export class User extends Model {
   @children('users_badges') usersBadges;
   @children('users_achievements') usersAchievements;
   @children('users_miles') usersMiles;
+  @children('completed_hikes') completedHikes;
+  @children('hiking_queue') hikingQueue;
 
-  //get all users completed Trails
-  @lazy
-  completedTrails = this.collections
-    .get('trails')
-    .query(Q.on('completed_hikes', 'user_id', this.id));
-
-  //get all users next hikes
-  @lazy
-  userHikingQueue = this.collections
-    .get('trails')
-    .query(Q.on('hiking_queue', 'user_id', this.id));
-
-  @lazy
-  currentTrail = this.collections
-    .get('trails')
-    .query(Q.where('id', this.trailId));
-
-  //get all users achievements
-  // @lazy
-  // usersAchievements = this.collections
-  //   .get('achievements')
-  //   .query(Q.on('users_achievements', 'user_id', this.id));
-
-  // //get all users badges
-  // @lazy
-  // usersBadges = this.collections
-  //   .get('users_badges')
-  //   .query(Q.on('users_badges', 'user_id', this.id))o;
-
+  @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id))
   // Actions ---------------
-  @writer
-  getTrail() {
-    return this.collections.get('trails').find(this.trailId);
-  }
+  // @writer
+  // getTrail() {
+  //   return this.collections.get('trails').find(this.trailId);
+  // }
   // getUser
   @writer async getUser() {
     return {
@@ -135,11 +112,18 @@ export class User extends Model {
     };
   }
   //update User Trail
+  //miles: number
+  @writer async updateTrailProgress({miles}) {
+    return await this.update(() => {
+      this.trailProgress = (Number(this.trailProgress) + miles).toFixed(2);
+    });
+  }
+  //update User Trail
   @writer async updateUserTrail({trailId, trailStartedAt}) {
-    return await this.update((user) => {
-      user.trailId = trailId;
-      user.trailProgress = '0.00';
-      user.trailStartedAt = trailStartedAt;
+    return await this.update(() => {
+      this.trailId = trailId;
+      this.trailProgress = '0.00';
+      this.trailStartedAt = trailStartedAt;
     });
   }
   //Add User`
@@ -170,6 +154,12 @@ export class User extends Model {
     return await this.collections.get('users_miles').create((user_miles) => {
       user_miles.user_id.set(this);
       user_miles.totalMiles = '0.00';
+    });
+  }
+
+  @writer async updateTotalUserMiles({miles}) {
+    return await this.usersMiles.update((userMile) => {
+      userMile.totalMiles = (Number(userMile.totalMiles) + miles).toFixed(2);
     });
   }
   //add User Session
@@ -206,6 +196,31 @@ export class User extends Model {
         completedHike.lastCompletedAt = lastCompletedAt;
       });
   }
+  //update completed hike
+  @writer async updateCompletedHike({
+    completedHikeId,
+    bestCompletedTime,
+    lastCompletedAt,
+  }) {
+    const completedHike = await this.collections
+      .get('completed_hikes')
+      .find(completedHikeId);
+    // eslint-disable-next-line no-shadow
+    return await completedHike.update((completedHike) => {
+      completedHike.bestCompletedTime = bestCompletedTime;
+      completedHike.lastCompletedAt = lastCompletedAt;
+    });
+  }
+
+  //create completed_hike
+  @writer async hasTrailBeenCompleted() {
+    const completedHike = await this.collections
+      .get('completed_hikes')
+      .query(
+        Q.and(Q.where('user_id', this.id), Q.where('trail_id', this.trailId))
+      );
+    return completedHike[0];
+  }
 }
 
 export class Park_State extends Model {
@@ -223,7 +238,7 @@ export class Park_State extends Model {
 export class Badge extends Model {
   static table = 'badges';
   static associations = {
-    users_badges: {type: 'has_many', foriegnKey: 'badge_id'},
+    users_badges: {type: 'has_many', foreignKey: 'badge_id'},
   };
 
   @field('badge_name') badgeName;
@@ -243,7 +258,7 @@ export class Badge extends Model {
 export class Achievement extends Model {
   static table = 'achievements';
   static associations = {
-    users_achievements: {type: 'has_many', foriegnKey: 'achievement_id'},
+    users_achievements: {type: 'has_many', foreignKey: 'achievement_id'},
   };
   @field('achievement_name') achievementName;
   @field('achievement_description') achievementDescription;
@@ -302,7 +317,7 @@ export class Hiking_Queue extends Model {
   static table = 'hiking_queue';
   static associations = {
     trails: {type: 'belongs_to', key: 'trail_id'},
-    users: {type: 'belongs_to', key: 'user_id'},
+    users: {type: 'belongs_to', key: 'id'},
   };
 
   @field('user_id') userId;
@@ -332,10 +347,8 @@ export class User_Miles extends Model {
   @children('users') users;
 
   @writer async updateTotalMiles({miles}) {
-    return await this.update((userMile) => {
-      userMile.totalMiles = (parseFloat(userMile.totalMiles) + miles).toFixed(
-        2
-      );
+    return await this.update(() => {
+      this.totalMiles = (Number(this.totalMiles) + miles).toFixed(2);
     });
   }
 }
@@ -397,4 +410,18 @@ export class User_Session extends Model {
   sessionCategory;
 
   @children('users') users;
+
+  @writer async updateTotalDistanceHiked({miles}) {
+    return await this.update(() => {
+      this.totalDistanceHiked = (
+        Number(this.totalDistanceHiked) + miles
+      ).toFixed(2);
+    });
+  }
+
+  @writer async updateTotalSessionTime() {
+    return await this.update(() => {
+      this.totalSessionTime = this.totalSessionTime + 1;
+    });
+  }
 }

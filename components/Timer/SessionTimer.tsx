@@ -8,28 +8,44 @@ import {
   longBreak,
   pauseSession,
   resumeSession,
-  save,
+  //save,
   shortBreak,
   skipBreak,
 } from '../../helpers/Timer/timerFlow';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {UserContext} from '../../App';
-import DistanceProgressBar from '../DistanceProgressBar';
-
+import EnhancedDistanceProgressBar from '../DistanceProgressBar';
+import {
+  Completed_Hike,
+  Hiking_Queue,
+  Trail,
+  User,
+  User_Miles,
+  User_Session,
+} from '../../watermelon/models';
+import withObservables from '@nozbe/with-observables';
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  joinedUserTrail: JoinedUserTrail;
-  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>;
+  userSession: User_Session;
+  user: User;
+  currentTrail: Trail;
+  hikingQueue: Hiking_Queue[];
+  userMiles: User_Miles;
+  completedHikes: Completed_Hike[];
 }
 const SessionTimer = ({
   setSessionDetails,
   sessionDetails,
-  setJoinedUserTrail,
-  joinedUserTrail,
+  userSession,
+  user,
+  currentTrail,
+  hikingQueue,
+  userMiles,
+  completedHikes,
 }: Props) => {
   //@ts-ignore
-  const {userId} = React.useContext(UserContext);
+  // const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
   let pomodoroCountdown = formatCountdown(
     sessionDetails.initialPomodoroTime,
@@ -51,9 +67,10 @@ const SessionTimer = ({
 
   let canHike =
     sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime;
-
   React.useEffect(() => {
     let intervalId: any;
+    console.log({ userMiles });
+    console.log({userSession})
     if (
       sessionDetails.isPaused === false &&
       sessionDetails.currentSet <= sessionDetails.sets
@@ -63,12 +80,14 @@ const SessionTimer = ({
       ) {
         intervalId = setInterval(() => {
           Hike({
-            watermelonDatabase,
-            userId,
+            user,
+            userSession,
+            completedHikes,
+            hikingQueue,
+            currentTrail,
+            userMiles,
             setSessionDetails,
             sessionDetails,
-            setJoinedUserTrail,
-            joinedUserTrail,
             canHike,
           });
         }, 1000);
@@ -119,19 +138,15 @@ const SessionTimer = ({
           : longBreakCountdown}
       </Text>
       <Text style={{color: 'white'}}>Strikes: {sessionDetails.strikes}</Text>
-      
+
       <Text style={{color: 'white'}}>
         Total Session Time {totalFormattedSessionTime}
       </Text>
       <Pressable
         onPress={() =>
           endSession({
-            watermelonDatabase,
-            userId,
             setSessionDetails,
             sessionDetails,
-            setJoinedUserTrail,
-            joinedUserTrail,
           })
         }>
         <Text style={{color: 'white'}}>End Session</Text>
@@ -146,24 +161,7 @@ const SessionTimer = ({
         <Pressable
           onPress={() => {
             sessionDetails.isPaused === false
-              ? pauseSession(
-                  watermelonDatabase,
-                  userId,
-                  setSessionDetails,
-                  sessionDetails,
-                  setJoinedUserTrail,
-                  joinedUserTrail
-                ).then((paused) =>
-                  save({
-                    watermelonDatabase,
-                    userId,
-                    setSessionDetails,
-                    sessionDetails,
-                    setJoinedUserTrail,
-                    joinedUserTrail,
-                    paused,
-                  })
-                )
+              ? pauseSession(setSessionDetails)
               : resumeSession(setSessionDetails);
           }}>
           <Text style={{color: 'white'}}>
@@ -173,16 +171,30 @@ const SessionTimer = ({
           </Text>
         </Pressable>
       }
-      <DistanceProgressBar
+      <EnhancedDistanceProgressBar
         sessionDetails={sessionDetails}
         pace={sessionDetails.pace}
-        trailDistance={Number(joinedUserTrail.trail_distance)}
-        trailProgress={Number(joinedUserTrail.trail_progress)}
+        user={user}
+        trail={currentTrail}
       />
     </SafeAreaView>
   );
 };
 
-export default SessionTimer;
+const enhance = withObservables(
+  ['user', 'currentTrail', 'completedHikes', 'hikingQueue', 'userMiles', 'userSession'],
+  ({user}) => ({
+    user: user.observe(),
+    currentTrail: user.trail.observe(),
+    completedHikes: user.completedHikes.observe(),
+    hikingQueue: user.hikingQueue.observe(),
+    userMiles: user.userMiles.observe(),
+  })
+);
+
+const EnhancedSessionTimer = enhance(SessionTimer);
+export default EnhancedSessionTimer;
+
+//export default SessionTimer;
 
 const styles = StyleSheet.create({});

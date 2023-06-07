@@ -1,7 +1,7 @@
 import {StyleSheet} from 'react-native';
 import React from 'react';
 import ExploreScreen from '../../Screens/ExploreScreen';
-import TimerScreen from '../../Screens/TimerScreen';
+import EnhancedTimerScreen from '../../Screens/TimerScreen';
 import {HomeStack} from './NavigationStacks';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -36,10 +36,14 @@ const TabNavigator = ({user, setUser}: Props) => {
         {() => <HomeStack user={user} setUser={setUser} />}
       </Tab.Screen>
       <Tab.Screen name="Explore" component={ExploreScreen} />
-      <Tab.Screen name="Timer" component={TimerScreen} />
+      <Tab.Screen name="Timer" >
+        {() => <EnhancedTimerScreen user={user} setUser={setUser} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 };
+
+
 
 export default TabNavigator;
 
