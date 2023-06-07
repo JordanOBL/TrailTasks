@@ -1,6 +1,6 @@
 import {createStackNavigator} from '@react-navigation/stack';
 import AchievementsScreen from '../../Screens/AchievementsScreen';
-import CompletedHikesScreen from '../../Screens/CompletedHikesScreen';
+import EnhancedCompletedHikesScreen from '../../Screens/CompletedHikesScreen';
 import FriendsScreen from '../../Screens/FriendsScreen';
 import HikingQueueScreen from '../../Screens/HikingQueueScreen';
 import EnhancedHomeScreen from '../../Screens/HomeScreen';
@@ -24,7 +24,11 @@ export function HomeStack({user, setUser}: Props) {
       <Stack.Screen name="HikingQueue" component={HikingQueueScreen} />
       <Stack.Screen name="Stats" component={StatsScreen} />
       <Stack.Screen name="Friends" component={FriendsScreen} />
-      <Stack.Screen name="CompletedHikes" component={CompletedHikesScreen} />
+      <Stack.Screen name="CompletedHikes" options={{headerShown: false}}>
+        {(props: any) => (
+          <EnhancedCompletedHikesScreen {...props} user={user} setUser={setUser} />
+        )}
+      </Stack.Screen>
       <Stack.Screen name="Leaderboards">
         {(props: any) => (
           <LeaderboardsScreen {...props}  />
