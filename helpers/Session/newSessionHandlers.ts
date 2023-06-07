@@ -1,6 +1,7 @@
 import {Database} from '@nozbe/watermelondb';
 import {formatDateTime} from '../formatDateTime';
 import {SessionDetails} from '../../types/session';
+import { User } from '../../watermelon/models';
 
 const NewSessionHandlers: any = {};
 
@@ -85,7 +86,7 @@ NewSessionHandlers.InitialLongBreakChange = (
 NewSessionHandlers.StartSessionClick = async (
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   sessionDetails: SessionDetails,
-  userId: string,
+  user: User,
   database: Database
 ) => {
   try {
@@ -99,7 +100,7 @@ NewSessionHandlers.StartSessionClick = async (
         .get('users_sessions')
         //@ts-ignore
         .create((userSession: User_Session) => {
-          userSession.userId = userId;
+          userSession.userId = user.id;
           userSession.sessionName = sessionDetails.sessionName;
           userSession.sessionDescription = '';
           userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
@@ -109,9 +110,9 @@ NewSessionHandlers.StartSessionClick = async (
         });
       return newSession;
     });
-    if (newSession !== null) {
+    if (newSession) {
       console.log(newSession);
-      await database.localStorage.set('sessionId', newSession._raw.id);
+      await database.localStorage.set('sessionId', newSession.id);
       await database.localStorage.set(
         'category ' + sessionDetails.sessionCategoryId + ' settings',
         JSON.stringify({
@@ -121,10 +122,7 @@ NewSessionHandlers.StartSessionClick = async (
           initialLongBreakTime: sessionDetails.initialLongBreakTime,
         })
       );
-
-      cb((prev: any) => {
-        return {...prev, isSessionStarted: true, isLoading: false};
-      });
+        return newSession;
     } else {
       cb((prev: any) => {
         return {

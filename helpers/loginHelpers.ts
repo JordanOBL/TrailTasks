@@ -59,10 +59,11 @@ export const checkForLoggedInUser = async (
     const userId: string | void = await watermelonDatabase.localStorage.get(
       'user_id'
     ); // string or undefined if no value for this key
-    console.log('User info from local Storage', {userId});
+    console.log('User info from local Storage', userId);
 
     if (userId) {
       let user = await watermelonDatabase.collections.get('users').find(userId);
+      console.log({user})
       setUser(user);
     }
   } catch (error) {

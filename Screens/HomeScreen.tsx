@@ -36,17 +36,16 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
     isConnected();
   }, []);
 
+
   useFocusEffect(
     React.useCallback(() => {
-      sync(watermelonDatabase)
+      sync(watermelonDatabase);
 
       return async () => {
-
         console.log('Timer Screen was unfocused');
       };
     }, [watermelonDatabase])
   );
-
   return !user || !currentTrail ? (
     <View>
       <Text style={{color: 'white'}}>Loading Your Data...</Text>
@@ -149,7 +148,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
           <Pressable
             onPress={async () =>
               user.updateUserTrail({
-                trailId: '3',
+                trailId: '1',
                 trailStartedAt: formatDateTime(new Date()),
               })
             }
@@ -163,7 +162,8 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
 };
 const enhance = withObservables(['user'], ({user}) => ({
   user: user.observe(),
-  currentTrail: user.trail.observe(), // Shortcut syntax for `post.comments.observe()`
+  currentTrail: user.trail.observe(),
+  // Shortcut syntax for `post.comments.observe()`
 }));
 
 const EnhancedHomeScreen = enhance(HomeScreen);
