@@ -1,49 +1,64 @@
 import {ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
-import NearbyTrails from '../components/NearbyTrails';
+import EnhancedNearbyTrails from '../components/NearbyTrails';
 import React, {useContext, useState} from 'react';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import getTrails from '../helpers/Trails/getTrails';
-import {UserContext} from '../App';
-import {sync} from '../watermelon/sync';
+import searchFilterFunction from '../helpers/searchFilter';
+import SearchBar from '../components/searchBar';
+import withObservables from '@nozbe/with-observables';
+import {Completed_Hike, Hiking_Queue, Trail, User} from '../watermelon/models';
 
-const ExploreScreen = () => {
+interface Props {
+  user: User;
+  completedHikes: Completed_Hike[];
+  hikingQueue: Hiking_Queue[];
+}
+
+const ExploreScreen = ({user, completedHikes, hikingQueue}: Props) => {
   const watermelonDatabase = useDatabase();
-  const {userId, setUserId} = useContext(UserContext);
-  const {trails, setTrails} = getTrails(watermelonDatabase);
-  const [user, setUser] = useState<any>(null);
+  const [trailsCollection, setTrailsCollection] = React.useState<any>();
+  const getTrailsCollection = async () => {
+    const trailsCollection = await watermelonDatabase.collections
+      .get('trails')
+      .query()
+      .fetch();
+    setTrailsCollection(trailsCollection);
+  };
+  const queuedCache = new Map();
+  const completedTrailsCache = new Map();
 
-  async function getLoggedInUser() {
-    try {
-      const loggedInUser = await watermelonDatabase.get('users').find(userId);
-
-      if (loggedInUser) {
-        setUser(loggedInUser);
-        await sync(watermelonDatabase);
-      }
-    } catch (err) {
-      console.log('error in getloggeduser function in Homescreen', err);
-    }
-  }
   React.useEffect(() => {
-    getLoggedInUser();
-  }, [user, trails]);
-  
+    getTrailsCollection();
+    if (completedHikes && hikingQueue) {
+      hikingQueue.forEach((trail) => queuedCache.set(trail.trailId, true));
+      completedHikes.forEach((trail) =>
+        completedTrailsCache.set(trail.trailId, true)
+      );
+    }
+  }, [hikingQueue, completedHikes]);
+
   return (
     <SafeAreaView>
-      {trails && user ? (
-        <ScrollView>
-          <NearbyTrails
-            user={user}
-            trails={trails}
-          />
-        </ScrollView>
-      ) : (
-        <Text>Loading...</Text>
-      )}
+      <ScrollView>
+        <EnhancedNearbyTrails
+          user={user}
+          trailsCollection={trailsCollection}
+          queuedCache={queuedCache}
+          completedTrailsCache={completedTrailsCache}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default ExploreScreen;
+const enhance = withObservables(['user', 'completedTrails'], ({user}) => ({
+  user,
+  completedHikes: user.completedHikes.observe(),
+  hikingQueue: user.hikingQueue,
+
+  // Shortcut syntax for `post.comments.observe()`
+}));
+
+const EnhancedExploreScreen = enhance(ExploreScreen);
+export default EnhancedExploreScreen;
 
 const styles = StyleSheet.create({});

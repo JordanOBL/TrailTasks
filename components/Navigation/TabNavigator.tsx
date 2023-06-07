@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
 import React from 'react';
-import ExploreScreen from '../../Screens/ExploreScreen';
+import EnhancedExploreScreen from '../../Screens/ExploreScreen';
 import EnhancedTimerScreen from '../../Screens/TimerScreen';
 import {HomeStack} from './NavigationStacks';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -35,8 +35,10 @@ const TabNavigator = ({user, setUser}: Props) => {
       <Tab.Screen name="Home">
         {() => <HomeStack user={user} setUser={setUser} />}
       </Tab.Screen>
-      <Tab.Screen name="Explore" component={ExploreScreen} />
-      <Tab.Screen name="Timer" >
+      <Tab.Screen name="Explore">
+        {() => <EnhancedExploreScreen user={user} setUser={setUser} />}
+      </Tab.Screen>
+      <Tab.Screen name="Timer">
         {() => <EnhancedTimerScreen user={user} setUser={setUser} />}
       </Tab.Screen>
     </Tab.Navigator>
