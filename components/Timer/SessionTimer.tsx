@@ -24,6 +24,7 @@ import {
   User_Session,
 } from '../../watermelon/models';
 import withObservables from '@nozbe/with-observables';
+import formatTime from '../../helpers/formatTime';
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
@@ -69,17 +70,10 @@ const SessionTimer = ({
     sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime;
   React.useEffect(() => {
     let intervalId: any;
-    console.log({ userMiles });
-    console.log({userSession})
-    if (
-      sessionDetails.isPaused === false &&
-      sessionDetails.currentSet <= sessionDetails.sets
-    ) {
-      if (
-        sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
-      ) {
+   
         intervalId = setInterval(() => {
           Hike({
+            watermelonDatabase,
             user,
             userSession,
             completedHikes,
@@ -91,27 +85,27 @@ const SessionTimer = ({
             canHike,
           });
         }, 1000);
-      } else if (
-        sessionDetails.elapsedShortBreakTime <
-        sessionDetails.initialShortBreakTime
-      ) {
-        intervalId = setInterval(() => {
-          shortBreak(setSessionDetails, sessionDetails, canHike);
-        }, 1000);
-      }
-    } else if (
-      sessionDetails.isPaused === false &&
-      sessionDetails.currentSet > sessionDetails.sets
-    ) {
-      if (
-        sessionDetails.elapsedLongBreakTime <
-        sessionDetails.initialLongBreakTime
-      ) {
-        intervalId = setInterval(() => {
-          longBreak(setSessionDetails, sessionDetails, canHike);
-        }, 1000);
-      }
-    }
+    //   } else if (
+    //     sessionDetails.elapsedShortBreakTime <
+    //     sessionDetails.initialShortBreakTime
+    //   ) {
+    //     intervalId = setInterval(() => {
+    //       shortBreak({setSessionDetails, sessionDetails, canHike});
+    //     }, 1000);
+    //   }
+    // } else if (
+    //   sessionDetails.isPaused === false &&
+    //   sessionDetails.currentSet > sessionDetails.sets
+    // ) {
+    //   if (
+    //     sessionDetails.elapsedLongBreakTime <
+    //     sessionDetails.initialLongBreakTime
+    //   ) {
+    //     intervalId = setInterval(() => {
+    //       longBreak(setSessionDetails, sessionDetails, canHike);
+    //     }, 1000);
+    //   }
+    //}
     return () => clearInterval(intervalId);
   }, [sessionDetails]);
 
@@ -140,7 +134,7 @@ const SessionTimer = ({
       <Text style={{color: 'white'}}>Strikes: {sessionDetails.strikes}</Text>
 
       <Text style={{color: 'white'}}>
-        Total Session Time {totalFormattedSessionTime}
+        Total Session Time {formatTime(userSession.totalSessionTime)}
       </Text>
       <Pressable
         onPress={() =>
@@ -183,12 +177,13 @@ const SessionTimer = ({
 
 const enhance = withObservables(
   ['user', 'currentTrail', 'completedHikes', 'hikingQueue', 'userMiles', 'userSession'],
-  ({user}) => ({
+  ({user, userSession}) => ({
     user: user.observe(),
     currentTrail: user.trail.observe(),
     completedHikes: user.completedHikes.observe(),
     hikingQueue: user.hikingQueue.observe(),
     userMiles: user.userMiles.observe(),
+    userSession
   })
 );
 
