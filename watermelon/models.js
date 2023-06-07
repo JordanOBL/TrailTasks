@@ -44,7 +44,7 @@ export class Trail extends Model {
   @field('trail_elevation') trailElevation;
 
   @relation('parks', 'park_id') park;
-  //@immutableRelation('parks', 'park_id') park;
+
   ////!possibly show all uses currently hiking the trail at the time
   @children('users') users;
 
@@ -53,6 +53,7 @@ export class Trail extends Model {
     .get('users')
     .query(Q.on('completed_hikes', 'trail_id', this.id));
 }
+
 export class User extends Model {
   static table = 'users';
   static associations = {
@@ -87,12 +88,9 @@ export class User extends Model {
   @children('completed_hikes') completedHikes;
   @children('hiking_queue') hikingQueue;
 
-  @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id))
-  // Actions ---------------
-  // @writer
-  // getTrail() {
-  //   return this.collections.get('trails').find(this.trailId);
-  // }
+  @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
+
+
   // getUser
   @writer async getUser() {
     return {
@@ -312,6 +310,8 @@ export class Completed_Hike extends Model {
 
   @children('users') users;
   @children('trails') trails;
+
+  // @lazy extendedTrail = this.trails.extend(Q.on('parks', 'park_id', 'park_id'));
 }
 export class Hiking_Queue extends Model {
   static table = 'hiking_queue';
