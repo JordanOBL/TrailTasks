@@ -190,7 +190,7 @@ export class User extends Model {
     return await this.collections
       .get('completed_hikes')
       .create((completedHike) => {
-        completedHike.userId.set(this);
+        completedHike.userId = this.id;
         completedHike.trailId = trailId;
         completedHike.bestCompletedTime = bestCompletedTime;
         completedHike.firstCompletedAt = firstCompletedAt;
