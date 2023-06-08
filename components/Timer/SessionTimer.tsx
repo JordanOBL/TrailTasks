@@ -85,27 +85,7 @@ const SessionTimer = ({
             canHike,
           });
         }, 1000);
-    //   } else if (
-    //     sessionDetails.elapsedShortBreakTime <
-    //     sessionDetails.initialShortBreakTime
-    //   ) {
-    //     intervalId = setInterval(() => {
-    //       shortBreak({setSessionDetails, sessionDetails, canHike});
-    //     }, 1000);
-    //   }
-    // } else if (
-    //   sessionDetails.isPaused === false &&
-    //   sessionDetails.currentSet > sessionDetails.sets
-    // ) {
-    //   if (
-    //     sessionDetails.elapsedLongBreakTime <
-    //     sessionDetails.initialLongBreakTime
-    //   ) {
-    //     intervalId = setInterval(() => {
-    //       longBreak(setSessionDetails, sessionDetails, canHike);
-    //     }, 1000);
-    //   }
-    //}
+
     return () => clearInterval(intervalId);
   }, [sessionDetails]);
 
@@ -125,14 +105,15 @@ const SessionTimer = ({
         }}>
         {sessionDetails.isPaused === true
           ? 'Paused'
-          : canHike === true && sessionDetails.currentSet <= sessionDetails.sets
+          : canHike === true 
           ? pomodoroCountdown
-          : sessionDetails.currentSet <= sessionDetails.sets
+          : sessionDetails.currentSet < sessionDetails.sets
           ? shortBreakCountdown
           : longBreakCountdown}
       </Text>
       <Text style={{color: 'white'}}>Strikes: {sessionDetails.strikes}</Text>
-
+      <Text style={{color: 'white'}}>Current set: {sessionDetails.currentSet}</Text>
+      <Text style={{color: 'white'}}>Total Sets: {sessionDetails.sets}</Text>
       <Text style={{color: 'white'}}>
         Total Session Time {formatTime(userSession.totalSessionTime)}
       </Text>
