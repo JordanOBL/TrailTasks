@@ -16,46 +16,6 @@ import nextHundredthMileSeconds from './nextHundrethMileSeconds';
 import getTimeDifference from './getTimeDifference';
 import {getBetterTime} from './getBetterTime';
 
-// export async function createSession({
-//   database,
-//   userId,
-//   sessionName,
-//   sessionDescription,
-//   sessionCategoryId,
-// }: {
-//   database: Database;
-//   userId: string;
-//   sessionName: string;
-//   sessionDescription: string;
-//   sessionCategoryId: number;
-// }) {
-//   try {
-//     const newSession = await database
-//       .get('users_sessions')
-//       .create((userSession) => {
-//         //@ts-ignore
-//         userSession.userId = userId;
-//         //@ts-ignore
-//         userSession.sessionName = sessionName;
-//         //@ts-ignore
-//         userSession.sessionDescription = sessionDescription;
-//         //@ts-ignore
-//         userSession.sessionCategoryId = sessionCategoryId.toString();
-//         //@ts-ignore
-//         userSession.dateAdded = formatDateTime(new Date());
-//         //@ts-ignore
-//         userSession.totalSessionTime = 0;
-//         //@ts-ignore
-//         userSession.totalDistanceHiked = '0.00';
-//       });
-//   } catch (err) {
-//     console.log(
-//       'Error creating new session in "createSession" helper func',
-//       err
-//     );
-//   }
-// }
-
 //increase distance hiked
 export async function increaseDistanceHiked({
   user,
@@ -63,12 +23,13 @@ export async function increaseDistanceHiked({
   currentTrail,
   sessionDetails,
   userSession,
+  setSessionDetails,
 }: {
   user: User;
   userMiles: User_Miles;
   currentTrail: Trail;
   userSession: User_Session;
-  //setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
 }) {
   //UPDATE CURRENT TRAILDISTANCE in session when user walks .01 miles
@@ -93,12 +54,25 @@ export async function increaseDistanceHiked({
       const updateSessionTotalTime = userSession.updateTotalDistanceHiked({
         miles: 0.01,
       });
-      // setSessionDetails((prev: SessionDetails) => {
-      //   return {
-      //     ...prev,
-      //     totalDistanceHiked: Number((prev.totalDistanceHiked + 0.01).toFixed(2))
-      //   };
-      // });
+    }
+    if (
+      sessionDetails.elapsedPomodoroTime === sessionDetails.initialPomodoroTime - 1
+    ) {
+      if (sessionDetails.currentSet < sessionDetails.sets) {
+        setSessionDetails((prev: any) => {
+          return {
+            ...prev,
+            elapsedShortBreakTime: 0,
+          };
+        });
+      } else {
+        setSessionDetails((prev: any) => {
+          return {
+            ...prev,
+            elapsedLongBreakTime: 0,
+          };
+        });
+      }
     }
   } catch (err) {
     console.log('error in timerflow increaseDistanceHiked', err);
@@ -115,7 +89,7 @@ export async function updateUsersTrailAndQueue({
   user,
   hikingQueue,
 }: {
-   watermelonDatabase: Database;
+  watermelonDatabase: Database;
   // userId: string;
   // trailId: string;
   user: User;
@@ -124,7 +98,7 @@ export async function updateUsersTrailAndQueue({
   try {
     const currentDate = formatDateTime(new Date());
     //!cahnge randomTrailID to 163 after all trails are added
-    const randomTrailId = Math.floor(Math.random() * 6 + 1).toString();
+    const randomTrailId = Math.floor(Math.random() * 7 + 1).toString();
     if (hikingQueue.length) {
       const updatedUserTrail = await user.updateUserTrail({
         trailId: hikingQueue[0].trailId,
@@ -253,13 +227,16 @@ async function increaseElapsedTime({
   currentTrail: Trail;
 }) {
   if (sessionDetails.isPaused === false) {
-    if (canHike === true) {
+    if (
+      sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
+    ) {
       await increaseDistanceHiked({
         user,
         userMiles,
         currentTrail,
         userSession,
         sessionDetails,
+        setSessionDetails,
       });
       await userSession.updateTotalSessionTime();
       setSessionDetails((prev: any) => {
@@ -268,9 +245,9 @@ async function increaseElapsedTime({
           elapsedPomodoroTime: prev.elapsedPomodoroTime + 1,
         };
       });
-    } else if (sessionDetails.currentSet <= sessionDetails.sets) {
+    } else if (sessionDetails.currentSet < sessionDetails.sets) {
       await shortBreak({sessionDetails, setSessionDetails});
-    } else if (sessionDetails.currentSet > sessionDetails.sets) {
+    } else if (sessionDetails.currentSet >= sessionDetails.sets) {
       await longBreak({sessionDetails, setSessionDetails});
     }
   }
@@ -311,9 +288,11 @@ async function speedModifier(
   }
   if (sessionDetails.sessionName.toLowerCase() === 'fastasfuqboi') return;
   if (
-    sessionDetails.elapsedPomodoroTime ===
-      sessionDetails.initialPomodoroTime / 2 ||
-    sessionDetails.elapsedPomodoroTime === sessionDetails.initialPomodoroTime
+    (sessionDetails.elapsedPomodoroTime % 600 === 0 ||
+      sessionDetails.elapsedPomodoroTime ===
+        sessionDetails.initialPomodoroTime) &&
+    sessionDetails.elapsedShortBreakTime === 0 &&
+    sessionDetails.elapsedLongBreakTime === 0
   ) {
     Vibration.vibrate();
     if (sessionDetails.strikes === 0) increasePace(cb, sessionDetails);
@@ -334,7 +313,7 @@ export async function shortBreak({
     sessionDetails.elapsedShortBreakTime >= sessionDetails.initialShortBreakTime
   ) {
     setSessionDetails((prev) => {
-      return {...prev, elapsedPomodoroTime: 0};
+      return {...prev, elapsedPomodoroTime: 0, currentSet: prev.currentSet + 1};
     });
   } else {
     setSessionDetails((prev: any) => {
@@ -355,7 +334,6 @@ export async function longBreak({
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
 }) {
-  //increase sessiondetailes elaposedPomodorotime every second
   if (
     sessionDetails.elapsedLongBreakTime >= sessionDetails.initialLongBreakTime
   ) {
@@ -384,8 +362,7 @@ export function skipBreak(
         elapsedPomodoroTime: 0,
         elapsedShortBreakTime: prev.initialShortBreakTime,
         elapsedLongBreakTime: prev.initialLongBreakTime,
-        currentSet: 1,
-        totalSessionTime: prev.totalSessionTime + 1,
+        currentSet: prev.currentSet + 1,
       };
     });
   } else {
@@ -395,119 +372,11 @@ export function skipBreak(
         elapsedPomodoroTime: 0,
         elapsedShortBreakTime: prev.initialShortBreakTime,
         elapsedLongBreakTime: prev.initialLongBreakTime,
-        totalSessionTime: prev.totalSessionTime + 1,
+        currentSet: 1,
       };
     });
   }
 }
-
-//checkIfcopledHikeExistsForUsesr
-// async function checkForCompletedHike({
-//   //completedHikes,
-//   user
-
-//   //joinedUserTrail,
-// }: {
-//   watermelonDatabase: Database;
-//   userId: string;
-//   joinedUserTrail: JoinedUserTrail;
-// }): Promise<Completed_Hike> {
-//   const completedHikeExists = user.hasTrailBeenCompleted()
-//   console.log({completedHikeExists});
-//   return completedHikeExists[0];
-// }
-
-// //beginNextTrail
-// export async function beginNextTrail({
-//   // watermelonDatabase,
-//   // userId,
-//   // setSessionDetails,
-//   // sessionDetails,
-//   // setJoinedUserTrail,
-//   // joinedUserTrail,
-//   hikingQueue,user
-// }: {
-//   // watermelonDatabase: Database;
-//   // userId: string;
-//   // setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-//   // sessionDetails: SessionDetails;
-//   // setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>;
-//   // joinedUserTrail: JoinedUserTrail;
-//   , user
-// }) {
-//   try {
-//     let nextHikeInQueue = await watermelonDatabase
-//       .get('hiking_queue')
-//       .query(
-//         Q.unsafeSqlQuery(
-//           `SELECT hiking_queue.*, hiking_queue.id as hiking_queue_id, trails.* FROM hiking_queue LEFT JOIN trails on trails.id = hiking_queue.trail_id where hiking_queue.user_id = ? ORDER BY  hiking_queue.created_at ASC LIMIT 1;`,
-//           [userId]
-//         )
-//       )
-//       .unsafeFetchRaw();
-//     console.log({nextHikeInQueue});
-//     nextHikeInQueue = nextHikeInQueue[0];
-//     const User = await watermelonDatabase.get('users').find(userId);
-//     const randomTrail = await watermelonDatabase
-//       .get('trails')
-//       .find((Math.floor(Math.random() * 5) + 1).toString());
-//     console.log({randomTrail});
-//     const nextHike = await watermelonDatabase
-//       .get('hiking_queue')
-//       .find(nextHikeInQueue.hiking_queue_id);
-//     console.log({nextHike});
-//     //update user in DB with new trail info
-//     const batchUpdate = await watermelonDatabase.write(async () => {
-//       const updatedUser = await User.update((user) => {
-//         user.trailId = nextHikeInQueue?.trail_id || randomTrail.id;
-//         user.trailStartedAt = formatDateTime(new Date());
-//         user.trailProgress = '0.00';
-//         user.trailDistance =
-//           nextHikeInQueue?.trail_distance || randomTrail.trail_distance;
-//       });
-//       if (updatedUser) return true;
-//     });
-//     //if user updated in db
-//     //remove next hike from users hiking queue
-//     if (batchUpdate) {
-//       if (nextHike) {
-//         const isRemovedFromQueue = nextHike.markAsDeleted();
-//       }
-
-//       //update joined usertrail state and sessionDetails
-//       setJoinedUserTrail((prev) => {
-//         return {
-//           ...prev,
-//           trail_difficulty:
-//             nextHikeInQueue?.trail_difficulty || randomTrail.trail_difficulty,
-//           trail_distance:
-//             nextHikeInQueue?.trail_distance || randomTrail.trail_distance,
-//           trail_elevation:
-//             nextHikeInQueue?.trail_elevation || randomTrail.trail_elevation,
-//           trail_id: nextHikeInQueue?.trail_id || randomTrail.id,
-//           trail_image_url:
-//             nextHikeInQueue?.trail_image_url || randomTrail.trail_image_url,
-//           trail_lat: nextHikeInQueue?.trail_lat || randomTrail.trail_lat,
-//           trail_long: nextHikeInQueue?.trail_long || randomTrail.trail_long,
-//           trail_name: nextHikeInQueue?.trail_name || randomTrail.trail_name,
-//           trail_progress: '0.0',
-//           trail_started_at: formatDateTime(new Date()),
-//         };
-//       });
-//     }
-
-//     await save({
-//       watermelonDatabase,
-//       userId,
-//       setSessionDetails,
-//       sessionDetails,
-//       setJoinedUserTrail,
-//       joinedUserTrail,
-//     });
-//   } catch (err) {
-//     console.error('Error in begin Next trail helper function', err);
-//   }
-// }
 
 export async function isTrailCompleted({
   user,
@@ -518,8 +387,8 @@ export async function isTrailCompleted({
   //completedHikes,
   hikingQueue,
 }: {
-    user: User;
-  watermelonDatabase: Database
+  user: User;
+  watermelonDatabase: Database;
   //setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   //sessionDetails: SessionDetails;
   currentTrail: Trail;
@@ -569,7 +438,7 @@ export async function isTrailCompleted({
           await updateUsersTrailAndQueue({
             user,
             hikingQueue,
-            watermelonDatabase
+            watermelonDatabase,
           });
         }
       } else if (!existingCompletedHike) {
@@ -611,8 +480,8 @@ export async function Hike({
   completedHikes,
   canHike,
 }: {
-    user: User;
-    watermelonDatabase: Database;
+  user: User;
+  watermelonDatabase: Database;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
   canHike: boolean;

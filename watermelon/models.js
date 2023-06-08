@@ -62,7 +62,7 @@ export class User extends Model {
   static associations = {
     users_badges: {type: 'has_many', foreignKey: 'user_id'},
     users_achievements: {type: 'has_many', foreignKey: 'user_id'},
-    users_sessions: {type: 'has_many', key: 'user_id'},
+    users_sessions: {type: 'has_many', foreignKey: 'user_id'},
     trails: {type: 'belongs_to', key: 'trail_id'},
     completed_hikes: {type: 'has_many', foreignKey: 'user_id'},
     hiking_queue: {type: 'has_many', foreignKey: 'user_id'},
@@ -92,7 +92,9 @@ export class User extends Model {
   @children('hiking_queue') hikingQueue;
 
   @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
-
+  @lazy userSessionsWithCategory = this.usersSessions.extend(
+    Q.on('session_categories', 'id', 'session_category_id')
+  );
 
   // getUser
   @writer async getUser() {
@@ -222,8 +224,6 @@ export class User extends Model {
       );
     return completedHike[0];
   }
-
-  
 }
 
 export class Park_State extends Model {
@@ -269,7 +269,7 @@ export class Achievement extends Model {
 
   @immutableRelation('users_achievements', 'achievement_id') achievement;
 
-  @children('users_achievements') users_achievements;
+  @children('users_achievements') usersAchievements;
 
   @lazy
   achievementEarners = this.collections
@@ -378,16 +378,12 @@ export class User_Badge extends Model {
 export class Session_Category extends Model {
   static table = 'session_categories';
   static associations = {
-    users_sessions: {type: 'belongs_to', key: 'session_category_id'},
+    users_sessions: {type: 'has_many', foreignKey: 'session_category_id'},
   };
 
   @field('session_category_name') sessionCategoryName;
 
-  @children('users_sessions') user_sessions;
-  @lazy
-  sessionsUnderCategory = this.collections
-    .get('users')
-    .query(Q.on('users_sessions', 'session_category_id', this.id));
+  @children('users_sessions') usersSessions;
 }
 
 export class User_Session extends Model {
@@ -410,7 +406,7 @@ export class User_Session extends Model {
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;
 
-  @immutableRelation('users', 'user_id') user;
+  @relation('users', 'user_id') user;
   @immutableRelation('session_categories', 'session_category_id')
   sessionCategory;
 
