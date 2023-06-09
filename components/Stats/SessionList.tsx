@@ -43,7 +43,7 @@ const SessionList = ({filteredUserSessions, sessionCategories}: Props) => {
 							Date: {item.dateAdded}
 						</Text>
 						<Text style={{ color: 'white', fontSize: 16 }}>
-							Miles: {(item.totalDistanceHiked).toFixed(2)} mi.
+							Miles: {(item.totalDistanceHiked)} mi.
 						</Text>
 						<Text style={{ color: 'white', fontSize: 16 }}>
 							Time: {formatTime(item.totalSessionTime)} 

@@ -1,33 +1,37 @@
 import {ImageBackground, Pressable, StyleSheet, Text, View} from 'react-native';
 import React, {useContext} from 'react';
-import {
-  onDeleteFromQueueClick,
-  onAddToQueueClick,
-} from '../../helpers/HikingQueue/QueueHelpers';
+
 import {formatDateTime} from '../../helpers/formatDateTime';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
 import CapitalizeWord from '../../helpers/capitalizeWord';
+import {Q} from '@nozbe/watermelondb';
+import {Completed_Hike, Queued_Trail} from '../../watermelon/models';
 interface Props {
   trail: any;
   setReplacementTrailId: any;
   setShowReplaceTrailModal: any;
   user: any;
-  queuedCache: any,
-  completedTrailsCache: any,
-  park: any
+  queuedTrails: any;
+  completedHikes: any;
+  park: any;
 }
 const TrailCard = ({
   user,
   trail,
-  completedTrailsCache,
-  queuedCache,
+  completedHikes,
+  queuedTrails,
   setReplacementTrailId,
   setShowReplaceTrailModal,
-  park
+  park,
 }: Props) => {
- 
-
+  const completedCache: {[key: string]: boolean} = {};
+  completedHikes.forEach(
+    (trail: Completed_Hike) => (completedCache[trail.trailId] = true)
+  );
+  const queuedCache: {[key: string]: boolean} = {};
+  queuedTrails.forEach(
+    (trail: Queued_Trail) => (queuedCache[trail.trailId] = true)
+  );
   return user ? (
     <View
       key={trail.id}
@@ -57,7 +61,7 @@ const TrailCard = ({
         }}>
         <Text
           style={
-            completedTrailsCache.get(trail.id)
+            completedHikes && completedCache[trail.id]
               ? {
                   position: 'absolute',
                   backgroundColor: 'rgb(41,184,169)',
@@ -67,7 +71,7 @@ const TrailCard = ({
                 }
               : {}
           }>
-          {completedTrailsCache.get(trail.id) ? (
+          {completedHikes && completedCache[trail.id] ? (
             <Text
               style={{
                 color: 'white',
@@ -107,22 +111,24 @@ const TrailCard = ({
               right: 10,
               bottom: 90,
             }}>
-            {queuedCache.get(trail.id) ? (
+            {queuedTrails && queuedCache[trail.id] ? (
               <Pressable
-                onPress={() =>
-                  onDeleteFromQueueClick({
-                    user_id: user.id,
-                    selected_trailId: trail.id,
-                    watermelonDatabase: watermelonDatabase,
-                  })
-                }>
+                onPress={async () =>
+                {
+                  console.log('trailId', trail.id)
+                  console.log('userId', user.id)
+                  console.log(user.queuedTrails)
+                  
+                  await trail.deleteFromQueuedTrails({ userId: user.id })
+                }}>
                 <Text
                   style={[
                     styles.QueueButtons,
                     {
-                      color: !queuedCache.get(trail.id)
-                        ? 'rgb(7,254,213)'
-                        : 'red',
+                      color:
+                        queuedTrails && queuedCache[trail.id]
+                          ? 'red'
+                          : 'rgb(7,254,213)',
                     },
                   ]}>
                   -
@@ -130,21 +136,17 @@ const TrailCard = ({
               </Pressable>
             ) : (
               <Pressable
-                onPress={() =>
-                  onAddToQueueClick({
-                    user_id: user.id,
-                    selected_trailId: trail.id,
-                    date_added: formatDateTime(new Date()),
-                    watermelonDatabase: watermelonDatabase,
-                  })
+                onPress={async () =>
+                  await trail.addToQueuedTrails({userId: user.id})
                 }>
                 <Text
                   style={[
                     styles.QueueButtons,
                     {
-                      color: !queuedCache.get(trail.id)
-                        ? 'rgb(7,254,213)'
-                        : 'red',
+                      color:
+                        queuedTrails && queuedCache[trail.id] === undefined
+                          ? 'rgb(7,254,213)'
+                          : 'red',
                     },
                   ]}>
                   +
@@ -165,7 +167,7 @@ const TrailCard = ({
               try {
                 if (user.trailId) {
                   setShowReplaceTrailModal(true);
-                  setReplacementTrailId(trail.id)
+                  setReplacementTrailId(trail.id);
                 } else {
                   user.updateCurrentTrailId({
                     trailId: trail.trailId,
@@ -196,13 +198,13 @@ const TrailCard = ({
 };
 
 const enhance = withObservables(
-  ['user', 'trail', 'park'],
-  ({user, trail, park}) => ({
-    user,
+  ['user', 'trail', 'queuedTrails'],
+  ({user, trail, queuedTrails}) => ({
+    user: user.observe(),
     completedHikes: user.completedHikes.observe(),
-    hikingQueue: user.hikingQueue,
-    trail,
-    park: trail.park,
+    queuedTrails: user.queuedTrails.observe(),
+    trail: trail.observe(),
+    park: trail.park.observe(),
 
     // Shortcut syntax for `post.comments.observe()`
   })

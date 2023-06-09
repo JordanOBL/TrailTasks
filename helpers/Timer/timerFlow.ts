@@ -4,7 +4,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {formatDateTime} from '../formatDateTime';
 import {
   Completed_Hike,
-  Hiking_Queue,
+  Queued_Trail,
   Trail,
   User,
   User_Miles,
@@ -87,26 +87,26 @@ export async function updateUsersTrailAndQueue({
   // userId,
   // trailId,
   user,
-  hikingQueue,
+  queuedTrails,
 }: {
   watermelonDatabase: Database;
   // userId: string;
   // trailId: string;
   user: User;
-  hikingQueue: Hiking_Queue[];
+  queuedTrails: Queued_Trail[];
 }) {
   try {
     const currentDate = formatDateTime(new Date());
     //!cahnge randomTrailID to 163 after all trails are added
     const randomTrailId = Math.floor(Math.random() * 7 + 1).toString();
-    if (hikingQueue.length) {
+    if (queuedTrails.length) {
       const updatedUserTrail = await user.updateUserTrail({
-        trailId: hikingQueue[0].trailId,
+        trailId: queuedTrails[0].trailId,
         trailStartedAt: currentDate,
       });
       if (updatedUserTrail) {
         await watermelonDatabase.write(async () => {
-          await hikingQueue[0].markAsDeleted();
+          await queuedTrails[0].markAsDeleted();
         });
       }
     } else {
@@ -385,7 +385,7 @@ export async function isTrailCompleted({
   //sessionDetails,
   currentTrail,
   //completedHikes,
-  hikingQueue,
+  queuedTrails,
 }: {
   user: User;
   watermelonDatabase: Database;
@@ -393,7 +393,7 @@ export async function isTrailCompleted({
   //sessionDetails: SessionDetails;
   currentTrail: Trail;
   //completedHikes: Completed_Hike[];
-  hikingQueue: Hiking_Queue[];
+  queuedTrails: Queued_Trail[];
 }) {
   try {
     if (Number(user.trailProgress) >= Number(currentTrail.trailDistance)) {
@@ -437,7 +437,7 @@ export async function isTrailCompleted({
         if (updatedHike) {
           await updateUsersTrailAndQueue({
             user,
-            hikingQueue,
+            queuedTrails,
             watermelonDatabase,
           });
         }
@@ -456,7 +456,7 @@ export async function isTrailCompleted({
           await updateUsersTrailAndQueue({
             watermelonDatabase,
             user,
-            hikingQueue,
+            queuedTrails,
           });
         }
       }
@@ -476,7 +476,7 @@ export async function Hike({
   setSessionDetails,
   sessionDetails,
   currentTrail,
-  hikingQueue,
+  queuedTrails,
   completedHikes,
   canHike,
 }: {
@@ -489,7 +489,7 @@ export async function Hike({
   userMiles: User_Miles;
   completedHikes: Completed_Hike[];
   currentTrail: Trail;
-  hikingQueue: Hiking_Queue[];
+  queuedTrails: Queued_Trail[];
 }) {
   try {
     //check for completed hike
@@ -497,7 +497,7 @@ export async function Hike({
       watermelonDatabase,
       user,
       currentTrail,
-      hikingQueue,
+      queuedTrails,
     });
 
     //modify Speed

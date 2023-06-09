@@ -11,7 +11,7 @@ import {useFocusEffect} from '@react-navigation/native';
 
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
-import {Hiking_Queue, Trail, User, User_Miles} from '../watermelon/models';
+import {Queued_Trail, Trail, User, User_Miles} from '../watermelon/models';
 interface Props {
   user: User;
   setUser: any;

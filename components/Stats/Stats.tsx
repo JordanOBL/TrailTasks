@@ -70,7 +70,7 @@ const Stats: React.FC<Props> = ({
         </View>
         <View style={styles.statsContainer}>
           <Text style={styles.statTextTitle}>Total Hiking Distance:</Text>
-          <Text style={styles.statText}>{totalDistance} miles</Text>
+          <Text style={styles.statText}>{totalDistance.toFixed(2)} miles</Text>
         </View>
         {filteredCategory === 'All Categories' ? (
           <View>
