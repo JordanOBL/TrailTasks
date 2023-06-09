@@ -14,14 +14,14 @@ export const onAddToQueueClick = async ({
   watermelonDatabase: Database;
 }) => {
   //const date = new Date().getUTCDate()
-  const newHikingQueue = await watermelonDatabase
-    .get('hiking_queue')
-    .create((hikingQueue) =>
+  const newQueuedTrail = await watermelonDatabase
+    .get('queuedTrails')
+    .create((queuedTrail) =>
     {
       //@ts-ignore
-      hikingQueue.userId = user_id;
+      queuedTrail.userId = user_id;
       //@ts-ignore
-      hikingQueue.trailId = selected_trail_id;
+      queuedTrail.trailId = selected_trail_id;
     });
 };
 
@@ -36,13 +36,13 @@ export const onDeleteFromQueueClick = async ({
 }) => {
   try {
     await watermelonDatabase.write(async () => {
-      const HikingQueueRowToDelete = await watermelonDatabase
-        .get('HikingQueue')
+      const queuedTrailRowToDelete = await watermelonDatabase
+        .get('queuedTrails')
         .find(selected_trail_id);
-      await HikingQueueRowToDelete.markAsDeleted();
+      await queuedTrailRowToDelete.markAsDeleted();
     });
   } catch (err) {
-    console.log('Error attempting to remove from HikingQueue', err);
+    console.log('Error attempting to remove from queuedTrail', err);
   }
 };
 

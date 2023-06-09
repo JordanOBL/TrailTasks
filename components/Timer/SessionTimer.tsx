@@ -17,7 +17,7 @@ import {UserContext} from '../../App';
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
 import {
   Completed_Hike,
-  Hiking_Queue,
+  Queued_Trail,
   Trail,
   User,
   User_Miles,
@@ -31,7 +31,7 @@ interface Props {
   userSession: User_Session;
   user: User;
   currentTrail: Trail;
-  hikingQueue: Hiking_Queue[];
+  queuedTrails: Queued_Trail[];
   userMiles: User_Miles;
   completedHikes: Completed_Hike[];
 }
@@ -41,7 +41,7 @@ const SessionTimer = ({
   userSession,
   user,
   currentTrail,
-  hikingQueue,
+  queuedTrails,
   userMiles,
   completedHikes,
 }: Props) => {
@@ -77,7 +77,7 @@ const SessionTimer = ({
             user,
             userSession,
             completedHikes,
-            hikingQueue,
+            queuedTrails,
             currentTrail,
             userMiles,
             setSessionDetails,
@@ -157,12 +157,12 @@ const SessionTimer = ({
 };
 
 const enhance = withObservables(
-  ['user', 'currentTrail', 'completedHikes', 'hikingQueue', 'userMiles', 'userSession'],
+  ['user', 'currentTrail', 'completedHikes', 'queuedTrails', 'userMiles', 'userSession'],
   ({user, userSession}) => ({
     user: user.observe(),
     currentTrail: user.trail.observe(),
     completedHikes: user.completedHikes.observe(),
-    hikingQueue: user.hikingQueue.observe(),
+    queuedTrails: user.queuedTrails.observe(),
     userMiles: user.userMiles.observe(),
     userSession
   })

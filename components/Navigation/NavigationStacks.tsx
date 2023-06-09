@@ -2,11 +2,12 @@ import {createStackNavigator} from '@react-navigation/stack';
 import AchievementsScreen from '../../Screens/AchievementsScreen';
 import EnhancedCompletedHikesScreen from '../../Screens/CompletedHikesScreen';
 import FriendsScreen from '../../Screens/FriendsScreen';
-import HikingQueueScreen from '../../Screens/HikingQueueScreen';
+
 import EnhancedHomeScreen from '../../Screens/HomeScreen';
 import LeaderboardsScreen from '../../Screens/LeaderboardsScreen';
 import EnhancedStatsScreen from '../../Screens/StatsScreen';
 import {User} from '../../watermelon/models';
+import EnhancedHikingQueueScreen from '../../Screens/HikingQueueScreen';
 const Stack = createStackNavigator();
 interface Props {
   user: User;
@@ -21,14 +22,14 @@ export function HomeStack({user, setUser}: Props) {
         )}
       </Stack.Screen>
       <Stack.Screen name="Achievements" component={AchievementsScreen} />
-      <Stack.Screen name="HikingQueue" component={HikingQueueScreen} />
+      <Stack.Screen name="HikingQueue">
+        {(props: any) => (
+          <EnhancedHikingQueueScreen {...props} user={user} setUser={setUser} />
+        )}
+      </Stack.Screen>
       <Stack.Screen name="Stats">
         {(props: any) => (
-          <EnhancedStatsScreen
-            {...props}
-            user={user}
-            setUser={setUser}
-          />
+          <EnhancedStatsScreen {...props} user={user} setUser={setUser} />
         )}
       </Stack.Screen>
       <Stack.Screen name="Friends" component={FriendsScreen} />

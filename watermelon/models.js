@@ -31,7 +31,7 @@ export class Trail extends Model {
     parks: {type: 'belongs_to', key: 'park_id'},
     users: {type: 'has_many', foreignKey: 'trail_id'},
     completed_hikes: {type: 'has_many', foreignKey: 'trail_id'},
-    hiking_queue: {type: 'has_many', foreignKey: 'trail_id'},
+    queued_trails: {type: 'has_many', foreignKey: 'trail_id'},
   };
   //fields
 
@@ -49,12 +49,26 @@ export class Trail extends Model {
   ////!possibly show all uses currently hiking the trail at the time
   @children('users') users;
   @children('completed_hikes') completedHikes;
-  @children('hiking_queue') hikingQueue;
+  @children('queued_trails') queuedTrails;
 
-  // @lazy
-  // park = this.collections
-  //   .get('parks')
-  //   .query(Q.on('completed_hikes', 'trail_id', this.id));
+  //Add To Hiking Queue
+  @writer async addToQueuedTrails({userId}) {
+    const addedHike = await this.collections
+      .get('queued_trails')
+      .create((hike) => {
+        hike.trailId = this.id;
+        hike.userId = userId;
+      });
+    return addedHike;
+  }
+
+  @writer async deleteFromQueuedTrails({userId}) {
+    const deleteThisHike = await this.collections
+      .get('queued_trails')
+      .query(Q.and(Q.where('trail_id', this.id), Q.where('user_id', userId)));
+    console.log('in queued Trails');
+    await deleteThisHike[0].markAsDeleted();
+  }
 }
 
 export class User extends Model {
@@ -65,7 +79,7 @@ export class User extends Model {
     users_sessions: {type: 'has_many', foreignKey: 'user_id'},
     trails: {type: 'belongs_to', key: 'trail_id'},
     completed_hikes: {type: 'has_many', foreignKey: 'user_id'},
-    hiking_queue: {type: 'has_many', foreignKey: 'user_id'},
+    queued_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_miles: {type: 'has_many', foreignKey: 'user_id'},
   };
 
@@ -89,7 +103,7 @@ export class User extends Model {
   @children('users_achievements') usersAchievements;
   @children('users_miles') usersMiles;
   @children('completed_hikes') completedHikes;
-  @children('hiking_queue') hikingQueue;
+  @children('queued_trails') queuedTrails;
 
   @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
   @lazy userSessionsWithCategory = this.usersSessions.extend(
@@ -318,11 +332,11 @@ export class Completed_Hike extends Model {
 
   // @lazy extendedTrail = this.trails.extend(Q.on('parks', 'park_id', 'park_id'));
 }
-export class Hiking_Queue extends Model {
-  static table = 'hiking_queue';
+export class Queued_Trail extends Model {
+  static table = 'queued_trails';
   static associations = {
     trails: {type: 'belongs_to', key: 'trail_id'},
-    users: {type: 'belongs_to', key: 'id'},
+    users: {type: 'belongs_to', key: 'user_id'},
   };
 
   @field('user_id') userId;
@@ -330,11 +344,15 @@ export class Hiking_Queue extends Model {
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;
 
-  @immutableRelation('users', 'user_id') user;
-  @immutableRelation('trails', 'trail_id') trail;
+  @relation('users', 'user_id') user;
+  @relation('trails', 'trail_id') trail;
 
   @children('users') users;
   @children('trails') trails;
+
+  @writer async deleteTrailFromQueue() {
+    await this.markAsDeleted();
+  }
 }
 export class User_Miles extends Model {
   static table = 'users_miles';

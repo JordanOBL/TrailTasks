@@ -12,21 +12,21 @@ import {
 import * as React from 'react';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
-import {Completed_Hike, Hiking_Queue, Trail, User} from '../watermelon/models';
+import {Completed_Hike, Queued_Trail, Trail, User} from '../watermelon/models';
 
 import EnhancedTrailCard from './Trails/TrailCard';
 import {formatDateTime} from '../helpers/formatDateTime';
 interface Props {
   trailsCollection: Trail[];
   user: User;
-  queuedCache: Set<string>;
-  completedTrailsCache: Set<string>;
+  queuedTrails: Queued_Trail[]
+  completedHikes: Completed_Hike[]
 }
 const NearbyTrails = ({
   trailsCollection,
   user,
-  completedTrailsCache,
-  queuedCache,
+  completedHikes,
+  queuedTrails
 }: Props) => {
   const watermelonDatabase = useDatabase();
 
@@ -108,8 +108,8 @@ const NearbyTrails = ({
                 setReplacementTrailId={setReplacementTrailId}
                 setShowReplaceTrailModal={setShowReplaceTrailModal}
                 trail={trail}
-                completedTrailsCache={completedTrailsCache}
-                queuedCache={queuedCache}
+                completedHikes={completedHikes}
+                queuedTrails={queuedTrails}
               />
             ))
           ) : (
@@ -126,8 +126,8 @@ const NearbyTrails = ({
                 setReplacementTrailId={setReplacementTrailId}
                 setShowReplaceTrailModal={setShowReplaceTrailModal}
                 trail={trail}
-                completedTrailsCache={completedTrailsCache}
-                queuedCache={queuedCache}
+                completedHikes={completedHikes}
+                queuedTrails={queuedTrails}
               />
             ))
           ) : (
@@ -145,8 +145,8 @@ const NearbyTrails = ({
                   setReplacementTrailId={setReplacementTrailId}
                   setShowReplaceTrailModal={setShowReplaceTrailModal}
                   trail={trail}
-                  completedTrailsCache={completedTrailsCache}
-                  queuedCache={queuedCache}
+                  completedHikes={completedHikes}
+                  queuedTrails={queuedTrails}
                 />
               )
             )
@@ -164,8 +164,8 @@ const NearbyTrails = ({
                 setReplacementTrailId={setReplacementTrailId}
                 setShowReplaceTrailModal={setShowReplaceTrailModal}
                 trail={trail}
-                completedTrailsCache={completedTrailsCache}
-                queuedCache={queuedCache}
+                completedHikes={completedHikes}
+                queuedTrails={queuedTrails}
               />
             ))
           ) : (
@@ -177,10 +177,10 @@ const NearbyTrails = ({
   );
 };
 
-const enhance = withObservables(['user', 'completedTrails'], ({user}) => ({
+const enhance = withObservables(['user'], ({user}) => ({
   user,
   completedHikes: user.completedHikes.observe(),
-  hikingQueue: user.hikingQueue,
+  queuedTrails: user.queuedTrails.observe()
 
   // Shortcut syntax for `post.comments.observe()`
 }));

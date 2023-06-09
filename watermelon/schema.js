@@ -88,7 +88,7 @@ const schema = appSchema({
       ],
     }),
     tableSchema({
-      name: 'hiking_queue',
+      name: 'queued_trails',
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'trail_id', type: 'string'}, //ref

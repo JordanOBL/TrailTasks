@@ -5,17 +5,18 @@ import {useDatabase} from '@nozbe/watermelondb/hooks';
 import searchFilterFunction from '../helpers/searchFilter';
 import SearchBar from '../components/searchBar';
 import withObservables from '@nozbe/with-observables';
-import {Completed_Hike, Hiking_Queue, Trail, User} from '../watermelon/models';
+import {Completed_Hike, Queued_Trail, Trail, User} from '../watermelon/models';
 
 interface Props {
   user: User;
   completedHikes: Completed_Hike[];
-  hikingQueue: Hiking_Queue[];
+  queuedTrails: Queued_Trail[];
 }
 
-const ExploreScreen = ({user, completedHikes, hikingQueue}: Props) => {
+const ExploreScreen = ({user, completedHikes, queuedTrails}: Props) => {
   const watermelonDatabase = useDatabase();
   const [trailsCollection, setTrailsCollection] = React.useState<any>();
+
   const getTrailsCollection = async () => {
     const trailsCollection = await watermelonDatabase.collections
       .get('trails')
@@ -23,18 +24,10 @@ const ExploreScreen = ({user, completedHikes, hikingQueue}: Props) => {
       .fetch();
     setTrailsCollection(trailsCollection);
   };
-  const queuedCache = new Map();
-  const completedTrailsCache = new Map();
 
   React.useEffect(() => {
     getTrailsCollection();
-    if (completedHikes && hikingQueue) {
-      hikingQueue.forEach((trail) => queuedCache.set(trail.trailId, true));
-      completedHikes.forEach((trail) =>
-        completedTrailsCache.set(trail.trailId, true)
-      );
-    }
-  }, [hikingQueue, completedHikes]);
+  }, [queuedTrails, completedHikes]);
 
   return (
     <SafeAreaView>
@@ -42,20 +35,19 @@ const ExploreScreen = ({user, completedHikes, hikingQueue}: Props) => {
         <EnhancedNearbyTrails
           user={user}
           trailsCollection={trailsCollection}
-          queuedCache={queuedCache}
-          completedTrailsCache={completedTrailsCache}
+          queuedTrails={queuedTrails}
+          completedHikes={completedHikes}
         />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const enhance = withObservables(['user', 'completedTrails'], ({user}) => ({
+const enhance = withObservables(['user'], ({user}) => ({
   user,
   completedHikes: user.completedHikes.observe(),
-  hikingQueue: user.hikingQueue,
+  queuedTrails: user.queuedTrails.observe(),
 
-  // Shortcut syntax for `post.comments.observe()`
 }));
 
 const EnhancedExploreScreen = enhance(ExploreScreen);
