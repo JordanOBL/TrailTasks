@@ -71,6 +71,8 @@ const schema = appSchema({
         {name: 'user_id', type: 'string'}, //ref
         {name: 'achievement_id', type: 'string'}, //ref
         {name: 'completed_at', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
@@ -81,14 +83,17 @@ const schema = appSchema({
         {name: 'first_completed_at', type: 'string'},
         {name: 'last_completed_at', type: 'string'},
         {name: 'best_completed_time', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
-      name: 'hiking_queue',
+      name: 'queued_trails',
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'trail_id', type: 'string'}, //ref
         {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
@@ -104,7 +109,9 @@ const schema = appSchema({
       name: 'users_badges',
       columns: [
         {name: 'user_id', type: 'string'}, //reference user,
-        {name: 'badge_id', type: 'string'}, //ref
+        {name: 'badge_id', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
@@ -125,6 +132,8 @@ const schema = appSchema({
         {name: 'date_added', type: 'string', isIndexed: true},
         {name: 'total_session_time', type: 'number'},
         {name: 'total_distance_hiked', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
   ],

@@ -1,15 +1,30 @@
 import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import * as Progress from 'react-native-progress';
-import {JoinedUserTrail, SessionDetails} from '../types/session';
+import { JoinedUserTrail, SessionDetails } from '../types/session';
+import withObservables from '@nozbe/with-observables';
+
+
 
 interface Props {
-  trailProgress: number;
-  trailDistance: number;
-	pace?: number;
-	sessionDetails?: SessionDetails;
+  user: any;
+  pace?: number;
+  sessionDetails?: SessionDetails;
+  currentTrail: any
 }
-const DistanceProgressBar = ({trailProgress, trailDistance, pace, sessionDetails}: Props) => {
+const DistanceProgressBar = ({
+  user,
+  pace,
+  currentTrail,
+  sessionDetails,
+ 
+}: Props) =>
+{
+  React.useEffect(() => {
+    // Handle trail or user change
+    console.log('Trail or user changed:', user);
+  }, [ currentTrail]);
+
   return (
     <View
       style={{
@@ -24,7 +39,7 @@ const DistanceProgressBar = ({trailProgress, trailDistance, pace, sessionDetails
           marginRight: 20,
           marginBottom: 5,
         }}>
-        {trailProgress} / {trailDistance} mi.
+        {Number(user.trailProgress)} / {Number(currentTrail.trailDistance)} mi.
         {pace && `- ${pace} mph`}
       </Text>
 
@@ -34,7 +49,9 @@ const DistanceProgressBar = ({trailProgress, trailDistance, pace, sessionDetails
         borderWidth={0}
         borderRadius={10}
         unfilledColor={'rgba(41,184,169, .2)'}
-        progress={trailProgress / trailDistance}
+        progress={
+          Number(user.trailProgress) / Number(currentTrail.trailDistance)
+        }
         animationType="timing"
         useNativeDriver={true}
         color={
@@ -49,8 +66,19 @@ const DistanceProgressBar = ({trailProgress, trailDistance, pace, sessionDetails
       />
     </View>
   );
-};
+}
 
-export default DistanceProgressBar;
+
+
+const enhance = withObservables(['user'], ({user}) => ({
+  user: user.observe(),
+  currentTrail: user.trail.observe(),
+  // Shortcut syntax for `post.comments.observe()`
+}));
+
+const EnhancedDistanceProgressBar = enhance(DistanceProgressBar);
+export default EnhancedDistanceProgressBar;
+//export default DistanceProgressBar;
 
 const styles = StyleSheet.create({});
+

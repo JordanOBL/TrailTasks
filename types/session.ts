@@ -18,7 +18,6 @@ export interface SessionDetails {
   endSessionModal: boolean;
   totalSessionTime: number;
   totalDistanceHiked: number;
-  presaveDistanceHiked: number;
   isLoading: boolean;
   isError: boolean;
 }

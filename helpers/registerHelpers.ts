@@ -13,11 +13,12 @@ const checkExistingUser = async ({
   watermelonDatabase: any;
 }) => {
   try {
+    console.log(email);
     const ExistingUser = await watermelonDatabase
       .get('users')
       .query(Q.or(Q.where('email', email), Q.where('username', username)))
       .fetch();
-    return ExistingUser;
+    return ExistingUser[0];
   } catch (err) {
     console.error('Error in checking for existing user in user register', err);
   }
@@ -29,7 +30,7 @@ const createNewUser = async ({
   email,
   password,
   username,
-  setUserId,
+  setUser,
   setError,
   watermelonDatabase,
 }: {
@@ -38,15 +39,16 @@ const createNewUser = async ({
   email: string;
   password: string;
   username: string;
-  setUserId: React.Dispatch<React.SetStateAction<any>>;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
   watermelonDatabase: any;
 }) => {
   try {
-    const current_trail_start = formatDateTime(new Date());
+    const trailStartedAt = formatDateTime(new Date());
+
     //!BCYPT PASSWORD BEFORE ADDING TO DB
     const newUser = await watermelonDatabase.write(async () => {
-      const createdUser = await watermelonDatabase
+      const newUser = await watermelonDatabase
         .get('users')
         .create((user: User) => {
           //@ts-ignore
@@ -68,36 +70,48 @@ const createNewUser = async ({
           //@ts-ignore
           user.trailProgress = '0.0';
           //@ts-ignore
-          user.trailStartedAt = current_trail_start;
+          user.trailStartedAt = trailStartedAt;
           //@ts-ignore
-          user.createdAt = current_trail_start;
-          //@ts-ignore
-          user.updatedAt = current_trail_start;
-        });
+          // user.createdAt = trailStartedAt;
+          // //@ts-ignore
+          // user.updatedAt = trailStartedAt;
 
-      if (createdUser) {
+          // const newUser = await watermelonDatabase.get('users').addUser({
+          //   username,
+          //   firstName,
+          //   lastName,
+          //   email,
+          //   password,
+          //   trailStartedAt
+          // })
+          console.log({newUser});
+        });
+      if (newUser) {
+        console.log({newUser});
         const userMiles = await watermelonDatabase
           .get('users_miles')
           .create((user_miles: User_Miles) => {
             //@ts-ignore
-            user_miles.userId = createdUser._raw.id;
+            user_miles.userId = newUser.id;
             //@ts-ignore
             user_miles.totalMiles = '0.00';
           });
-        if (userMiles)
-        {
-          await watermelonDatabase.localStorage.set('user_miles_id', userMiles.id);
+        if (userMiles) {
+          console.log({userMiles});
+          await watermelonDatabase.localStorage.set(
+            'user_miles_id',
+            userMiles.id
+          );
         }
       }
 
-      return createdUser;
+      return newUser;
     });
-
     if (newUser.id.length > 0) {
       await watermelonDatabase.localStorage.set('user_id', newUser.id);
       //@ts-ignore
       await watermelonDatabase.localStorage.set('username', newUser.username);
-      setUserId( newUser.id);
+      setUser(newUser);
       return newUser;
     }
   } catch (err) {
@@ -112,7 +126,7 @@ export const handleRegister = async ({
   password,
   confirmPassword,
   username,
-  setUserId,
+  setUser,
   setError,
   watermelonDatabase,
 }: {
@@ -122,7 +136,7 @@ export const handleRegister = async ({
   password: string;
   confirmPassword: string;
   username: string;
-  setUserId: React.Dispatch<React.SetStateAction<any>>;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
   setError: React.Dispatch<React.SetStateAction<any>>;
   watermelonDatabase: any;
 }): Promise<void> => {
@@ -147,27 +161,30 @@ export const handleRegister = async ({
       email,
       watermelonDatabase,
     });
+    console.log({ExistingUser});
     //create new user
-    if (ExistingUser!.length === 0) {
+    if (!ExistingUser) {
       const createdUser = await createNewUser({
         firstName,
         lastName,
         email,
         password,
         username,
-        setUserId,
+        setUser,
         setError,
         watermelonDatabase,
       });
+
+      console.log({createdUser});
 
       if (createdUser!) {
         console.log('successful user creation');
         return;
       } //@ts-ignore
-    } else if (ExistingUser && ExistingUser[0].email === email) {
+    } else if (ExistingUser && ExistingUser.email === email) {
       setError('User Already Exists With Provided Email, Please Login');
       return; //@ts-ignore
-    } else if (ExistingUser && ExistingUser[0].username === username) {
+    } else if (ExistingUser && ExistingUser.username === username) {
       setError('User Already Exists With Username, Please Choose New Username');
       return;
     }
