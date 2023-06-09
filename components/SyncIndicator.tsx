@@ -1,29 +1,41 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {sync} from '../watermelon/sync';
-import { Database } from '@nozbe/watermelondb';
 
-interface Props
-{
-  delay: number
-  database: Database
+import {Database} from '@nozbe/watermelondb';
+
+interface Props {
+  delay: number;
+  database: Database;
 }
-const SyncIndicator = ({delay, database} : Props) => {
+const SyncIndicator = ({delay, database}: Props) => {
   const [syncState, setSyncState] = useState<string>('Syncing data...');
 
   useEffect(() => {
-    let timeoutId = setTimeout(() =>
-    {
-      sync(database)
-      .then(() => setSyncState(''))
-      .catch((e) =>
-      {
-        console.error(e);
-        setSyncState('Sync failed!')
-      });
-    }, delay)
+    let timeoutId = setTimeout(() => {
+      // database.localStorage
+      //   .get('isConnected')
+      //   .then((isConnected) => {
+      //     if (isConnected) {
+            setSyncState('');
+          // } else {
+          //   setTimeout(() => {
+          //     setSyncState('');
+            // }, 3000);
+            
+        //     setSyncState('Sync failed! User Offline');
+        //   }
+        // })
+        // .catch((e) => {
+        //   setTimeout(() => {
+        //     setSyncState('');
+        //   }, 3000);
 
-    return () => clearTimeout(timeoutId)
+        //   console.error(e);
+        //   setSyncState('Sync failed!');
+        // });
+    }, delay);
+
+    return () => { clearTimeout(timeoutId)};
   });
 
   if (!syncState) {

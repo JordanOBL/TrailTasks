@@ -8,28 +8,45 @@ import {
   longBreak,
   pauseSession,
   resumeSession,
-  save,
+  //save,
   shortBreak,
   skipBreak,
 } from '../../helpers/Timer/timerFlow';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {UserContext} from '../../App';
-import DistanceProgressBar from '../DistanceProgressBar';
-
+import EnhancedDistanceProgressBar from '../DistanceProgressBar';
+import {
+  Completed_Hike,
+  Queued_Trail,
+  Trail,
+  User,
+  User_Miles,
+  User_Session,
+} from '../../watermelon/models';
+import withObservables from '@nozbe/with-observables';
+import formatTime from '../../helpers/formatTime';
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  joinedUserTrail: JoinedUserTrail;
-  setJoinedUserTrail: React.Dispatch<React.SetStateAction<JoinedUserTrail>>;
+  userSession: User_Session;
+  user: User;
+  currentTrail: Trail;
+  queuedTrails: Queued_Trail[];
+  userMiles: User_Miles;
+  completedHikes: Completed_Hike[];
 }
 const SessionTimer = ({
   setSessionDetails,
   sessionDetails,
-  setJoinedUserTrail,
-  joinedUserTrail,
+  userSession,
+  user,
+  currentTrail,
+  queuedTrails,
+  userMiles,
+  completedHikes,
 }: Props) => {
   //@ts-ignore
-  const {userId} = React.useContext(UserContext);
+  // const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
   let pomodoroCountdown = formatCountdown(
     sessionDetails.initialPomodoroTime,
@@ -51,48 +68,24 @@ const SessionTimer = ({
 
   let canHike =
     sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime;
-
   React.useEffect(() => {
     let intervalId: any;
-    if (
-      sessionDetails.isPaused === false &&
-      sessionDetails.currentSet <= sessionDetails.sets
-    ) {
-      if (
-        sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
-      ) {
+   
         intervalId = setInterval(() => {
           Hike({
             watermelonDatabase,
-            userId,
+            user,
+            userSession,
+            completedHikes,
+            queuedTrails,
+            currentTrail,
+            userMiles,
             setSessionDetails,
             sessionDetails,
-            setJoinedUserTrail,
-            joinedUserTrail,
             canHike,
           });
         }, 1000);
-      } else if (
-        sessionDetails.elapsedShortBreakTime <
-        sessionDetails.initialShortBreakTime
-      ) {
-        intervalId = setInterval(() => {
-          shortBreak(setSessionDetails, sessionDetails, canHike);
-        }, 1000);
-      }
-    } else if (
-      sessionDetails.isPaused === false &&
-      sessionDetails.currentSet > sessionDetails.sets
-    ) {
-      if (
-        sessionDetails.elapsedLongBreakTime <
-        sessionDetails.initialLongBreakTime
-      ) {
-        intervalId = setInterval(() => {
-          longBreak(setSessionDetails, sessionDetails, canHike);
-        }, 1000);
-      }
-    }
+
     return () => clearInterval(intervalId);
   }, [sessionDetails]);
 
@@ -112,26 +105,23 @@ const SessionTimer = ({
         }}>
         {sessionDetails.isPaused === true
           ? 'Paused'
-          : canHike === true && sessionDetails.currentSet <= sessionDetails.sets
+          : canHike === true 
           ? pomodoroCountdown
-          : sessionDetails.currentSet <= sessionDetails.sets
+          : sessionDetails.currentSet < sessionDetails.sets
           ? shortBreakCountdown
           : longBreakCountdown}
       </Text>
       <Text style={{color: 'white'}}>Strikes: {sessionDetails.strikes}</Text>
-      
+      <Text style={{color: 'white'}}>Current set: {sessionDetails.currentSet}</Text>
+      <Text style={{color: 'white'}}>Total Sets: {sessionDetails.sets}</Text>
       <Text style={{color: 'white'}}>
-        Total Session Time {totalFormattedSessionTime}
+        Total Session Time {formatTime(userSession.totalSessionTime)}
       </Text>
       <Pressable
         onPress={() =>
           endSession({
-            watermelonDatabase,
-            userId,
             setSessionDetails,
             sessionDetails,
-            setJoinedUserTrail,
-            joinedUserTrail,
           })
         }>
         <Text style={{color: 'white'}}>End Session</Text>
@@ -146,24 +136,7 @@ const SessionTimer = ({
         <Pressable
           onPress={() => {
             sessionDetails.isPaused === false
-              ? pauseSession(
-                  watermelonDatabase,
-                  userId,
-                  setSessionDetails,
-                  sessionDetails,
-                  setJoinedUserTrail,
-                  joinedUserTrail
-                ).then((paused) =>
-                  save({
-                    watermelonDatabase,
-                    userId,
-                    setSessionDetails,
-                    sessionDetails,
-                    setJoinedUserTrail,
-                    joinedUserTrail,
-                    paused,
-                  })
-                )
+              ? pauseSession(setSessionDetails)
               : resumeSession(setSessionDetails);
           }}>
           <Text style={{color: 'white'}}>
@@ -173,16 +146,31 @@ const SessionTimer = ({
           </Text>
         </Pressable>
       }
-      <DistanceProgressBar
+      <EnhancedDistanceProgressBar
         sessionDetails={sessionDetails}
         pace={sessionDetails.pace}
-        trailDistance={Number(joinedUserTrail.trail_distance)}
-        trailProgress={Number(joinedUserTrail.trail_progress)}
+        user={user}
+        trail={currentTrail}
       />
     </SafeAreaView>
   );
 };
 
-export default SessionTimer;
+const enhance = withObservables(
+  ['user', 'currentTrail', 'completedHikes', 'queuedTrails', 'userMiles', 'userSession'],
+  ({user, userSession}) => ({
+    user: user.observe(),
+    currentTrail: user.trail.observe(),
+    completedHikes: user.completedHikes.observe(),
+    queuedTrails: user.queuedTrails.observe(),
+    userMiles: user.userMiles.observe(),
+    userSession
+  })
+);
+
+const EnhancedSessionTimer = enhance(SessionTimer);
+export default EnhancedSessionTimer;
+
+//export default SessionTimer;
 
 const styles = StyleSheet.create({});

@@ -10,7 +10,7 @@ const getTrails = (watermelonDatabase: Database) => {
     const trailsFromDB = async (): Promise<void> => {
       try {
         // Gets trails with parks
-        const Trails = await watermelonDatabase
+        const Trails = await watermelonDatabase.collections
           .get('trails')
           .query(
             Q.unsafeSqlQuery(

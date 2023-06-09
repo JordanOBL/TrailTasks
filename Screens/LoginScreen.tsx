@@ -3,16 +3,16 @@ import Login from '../components/Login';
 import React from 'react';
 interface Props
 {
-  setUserId: React.Dispatch<React.SetStateAction<any>>;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
   setisRegistering: React.Dispatch<React.SetStateAction<any>>;
   isRegistering: boolean;
 }
 
-const LoginScreen = ({setUserId, setisRegistering, isRegistering}: Props) => {
+const LoginScreen = ({setUser, setisRegistering, isRegistering}: Props) => {
   return (
     <SafeAreaView style={styles.container}>
       <Login
-        setUserId={setUserId}
+        setUser={setUser}
         setisRegistering={setisRegistering}
         isRegistering={isRegistering}
       />

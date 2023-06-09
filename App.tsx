@@ -25,9 +25,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import TabNavigator from './components/Navigation/TabNavigator';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
-import { useDatabase } from '@nozbe/watermelondb/hooks';
-import { User } from './watermelon/models';
-
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import {User} from './watermelon/models';
 
 export const UserContext = createContext<any>('');
 
@@ -35,12 +34,13 @@ function App(): JSX.Element {
   //const [user, setUser] = React.useState<any>(null);
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-  const [userId, setUserId] = useState<any>(null);
+
+  const [user, setUser] = useState<any>();
+
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  
 
   //insert postgres tables
   // const seedPgTables = async () => {
@@ -54,34 +54,27 @@ function App(): JSX.Element {
   //       'Error in gettingPGTables function, app.tsx',
   //       error.message
   //     );
-  //   }
-  // };
-
-  useEffect(() =>
-  {
+  //   } };
+  useEffect(() => {
     // Do something with the Watermelon database instance
-    const onLoad = async () =>
-    {
-      try
-      {
+    const onLoad = async () => {
+      try {
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
         //await seedPgTables();
-        await checkForLoggedInUser(setUserId, watermelonDatabase);
+        await checkForLoggedInUser(setUser, watermelonDatabase);
+        console.log('sync in app')
         await sync(watermelonDatabase);
-        
-      } catch (err: any)
-      {
-        console.log('Error in onload in APP useEffect', err.message);
+      } catch (err) {
+        console.log('Error in onload in APP useEffect', err);
       }
     };
-  
-    onLoad();
-  },[])
 
+    onLoad();
+  }, []);
 
   return (
-    <UserContext.Provider value={{userId, setUserId}}>
+    <UserContext.Provider value={{user, setUser}}>
       <GestureHandlerRootView style={{flex: 1}}>
         <NavigationContainer theme={DarkTheme}>
           <SafeAreaView style={[backgroundStyle, styles.container]}>
@@ -89,19 +82,20 @@ function App(): JSX.Element {
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
               backgroundColor={backgroundStyle.backgroundColor}
             />
+            
             {/* <SyncIndicator delay={3000} />  */}
             <Text style={styles.title}>Trail Tasks</Text>
-            {userId != null ? (
-              <TabNavigator  />
+            {user != null ? (
+              <TabNavigator user={user} setUser={setUser} />
             ) : isRegistering ? (
-              <RegisterScreen
-                setUserId={setUserId}
+                <RegisterScreen
+                setUser={setUser}
                 setisRegistering={setisRegistering}
                 isRegistering={isRegistering}
               />
             ) : (
-              <LoginScreen
-                setUserId={setUserId}
+                  <LoginScreen
+                    setUser={setUser}
                 setisRegistering={setisRegistering}
                 isRegistering={isRegistering}
               />

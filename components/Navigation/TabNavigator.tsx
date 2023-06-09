@@ -1,12 +1,18 @@
 import {StyleSheet} from 'react-native';
 import React from 'react';
-import ExploreScreen from '../../Screens/ExploreScreen';
-import TimerScreen from '../../Screens/TimerScreen';
+import EnhancedExploreScreen from '../../Screens/ExploreScreen';
+import EnhancedTimerScreen from '../../Screens/TimerScreen';
 import {HomeStack} from './NavigationStacks';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {User} from '../../watermelon/models';
 const Tab = createBottomTabNavigator();
-const TabNavigator = () => {
+interface Props {
+  user: User;
+  setUser: any;
+}
+
+const TabNavigator = ({user, setUser}: Props) => {
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
@@ -26,12 +32,20 @@ const TabNavigator = () => {
         tabBarActiveTintColor: 'orange',
         tabBarInactiveTintColor: 'gray',
       })}>
-      <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="Explore" component={ExploreScreen} />
-      <Tab.Screen name="Timer" component={TimerScreen} />
+      <Tab.Screen name="Home">
+        {() => <HomeStack user={user} setUser={setUser} />}
+      </Tab.Screen>
+      <Tab.Screen name="Explore">
+        {() => <EnhancedExploreScreen user={user} setUser={setUser} />}
+      </Tab.Screen>
+      <Tab.Screen name="Timer">
+        {() => <EnhancedTimerScreen user={user} setUser={setUser} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 };
+
+
 
 export default TabNavigator;
 

@@ -4,62 +4,74 @@ import SyncIndicator from '../components/SyncIndicator';
 import DistanceProgressBar from '../components/DistanceProgressBar';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {Pressable} from 'react-native';
-
+import withObservables from '@nozbe/with-observables';
 import {handleLogOut} from '../helpers/logoutHelpers';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {UserContext} from '../App';
 import getCurrentTrail from '../helpers/Trails/getCurrentTrail';
 import {sync} from '../watermelon/sync';
 import {Q} from '@nozbe/watermelondb';
+import {User} from '../watermelon/models';
+import {formatDateTime} from '../helpers/formatDateTime';
+import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
-const HomeScreen = ({navigation}: any) => {
+interface Props {
+  user: User;
+  currentTrail?: any;
+  navigation: any;
+  setUser: any;
+}
+const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
   const {userId, setUserId} = React.useContext(UserContext);
-  const [loggedInUser, setLoggedInUser] = React.useState<any>(null);
   const watermelonDatabase = useDatabase();
 
-  async function getLoggedInUser() {
-    try
-    {
-      const loggedInUser = await watermelonDatabase
-        .get('users')
-        .query(
-          Q.unsafeSqlQuery(
-            'SELECT users.*, trails.* FROM users ' +
-              'LEFT JOIN trails ON trails.id = users.trail_id ' +
-              'WHERE users.id =  ?',
-            [userId]
-          )
-        )
-        .unsafeFetchRaw();
-      if (loggedInUser?.length > 0)
-      {
-        console.log({loggedInUser})
-        setLoggedInUser(loggedInUser[0]);
-        await sync(watermelonDatabase);
-      }
-    } catch (err) {
-      console.log('error in getloggeduser function in Homescreen', err);
+  const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
+
+  React.useEffect(() => {
+    async function isConnected() {
+      const {connection} = await checkInternetConnection();
+      setIsConnected(connection?.isConnected);
     }
-  }
+
+    isConnected();
+  }, []);
+
+
   useFocusEffect(
     React.useCallback(() => {
-      getLoggedInUser();
-      console.log('Screen was focused');
+      sync(watermelonDatabase);
 
-      return () => {
-        console.log('Screen was unfocused');
-        // Useful for cleanup functions
+      return async () => {
+        console.log('Timer Screen was unfocused');
       };
-    }, [])
+    }, [watermelonDatabase])
   );
-  return !loggedInUser ? (
+  return !user || !currentTrail ? (
     <View>
       <Text style={{color: 'white'}}>Loading Your Data...</Text>
     </View>
   ) : (
     <View style={styles.Container}>
       {/* <SyncIndicator delay={3000} /> */}
-      <Text style={styles.H1}>Hey, {loggedInUser.username}</Text>
+      <View
+        style={{
+          backgroundColor: 'transparent',
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          marginVertical: 10,
+          paddingHorizontal: 10,
+        }}>
+        <Text style={styles.H1}>Hello, {user.username}</Text>
+        <Text
+          style={{
+            color: isConnected ? 'green' : 'gray',
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+          }}>
+          {isConnected ? 'Online' : 'Offline'}
+        </Text>
+      </View>
       <View style={styles.Container}>
         <View
           style={{
@@ -73,11 +85,8 @@ const HomeScreen = ({navigation}: any) => {
           <Text style={[styles.H2, {margin: 0, color: 'rgb(7,254,213)'}]}>
             Current Trail:
           </Text>
-          <Text style={styles.trailText}>{loggedInUser?.trail_name}</Text>
-          <DistanceProgressBar
-            trailDistance={Number(loggedInUser.trail_distance)}
-            trailProgress={Number(loggedInUser.trail_progress)}
-          />
+          <Text style={styles.trailText}>{currentTrail.trailName}</Text>
+          <DistanceProgressBar user={user} trail={currentTrail} />
         </View>
         <ScrollView
           style={{
@@ -94,7 +103,7 @@ const HomeScreen = ({navigation}: any) => {
             style={styles.LinkContainer}
             onPress={() => navigation.navigate('HikingQueue')}>
             <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
-              Hiking Queue{' '}
+              Hiking Queue
             </Text>
             {/* <Text style={{ color: 'rgb(221,224,226)' }}>
 							{hikingQueue.length > 0
@@ -130,9 +139,19 @@ const HomeScreen = ({navigation}: any) => {
               Leaderboards
             </Text>
           </Pressable>
+          <Pressable
+            onPress={async () => handleLogOut(setUser, watermelonDatabase)}
+            style={styles.LinkContainer}>
+            <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
+          </Pressable>
 
           <Pressable
-            onPress={async () => handleLogOut(setUserId, watermelonDatabase)}
+            onPress={async () =>
+              user.updateUserTrail({
+                trailId: '1',
+                trailStartedAt: formatDateTime(new Date()),
+              })
+            }
             style={styles.LinkContainer}>
             <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
           </Pressable>
@@ -141,8 +160,15 @@ const HomeScreen = ({navigation}: any) => {
     </View>
   );
 };
+const enhance = withObservables(['user'], ({user}) => ({
+  user: user.observe(),
+  currentTrail: user.trail.observe(),
+  // Shortcut syntax for `post.comments.observe()`
+}));
 
-export default HomeScreen;
+const EnhancedHomeScreen = enhance(HomeScreen);
+export default EnhancedHomeScreen;
+// export default HomeScreen;
 
 const styles = StyleSheet.create({
   Container: {
@@ -153,9 +179,8 @@ const styles = StyleSheet.create({
   H1: {
     color: 'rgb(249,253,255)',
     fontSize: 26,
-    fontWeight: '900',
-    marginVertical: 10,
-    padding: 10,
+    fontWeight: '800',
+    padding: 5,
   },
   H2: {
     color: 'rgb(249,253,255)',

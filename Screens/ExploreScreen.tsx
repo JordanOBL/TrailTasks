@@ -1,49 +1,56 @@
 import {ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
-import NearbyTrails from '../components/NearbyTrails';
+import EnhancedNearbyTrails from '../components/NearbyTrails';
 import React, {useContext, useState} from 'react';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import getTrails from '../helpers/Trails/getTrails';
-import {UserContext} from '../App';
-import {sync} from '../watermelon/sync';
+import searchFilterFunction from '../helpers/searchFilter';
+import SearchBar from '../components/searchBar';
+import withObservables from '@nozbe/with-observables';
+import {Completed_Hike, Queued_Trail, Trail, User} from '../watermelon/models';
 
-const ExploreScreen = () => {
+interface Props {
+  user: User;
+  completedHikes: Completed_Hike[];
+  queuedTrails: Queued_Trail[];
+}
+
+const ExploreScreen = ({user, completedHikes, queuedTrails}: Props) => {
   const watermelonDatabase = useDatabase();
-  const {userId, setUserId} = useContext(UserContext);
-  const {trails, setTrails} = getTrails(watermelonDatabase);
-  const [user, setUser] = useState<any>(null);
+  const [trailsCollection, setTrailsCollection] = React.useState<any>();
 
-  async function getLoggedInUser() {
-    try {
-      const loggedInUser = await watermelonDatabase.get('users').find(userId);
+  const getTrailsCollection = async () => {
+    const trailsCollection = await watermelonDatabase.collections
+      .get('trails')
+      .query()
+      .fetch();
+    setTrailsCollection(trailsCollection);
+  };
 
-      if (loggedInUser) {
-        setUser(loggedInUser);
-        await sync(watermelonDatabase);
-      }
-    } catch (err) {
-      console.log('error in getloggeduser function in Homescreen', err);
-    }
-  }
   React.useEffect(() => {
-    getLoggedInUser();
-  }, [user, trails]);
-  
+    getTrailsCollection();
+  }, [queuedTrails, completedHikes]);
+
   return (
     <SafeAreaView>
-      {trails && user ? (
-        <ScrollView>
-          <NearbyTrails
-            user={user}
-            trails={trails}
-          />
-        </ScrollView>
-      ) : (
-        <Text>Loading...</Text>
-      )}
+      <ScrollView>
+        <EnhancedNearbyTrails
+          user={user}
+          trailsCollection={trailsCollection}
+          queuedTrails={queuedTrails}
+          completedHikes={completedHikes}
+        />
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default ExploreScreen;
+const enhance = withObservables(['user'], ({user}) => ({
+  user,
+  completedHikes: user.completedHikes.observe(),
+  queuedTrails: user.queuedTrails.observe(),
+
+}));
+
+const EnhancedExploreScreen = enhance(ExploreScreen);
+export default EnhancedExploreScreen;
 
 const styles = StyleSheet.create({});
