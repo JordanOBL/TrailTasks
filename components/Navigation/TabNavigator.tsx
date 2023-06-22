@@ -32,7 +32,7 @@ const TabNavigator = ({user, setUser}: Props) => {
         tabBarActiveTintColor: 'orange',
         tabBarInactiveTintColor: 'gray',
       })}>
-      <Tab.Screen name="Home">
+      <Tab.Screen name="Basecamp">
         {() => <HomeStack user={user} setUser={setUser} />}
       </Tab.Screen>
       <Tab.Screen name="Explore">

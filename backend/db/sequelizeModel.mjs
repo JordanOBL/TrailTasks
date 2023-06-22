@@ -43,11 +43,24 @@ export const Trail = sequelize.define(
     trail_lat: {type: DataTypes.DECIMAL, allowNull: true},
     trail_long: {type: DataTypes.DECIMAL, allowNull: true},
     trail_difficulty: {type: DataTypes.STRING, allowNull: false},
+    park_id: {type: DataTypes.STRING, allowNull: false},
     trail_image_url: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    trail_elevation: {type: DataTypes.INTEGER, allowNull: true},
+    all_trails_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    nps_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    hiking_project_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    trail_elevation: {type: DataTypes.STRING, allowNull: true},
   },
   {
     tableName: 'trails',
@@ -100,6 +113,7 @@ export const Park_State = sequelize.define(
   'Park_State',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    park_id: {type: DataTypes.STRING, allowNull: false},
     state_code: {type: DataTypes.STRING, allowNull: false},
     state: {type: DataTypes.STRING, allowNull: false},
   },
@@ -169,12 +183,12 @@ export const Completed_Hike = sequelize.define(
   },
   {tableName: 'completed_hikes', underscored: true}
 );
-export const Hiking_Queue = sequelize.define(
-  'Hiking_Queue',
+export const Queued_Trail = sequelize.define(
+  'Queued_Trail',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
   },
-  {tableName: 'hiking_queue', underscored: true}
+  {tableName: 'queued_trails', underscored: true}
 );
 export const User_Miles = sequelize.define(
   'User_Miles',
@@ -234,6 +248,20 @@ export const User_Session = sequelize.define(
   {tableName: 'users_sessions', underscored: true}
 );
 
+export const Subscription = sequelize.define(
+  'Subscription',
+  {
+    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    user_id: {type: DataTypes.STRING, allowNull: false},
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
+    expires_at: {type: DataTypes.STRING, allowNull: false},
+  },
+  {tableName: 'users_subscriptions'}
+);
+
 User.belongsTo(Trail, {foreignKey: 'trail_id'});
 Trail.hasMany(User, {foreignKey: 'trail_id'});
 
@@ -258,13 +286,15 @@ User.belongsToMany(Badge, {through: 'users_badges'});
 User.belongsToMany(Trail, {through: 'completed_hikes'});
 Trail.belongsToMany(User, {through: 'completed_hikes'});
 
-User.belongsToMany(Trail, {through: 'hiking_queue'});
-Trail.belongsToMany(User, {through: 'hiking_queue'});
+User.belongsToMany(Trail, {through: 'queued_trails'});
+Trail.belongsToMany(User, {through: 'queued_trails'});
 
-User.hasMany(User_Session, {foriegnKey: 'id'});
+User.hasMany(User_Session, {foriegnKey: 'user_id'});
 User_Session.belongsTo(User);
+User.hasOne(Subscription, {foriegnKey: 'user_id'});
+Subscription.belongsTo(User);
 
-export const SYNC = async () => {
-  await sequelize.sync();
+export const SYNC = async (cb) => {
+  await sequelize.sync(cb);
   console.log('All models were synchronized successfully.');
 };
