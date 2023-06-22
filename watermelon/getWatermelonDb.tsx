@@ -18,6 +18,7 @@ import {
   User_Badge,
   Session_Category,
   User_Session,
+  Subscription
 } from './models';
 
 
@@ -42,6 +43,7 @@ export const watermelonDatabase = new Database({
     User_Badge,
     Session_Category,
     User_Session,
+    Subscription
   ],
 });
 

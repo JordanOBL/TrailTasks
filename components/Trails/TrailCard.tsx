@@ -1,11 +1,14 @@
 import {ImageBackground, Pressable, StyleSheet, Text, View} from 'react-native';
-import React, {useContext} from 'react';
+
 
 import {formatDateTime} from '../../helpers/formatDateTime';
 import withObservables from '@nozbe/with-observables';
 import CapitalizeWord from '../../helpers/capitalizeWord';
-import {Q} from '@nozbe/watermelondb';
-import {Completed_Hike, Queued_Trail} from '../../watermelon/models';
+
+import { Completed_Hike, Queued_Trail } from '../../watermelon/models';
+import useUserSubscription from '../../helpers/useUserSubscription';
+
+
 interface Props {
   trail: any;
   setReplacementTrailId: any;
@@ -32,6 +35,7 @@ const TrailCard = ({
   queuedTrails.forEach(
     (trail: Queued_Trail) => (queuedCache[trail.trailId] = true)
   );
+  const userSubscription = useUserSubscription()
   return user ? (
     <View
       key={trail.id}
