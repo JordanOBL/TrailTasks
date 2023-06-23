@@ -28,6 +28,10 @@ const schema = appSchema({
       ],
     }),
     tableSchema({
+      name: 'basic_subscription_trails',
+      columns: [{name: 'trail_id', type: 'string', isIndexed: true}],
+    }),
+    tableSchema({
       name: 'users',
       columns: [
         {name: 'username', type: 'string'},

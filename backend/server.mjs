@@ -14,6 +14,7 @@ import {
   SYNC,
   User_Miles,
   User_Session,
+  Basic_Subscription_Trail,
 } from '../backend/db/sequelizeModel.mjs';
 
 // import pool from "./db/config.js";
@@ -1151,8 +1152,7 @@ app.get('/api/seed', async (req, res) => {
         hiking_project_url:
           'https://www.hikingproject.com/trail/7014747/chimney-rock-trail',
       },
-      
-  
+
       {
         id: '31',
         trail_name: 'Old Guano Trail',
@@ -2270,6 +2270,30 @@ app.get('/api/seed', async (req, res) => {
         achievement_image_url: 'https://example.com/achievement2.png',
       },
     ]);
+    const basic_subscription_trails = await Basic_Subscription_Trail.bulkCreate(
+      [
+        {
+          id: '1',
+          trail_id: '1',
+        },
+        {
+          id: '2',
+          trail_id: '5',
+        },
+        {
+          id: '3',
+          trail_id: '19',
+        },
+        {
+          id: '4',
+          trail_id: '33',
+        },
+        {
+          id: '5',
+          trail_id: '41',
+        },
+      ]
+    );
     console.log('Seed Successful)');
     res.status(200).json(trails);
   } catch (err) {
@@ -2365,6 +2389,13 @@ app.get('/pull', async (req, res) => {
         },
       },
     });
+    const createdBasicSubscriptionTrails = await Basic_Subscription_Trail.findAll({
+      where: {
+        createdAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
     // console.log({createdUserMiles});
     // const updatedParks = await Park.findAll({
     //   where: {
@@ -2422,6 +2453,11 @@ app.get('/pull', async (req, res) => {
         },
         session_categories: {
           created: createdSessionCategories,
+          updated: [],
+          deleted: [],
+        },
+        basic_subscription_trails: {
+          created: createdBasicSubscriptionTrails,
           updated: [],
           deleted: [],
         },

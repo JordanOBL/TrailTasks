@@ -9,6 +9,7 @@ import EnhancedStatsScreen from '../../Screens/StatsScreen';
 import {User} from '../../watermelon/models';
 import EnhancedHikingQueueScreen from '../../Screens/HikingQueueScreen';
 import SubscribeScreen from '../../Screens/SubscribeScreen';
+import SettingsScreen from '../../Screens/SettingsScreen';
 const Stack = createStackNavigator();
 interface Props {
   user: User;
@@ -48,6 +49,9 @@ export function HomeStack({user, setUser}: Props) {
       </Stack.Screen>
       <Stack.Screen name="Subscribe">
         {(props: any) => <SubscribeScreen {...props} />}
+      </Stack.Screen>
+      <Stack.Screen name="Settings">
+        {(props: any) => <SettingsScreen {...props} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
