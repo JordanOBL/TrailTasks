@@ -2295,7 +2295,7 @@ app.get('/api/seed', async (req, res) => {
       ]
     );
     console.log('Seed Successful)');
-    res.status(200).json(trails);
+    res.status(200);
   } catch (err) {
     console.log('Error in server seeding pgdb', err);
   }

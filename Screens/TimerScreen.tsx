@@ -81,7 +81,18 @@ const TimerScreen = ({user, setUser, currentTrail}: Props) => {
           user={user}
         />
       )}
-     
+     { userSession && sessionDetails.isPaused == true ? <Pressable
+        onPress={() => navigation.goBack()}
+        style={[styles.returnButton, {backgroundColor: 'green'}]}>
+        <Text
+          style={{
+            color: 'rgb(28,29,31)',
+            fontSize: 18,
+            fontWeight: '800',
+          }}>
+          Return to Base Camp
+        </Text>
+      </Pressable> : <></>}
     </SafeAreaView>
   );
 };
