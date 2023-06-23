@@ -12,7 +12,9 @@ interface Props {
   setUser: any;
 }
 
-const TabNavigator = ({user, setUser}: Props) => {
+const TabNavigator = ({ user, setUser }: Props) =>
+{
+  Ionicons.loadFont().catch(err => console.log('err', err));
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
