@@ -15,7 +15,7 @@ const useUserSubscription = () => {
       const subscription = await database
         .get('users_subscriptions')
         .find(subscriptionId!);
-      console.log('user subscription', subscription);
+      //console.log('user subscription', subscription);
       //@ts-ignore
       setUserSubscription(subscription);
     } catch (error) {
@@ -24,7 +24,7 @@ const useUserSubscription = () => {
   }
   useEffect(() => {
     getSubscription();
-  });
+  },[]);
   return userSubscription;
 };
 

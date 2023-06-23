@@ -9,25 +9,30 @@ import {handleLogOut} from '../helpers/logoutHelpers';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 import {sync} from '../watermelon/sync';
-import {User} from '../watermelon/models';
+import {Subscription, User} from '../watermelon/models';
 
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
 import ScreenLink from '../components/HomeScreen/screenLink';
-import useUserSubscription from '../helpers/useUserSubscription';
+// import useUserSubscription from '../helpers/useUserSubscription';
 
 interface Props {
   user: User;
   currentTrail?: any;
   navigation: any;
   setUser: any;
+  userSubscription: Subscription[];
 }
-const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
-  // const {userId, setUserId} = React.useContext(UserContext);
+const HomeScreen = ({
+  navigation,
+  user,
+  setUser,
+  currentTrail,
+  userSubscription,
+}: Props) => {
   const watermelonDatabase = useDatabase();
 
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
-  const userSubscription = useUserSubscription();
 
   React.useEffect(() => {
     async function isConnected() {
@@ -98,7 +103,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
             user={user}
             needsActiveSubscription={false}
             hasActiveSubscription={
-              userSubscription ? userSubscription.isActive : false
+              userSubscription[0] ? userSubscription[0].isActive : false
             }
             navigation={navigation}
             navTo={'Stats'}>
@@ -108,7 +113,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
             user={user}
             needsActiveSubscription={true}
             hasActiveSubscription={
-              userSubscription ? userSubscription.isActive : false
+              userSubscription[0] ? userSubscription[0].isActive : false
             }
             navigation={navigation}
             navTo={'HikingQueue'}>
@@ -117,7 +122,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
           <ScreenLink
             needsActiveSubscription={true}
             hasActiveSubscription={
-              userSubscription ? userSubscription.isActive : false
+              userSubscription[0] ? userSubscription[0].isActive : false
             }
             user={user}
             navigation={navigation}
@@ -127,7 +132,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
           <ScreenLink
             needsActiveSubscription={false}
             hasActiveSubscription={
-              userSubscription ? userSubscription.isActive : false
+              userSubscription[0] ? userSubscription[0].isActive : false
             }
             user={user}
             navigation={navigation}
@@ -140,7 +145,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
             navTo={'Leaderboards'}
             needsActiveSubscription={true}
             hasActiveSubscription={
-              userSubscription ? userSubscription.isActive : false
+              userSubscription[0] ? userSubscription[0].isActive : false
             }>
             Leaderboards
           </ScreenLink>
@@ -150,9 +155,19 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
             navTo={'CompletedHikes'}
             needsActiveSubscription={true}
             hasActiveSubscription={
-              userSubscription ? userSubscription.isActive : false
+              userSubscription[0] ? userSubscription[0].isActive : false
             }>
             Completed Trails
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'Settings'}
+            needsActiveSubscription={false}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }>
+            Settings
           </ScreenLink>
 
           <Pressable
@@ -168,7 +183,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
 const enhance = withObservables(['user'], ({user}) => ({
   user: user.observe(),
   currentTrail: user.trail.observe(),
-  // Shortcut syntax for `post.comments.observe()`
+  userSubscription: user.usersSubscriptions.observe(),
 }));
 
 const EnhancedHomeScreen = enhance(HomeScreen);

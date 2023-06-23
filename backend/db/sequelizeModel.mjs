@@ -187,8 +187,18 @@ export const Queued_Trail = sequelize.define(
   'Queued_Trail',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    user_id: {type: DataTypes.STRING, allowNull: false},
+    trail_id: {type: DataTypes.STRING, allowNull: false},
   },
   {tableName: 'queued_trails', underscored: true}
+);
+export const Basic_Subscription_Trail = sequelize.define(
+  'Basic_Subscription_Trail',
+  {
+    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    trail_id: {type: DataTypes.STRING, allowNull: false},
+  },
+  {tableName: 'basic_subscription_trails', underscored: true}
 );
 export const User_Miles = sequelize.define(
   'User_Miles',
@@ -291,8 +301,12 @@ Trail.belongsToMany(User, {through: 'queued_trails'});
 
 User.hasMany(User_Session, {foriegnKey: 'user_id'});
 User_Session.belongsTo(User);
-User.hasOne(Subscription, {foriegnKey: 'user_id'});
-Subscription.belongsTo(User);
+
+Subscription.hasOne(User, {foriegnKey: 'user_id'});
+User.belongsTo(Subscription, {key: 'id'});
+
+Basic_Subscription_Trail.hasOne(Trail, {foreignKey: 'trail_id'});
+Trail.belongsTo(Basic_Subscription_Trail, {key: 'id'});
 
 export const SYNC = async (cb) => {
   await sequelize.sync(cb);
