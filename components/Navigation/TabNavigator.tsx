@@ -38,7 +38,7 @@ const TabNavigator = ({user, setUser}: Props) => {
       <Tab.Screen name="Explore">
         {() => <EnhancedExploreScreen user={user} setUser={setUser} />}
       </Tab.Screen>
-      <Tab.Screen name="Timer">
+      <Tab.Screen name="Timer" options={{tabBarStyle: {display: 'none'}}}>
         {() => <EnhancedTimerScreen user={user} setUser={setUser} />}
       </Tab.Screen>
     </Tab.Navigator>
