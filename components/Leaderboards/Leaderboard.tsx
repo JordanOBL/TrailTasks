@@ -11,14 +11,7 @@ interface Props {
 }
 
 const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
-  const updateUserMiles = async (miles: any) => {
-    try {
-      const updated = await userMiles.updateTotalMiles(miles);
-      console.log({updated});
-    } catch (err) {
-      console.log('error in update user', err);
-    }
-  };
+
   const sortUsersMiles = (usersMilesCollection: any) => {
     return usersMilesCollection.sort((a: any, b: any) => {
       const aMiles = parseFloat(a.totalMiles);
@@ -56,9 +49,6 @@ const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
           }
         })}
       </View>
-      <Pressable onPress={() => updateUserMiles({miles: 0.01})}>
-        <Text style={{color: 'white'}}>Increase UserMiles</Text>
-      </Pressable>
       <Text style={styles.sectionTitle}>All Users: </Text>
       <SafeAreaView style={{marginBottom: 400}}>
         <FlatList
@@ -77,11 +67,9 @@ const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
   );
 };
 
-//export default Leaderboard;
-
-const enhance = withObservables(['userMiles'], ({userMiles}) => ({
+const enhance = withObservables(['userMiles', 'user'], ({userMiles, user}) => ({
   userMiles,
-  //Shortcut syntax for `post.comments.observe()`
+  user
 }));
 
 const EnhancedLeaderboard = enhance(Leaderboard);

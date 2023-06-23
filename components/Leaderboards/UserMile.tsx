@@ -88,8 +88,9 @@ const UserMile = ({userMiles, index, user, otherUser}: Props) => {
   );
 };
 
-const enhance = withObservables(['userMiles'], ({userMiles}) => ({
+const enhance = withObservables(['userMiles', 'user'], ({userMiles, user}) => ({
   userMiles,
+  user,
  otherUser : userMiles.user.observe()
 }));
 
