@@ -1,6 +1,8 @@
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import {User} from '../../watermelon/models';
+import Icon from 'react-native-vector-icons/Ionicons';
+
 interface Props {
   children: any;
   navTo: string;
@@ -39,11 +41,16 @@ const ScreenLink = ({
                 : 'rgb(249,253,255)',
           },
         ]}>
-        {children}
+        {needsActiveSubscription && !hasActiveSubscription ? (
+          <Icon name="lock-closed" size={25} color="rgb(149,153,155)" />
+        ) : (
+          <></>
+        )}
+        { ' ' + children}
         {needsActiveSubscription && hasActiveSubscription
           ? ''
           : needsActiveSubscription && !hasActiveSubscription
-          ? ' - Upgrade to Pro'
+          ? ' - Pro '
           : ''}
       </Text>
     </Pressable>
@@ -66,11 +73,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'rgb(31,33,35)',
     flex: 1,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
     color: 'rgb(221,224,226)',
     fontWeight: '900',
     marginBottom: 10,
     padding: 20,
+    flexDirection: 'row',
   },
 });
