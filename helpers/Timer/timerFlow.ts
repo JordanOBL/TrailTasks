@@ -26,7 +26,7 @@ export async function increaseDistanceHiked({
   setSessionDetails,
 }: {
   user: User;
-  userMiles: User_Miles;
+  userMiles: User_Miles[];
   currentTrail: Trail;
   userSession: User_Session;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
