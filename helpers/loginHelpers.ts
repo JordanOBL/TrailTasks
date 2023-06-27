@@ -10,12 +10,34 @@ export const checkExistingUser = async (
   try {
     const existingUser = await watermelonDatabase
       .get('users')
-      .query(Q.where('email', email), Q.where('password', password))
+      .query(Q.and(Q.where('email', email), Q.where('password', password)))
       .fetch();
 
     return existingUser[0];
   } catch (err) {
     console.log('error in checkexisting user function', err);
+  }
+};
+
+export const setSubscriptionStatus = async (
+  user: any,
+  watermelonDatabase: Database
+) => {
+  try {
+    console.log('subscription existing user', user.id);
+    const subscription = await watermelonDatabase.collections
+      .get('users_subscriptions')
+      .query(Q.where('user_id', user.id))
+      .fetch();
+    console.log(subscription);
+    if (subscription[0]) {
+      await watermelonDatabase.localStorage.set(
+        'subscription_id',
+        subscription[0].id
+      );
+    } 
+  } catch (err) {
+    console.log('error in setSubscriptionStatus help function', err);
   }
 };
 
@@ -39,7 +61,7 @@ const setLocalStorageUserAndMiles = async (
       .fetch();
     if (usersMiles.length > 0) {
       await watermelonDatabase.localStorage.set(
-        'users_miles_id',
+        'user_miles_id',
         usersMiles[0].id
       );
       console.log('Set localStorage UsersMilesId');
@@ -63,7 +85,12 @@ export const checkForLoggedInUser = async (
 
     if (userId) {
       let user = await watermelonDatabase.collections.get('users').find(userId);
-      console.log({user})
+      console.log({user});
+      //@ts-ignore
+      if (user.id) {
+        await setSubscriptionStatus(user, watermelonDatabase);
+      }
+
       setUser(user);
     }
   } catch (error) {
@@ -100,6 +127,8 @@ export const handleLogin = async ({
       setError('Invalid Email or Password');
       return;
     }
+    //@ts-ignore
+    await setSubscriptionStatus(existingUser, watermelonDatabase);
     const response = await setLocalStorageUserAndMiles(
       existingUser,
       watermelonDatabase

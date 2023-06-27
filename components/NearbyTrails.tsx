@@ -1,5 +1,4 @@
 import {
-  KeyboardAvoidingView,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -7,29 +6,38 @@ import {
   View,
   Pressable,
   Modal,
-  ImageBackground,
 } from 'react-native';
 import * as React from 'react';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
-import {Completed_Hike, Queued_Trail, Trail, User} from '../watermelon/models';
+import {
+  Basic_Subscription_Trail,
+  Completed_Hike,
+  Queued_Trail,
+  Subscription,
+  Trail,
+  User,
+} from '../watermelon/models';
 
 import EnhancedTrailCard from './Trails/TrailCard';
 import {formatDateTime} from '../helpers/formatDateTime';
+
 interface Props {
   trailsCollection: Trail[];
   user: User;
-  queuedTrails: Queued_Trail[]
-  completedHikes: Completed_Hike[]
+  queuedTrails: Queued_Trail[];
+  basicSubscriptionTrails: any;
+  completedHikes: Completed_Hike[];
+  userSubscription: Subscription;
 }
 const NearbyTrails = ({
   trailsCollection,
   user,
   completedHikes,
-  queuedTrails
+  queuedTrails,
+  basicSubscriptionTrails,
+  userSubscription,
 }: Props) => {
-  const watermelonDatabase = useDatabase();
-
   const [showReplaceTrailModal, setShowReplaceTrailModal] =
     React.useState<boolean>(false);
   const [replacementTrailId, setReplacementTrailId] = React.useState<
@@ -49,8 +57,27 @@ const NearbyTrails = ({
       return trailsArr.filter(
         (trail: any) => trail.trailDiifficulty === 'long'
       );
-    } 
+    }
   };
+  const queuedCache: {[key: string]: boolean} = {};
+  const completedCache: {[key: string]: boolean} = {};
+  const basicTrailsCache: {[key: string]: boolean} = {};
+
+  React.useEffect(() => {
+    completedHikes.forEach(
+      (trail: Completed_Hike) => (completedCache[trail.trailId] = true)
+    );
+  }, [completedHikes]);
+
+  React.useEffect(() => {
+    queuedTrails.forEach(
+      (trail: Queued_Trail) => (queuedCache[trail.trailId] = true)
+    );
+  }, [queuedTrails]);
+
+  basicSubscriptionTrails
+    .map((trail: any) => trail.trailId)
+    .forEach((trailId: any) => (basicTrailsCache[trailId] = true));
 
   return showReplaceTrailModal ? (
     <Modal
@@ -98,11 +125,47 @@ const NearbyTrails = ({
           borderColor: 'rgb(31,33,35)',
           padding: 10,
         }}>
+        {userSubscription.isActive === false ? (
+          <View>
+            <Text style={styles.H2}> Free Monthly Trails</Text>
+            <ScrollView horizontal>
+              {trailsCollection && user ? (
+                trailsCollection.map((trail: any) => {
+                  if (basicTrailsCache && basicTrailsCache[trail.id]) {
+                    return (
+                      <EnhancedTrailCard
+                        userSubscription={userSubscription}
+                        queuedCache={queuedCache}
+                        completedCache={completedCache}
+                        user={user}
+                        key={trail.id}
+                        setReplacementTrailId={setReplacementTrailId}
+                        setShowReplaceTrailModal={setShowReplaceTrailModal}
+                        trail={trail}
+                        completedHikes={completedHikes}
+                        queuedTrails={queuedTrails}
+                        basicSubscriptionTrails={basicTrailsCache}
+                      />
+                    );
+                  }
+                })
+              ) : (
+                <Text>Loading...</Text>
+              )}
+            </ScrollView>
+          </View>
+        ) : (
+          <></>
+        )}
+
         <Text style={styles.H2}>All Trails</Text>
         <ScrollView horizontal>
           {trailsCollection && user ? (
             trailsCollection.map((trail: any) => (
               <EnhancedTrailCard
+                userSubscription={userSubscription}
+                queuedCache={queuedCache}
+                completedCache={completedCache}
                 user={user}
                 key={trail.id}
                 setReplacementTrailId={setReplacementTrailId}
@@ -110,62 +173,7 @@ const NearbyTrails = ({
                 trail={trail}
                 completedHikes={completedHikes}
                 queuedTrails={queuedTrails}
-              />
-            ))
-          ) : (
-            <Text>Loading...</Text>
-          )}
-        </ScrollView>
-        <Text style={styles.H2}>Short Trails</Text>
-        <ScrollView horizontal>
-          {trailsCollection && user ? (
-            filterTrails('Short Trails', trailsCollection).map((trail: any) => (
-              <EnhancedTrailCard
-                user={user}
-                key={trail.id}
-                setReplacementTrailId={setReplacementTrailId}
-                setShowReplaceTrailModal={setShowReplaceTrailModal}
-                trail={trail}
-                completedHikes={completedHikes}
-                queuedTrails={queuedTrails}
-              />
-            ))
-          ) : (
-            <Text>Loading...</Text>
-          )}
-        </ScrollView>
-        <Text style={styles.H2}>Moderate Trails</Text>
-        <ScrollView horizontal>
-          {trailsCollection && user ? (
-            filterTrails('Moderate Trails', trailsCollection).map(
-              (trail: any) => (
-                <EnhancedTrailCard
-                  user={user}
-                  key={trail.id}
-                  setReplacementTrailId={setReplacementTrailId}
-                  setShowReplaceTrailModal={setShowReplaceTrailModal}
-                  trail={trail}
-                  completedHikes={completedHikes}
-                  queuedTrails={queuedTrails}
-                />
-              )
-            )
-          ) : (
-            <Text>Loading...</Text>
-          )}
-        </ScrollView>
-        <Text style={styles.H2}>Long Trails</Text>
-        <ScrollView horizontal>
-          {trailsCollection && user ? (
-            filterTrails('Long Trails', trailsCollection).map((trail: any) => (
-              <EnhancedTrailCard
-                user={user}
-                key={trail.id}
-                setReplacementTrailId={setReplacementTrailId}
-                setShowReplaceTrailModal={setShowReplaceTrailModal}
-                trail={trail}
-                completedHikes={completedHikes}
-                queuedTrails={queuedTrails}
+                basicSubscriptionTrails={basicTrailsCache}
               />
             ))
           ) : (
@@ -177,13 +185,17 @@ const NearbyTrails = ({
   );
 };
 
-const enhance = withObservables(['user'], ({user}) => ({
-  user,
-  completedHikes: user.completedHikes.observe(),
-  queuedTrails: user.queuedTrails.observe()
+const enhance = withObservables(
+  ['user', 'userSubscription'],
+  ({user, userSubscription}) => ({
+    user,
+    completedHikes: user.completedHikes.observe(),
+    queuedTrails: user.queuedTrails.observe(),
+    userSubscription,
 
-  // Shortcut syntax for `post.comments.observe()`
-}));
+    // Shortcut syntax for `post.comments.observe()`
+  })
+);
 
 const EnhancedNearbyTrails = enhance(NearbyTrails);
 export default EnhancedNearbyTrails;

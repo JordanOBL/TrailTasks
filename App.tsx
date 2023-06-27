@@ -26,7 +26,7 @@ import TabNavigator from './components/Navigation/TabNavigator';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import {User} from './watermelon/models';
+import {Subscription, User} from './watermelon/models';
 
 export const UserContext = createContext<any>('');
 
@@ -36,6 +36,7 @@ function App(): JSX.Element {
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
 
   const [user, setUser] = useState<any>();
+  
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -43,18 +44,17 @@ function App(): JSX.Element {
   };
 
   //insert postgres tables
-  // const seedPgTables = async () => {
-  //   try {
-  //     console.log('seedingPgTables');
-  //     const response = await fetch('http://localhost:5500/api/seed');
-  //     const data = await response.json();
-  //     console.log(data);
-  //   } catch (error: any) {
-  //     console.error(
-  //       'Error in gettingPGTables function, app.tsx',
-  //       error.message
-  //     );
-  //   } };
+  const seedPgTables = async () => {
+    try {
+      console.log('seedingPgTables');
+      const response = await fetch('http://localhost:5500/api/seed');
+      const data = await response.json();
+    } catch (error: any) {
+      console.error(
+        'Error in gettingPGTables function, app.tsx',
+        error.message
+      );
+    } };
   useEffect(() => {
     // Do something with the Watermelon database instance
     const onLoad = async () => {

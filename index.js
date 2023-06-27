@@ -19,6 +19,8 @@ import {
   User_Badge,
   Session_Category,
   User_Session,
+  Subscription,
+  Basic_Subscription_Trail,
 } from './watermelon/models';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
@@ -47,6 +49,8 @@ const WrappedApp = () => {
       User_Badge,
       Session_Category,
       User_Session,
+      Subscription,
+      Basic_Subscription_Trail,
     ],
   });
   return (

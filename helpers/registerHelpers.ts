@@ -1,7 +1,7 @@
 //import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {Q} from '@nozbe/watermelondb';
 import {formatDateTime} from './formatDateTime';
-import {User, User_Miles} from '../watermelon/models';
+import {Subscription, User, User_Miles} from '../watermelon/models';
 
 const checkExistingUser = async ({
   username,
@@ -96,11 +96,29 @@ const createNewUser = async ({
             //@ts-ignore
             user_miles.totalMiles = '0.00';
           });
+
+        const subscription = await watermelonDatabase
+          .get('users_subscriptions')
+          .create((subscription: Subscription) => {
+            //@ts-ignore
+            subscription.userId = newUser.id;
+            //@ts-ignore
+            subscription.isActive = false;
+            subscription.expiresAt = null;
+          });
+
         if (userMiles) {
           console.log({userMiles});
           await watermelonDatabase.localStorage.set(
             'user_miles_id',
             userMiles.id
+          );
+        }
+        if (subscription) {
+          console.log({subscription});
+          await watermelonDatabase.localStorage.set(
+            'subscription_id',
+            subscription.id
           );
         }
       }
@@ -111,6 +129,10 @@ const createNewUser = async ({
       await watermelonDatabase.localStorage.set('user_id', newUser.id);
       //@ts-ignore
       await watermelonDatabase.localStorage.set('username', newUser.username);
+      await watermelonDatabase.localStorage.set(
+        'subscriptionStatus',
+        'inactive'
+      );
       setUser(newUser);
       return newUser;
     }

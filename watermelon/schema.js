@@ -21,8 +21,15 @@ const schema = appSchema({
         {name: 'trail_difficulty', type: 'string', isIndexed: true},
         {name: 'park_id', type: 'string'}, //ref
         {name: 'trail_image_url', type: 'string', isOptional: true},
-        {name: 'trail_elevation', type: 'number', isOptional: true},
+        {name: 'all_trails_url', type: 'string', isOptional: true},
+        {name: 'nps_url', type: 'string', isOptional: true},
+        {name: 'hiking_project_url', type: 'string', isOptional: true},
+        {name: 'trail_elevation', type: 'string', isOptional: true},
       ],
+    }),
+    tableSchema({
+      name: 'basic_subscription_trails',
+      columns: [{name: 'trail_id', type: 'string', isIndexed: true}],
     }),
     tableSchema({
       name: 'users',
@@ -132,6 +139,16 @@ const schema = appSchema({
         {name: 'date_added', type: 'string', isIndexed: true},
         {name: 'total_session_time', type: 'number'},
         {name: 'total_distance_hiked', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
+      ],
+    }),
+    tableSchema({
+      name: 'users_subscriptions',
+      columns: [
+        {name: 'user_id', type: 'string'}, //ref
+        {name: 'is_active', type: 'boolean'}, //ref
+        {name: 'expires_at', type: 'string', isOptional: true}, //ref
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],
