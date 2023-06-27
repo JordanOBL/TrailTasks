@@ -12,7 +12,9 @@ interface Props {
   setUser: any;
 }
 
-const TabNavigator = ({user, setUser}: Props) => {
+const TabNavigator = ({ user, setUser }: Props) =>
+{
+  Ionicons.loadFont().catch(err => console.log('err', err));
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
@@ -32,13 +34,13 @@ const TabNavigator = ({user, setUser}: Props) => {
         tabBarActiveTintColor: 'orange',
         tabBarInactiveTintColor: 'gray',
       })}>
-      <Tab.Screen name="Home">
+      <Tab.Screen name="Basecamp">
         {() => <HomeStack user={user} setUser={setUser} />}
       </Tab.Screen>
       <Tab.Screen name="Explore">
         {() => <EnhancedExploreScreen user={user} setUser={setUser} />}
       </Tab.Screen>
-      <Tab.Screen name="Timer">
+      <Tab.Screen name="Timer" options={{tabBarStyle: {display: 'none'}}}>
         {() => <EnhancedTimerScreen user={user} setUser={setUser} />}
       </Tab.Screen>
     </Tab.Navigator>

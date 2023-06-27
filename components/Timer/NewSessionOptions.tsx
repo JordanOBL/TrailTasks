@@ -7,12 +7,14 @@ import {
   TextInput,
 } from 'react-native';
 
+import {useNavigation} from '@react-navigation/native';
+
 import React from 'react';
 import SelectDropdown from 'react-native-select-dropdown';
 import {User, User_Session} from '../../watermelon/models';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {formatDateTime} from '../../helpers/formatDateTime';
-import { UserContext } from '../../App';
+import {UserContext} from '../../App';
 import sessionCategories from '../../helpers/Session/sessionCategories';
 import timeOptions from '../../helpers/Session/timeOptions';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
@@ -21,16 +23,20 @@ interface Props {
   sessionDetails: any;
   setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
   setUserSession: React.Dispatch<React.SetStateAction<any>>;
-  user: User
+  user: User;
 }
 
-const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession , user}: Props) =>
-{
+const NewSessionOptions = ({
+  sessionDetails,
+  setSessionDetails,
+  setUserSession,
+  user,
+}: Props) => {
   //@ts-ignore
   const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
-  
-//React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
+const navigation = useNavigation()
+  //React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
   return (
     <SafeAreaView style={styles.container}>
       <View style={[styles.dropdownContainer, {width: '100%'}]}>
@@ -113,7 +119,7 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession ,
           }
           defaultValue={
             sessionDetails.initialPomodoroTime
-              ? sessionDetails.initialPomodoroTime 
+              ? sessionDetails.initialPomodoroTime
               : 1500
           }
           buttonStyle={styles.dropdownButtonStyle}
@@ -185,6 +191,7 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession ,
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
         />
       </View>
+
       <Pressable
         onPress={() => {
           if (sessionDetails.isSessionStarted === false) {
@@ -193,18 +200,13 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession ,
               sessionDetails,
               user,
               watermelonDatabase
-            ).then((newSession: User_Session) =>
-            {
-              if (newSession)
-              {
-                setUserSession(newSession)
-                setSessionDetails((prev: any) =>
-                {
+            ).then((newSession: User_Session) => {
+              if (newSession) {
+                setUserSession(newSession);
+                setSessionDetails((prev: any) => {
                   return {...prev, isSessionStarted: true, isLoading: false};
                 });
-
-              } else
-              {
+              } else {
                 setSessionDetails((prev: any) => {
                   return {
                     ...prev,
@@ -214,7 +216,7 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession ,
                   };
                 });
               }
-            })
+            });
           }
         }}
         style={[
@@ -225,6 +227,7 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession ,
               sessionDetails.sessionCategoryId == null
                 ? 'grey'
                 : 'rgb(7,254,213)',
+            bottom: 80,
           },
         ]}
         disabled={
@@ -238,6 +241,17 @@ const NewSessionOptions = ({ sessionDetails, setSessionDetails, setUserSession ,
             fontWeight: '800',
           }}>
           Start Session
+        </Text>
+      </Pressable>
+      <Pressable onPress={() => navigation.goBack()} style={[styles.startBtn, {backgroundColor: 'green'}]}>
+        <Text
+          
+          style={{
+            color: 'rgb(28,29,31)',
+            fontSize: 18,
+            fontWeight: '800',
+          }}>
+          Return to Base Camp
         </Text>
       </Pressable>
     </SafeAreaView>

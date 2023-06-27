@@ -7,22 +7,29 @@ import {Pressable} from 'react-native';
 import withObservables from '@nozbe/with-observables';
 import {handleLogOut} from '../helpers/logoutHelpers';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import {UserContext} from '../App';
-import getCurrentTrail from '../helpers/Trails/getCurrentTrail';
+
 import {sync} from '../watermelon/sync';
-import {Q} from '@nozbe/watermelondb';
-import {User} from '../watermelon/models';
-import {formatDateTime} from '../helpers/formatDateTime';
+import {Subscription, User} from '../watermelon/models';
+
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
+
+import ScreenLink from '../components/HomeScreen/screenLink';
+// import useUserSubscription from '../helpers/useUserSubscription';
 
 interface Props {
   user: User;
   currentTrail?: any;
   navigation: any;
   setUser: any;
+  userSubscription: Subscription[];
 }
-const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
-  const {userId, setUserId} = React.useContext(UserContext);
+const HomeScreen = ({
+  navigation,
+  user,
+  setUser,
+  currentTrail,
+  userSubscription,
+}: Props) => {
   const watermelonDatabase = useDatabase();
 
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
@@ -36,11 +43,9 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
     isConnected();
   }, []);
 
-
   useFocusEffect(
     React.useCallback(() => {
       sync(watermelonDatabase);
-
       return async () => {
         console.log('Timer Screen was unfocused');
       };
@@ -94,64 +99,79 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
             backgroundColor: 'rgb(18,19,21)',
             flex: 1,
           }}>
-          <Pressable
-            style={styles.LinkContainer}
-            onPress={() => navigation.navigate('Stats')}>
-            <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>Stats</Text>
-          </Pressable>
-          <Pressable
-            style={styles.LinkContainer}
-            onPress={() => navigation.navigate('HikingQueue')}>
-            <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
-              Hiking Queue
-            </Text>
-            {/* <Text style={{ color: 'rgb(221,224,226)' }}>
-							{hikingQueue.length > 0
-								? `Next Trail: ${hikingQueue[0].trail_name} ${hikingQueue[0].trail_distance} mi.`
-								: 'No Upcoming Trails'}
-						</Text> */}
-          </Pressable>
-          <Pressable
-            style={styles.LinkContainer}
-            onPress={() => navigation.navigate('Friends')}>
-            <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
-              Friends
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.LinkContainer}
-            onPress={() => navigation.navigate('Achievements')}>
-            <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
-              Achievements
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.LinkContainer}
-            onPress={() => navigation.navigate('CompletedHikes')}>
-            <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
-              Completed Trails
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.LinkContainer}
-            onPress={() => navigation.navigate('Leaderboards')}>
-            <Text style={[styles.H2, {color: 'rgb(249,253,255)'}]}>
-              Leaderboards
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={async () => handleLogOut(setUser, watermelonDatabase)}
-            style={styles.LinkContainer}>
-            <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
-          </Pressable>
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={false}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }
+            navigation={navigation}
+            navTo={'Stats'}>
+            Stats
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={true}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }
+            navigation={navigation}
+            navTo={'HikingQueue'}>
+            Hiking Queue
+          </ScreenLink>
+          <ScreenLink
+            needsActiveSubscription={true}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }
+            user={user}
+            navigation={navigation}
+            navTo={'Friends'}>
+            Friends
+          </ScreenLink>
+          <ScreenLink
+            needsActiveSubscription={false}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }
+            user={user}
+            navigation={navigation}
+            navTo={'Achievements'}>
+            Achievements
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'Leaderboards'}
+            needsActiveSubscription={true}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }>
+            Leaderboards
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'CompletedHikes'}
+            needsActiveSubscription={true}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }>
+            Completed Trails
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'Settings'}
+            needsActiveSubscription={false}
+            hasActiveSubscription={
+              userSubscription[0] ? userSubscription[0].isActive : false
+            }>
+            Settings
+          </ScreenLink>
 
           <Pressable
-            onPress={async () =>
-              user.updateUserTrail({
-                trailId: '1',
-                trailStartedAt: formatDateTime(new Date()),
-              })
-            }
+            onPress={async () => handleLogOut(setUser, watermelonDatabase)}
             style={styles.LinkContainer}>
             <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
           </Pressable>
@@ -163,7 +183,7 @@ const HomeScreen = ({navigation, user, setUser, currentTrail}: Props) => {
 const enhance = withObservables(['user'], ({user}) => ({
   user: user.observe(),
   currentTrail: user.trail.observe(),
-  // Shortcut syntax for `post.comments.observe()`
+  userSubscription: user.usersSubscriptions.observe(),
 }));
 
 const EnhancedHomeScreen = enhance(HomeScreen);

@@ -7,7 +7,6 @@ import {
   text,
   writer,
   date,
-  readonly,
   lazy,
 } from '@nozbe/watermelondb/decorators';
 
@@ -32,6 +31,7 @@ export class Trail extends Model {
     users: {type: 'has_many', foreignKey: 'trail_id'},
     completed_hikes: {type: 'has_many', foreignKey: 'trail_id'},
     queued_trails: {type: 'has_many', foreignKey: 'trail_id'},
+    basic_subscription_trails: {type: 'has_many', foreignKey: 'trail_id'},
   };
   //fields
 
@@ -42,6 +42,9 @@ export class Trail extends Model {
   @field('trail_difficulty') trailDifficulty;
   @field('park_id') parkId;
   @field('trail_image_url') trailImageUrl;
+  @field('all_trails_url') allTrailsUrl;
+  @field('nps_url') npsUrl;
+  @field('hiking_project_url') hikingProjectUrl;
   @field('trail_elevation') trailElevation;
 
   @relation('parks', 'park_id') park;
@@ -50,6 +53,7 @@ export class Trail extends Model {
   @children('users') users;
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
+  @children('basic_subscription_trails') basicSubscriptionTrails;
 
   //Add To Hiking Queue
   @writer async addToQueuedTrails({userId}) {
@@ -71,6 +75,17 @@ export class Trail extends Model {
   }
 }
 
+export class Basic_Subscription_Trail extends Model {
+  static table = 'basic_subscription_trails';
+  static associations = {
+    trails: {type: 'belongs_to', key: 'trail_id'},
+  };
+  //fields
+  @field('trail_id') trailId;
+  @relation('trails', 'trail_id') trail;
+  @children('trails') trails;
+}
+
 export class User extends Model {
   static table = 'users';
   static associations = {
@@ -81,6 +96,7 @@ export class User extends Model {
     completed_hikes: {type: 'has_many', foreignKey: 'user_id'},
     queued_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_miles: {type: 'has_many', foreignKey: 'user_id'},
+    users_subscriptions: {type: 'has_many', foreignKey: 'user_id'},
   };
 
   @field('username') username;
@@ -93,6 +109,7 @@ export class User extends Model {
   @field('trail_id') trailId;
   @field('trail_progress') trailProgress;
   @field('trail_started_at') trailStartedAt;
+  @field('is_subscribed') isSubscribed;
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;
 
@@ -104,6 +121,7 @@ export class User extends Model {
   @children('users_miles') usersMiles;
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
+  @children('users_subscriptions') usersSubscriptions;
 
   @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
   @lazy userSessionsWithCategory = this.usersSessions.extend(
@@ -443,4 +461,20 @@ export class User_Session extends Model {
       this.totalSessionTime = this.totalSessionTime + 1;
     });
   }
+}
+
+export class Subscription extends Model {
+  static table = 'users_subscriptions';
+  static associations = {
+    users: {type: 'belongs_to', key: 'user_id'},
+  };
+  @field('user_id') userId;
+  @field('is_active') isActive;
+  @field('expires_at') expiresAt;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
+
+  @relation('users', 'user_id') user;
+
+  @children('users') users;
 }

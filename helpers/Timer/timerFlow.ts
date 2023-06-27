@@ -10,7 +10,7 @@ import {
   User_Miles,
   User_Session,
 } from '../../watermelon/models';
-import {JoinedUserTrail, SessionDetails} from '../../types/session';
+import {SessionDetails} from '../../types/session';
 import {Vibration} from 'react-native';
 import nextHundredthMileSeconds from './nextHundrethMileSeconds';
 import getTimeDifference from './getTimeDifference';
@@ -26,7 +26,7 @@ export async function increaseDistanceHiked({
   setSessionDetails,
 }: {
   user: User;
-  userMiles: User_Miles;
+  userMiles: User_Miles[];
   currentTrail: Trail;
   userSession: User_Session;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
@@ -45,13 +45,13 @@ export async function increaseDistanceHiked({
       Number(user.trailProgress) < Number(currentTrail.trailDistance)
     ) {
       console.log('updating in increaseDistanceHiked');
-      const updatedTrailProgress = await user.updateTrailProgress({
+       await user.updateTrailProgress({
         miles: 0.01,
       });
-      const updatedUsersMiles = await userMiles[0].updateTotalMiles({
+      await userMiles[0].updateTotalMiles({
         miles: 0.01,
       });
-      const updateSessionTotalTime = userSession.updateTotalDistanceHiked({
+      userSession.updateTotalDistanceHiked({
         miles: 0.01,
       });
     }
@@ -110,7 +110,7 @@ export async function updateUsersTrailAndQueue({
         });
       }
     } else {
-      const updatedUserTrail = await user.updateUserTrail({
+      await user.updateUserTrail({
         trailId: randomTrailId,
         trailStartedAt: currentDate,
       });
