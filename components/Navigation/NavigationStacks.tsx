@@ -53,7 +53,7 @@ export function HomeStack({user, setUser}: Props) {
         {(props: any) => <EnhancedSubscribeScreen user={user} {...props} />}
       </Stack.Screen>
       <Stack.Screen name="Settings">
-        {(props: any) => <SettingsScreen {...props} />}
+        {(props: any) => <SettingsScreen user={user} {...props} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
