@@ -146,6 +146,23 @@ export class User extends Model {
       created_at: this.createdAt,
     };
   }
+
+  @writer async increaseDistanceHikedWriter({user, userMiles, userSession}) {
+    await this.batch(
+      user.prepareUpdate((user) => {
+        user.trailProgress = (Number(user.trailProgress) + 0.01).toFixed(2);
+      }),
+      userMiles.prepareUpdate((userMiles) => {
+        userMiles.totalMiles = (Number(userMiles.totalMiles) + 0.01).toFixed(2);
+      }),
+      userSession.prepareUpdate((userSession) => {
+        userSession.totalDistanceHiked = (
+          Number(userSession.totalDistanceHiked) + 0.01
+        ).toFixed(2);
+      })
+    );
+  }
+
   //update User Trail
   //miles: number
   @writer async updateTrailProgress({miles}) {

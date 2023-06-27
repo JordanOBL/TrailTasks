@@ -45,18 +45,24 @@ export async function increaseDistanceHiked({
       Number(user.trailProgress) < Number(currentTrail.trailDistance)
     ) {
       console.log('updating in increaseDistanceHiked');
-       await user.updateTrailProgress({
-        miles: 0.01,
-      });
-      await userMiles[0].updateTotalMiles({
-        miles: 0.01,
-      });
-      userSession.updateTotalDistanceHiked({
-        miles: 0.01,
+      // await user.updateTrailProgress({
+      //   miles: 0.01,
+      // });
+      // await userMiles[0].updateTotalMiles({
+      //   miles: 0.01,
+      // });
+      // userSession.updateTotalDistanceHiked({
+      //   miles: 0.01,
+      // });
+      await user.increaseDistanceHikedWriter({
+        user,
+        userMiles: userMiles[0],
+        userSession,
       });
     }
     if (
-      sessionDetails.elapsedPomodoroTime === sessionDetails.initialPomodoroTime - 1
+      sessionDetails.elapsedPomodoroTime ===
+      sessionDetails.initialPomodoroTime - 1
     ) {
       if (sessionDetails.currentSet < sessionDetails.sets) {
         setSessionDetails((prev: any) => {
