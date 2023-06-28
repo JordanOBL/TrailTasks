@@ -45,18 +45,24 @@ export async function increaseDistanceHiked({
       Number(user.trailProgress) < Number(currentTrail.trailDistance)
     ) {
       console.log('updating in increaseDistanceHiked');
-       await user.updateTrailProgress({
-        miles: 0.01,
-      });
-      await userMiles[0].updateTotalMiles({
-        miles: 0.01,
-      });
-      userSession.updateTotalDistanceHiked({
-        miles: 0.01,
+      // await user.updateTrailProgress({
+      //   miles: 0.01,
+      // });
+      // await userMiles[0].updateTotalMiles({
+      //   miles: 0.01,
+      // });
+      // userSession.updateTotalDistanceHiked({
+      //   miles: 0.01,
+      // });
+      await user.increaseDistanceHikedWriter({
+        user,
+        userMiles: userMiles[0],
+        userSession,
       });
     }
     if (
-      sessionDetails.elapsedPomodoroTime === sessionDetails.initialPomodoroTime - 1
+      sessionDetails.elapsedPomodoroTime ===
+      sessionDetails.initialPomodoroTime - 1
     ) {
       if (sessionDetails.currentSet < sessionDetails.sets) {
         setSessionDetails((prev: any) => {
@@ -230,7 +236,8 @@ async function increaseElapsedTime({
     if (
       sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
     ) {
-      await increaseDistanceHiked({
+      await userSession.updateTotalSessionTime();
+      increaseDistanceHiked({
         user,
         userMiles,
         currentTrail,
@@ -238,7 +245,6 @@ async function increaseElapsedTime({
         sessionDetails,
         setSessionDetails,
       });
-      await userSession.updateTotalSessionTime();
       setSessionDetails((prev: any) => {
         return {
           ...prev,
@@ -493,7 +499,7 @@ export async function Hike({
 }) {
   try {
     //check for completed hike
-    await isTrailCompleted({
+    isTrailCompleted({
       watermelonDatabase,
       user,
       currentTrail,
@@ -501,9 +507,9 @@ export async function Hike({
     });
 
     //modify Speed
-    await speedModifier(setSessionDetails, sessionDetails);
+    speedModifier(setSessionDetails, sessionDetails);
 
-    await increaseElapsedTime({
+    increaseElapsedTime({
       user,
       userMiles,
       currentTrail,
