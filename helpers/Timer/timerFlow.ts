@@ -236,7 +236,8 @@ async function increaseElapsedTime({
     if (
       sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
     ) {
-      await increaseDistanceHiked({
+      await userSession.updateTotalSessionTime();
+      increaseDistanceHiked({
         user,
         userMiles,
         currentTrail,
@@ -244,7 +245,6 @@ async function increaseElapsedTime({
         sessionDetails,
         setSessionDetails,
       });
-      await userSession.updateTotalSessionTime();
       setSessionDetails((prev: any) => {
         return {
           ...prev,
@@ -499,7 +499,7 @@ export async function Hike({
 }) {
   try {
     //check for completed hike
-    await isTrailCompleted({
+    isTrailCompleted({
       watermelonDatabase,
       user,
       currentTrail,
@@ -507,9 +507,9 @@ export async function Hike({
     });
 
     //modify Speed
-    await speedModifier(setSessionDetails, sessionDetails);
+    speedModifier(setSessionDetails, sessionDetails);
 
-    await increaseElapsedTime({
+    increaseElapsedTime({
       user,
       userMiles,
       currentTrail,
