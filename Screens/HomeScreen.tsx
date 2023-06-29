@@ -1,4 +1,11 @@
-import {StyleSheet, Text, View, ScrollView, Image} from 'react-native';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Image,
+} from 'react-native';
 import * as React from 'react';
 import SyncIndicator from '../components/SyncIndicator';
 import DistanceProgressBar from '../components/DistanceProgressBar';
@@ -11,6 +18,7 @@ import Ranks from '../helpers/Ranks/ranksData';
 import getUserRank from '../helpers/Ranks/getUserRank';
 import {sync} from '../watermelon/sync';
 import {Subscription, User, User_Miles} from '../watermelon/models';
+import Carousel from 'react-native-reanimated-carousel';
 
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
@@ -42,7 +50,9 @@ const HomeScreen = ({
   const watermelonDatabase = useDatabase();
   const [userRank, setUserRank] = React.useState<Rank | undefined>();
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
-
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const data = [...new Array(2).keys()]; // Your data array
+  const width = Dimensions.get('window').width;
   React.useEffect(() => {
     async function isConnected() {
       const {connection} = await checkInternetConnection();
@@ -51,7 +61,6 @@ const HomeScreen = ({
 
     isConnected();
   }, []);
-
 
   useFocusEffect(
     React.useCallback(() => {
@@ -74,8 +83,8 @@ const HomeScreen = ({
         style={{
           color: isConnected ? 'green' : 'gray',
           paddingHorizontal: 10,
-            paddingVertical: 0,
-          textAlign: 'right'
+          paddingVertical: 0,
+          textAlign: 'right',
         }}>
         {isConnected ? 'Online' : 'Offline'}
       </Text>
@@ -89,45 +98,82 @@ const HomeScreen = ({
         }}>
         <Text style={styles.H1}>{user.username}</Text>
       </View>
-      {userRank ? (
-        <View
-          style={{
-            backgroundColor: 'transparent',
-            width: '100%',
-            alignItems: 'center',
-            marginVertical: 10,
-            paddingHorizontal: 10,
-          }}>
-          <Image
-            source={userRank ? userRank.image : null}
-            style={{width: 125, height: 125}}
-            resizeMode="contain"
-          />
-          <Text style={styles.H3}>Level {userRank.level}</Text>
-          <Text style={styles.H3}>
-            {userRank.group} {userRank.title}
-          </Text>
-        </View>
-      ) : (
-        <></>
-      )}
-      <View style={styles.Container}>
-        <View
-          style={{
-            padding: 10,
-            marginBottom: 10,
-            backgroundColor: 'rgb(28,29,31)',
-            borderColor: 'rgb(7,254,213)',
-            borderWidth: 1,
-            borderRadius: 10,
-          }}>
-          <Text style={[styles.H3, {margin: 0, color: 'rgb(7,254,213)'}]}>
-            Current Trail:
-          </Text>
-          <Text style={styles.H3}>{currentTrail.trailName}</Text>
-          <DistanceProgressBar user={user} trail={currentTrail} />
-        </View>
+      <View style={{alignItems: 'center', justifyContent: 'center'}}>
+        <Carousel
+          loop
+          pagingEnabled={true}
+          snapEnabled={true}
+          // mode="parallax"
+          width={width}
+          height={width / 2}
+          autoPlay={false}
+          data={[...new Array(2).keys()]}
+          scrollAnimationDuration={1000}
+          onSnapToItem={(index) => setActiveIndex(index)}
+          renderItem={({index}) => (
+            <View
+              style={{
+                backgroundColor: 'transparent',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flex: 1,
+                marginVertical: 10,
+                paddingHorizontal: 10,
+              }}>
+              {userRank && index === 0 ? (
+                <View
+                  style={{
+                    backgroundColor: 'transparent',
+                    width: '100%',
+                    alignItems: 'center',
+                    marginVertical: 10,
+                    paddingHorizontal: 10,
+                  }}>
+                  <Image
+                    source={userRank ? userRank.image : null}
+                    style={{width: 125, height: 125}}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.H3}>Level {userRank.level}</Text>
+                  <Text style={styles.H3}>
+                    {userRank.group} {userRank.title}
+                  </Text>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    padding: 10,
 
+                    backgroundColor: 'rgb(28,29,31)',
+                    borderColor: 'rgb(7,254,213)',
+                    borderWidth: 1,
+                    borderRadius: 10,
+                  }}>
+                  <Text
+                    style={[styles.H3, {margin: 0, color: 'rgb(7,254,213)'}]}>
+                    Current Trail:
+                  </Text>
+                  <Text style={styles.H3}>{currentTrail.trailName}</Text>
+                  <DistanceProgressBar user={user} trail={currentTrail} />
+                </View>
+              )}
+            </View>
+          )}
+        />
+      </View>
+      <View style={styles.paginationDotsContainer}>
+        {data.map((item, index) => (
+          <View
+            key={index}
+            style={[
+              styles.paginationDot,
+              activeIndex === index && styles.activePaginationDot,
+            ]}
+          />
+        ))}
+      </View>
+
+      <View style={styles.Container}>
         <ScrollView
           style={{
             marginTop: 10,
@@ -269,5 +315,23 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     marginBottom: 10,
     padding: 20,
+  },
+  paginationDotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderColor: 'rgb(7, 254, 213)',
+    borderWidth: 0.3,
+    marginHorizontal: 4,
+    backgroundColor: 'black',
+  },
+  activePaginationDot: {
+    backgroundColor: 'rgb(7, 254, 213)',
   },
 });
