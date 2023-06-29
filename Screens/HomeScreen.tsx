@@ -7,21 +7,28 @@ import {Pressable} from 'react-native';
 import withObservables from '@nozbe/with-observables';
 import {handleLogOut} from '../helpers/logoutHelpers';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-
+import Ranks from '../helpers/Ranks/ranksData';
+import getUserRank from '../helpers/Ranks/getUserRank';
 import {sync} from '../watermelon/sync';
-import {Subscription, User} from '../watermelon/models';
+import {Subscription, User, User_Miles} from '../watermelon/models';
 
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
 import ScreenLink from '../components/HomeScreen/screenLink';
 // import useUserSubscription from '../helpers/useUserSubscription';
-
+interface Rank {
+  level: string;
+  group: string;
+  range: number[];
+  title: string;
+}
 interface Props {
   user: User;
   currentTrail?: any;
   navigation: any;
   setUser: any;
   userSubscription: Subscription[];
+  totalMiles: User_Miles[];
 }
 const HomeScreen = ({
   navigation,
@@ -29,9 +36,10 @@ const HomeScreen = ({
   setUser,
   currentTrail,
   userSubscription,
+  totalMiles,
 }: Props) => {
   const watermelonDatabase = useDatabase();
-
+  const [userRank, setUserRank] = React.useState<Rank | undefined>();
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
 
   React.useEffect(() => {
@@ -46,10 +54,12 @@ const HomeScreen = ({
   useFocusEffect(
     React.useCallback(() => {
       sync(watermelonDatabase);
+      const rank = getUserRank(Ranks, totalMiles[0].totalMiles);
+      setUserRank(rank);
       return async () => {
         console.log('Timer Screen was unfocused');
       };
-    }, [watermelonDatabase])
+    }, [watermelonDatabase, user, totalMiles])
   );
   return !user || !currentTrail ? (
     <View>
@@ -58,25 +68,41 @@ const HomeScreen = ({
   ) : (
     <View style={styles.Container}>
       {/* <SyncIndicator delay={3000} /> */}
+      <Text
+        style={{
+          color: isConnected ? 'green' : 'gray',
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+        }}>
+        {isConnected ? 'Online' : 'Offline'}
+      </Text>
       <View
         style={{
           backgroundColor: 'transparent',
           width: '100%',
-          flexDirection: 'row',
-          alignItems: 'flex-end',
+          alignItems: 'flex-start',
           marginVertical: 10,
           paddingHorizontal: 10,
         }}>
-        <Text style={styles.H1}>Hello, {user.username}</Text>
-        <Text
-          style={{
-            color: isConnected ? 'green' : 'gray',
-            paddingHorizontal: 10,
-            paddingVertical: 6,
-          }}>
-          {isConnected ? 'Online' : 'Offline'}
-        </Text>
+        <Text style={styles.H1}>{user.username}</Text>
       </View>
+      {userRank ? (
+        <View
+          style={{
+            backgroundColor: 'transparent',
+            width: '100%',
+            alignItems: 'center',
+            marginVertical: 10,
+            paddingHorizontal: 10,
+          }}>
+          <Text style={styles.H3}>Level {userRank.level}</Text>
+          <Text style={styles.H3}>
+            {userRank.group} {userRank.title}
+          </Text>
+        </View>
+      ) : (
+        <></>
+      )}
       <View style={styles.Container}>
         <View
           style={{
@@ -87,12 +113,13 @@ const HomeScreen = ({
             borderWidth: 1,
             borderRadius: 10,
           }}>
-          <Text style={[styles.H2, {margin: 0, color: 'rgb(7,254,213)'}]}>
+          <Text style={[styles.H3, {margin: 0, color: 'rgb(7,254,213)'}]}>
             Current Trail:
           </Text>
-          <Text style={styles.trailText}>{currentTrail.trailName}</Text>
+          <Text style={styles.H3}>{currentTrail.trailName}</Text>
           <DistanceProgressBar user={user} trail={currentTrail} />
         </View>
+
         <ScrollView
           style={{
             marginTop: 10,
@@ -182,6 +209,7 @@ const HomeScreen = ({
 };
 const enhance = withObservables(['user'], ({user}) => ({
   user: user.observe(),
+  totalMiles: user.usersMiles.observe(),
   currentTrail: user.trail.observe(),
   userSubscription: user.usersSubscriptions.observe(),
 }));
@@ -205,6 +233,12 @@ const styles = StyleSheet.create({
   H2: {
     color: 'rgb(249,253,255)',
     fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'left',
+  },
+  H3: {
+    color: 'rgb(249,253,255)',
+    fontSize: 18,
     fontWeight: '700',
     textAlign: 'left',
   },
