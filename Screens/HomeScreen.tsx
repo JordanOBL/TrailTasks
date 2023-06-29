@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View, ScrollView} from 'react-native';
+import {StyleSheet, Text, View, ScrollView, Image} from 'react-native';
 import * as React from 'react';
 import SyncIndicator from '../components/SyncIndicator';
 import DistanceProgressBar from '../components/DistanceProgressBar';
@@ -19,6 +19,7 @@ import ScreenLink from '../components/HomeScreen/screenLink';
 interface Rank {
   level: string;
   group: string;
+  image?: any;
   range: number[];
   title: string;
 }
@@ -51,6 +52,7 @@ const HomeScreen = ({
     isConnected();
   }, []);
 
+
   useFocusEffect(
     React.useCallback(() => {
       sync(watermelonDatabase);
@@ -72,7 +74,8 @@ const HomeScreen = ({
         style={{
           color: isConnected ? 'green' : 'gray',
           paddingHorizontal: 10,
-          paddingVertical: 6,
+            paddingVertical: 0,
+          textAlign: 'right'
         }}>
         {isConnected ? 'Online' : 'Offline'}
       </Text>
@@ -81,7 +84,7 @@ const HomeScreen = ({
           backgroundColor: 'transparent',
           width: '100%',
           alignItems: 'flex-start',
-          marginVertical: 10,
+          marginVertical: 0,
           paddingHorizontal: 10,
         }}>
         <Text style={styles.H1}>{user.username}</Text>
@@ -95,6 +98,11 @@ const HomeScreen = ({
             marginVertical: 10,
             paddingHorizontal: 10,
           }}>
+          <Image
+            source={userRank ? userRank.image : null}
+            style={{width: 125, height: 125}}
+            resizeMode="contain"
+          />
           <Text style={styles.H3}>Level {userRank.level}</Text>
           <Text style={styles.H3}>
             {userRank.group} {userRank.title}
