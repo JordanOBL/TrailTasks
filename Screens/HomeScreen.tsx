@@ -20,6 +20,7 @@ import {sync} from '../watermelon/sync';
 import {Subscription, User, User_Miles} from '../watermelon/models';
 import Carousel from 'react-native-reanimated-carousel';
 
+
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
 import ScreenLink from '../components/HomeScreen/screenLink';
@@ -134,7 +135,7 @@ const HomeScreen = ({
                     style={{width: 125, height: 125}}
                     resizeMode="contain"
                   />
-                  <Text style={styles.H3}>Level {userRank.level}</Text>
+                  <Text style={styles.H2}>Level {userRank.level}</Text>
                   <Text style={styles.H3}>
                     {userRank.group} {userRank.title}
                   </Text>
@@ -143,7 +144,6 @@ const HomeScreen = ({
                 <View
                   style={{
                     padding: 10,
-
                     backgroundColor: 'rgb(28,29,31)',
                     borderColor: 'rgb(7,254,213)',
                     borderWidth: 1,
