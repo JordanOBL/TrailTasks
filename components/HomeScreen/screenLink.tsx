@@ -20,6 +20,7 @@ const ScreenLink = ({
   needsActiveSubscription,
 }: Props) => {
   return (
+    
     <Pressable
       style={styles.LinkContainer}
       onPress={() =>
