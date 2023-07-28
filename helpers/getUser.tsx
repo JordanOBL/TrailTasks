@@ -22,6 +22,7 @@ const getUser = (watermelonDatabase: Database) => {
           if (thisUser[0] !== undefined)
           {
             console.log(thisUser)
+            //@ts-ignore
             setUser(thisUser[0]);
           }
         } else

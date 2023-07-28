@@ -1,5 +1,5 @@
 import {Database, Q} from '@nozbe/watermelondb';
-import {User} from '../watermelon/models';
+import {User, Subscription} from '../watermelon/models';
 
 //*this function checks for a user in the database matching users login input
 export const checkExistingUser = async (
@@ -8,7 +8,7 @@ export const checkExistingUser = async (
   watermelonDatabase: Database
 ) => {
   try {
-    const existingUser = await watermelonDatabase
+    const existingUser: User[] | any = await watermelonDatabase
       .get('users')
       .query(Q.and(Q.where('email', email), Q.where('password', password)))
       .fetch();
@@ -20,12 +20,12 @@ export const checkExistingUser = async (
 };
 
 export const setSubscriptionStatus = async (
-  user: any,
+  user: User,
   watermelonDatabase: Database
 ) => {
   try {
     console.log('subscription existing user', user.id);
-    const subscription = await watermelonDatabase.collections
+    const subscription: Subscription[]| any = await watermelonDatabase.collections
       .get('users_subscriptions')
       .query(Q.where('user_id', user.id))
       .fetch();
@@ -78,7 +78,7 @@ export const checkForLoggedInUser = async (
   watermelonDatabase: Database
 ) => {
   try {
-    const userId: string | void = await watermelonDatabase.localStorage.get(
+    const userId: string | undefined | void = await watermelonDatabase.localStorage.get(
       'user_id'
     ); // string or undefined if no value for this key
     console.log('User info from local Storage', userId);
