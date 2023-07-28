@@ -1,5 +1,4 @@
 import 'react-native-gesture-handler';
-
 import React, {useEffect, useState, createContext} from 'react';
 import {checkForLoggedInUser} from './helpers/loginHelpers';
 import RNFS from 'react-native-fs';
@@ -59,11 +58,19 @@ function App(): JSX.Element {
     // Do something with the Watermelon database instance
     const onLoad = async () => {
       try {
+        //This finds and prints file path in the phones memory for the sqlite DB
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
+
+        //*uncomment next line to request the /seedPGTable API Route
         //await seedPgTables();
+
+        //This checks to see if the mobile ldevices SQLITE DB
+        //has a userID saved in the localstorage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
         console.log('sync in app')
+
+        //SYNC call teh push and pull requests from mobile device to PG database
         await sync(watermelonDatabase);
       } catch (err) {
         console.log('Error in onload in APP useEffect', err);
