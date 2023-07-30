@@ -14,6 +14,7 @@ import {
   SYNC,
   User_Miles,
   User_Session,
+  Subscription,
   Basic_Subscription_Trail,
 } from '../backend/db/sequelizeModel.mjs';
 
@@ -2353,6 +2354,13 @@ app.get('/pull', async (req, res) => {
         },
       },
     });
+    const createdSubscriptions = await Subscription.findAll({
+      where: {
+        createdAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
     console.log({createdUsers});
     const createdUserMiles = await User_Miles.findAll({
       where: {
@@ -2396,6 +2404,13 @@ app.get('/pull', async (req, res) => {
         },
       },
     });
+    const updatedSubscriptions = await Subscription.findAll({
+      where: {
+        updatedAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
     // console.log({createdUserMiles});
     // const updatedParks = await Park.findAll({
     //   where: {
@@ -2429,6 +2444,11 @@ app.get('/pull', async (req, res) => {
         users: {
           created: createdUsers,
           updated: [],
+          deleted: [],
+        },
+        users_subscriptions: {
+          created: createdSubscriptions,
+          updated: updatedSubscriptions.length ? updatedSubscriptions : [],
           deleted: [],
         },
         users_miles: {
@@ -2487,6 +2507,11 @@ app.post('/push', async (req, res) => {
           changes.users_miles.created
         );
       }
+      if (changes?.users_subscriptions?.created[0] !== undefined) {
+        const users_subscriptions = await Subscription.bulkCreate(
+          changes.users_miles.created
+        );
+      }
       if (changes?.users?.updated[0] !== undefined) {
         const updateQueries = changes.users.updated.map((remoteEntry) => {
           console.log({remoteEntry});
@@ -2502,6 +2527,20 @@ app.post('/push', async (req, res) => {
         const updateQueries = changes.users_miles.updated.map((remoteEntry) => {
           console.log({remoteEntry});
           return User_Miles.update(
+            {...remoteEntry},
+            {
+              where: {
+                id: remoteEntry.id,
+              },
+            }
+          );
+        });
+        await Promise.all(updateQueries);
+      }
+      if (changes?.users_subscriptions?.updated[0] !== undefined) {
+        const updateQueries = changes.users_subscriptions.updated.map((remoteEntry) => {
+          console.log({remoteEntry});
+          return Subscription.update(
             {...remoteEntry},
             {
               where: {
@@ -2528,8 +2567,8 @@ app.post('/push', async (req, res) => {
 
 const connect = async () => {
   try {
-    await SYNC({force: true});
-    //await SYNC();
+    //await SYNC({force: true});
+    await SYNC();
     console.log('connected to Postgres database trailtasks viia Sequelize!');
 
     app.listen(5500, () => {

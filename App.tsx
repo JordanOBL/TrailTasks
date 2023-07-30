@@ -46,7 +46,7 @@ function App(): JSX.Element {
   const seedPgTables = async () => {
     try {
       console.log('seedingPgTables');
-      const response = await fetch('http://localhost:5500/api/seed');
+      const response = await fetch('http://192.168.1.208:5500/api/seed');
       const data = await response.json();
     } catch (error: any) {
       console.error(

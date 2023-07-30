@@ -21,9 +21,10 @@ const SubscribeScreen = ({user, userSubscription}: Props) => {
         onPress={async () => {
           await database.write(async () => {
             await userSubscription[0]!.update((subscription) => {
-              subscription.isActive = !subscription.isActive;
+              subscription.isActive = !userSubscription[0].isActive;
             });
           });
+          console.log('subscription updated')
         }}
         style={{padding: 10, backgroundColor: 'green'}}>
         <Text style={{color: 'white'}}>{userSubscription[0] && userSubscription[0].isActive ? 'unsubscribe' : 'subscribe'}</Text>

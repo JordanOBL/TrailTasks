@@ -104,7 +104,7 @@ const createNewUser = async ({
             subscription.userId = newUser.id;
             //@ts-ignore
             subscription.isActive = false;
-            subscription.expiresAt = null;
+            subscription.expiresAt = formatDateTime(new Date());
           });
 
         if (userMiles) {
