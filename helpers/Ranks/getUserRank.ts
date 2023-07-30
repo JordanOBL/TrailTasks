@@ -7,7 +7,7 @@ interface Rank {
   title: string;
 }
 function getUserRank(ranks: Rank[], totalMiles: totalMiles): Rank | undefined {
-  totalMiles = Number(totalMiles);
+  if(typeof totalMiles != 'number') totalMiles = Number(totalMiles);
   let lo: number = 0;
   let end: number = ranks.length - 1;
   let mid: number = Math.floor(lo + end / 2);
