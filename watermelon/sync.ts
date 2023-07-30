@@ -10,6 +10,7 @@ import checkInternetConnection from '../helpers/InternetConnection/checkInternet
 
 //singleton
 let isRunning = false;
+const IP = '192.168.1.208'
 
 export async function sync(database: Database) {
   try {
@@ -32,7 +33,7 @@ export async function sync(database: Database) {
           //get new changees in the database
           const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
           const response = await fetch(
-            `http://localhost:5500/pull?${urlParams}`
+            `http://${IP}:5500/pull?${urlParams}`
           );
           if (!response.ok) {
             console.error('in pull in sync function');
@@ -53,7 +54,7 @@ export async function sync(database: Database) {
         pushChanges: async ({changes, lastPulledAt}) => {
           console.log('in push on client side', changes);
           const response = await fetch(
-            `http://localhost:5500/push?last_pulled_at=${lastPulledAt}`,
+            `http:/${IP}:5500/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),
