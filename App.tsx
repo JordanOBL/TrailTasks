@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, {useEffect, useState, createContext} from 'react';
-import {checkForLoggedInUser} from './helpers/loginHelpers';
+import { checkForLoggedInUser } from './helpers/loginHelpers';
 import RNFS from 'react-native-fs';
 import {
   SafeAreaView,
@@ -31,6 +31,7 @@ export const UserContext = createContext<any>('');
 
 function App(): JSX.Element {
   //const [user, setUser] = React.useState<any>(null);
+
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
 
@@ -41,7 +42,8 @@ function App(): JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-
+  
+   
   //insert postgres tables
   const seedPgTables = async () => {
     try {

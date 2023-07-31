@@ -1,7 +1,7 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, Dimensions} from 'react-native';
 import React from 'react';
 import * as Progress from 'react-native-progress';
-import { JoinedUserTrail, SessionDetails } from '../types/session';
+import {  SessionDetails } from '../types/session';
 import withObservables from '@nozbe/with-observables';
 
 
@@ -20,6 +20,7 @@ const DistanceProgressBar = ({
  
 }: Props) =>
 {
+  const width = Dimensions.get('window').width;
   React.useEffect(() => {
     // Handle trail or user change
     console.log('Trail or user changed:', user);
@@ -44,7 +45,7 @@ const DistanceProgressBar = ({
       </Text>
 
       <Progress.Bar
-        width={350}
+        width={width - 50}
         height={40}
         borderWidth={0}
         borderRadius={10}

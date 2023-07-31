@@ -2308,7 +2308,7 @@ app.get('/pull', async (req, res) => {
   try {
     console.log(req.query);
     let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
-    console.log({lastPulledAt});
+    console.log('last pulled at',{lastPulledAt});
     // if (!lastPulledAt || lastPulledAt == null)
     //   const createdUsers = await User.findAll({});
     //   console.log('first Users Pull', createdUsers);
@@ -2419,20 +2419,20 @@ app.get('/pull', async (req, res) => {
     //     },
     //   },
     // });
-    // const updatedUsers = await User.findAll({
-    //   where: {
-    //     updatedAt: {
-    //       [Sequelize.Op.gt]: lastPulledAt,
-    //     },
-    //   },
-    // });
-    // const updatedUserMiles = await User_Miles.findAll({
-    //   where: {
-    //     updatedAt: {
-    //       [Sequelize.Op.gt]: lastPulledAt,
-    //     },
-    //   },
-    // });
+    const updatedUsers = await User.findAll({
+      where: {
+        updatedAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
+    const updatedUserMiles = await User_Miles.findAll({
+      where: {
+        updatedAt: {
+          [Sequelize.Op.gt]: lastPulledAt,
+        },
+      },
+    });
 
     const responseData = {
       changes: {
@@ -2443,7 +2443,7 @@ app.get('/pull', async (req, res) => {
         },
         users: {
           created: createdUsers,
-          updated: [],
+          updated: updatedUsers.length ? updatedUsers : [],
           deleted: [],
         },
         users_subscriptions: {
@@ -2453,7 +2453,7 @@ app.get('/pull', async (req, res) => {
         },
         users_miles: {
           created: createdUserMiles,
-          updated: [],
+          updated: updatedUserMiles.length ? updatedUserMiles : [],
           deleted: [],
         },
         trails: {
@@ -2567,8 +2567,8 @@ app.post('/push', async (req, res) => {
 
 const connect = async () => {
   try {
-    //await SYNC({force: true});
-    await SYNC();
+    await SYNC({force: true});
+    //await SYNC();
     console.log('connected to Postgres database trailtasks viia Sequelize!');
 
     app.listen(5500, () => {

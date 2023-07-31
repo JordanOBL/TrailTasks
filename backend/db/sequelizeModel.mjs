@@ -302,13 +302,13 @@ Trail.belongsToMany(User, {through: 'queued_trails'});
 User.hasMany(User_Session, {foriegnKey: 'user_id'});
 User_Session.belongsTo(User);
 
-Subscription.hasOne(User, {foriegnKey: 'user_id'});
+Subscription.hasOne(User, {foreignKey: 'user_id'});
 User.belongsTo(Subscription, {key: 'id'});
 
 Basic_Subscription_Trail.hasOne(Trail, {foreignKey: 'trail_id'});
 Trail.belongsTo(Basic_Subscription_Trail, {key: 'id'});
 
 export const SYNC = async (cb) => {
-  await sequelize.sync(cb);
+  await sequelize.sync({...cb});
   console.log('All models were synchronized successfully.');
 };

@@ -24,6 +24,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
 import ScreenLink from '../components/HomeScreen/screenLink';
+import EnhancedDistanceProgressBar from '../components/DistanceProgressBar';
 // import useUserSubscription from '../helpers/useUserSubscription';
 interface Rank {
   level: string;
@@ -143,7 +144,8 @@ const HomeScreen = ({
               ) : (
                 <View
                   style={{
-                    padding: 10,
+                      padding: 10,
+                    width: '100%',
                     backgroundColor: 'rgb(28,29,31)',
                     borderColor: 'rgb(7,254,213)',
                     borderWidth: 1,
@@ -154,7 +156,7 @@ const HomeScreen = ({
                     Current Trail:
                   </Text>
                   <Text style={styles.H3}>{currentTrail.trailName}</Text>
-                  <DistanceProgressBar user={user} trail={currentTrail} />
+                  <EnhancedDistanceProgressBar user={user} trail={currentTrail} />
                 </View>
               )}
             </View>
