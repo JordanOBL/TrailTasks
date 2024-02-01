@@ -10,7 +10,7 @@ import checkInternetConnection from '../helpers/InternetConnection/checkInternet
 
 //singleton
 let isRunning = false;
-const IP = '192.168.1.208'
+const IP = '192.168.0.29'
 
 export async function sync(database: Database) {
   try {

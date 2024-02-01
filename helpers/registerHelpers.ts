@@ -103,7 +103,7 @@ const createNewUser = async ({
             //@ts-ignore
             subscription.userId = newUser.id;
             //@ts-ignore
-            subscription.isActive = false;
+            subscription.isActive = 'false';
             subscription.expiresAt = formatDateTime(new Date());
           });
 

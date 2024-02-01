@@ -266,6 +266,7 @@ export const Subscription = sequelize.define(
     is_active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+      defaultValue: false,
     },
     expires_at: {type: DataTypes.STRING, allowNull: false},
   },

@@ -43,12 +43,13 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
   
+  const IP = '192.168.0.29';
    
   //insert postgres tables
   const seedPgTables = async () => {
     try {
       console.log('seedingPgTables');
-      const response = await fetch('http://192.168.1.208:5500/api/seed');
+      const response = await fetch(`http://${IP}:5500/api/seed`);
       const data = await response.json();
     } catch (error: any) {
       console.error(

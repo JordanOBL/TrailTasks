@@ -2433,7 +2433,7 @@ app.get('/pull', async (req, res) => {
         },
       },
     });
-
+//!Removed createdusers, createdUsersSubscriptinos, and created UsersMiles arrays. This removed the fail to update error.
     const responseData = {
       changes: {
         parks: {
@@ -2442,17 +2442,17 @@ app.get('/pull', async (req, res) => {
           deleted: [],
         },
         users: {
-          created: createdUsers,
+          created: [],
           updated: updatedUsers.length ? updatedUsers : [],
           deleted: [],
         },
         users_subscriptions: {
-          created: createdSubscriptions,
+          created: [],
           updated: updatedSubscriptions.length ? updatedSubscriptions : [],
           deleted: [],
         },
         users_miles: {
-          created: createdUserMiles,
+          created: [],
           updated: updatedUserMiles.length ? updatedUserMiles : [],
           deleted: [],
         },
@@ -2509,7 +2509,7 @@ app.post('/push', async (req, res) => {
       }
       if (changes?.users_subscriptions?.created[0] !== undefined) {
         const users_subscriptions = await Subscription.bulkCreate(
-          changes.users_miles.created
+          changes.users_subscriptions.created
         );
       }
       if (changes?.users?.updated[0] !== undefined) {
@@ -2567,8 +2567,8 @@ app.post('/push', async (req, res) => {
 
 const connect = async () => {
   try {
-    await SYNC({force: true});
-    //await SYNC();
+    //await SYNC({force: true});
+    await SYNC();
     console.log('connected to Postgres database trailtasks viia Sequelize!');
 
     app.listen(5500, () => {
