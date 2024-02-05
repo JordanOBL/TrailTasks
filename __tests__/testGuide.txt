@@ -1,0 +1,8 @@
+----------------------------
+UNIT TESTS
+----------------------------
+[x] formatDateTime()
+[x] getUserRank()
+
+***Login / Register ***
+[] 

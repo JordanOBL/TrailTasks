@@ -43,7 +43,7 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
   
-  const IP = '192.168.0.29';
+  const IP = 'localhost';
    
   //insert postgres tables
   const seedPgTables = async () => {
