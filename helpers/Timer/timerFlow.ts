@@ -235,7 +235,9 @@ async function increaseElapsedTime({
   if (sessionDetails.isPaused === false) {
     if (
       sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
-    ) {
+    )
+    {
+      //increase usersession by 1 in the watermelon database
       await userSession.updateTotalSessionTime();
       increaseDistanceHiked({
         user,

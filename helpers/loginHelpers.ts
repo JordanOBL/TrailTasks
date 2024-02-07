@@ -85,7 +85,7 @@ export const checkForLoggedInUser = async (
 
     if (userId) {
       let user = await watermelonDatabase.collections.get('users').find(userId);
-      console.log({user});
+      console.log("checking logged in user", {user});
       //@ts-ignore
       if (user.id) {
         await setSubscriptionStatus(user, watermelonDatabase);

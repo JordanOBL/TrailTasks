@@ -70,7 +70,7 @@ const HomeScreen = ({
       const rank = getUserRank(Ranks, totalMiles[0].totalMiles);
       setUserRank(rank);
       return async () => {
-        console.log('Timer Screen was unfocused');
+        console.log('Home Screen was unfocused');
       };
     }, [watermelonDatabase, user, totalMiles])
   );

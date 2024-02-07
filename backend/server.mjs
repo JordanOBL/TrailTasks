@@ -2305,192 +2305,196 @@ app.get('/api/seed', async (req, res) => {
 //send updated and new changes to the user that were done after 'lastPulledAt
 //*currently successfully send new users to users watermelon database !
 app.get('/pull', async (req, res) => {
-  try {
+  try
+  {
     console.log(req.query);
     let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
-    console.log('last pulled at',{lastPulledAt});
-    // if (!lastPulledAt || lastPulledAt == null)
-    //   const createdUsers = await User.findAll({});
-    //   console.log('first Users Pull', createdUsers);
-    //   const createdParks = await Park.findAll({});
-    //   console.log('first Parks Pull', createdParks);
-    //   const createdTrails = await Trail.findAll({});
-    //   console.log('first Trails Pull', createdTrails);
-    //   const responseData = {
-    //     changes: {
-    //       parks: {
-    //         created: createdParks,
-    //         updated: [],
-    //         deleted: [],
-    //       },
-    //       users: {
-    //         created: createdUsers,
-    //         updated: [],
-    //         deleted: [],
-    //       },
-    //       trails: {
-    //         created: createdTrails,
-    //         updated: [],
-    //         deleted: [],
-    //       },
-    //     },
-    //     timestamp: new Date(),
-    //   };
+    console.log('last pulled at', { lastPulledAt });
+    if (!lastPulledAt || lastPulledAt == null)
+    {
+      const createdUsers = await User.findAll({});
+      console.log('first Users Pull', createdUsers);
+      const createdParks = await Park.findAll({});
+      console.log('first Parks Pull', createdParks);
+      const createdTrails = await Trail.findAll({});
+      console.log('first Trails Pull', createdTrails);
+      const responseData = {
+        changes: {
+          parks: {
+            created: createdParks,
+            updated: [],
+            deleted: [],
+          },
+          users: {
+            created: createdUsers,
+            updated: [],
+            deleted: [],
+          },
+          trails: {
+            created: createdTrails,
+            updated: [],
+            deleted: [],
+          },
+        },
+        timestamp: new Date(),
+      };
 
-    //   console.log('responseData', responseData);
-    //   return res.json(responseData);
-    // } else {
-    const createdParks = await Park.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      console.log('responseData for new trailtask db', responseData);
+      return res.json(responseData);
+    } else
+    {
+      const createdParks = await Park.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const createdUsers = await User.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const createdUsers = await User.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const createdSubscriptions = await Subscription.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const createdSubscriptions = await Subscription.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    console.log({createdUsers});
-    const createdUserMiles = await User_Miles.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      console.log({ createdUsers });
+      const createdUserMiles = await User_Miles.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const createdTrails = await Trail.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const createdTrails = await Trail.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const createdAchievements = await Achievement.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const createdAchievements = await Achievement.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const createdParkStates = await Park_State.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const createdParkStates = await Park_State.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const createdSessionCategories = await Session_Category.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const createdSessionCategories = await Session_Category.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const createdBasicSubscriptionTrails = await Basic_Subscription_Trail.findAll({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const createdBasicSubscriptionTrails = await Basic_Subscription_Trail.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const updatedSubscriptions = await Subscription.findAll({
-      where: {
-        updatedAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const updatedSubscriptions = await Subscription.findAll({
+        where: {
+          updatedAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    // console.log({createdUserMiles});
-    // const updatedParks = await Park.findAll({
-    //   where: {
-    //     updatedAt: {
-    //       [Sequelize.Op.gt]: lastPulledAt,
-    //     },
-    //   },
-    // });
-    const updatedUsers = await User.findAll({
-      where: {
-        updatedAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      // console.log({createdUserMiles});
+      // const updatedParks = await Park.findAll({
+      //   where: {
+      //     updatedAt: {
+      //       [Sequelize.Op.gt]: lastPulledAt,
+      //     },
+      //   },
+      // });
+      const updatedUsers = await User.findAll({
+        where: {
+          updatedAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-    const updatedUserMiles = await User_Miles.findAll({
-      where: {
-        updatedAt: {
-          [Sequelize.Op.gt]: lastPulledAt,
+      });
+      const updatedUserMiles = await User_Miles.findAll({
+        where: {
+          updatedAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
         },
-      },
-    });
-//!Removed createdusers, createdUsersSubscriptinos, and created UsersMiles arrays. This removed the fail to update error.
-    const responseData = {
-      changes: {
-        parks: {
-          created: createdParks,
-          updated: [],
-          deleted: [],
+      });
+      //!Removed createdusers, createdUsersSubscriptinos, and created UsersMiles arrays. This removed the fail to update error.
+      const responseData = {
+        changes: {
+          parks: {
+            created: createdParks,
+            updated: [],
+            deleted: [],
+          },
+          users: {
+            created: [],
+            updated: updatedUsers.length ? updatedUsers : [],
+            deleted: [],
+          },
+          users_subscriptions: {
+            created: [],
+            updated: updatedSubscriptions.length ? updatedSubscriptions : [],
+            deleted: [],
+          },
+          users_miles: {
+            created: [],
+            updated: updatedUserMiles.length ? updatedUserMiles : [],
+            deleted: [],
+          },
+          trails: {
+            created: createdTrails,
+            updated: [],
+            deleted: [],
+          },
+          park_states: {
+            created: createdParkStates,
+            updated: [],
+            deleted: [],
+          },
+          achievements: {
+            created: createdAchievements,
+            updated: [],
+            deleted: [],
+          },
+          session_categories: {
+            created: createdSessionCategories,
+            updated: [],
+            deleted: [],
+          },
+          basic_subscription_trails: {
+            created: createdBasicSubscriptionTrails,
+            updated: [],
+            deleted: [],
+          },
         },
-        users: {
-          created: [],
-          updated: updatedUsers.length ? updatedUsers : [],
-          deleted: [],
-        },
-        users_subscriptions: {
-          created: [],
-          updated: updatedSubscriptions.length ? updatedSubscriptions : [],
-          deleted: [],
-        },
-        users_miles: {
-          created: [],
-          updated: updatedUserMiles.length ? updatedUserMiles : [],
-          deleted: [],
-        },
-        trails: {
-          created: createdTrails,
-          updated: [],
-          deleted: [],
-        },
-        park_states: {
-          created: createdParkStates,
-          updated: [],
-          deleted: [],
-        },
-        achievements: {
-          created: createdAchievements,
-          updated: [],
-          deleted: [],
-        },
-        session_categories: {
-          created: createdSessionCategories,
-          updated: [],
-          deleted: [],
-        },
-        basic_subscription_trails: {
-          created: createdBasicSubscriptionTrails,
-          updated: [],
-          deleted: [],
-        },
-      },
-      timestamp: Date.now(),
-    };
-
-    console.log('responseData', responseData);
-    return res.json(responseData);
+        timestamp: Date.now(),
+      };
+  
+      console.log('responseData', responseData);
+      return res.json(responseData);
+    }
   } catch (err) {
     console.log('Error in server /pull', err);
   }
-});
+  });
 
 //pull changes from users watermelon database
 app.post('/push', async (req, res) => {
