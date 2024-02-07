@@ -23,17 +23,29 @@ import {Sequelize} from 'sequelize';
 // import pkg from "pg";
 // const {Pool} = pkg;
 
-const PGUSER = 'jordan';
+// const PGUSER = 'jordan';
+// //const PGHOST = "192.168.76.16";
+// const PGHOST = 'localhost';
+// const PGDBNAME = 'trailtasks';
+// const PGPORT = 5433;
+// const PGPASSWORD = '4046';
+
+const PGUSER = 'hikeflowadmin';
 //const PGHOST = "192.168.76.16";
-const PGHOST = 'localhost';
-const PGDBNAME = 'trailtasks';
-const PGPORT = 5433;
-const PGPASSWORD = '4046';
+const PGHOST = 'trailtasks2024.cbpjcjatkypj.us-west-2.rds.amazonaws.com';
+const PGDBNAME = 'hikeFlowDB';
+const PGPORT = 5432;
+const PGPASSWORD = 'Sk8mafia116!';
 
 export const sequelize = new Sequelize(PGDBNAME, PGUSER, PGPASSWORD, {
   host: PGHOST,
   port: PGPORT,
   dialect: 'postgres',
+  dialectOptions: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 });
 
 const app = express();
@@ -2440,8 +2452,8 @@ app.get('/pull', async (req, res) => {
       const responseData = {
         changes: {
           parks: {
-            created: createdParks,
-            updated: [],
+            created: [],
+            updated: createdParks,
             deleted: [],
           },
           users: {
@@ -2460,28 +2472,28 @@ app.get('/pull', async (req, res) => {
             deleted: [],
           },
           trails: {
-            created: createdTrails,
-            updated: [],
+            created: [],
+            updated: createdTrails,
             deleted: [],
           },
           park_states: {
-            created: createdParkStates,
-            updated: [],
+            created: [],
+            updated: createdParkStates,
             deleted: [],
           },
           achievements: {
-            created: createdAchievements,
-            updated: [],
+            created: [],
+            updated: createdAchievements,
             deleted: [],
           },
           session_categories: {
-            created: createdSessionCategories,
-            updated: [],
+            created: [],
+            updated: createdSessionCategories,
             deleted: [],
           },
           basic_subscription_trails: {
-            created: createdBasicSubscriptionTrails,
-            updated: [],
+            created: [],
+            updated: createdBasicSubscriptionTrails,
             deleted: [],
           },
         },

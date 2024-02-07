@@ -33,7 +33,7 @@ export async function sync(database: Database) {
           //get new changees in the watermelon database
           const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
           const response = await fetch(
-            `http://192.168.1.96:5500/pull?${urlParams}`
+            `http://192.168.1.208:5500/pull?${urlParams}`
           );
           if (!response.ok) {
             console.error('in pull in sync function');
@@ -54,7 +54,7 @@ export async function sync(database: Database) {
         pushChanges: async ({changes, lastPulledAt}) => {
           console.log('in push on client side', changes);
           const response = await fetch(
-            `http://192.168.1.96:5500/push?last_pulled_at=${lastPulledAt}`,
+            `http://192.168.1.208:5500/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),

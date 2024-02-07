@@ -1,17 +1,29 @@
 import {Sequelize, DataTypes} from 'sequelize';
 //const {Sequelize, DataTypes} = require('sequelize');
 
-const PGUSER = 'jordan';
-//const PGHOST = '192.168.76.16';
-const PGHOST = 'localhost';
-const PGDBNAME = 'trailtasks';
-const PGPORT = 5433;
-const PGPASSWORD = '4046';
+// const PGUSER = 'jordan';
+// //const PGHOST = '192.168.76.16';
+// const PGHOST = 'localhost';
+// const PGDBNAME = 'trailtasks';
+// const PGPORT = 5433;
+// const PGPASSWORD = '4046';
+
+const PGUSER = 'hikeflowadmin';
+//const PGHOST = "192.168.76.16";
+const PGHOST = 'trailtasks2024.cbpjcjatkypj.us-west-2.rds.amazonaws.com';
+const PGDBNAME = 'hikeFlowDB';
+const PGPORT = 5432;
+const PGPASSWORD = 'Sk8mafia116!';
 
 const sequelize = new Sequelize(PGDBNAME, PGUSER, PGPASSWORD, {
   host: PGHOST,
   port: PGPORT,
   dialect: 'postgres',
+  dialectOptions: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
 });
 
 export const Park = sequelize.define(
