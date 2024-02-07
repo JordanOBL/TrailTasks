@@ -41,7 +41,7 @@ export const setSubscriptionStatus = async (
   }
 };
 
-const setLocalStorageUserAndMiles = async (
+export const setLocalStorageUserAndMiles = async (
   existingUser: any,
   watermelonDatabase: Database
 ) => {
