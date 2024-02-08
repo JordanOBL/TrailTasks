@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, {useEffect, useState, createContext} from 'react';
-import { checkForLoggedInUser } from './helpers/loginHelpers';
+import {checkForLoggedInUser} from './helpers/loginHelpers';
 import RNFS from 'react-native-fs';
 import {
   SafeAreaView,
@@ -9,10 +9,11 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
+  Button, PermissionsAndroid
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 //import {Platform} from 'react-native';
-
+import {PERMISSIONS, request} from 'react-native-permissions';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import SyncIndicator from './components/SyncIndicator';
@@ -36,15 +37,14 @@ function App(): JSX.Element {
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
 
   const [user, setUser] = useState<any>();
-  
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  
+
   const IP = 'localhost';
-   
+
   //insert postgres tables
   const seedPgTables = async () => {
     try {
@@ -56,7 +56,51 @@ function App(): JSX.Element {
         'Error in gettingPGTables function, app.tsx',
         error.message
       );
-    } };
+    }
+  };
+ const requestPermissions = async () => {
+   try {
+     const permissions = [
+       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATION,
+       PermissionsAndroid.PERMISSIONS.INTERNET,
+       PermissionsAndroid.PERMISSIONS.VIBRATE,
+       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
+       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+     ];
+     const granted = await PermissionsAndroid.requestMultiple(permissions);
+
+     // Check if all permissions are granted
+     const allGranted = Object.values(granted).every(
+       (result) => result === PermissionsAndroid.RESULTS.GRANTED
+     );
+
+     if (allGranted) {
+       console.log('All permissions granted');
+     } else {
+       console.log('Some permissions denied or not requested');
+       // Guide the user to the app settings if permissions were denied
+       // Provide instructions on how to enable permissions manually
+       // For example:
+       // Alert.alert(
+       //   'Permissions Required',
+       //   'To use this app, please enable all required permissions in your device settings.',
+       //   [
+       //     {
+       //       text: 'OK',
+       //       onPress: () => {
+       //         // Open app settings
+       //         Linking.openSettings();
+       //       },
+       //     },
+       //   ]
+       // );
+     }
+   } catch (err) {
+     console.warn('Error requesting permissions:', err);
+   }
+ };
+
+
   useEffect(() => {
     // Do something with the Watermelon database instance
     const onLoad = async () => {
@@ -64,14 +108,18 @@ function App(): JSX.Element {
         //This finds and prints file path in the phones memory for the sqlite DB
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
-
+        PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
+        //PermissionsAndroid.request('android.permission.INTERNET');
+        PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
+        PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
+        //await requestPermissions();
         //*uncomment next line to request the /seedPGTable API Route
         //await seedPgTables();
 
         //This checks to see if the mobile ldevices SQLITE DB
         //has a userID saved in the localstorage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
-        console.log('sync in app')
+        console.log('sync in app');
 
         //SYNC call teh push and pull requests from mobile device to PG database
         await sync(watermelonDatabase);
@@ -92,20 +140,20 @@ function App(): JSX.Element {
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
               backgroundColor={backgroundStyle.backgroundColor}
             />
-            
+
             {/* <SyncIndicator delay={3000} />  */}
             <Text style={styles.title}>Trail Tasks</Text>
             {user != null ? (
               <TabNavigator user={user} setUser={setUser} />
             ) : isRegistering ? (
-                <RegisterScreen
+              <RegisterScreen
                 setUser={setUser}
                 setisRegistering={setisRegistering}
                 isRegistering={isRegistering}
               />
             ) : (
-                  <LoginScreen
-                    setUser={setUser}
+              <LoginScreen
+                setUser={setUser}
                 setisRegistering={setisRegistering}
                 isRegistering={isRegistering}
               />

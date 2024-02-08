@@ -20,7 +20,7 @@ import {sync} from '../watermelon/sync';
 import {Subscription, User, User_Miles} from '../watermelon/models';
 import Carousel from 'react-native-reanimated-carousel';
 
-
+import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 
 import ScreenLink from '../components/HomeScreen/screenLink';
@@ -50,6 +50,7 @@ const HomeScreen = ({
   totalMiles,
 }: Props) => {
   const watermelonDatabase = useDatabase();
+  //const { currentOffering, customerInfo, isProMember } = useRevenueCat();
   const [userRank, setUserRank] = React.useState<Rank | undefined>();
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
   const [activeIndex, setActiveIndex] = React.useState(0);
@@ -74,6 +75,8 @@ const HomeScreen = ({
       };
     }, [watermelonDatabase, user, totalMiles])
   );
+
+  //console.log('DEBUG', customerInfo )
   return !user || !currentTrail ? (
     <View>
       <Text style={{color: 'white'}}>Loading Your Data...</Text>

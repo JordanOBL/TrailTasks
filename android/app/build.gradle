@@ -98,7 +98,7 @@ android {
         applicationId "com.trailtasks"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 8
         versionName "1.0"
     }
     packagingOptions {
@@ -120,6 +120,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('my-release-key.keystore')
+            storePassword 'Sk8mafia116!'
+            keyAlias 'my-key-alias'
+            keyPassword 'Sk8mafia116!'
+        }
     }
     buildTypes {
         debug {
@@ -128,7 +134,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -163,11 +169,13 @@ dependencies {
     }
 
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}")
-    if (hermesEnabled.toBoolean()) {
+    //hermesEnabled.toBoolean()
+    if (true) {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
     }
+
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

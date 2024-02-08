@@ -43,10 +43,10 @@ export async function sync(database: Database) {
           console.log({changes, timestamp});
 
           //UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THESE LINES UNCOMMENTED!!!
-          require('@nozbe/watermelondb/sync/debugPrintChanges').default(
-            changes,
-            false
-          );
+//           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
+//             changes,
+//             false
+//           );
           return {changes, timestamp};
         },
 
@@ -64,10 +64,10 @@ export async function sync(database: Database) {
             }
           );
           // UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THESE LINES UNCOMMENTED!!!
-          require('@nozbe/watermelondb/sync/debugPrintChanges').default(
-            changes,
-            true
-          );
+//           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
+//             changes,
+//             true
+//           );
           if (!response.ok) {
             console.error('in push in sync function');
             throw new Error(await response.text());
