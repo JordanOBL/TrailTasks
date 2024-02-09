@@ -9,42 +9,37 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-  Button, PermissionsAndroid
+  Button,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-//import {Platform} from 'react-native';
-import {PERMISSIONS, request} from 'react-native-permissions';
+import useRevenueCat from './helpers/RevenueCat/useRevenueCat';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import SyncIndicator from './components/SyncIndicator';
 import {sync} from './watermelon/sync';
-// import User from './watermelon/models'
 import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
 import {NavigationContainer, DarkTheme} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
+
 import TabNavigator from './components/Navigation/TabNavigator';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import {Subscription, User} from './watermelon/models';
 
 export const UserContext = createContext<any>('');
 
 function App(): JSX.Element {
-  //const [user, setUser] = React.useState<any>(null);
-
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-
+  
   const [user, setUser] = useState<any>();
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-
-  const IP = 'localhost';
-
+  
   //insert postgres tables
   const seedPgTables = async () => {
     try {
@@ -58,48 +53,6 @@ function App(): JSX.Element {
       );
     }
   };
- const requestPermissions = async () => {
-   try {
-     const permissions = [
-       PermissionsAndroid.PERMISSIONS.POST_NOTIFICATION,
-       PermissionsAndroid.PERMISSIONS.INTERNET,
-       PermissionsAndroid.PERMISSIONS.VIBRATE,
-       PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO,
-       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-     ];
-     const granted = await PermissionsAndroid.requestMultiple(permissions);
-
-     // Check if all permissions are granted
-     const allGranted = Object.values(granted).every(
-       (result) => result === PermissionsAndroid.RESULTS.GRANTED
-     );
-
-     if (allGranted) {
-       console.log('All permissions granted');
-     } else {
-       console.log('Some permissions denied or not requested');
-       // Guide the user to the app settings if permissions were denied
-       // Provide instructions on how to enable permissions manually
-       // For example:
-       // Alert.alert(
-       //   'Permissions Required',
-       //   'To use this app, please enable all required permissions in your device settings.',
-       //   [
-       //     {
-       //       text: 'OK',
-       //       onPress: () => {
-       //         // Open app settings
-       //         Linking.openSettings();
-       //       },
-       //     },
-       //   ]
-       // );
-     }
-   } catch (err) {
-     console.warn('Error requesting permissions:', err);
-   }
- };
-
 
   useEffect(() => {
     // Do something with the Watermelon database instance
@@ -108,11 +61,17 @@ function App(): JSX.Element {
         //This finds and prints file path in the phones memory for the sqlite DB
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
-        PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
-        //PermissionsAndroid.request('android.permission.INTERNET');
-        PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
-        PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
-        //await requestPermissions();
+        if (Platform.OS === 'android') {
+          PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
+          PermissionsAndroid.request('android.permission.INTERNET');
+          PermissionsAndroid.request(
+            'android.permission.READ_EXTERNAL_STORAGE'
+          );
+          PermissionsAndroid.request(
+            'android.permission.WRITE_EXTERNAL_STORAGE'
+          );
+        }
+
         //*uncomment next line to request the /seedPGTable API Route
         //await seedPgTables();
 

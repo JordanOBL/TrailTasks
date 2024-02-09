@@ -7,6 +7,10 @@ import {
   Image,
 } from 'react-native';
 import * as React from 'react';
+import Purchases, {
+  CustomerInfo,
+  PurchasesOffering,
+} from 'react-native-purchases';
 import SyncIndicator from '../components/SyncIndicator';
 import DistanceProgressBar from '../components/DistanceProgressBar';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -25,6 +29,7 @@ import checkInternetConnection from '../helpers/InternetConnection/checkInternet
 
 import ScreenLink from '../components/HomeScreen/screenLink';
 import EnhancedDistanceProgressBar from '../components/DistanceProgressBar';
+import { useEffect } from 'react';
 // import useUserSubscription from '../helpers/useUserSubscription';
 interface Rank {
   level: string;
@@ -50,12 +55,20 @@ const HomeScreen = ({
   totalMiles,
 }: Props) => {
   const watermelonDatabase = useDatabase();
-  //const { currentOffering, customerInfo, isProMember } = useRevenueCat();
+  
   const [userRank, setUserRank] = React.useState<Rank | undefined>();
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const data = [...new Array(2).keys()]; // Your data array
   const width = Dimensions.get('window').width;
+
+//fetch revenue cat info with current user id = customerID in revcat
+  const {currentOffering, customerInfo, isProMember} = useRevenueCat({
+    userId: user.id,
+  });
+
+    
+
   React.useEffect(() => {
     async function isConnected() {
       const {connection} = await checkInternetConnection();
@@ -64,6 +77,8 @@ const HomeScreen = ({
 
     isConnected();
   }, []);
+
+  
 
   useFocusEffect(
     React.useCallback(() => {
