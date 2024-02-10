@@ -82,7 +82,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   >(userSessions);
 
   const [view, setView] = React.useState('stats');
-  const [showFilterMenu, setShowFIlterMenu] = React.useState(false);
+  const [showFilterMenu, setShowFilterMenu] = React.useState(false);
 
   function pad(value: number): string {
     return value < 10 ? `0${value}` : `${value}`;
@@ -115,7 +115,7 @@ console.log(userSessions)
           padding: 10,
           backgroundColor: 'rgba(0,200,250, 1)',
         }}
-        onPress={() => setShowFIlterMenu((prev) => !prev)}>
+        onPress={() => setShowFilterMenu((prev) => !prev)}>
         <Text
           style={{
             color: 'black',

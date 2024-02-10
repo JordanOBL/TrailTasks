@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
     textAlign: 'center',
     position: 'absolute',
-    top: 100,
+    top: 80,
     left: 110,
     color: 'rgb(7,254,213)',
   },
