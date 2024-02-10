@@ -468,7 +468,7 @@ PODS:
   - RNVectorIcons (9.2.0):
     - React-Core
   - simdjson (3.1.0-wmelon1)
-  - SocketRocket (0.6.0)
+  - SocketRocket (0.6.1)
   - WatermelonDB (0.26.0):
     - React
     - simdjson
@@ -719,11 +719,11 @@ SPEC CHECKSUMS:
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
-  SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
+  SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   WatermelonDB: cd71a1085182aca9e5d2164b7af9ef2a3aaca571
   Yoga: 065f0b74dba4832d6e328238de46eb72c5de9556
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 71bf1ccd96f173adfe58612c80f48842ffeba41d
+PODFILE CHECKSUM: 0c269421b2a67892acfbfe8c0b6f91dfe2b07d1d
 
 COCOAPODS: 1.12.1

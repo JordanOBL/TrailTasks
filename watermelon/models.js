@@ -49,7 +49,7 @@ export class Trail extends Model {
 
   @relation('parks', 'park_id') park;
 
-  ////!possibly show all uses currently hiking the trail at the time
+  ////?possibly show all uses currently hiking the trail at the time
   @children('users') users;
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
