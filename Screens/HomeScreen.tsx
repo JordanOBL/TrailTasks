@@ -68,7 +68,7 @@ const HomeScreen = ({
   });
 
     
-
+console.log({currentOffering, customerInfo, isProMember})
   React.useEffect(() => {
     async function isConnected() {
       const {connection} = await checkInternetConnection();

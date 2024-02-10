@@ -15,7 +15,7 @@ const typesOfMemberships = {
 };
 
 interface Props {
-  userId: string 
+  userId: string;
 }
 const useRevenueCat = ({userId}: Props) => {
   const [currentOffering, setCurrentOffering] =
@@ -24,10 +24,8 @@ const useRevenueCat = ({userId}: Props) => {
   //this tells us if user is pro or not
   const [isProMember, setIsProMember] = useState<boolean>(false);
 
-
   useEffect(() => {
-    const fetchData = async () =>
-    {
+    const fetchData = async () => {
       //debug logs can be enabled or disabled by setting the Purchases.logLevel property before configuring Purchases.
       //Debug logs will provide detailed log output in Xcode or LogCat for what is going on behind the scenes and should be the first //thing you check if your app is behaving unexpectedly, and also to confirm there aren't any unhandled warnings or errors
       try {
@@ -36,7 +34,7 @@ const useRevenueCat = ({userId}: Props) => {
 
         const apiKey =
           Platform.OS === 'android' ? APIKeys.google : APIKeys.apple;
-        Purchases.configure({ apiKey, appUserID: userId });
+        Purchases.configure({apiKey, appUserID: userId});
 
         const offerings = await Purchases.getOfferings();
         setCurrentOffering(offerings.current);
@@ -55,21 +53,18 @@ const useRevenueCat = ({userId}: Props) => {
       } catch (error) {
         console.error('Error fetching RevenueCat data:', error);
       }
-    }
-    fetchData().catch(console.error)
+    };
+    fetchData().catch(console.error);
   }, [userId]);
 
   useEffect(() => {
-    const customerInfoUpdated = async (purchaserInfo:CustomerInfo) =>
-    {
-      setCustomerInfo(purchaserInfo)
-    }
-    Purchases.addCustomerInfoUpdateListener(customerInfoUpdated)
+    const customerInfoUpdated = async (purchaserInfo: CustomerInfo) => {
+      setCustomerInfo(purchaserInfo);
+    };
+    Purchases.addCustomerInfoUpdateListener(customerInfoUpdated);
   }, []);
 
-  return {currentOffering, customerInfo, isProMember}
+  return {currentOffering, customerInfo, isProMember};
 };
 
 export default useRevenueCat;
-
-

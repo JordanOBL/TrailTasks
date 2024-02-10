@@ -25,6 +25,7 @@ const Login = ({ setUser, setisRegistering, isRegistering}: Props) =>
 
   return (
     <SafeAreaView style={styles.container}>
+
       <TextInput
         value={email}
         onChangeText={(value) => setEmail(value)}
