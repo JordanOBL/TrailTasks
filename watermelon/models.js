@@ -209,6 +209,16 @@ export class User extends Model {
     });
   }
 
+  //add user miles
+  @writer async addUserAchievement(completed_achievement_id) {
+    return await this.collections
+      .get('users_achievements')
+      .create((user_achievement) => {
+        user_achievement.user_id.set(this);
+        user_achievement.achievement_id = completed_achievement_id;
+      });
+  }
+
   @writer async updateTotalUserMiles({miles}) {
     return await this.usersMiles.update((userMile) => {
       userMile.totalMiles = (Number(userMile.totalMiles) + miles).toFixed(2);

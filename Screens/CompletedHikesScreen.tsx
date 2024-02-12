@@ -18,7 +18,7 @@ const _emptyComponent = () => {
     </View>
   );
 };
-const CompletedHikesScreen = ({user, completedHikes, trails}: Props) => {
+const CompletedHikesScreen = ({user, completedHikes}: Props) => {
   const [search, setSearch] = React.useState<string>('');
   const [filteredDataSource, setFilteredDataSource] = React.useState<
     Completed_Hike[] | []
@@ -26,7 +26,7 @@ const CompletedHikesScreen = ({user, completedHikes, trails}: Props) => {
   const [masterDataSource, setMasterDataSource] =
     React.useState<Completed_Hike[] | []>(completedHikes);
   
-  console.log(trails);
+  console.log(completedHikes);
   return (
     <SafeAreaView>
       <Text>CompletedHikes</Text>

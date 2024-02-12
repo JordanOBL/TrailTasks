@@ -4,17 +4,15 @@ import {checkForLoggedInUser} from './helpers/loginHelpers';
 import RNFS from 'react-native-fs';
 import {
   SafeAreaView,
-  Pressable,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
-  Button,
   PermissionsAndroid,
   Platform,
 } from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import useRevenueCat from './helpers/RevenueCat/useRevenueCat';
+
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import SyncIndicator from './components/SyncIndicator';
@@ -39,7 +37,6 @@ function App(): JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  
   //insert postgres tables
   const seedPgTables = async () => {
     try {
@@ -57,7 +54,8 @@ function App(): JSX.Element {
   useEffect(() => {
     // Do something with the Watermelon database instance
     const onLoad = async () => {
-      try {
+      try
+      {
         //This finds and prints file path in the phones memory for the sqlite DB
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.log(`The database file is located at: ${dbFilePath}`);
@@ -82,6 +80,7 @@ function App(): JSX.Element {
 
         //SYNC call teh push and pull requests from mobile device to PG database
         await sync(watermelonDatabase);
+        
       } catch (err) {
         console.log('Error in onload in APP useEffect', err);
       }

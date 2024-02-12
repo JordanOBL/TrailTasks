@@ -26,20 +26,18 @@ export function HomeStack({user, setUser}: Props) {
         )}
       </Stack.Screen>
       <Stack.Screen
-        name="Achievements"
-        component={(props: any) => (
-          <EnhancedAchievementsScreen
-            {...props}
-            user={user}
-            setUser={setUser}
-          />
+        name="Achievements">
+        {(props: any) => (
+          <EnhancedAchievementsScreen {...props} user={user} setUser={setUser} />
         )}
-      />
+      </Stack.Screen>
+      
       <Stack.Screen name="HikingQueue">
         {(props: any) => (
           <EnhancedHikingQueueScreen {...props} user={user} setUser={setUser} />
         )}
       </Stack.Screen>
+      
       <Stack.Screen name="Stats">
         {(props: any) => (
           <EnhancedStatsScreen {...props} user={user} setUser={setUser} />
