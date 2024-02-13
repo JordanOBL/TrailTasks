@@ -42,14 +42,14 @@ console.log(achievements)
 // 						[user.user_id],
 // 						(_tx, resultSet) => {
 // 							console.log(
-// 								'Succsessfully got userAchievments from SQLite'
+// 								'Successfully got userAchievements from SQLite'
 // 							);
 // 							console.log(resultSet.rows._array);
 // 							setUserAchievements(resultSet.rows._array);
 // 						},
 // 						(_tx, error: SQLite.SQLError) => {
 // 							console.error(
-// 								'Error: unable to get userAchievments in useEffect executeSQL',
+// 								'Error: unable to get userAchievements in useEffect executeSQL',
 // 								error
 // 							);
 // 							return false;
@@ -58,10 +58,10 @@ console.log(achievements)
 // 				},
 // 				(error) =>
 // 					console.error(
-// 						'Error: unable to get userAchievments in useEffect executeSQL',
+// 						'Error: unable to get userAchievements in useEffect executeSQL',
 // 						error
 // 					),
-// 				() => console.log('Succsessfully connected to db.transaction')
+// 				() => console.log('Successfully connected to db.transaction')
 // 			);
 // 		}
 // 	});

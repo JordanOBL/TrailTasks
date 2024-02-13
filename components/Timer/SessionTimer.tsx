@@ -1,5 +1,5 @@
 import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import formatCountdown from '../../helpers/Timer/formatCountdown';
 import {JoinedUserTrail, SessionDetails} from '../../types/session';
 import {
@@ -48,6 +48,8 @@ const SessionTimer = ({
   //@ts-ignore
   // const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
+   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
+
   let pomodoroCountdown = formatCountdown(
     sessionDetails.initialPomodoroTime,
     sessionDetails.elapsedPomodoroTime
@@ -89,6 +91,14 @@ const SessionTimer = ({
     return () => clearInterval(intervalId);
   }, [sessionDetails]);
 
+  // useEffect(() => {
+  //   const achievementsUnlocked = [];
+  //   achievementsUnlocked.push(...checkTrailAchievements(user, completedTrail));
+  //   achievementsUnlocked.push(...checkMileageAchievements(user, userMiles));
+  //   achievementsUnlocked.push(...checkSessionAchievements(sessionDetails));
+  //   setUnlockedAchievements(achievementsUnlocked);
+  // }, [user, userMiles, completedTrail, sessionDetails]);
+
   return (
     <SafeAreaView>
       <Text
@@ -105,14 +115,16 @@ const SessionTimer = ({
         }}>
         {sessionDetails.isPaused === true
           ? 'Paused'
-          : canHike === true 
+          : canHike === true
           ? pomodoroCountdown
           : sessionDetails.currentSet < sessionDetails.sets
           ? shortBreakCountdown
           : longBreakCountdown}
       </Text>
       <Text style={{color: 'white'}}>Strikes: {sessionDetails.strikes}</Text>
-      <Text style={{color: 'white'}}>Current set: {sessionDetails.currentSet}</Text>
+      <Text style={{color: 'white'}}>
+        Current set: {sessionDetails.currentSet}
+      </Text>
       <Text style={{color: 'white'}}>Total Sets: {sessionDetails.sets}</Text>
       <Text style={{color: 'white'}}>
         Total Session Time {formatTime(userSession.totalSessionTime)}
@@ -152,6 +164,9 @@ const SessionTimer = ({
         user={user}
         trail={currentTrail}
       />
+      {unlockedAchievements.length > 0 && (
+        <Text>Unlocked Achievements: {unlockedAchievements.join(', ')}</Text>
+      )}
     </SafeAreaView>
   );
 };
