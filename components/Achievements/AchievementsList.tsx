@@ -3,23 +3,22 @@ import * as React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import withObservables from '@nozbe/with-observables';
 import { Achievement, User, User_Achievement } from '../../watermelon/models';
+import { AchievementsWithCompletion } from '../../types/achievements';
+
 
 interface Props
 {
 	user: User
-	achievements: Achievement[]
+	achievementsWithCompletion: AchievementsWithCompletion[]
 	userAchievements: User_Achievement[]
 }
 
-const AchievementsList = ({user, achievements, userAchievements}: Props) => {
+const AchievementsList = ({user, achievementsWithCompletion}: Props) => {
 	
 	const [selectedUserAchievement, setSelectedUserAchievement] =
 		React.useState<number | null>(null);
-	const completedAchievementIds:any = {}
-	for (let achievement of userAchievements)
-	{
-		completedAchievementIds[achievement.id] = achievement.completedAt
-	}
+
+
 	const handleAchievementClick = (id: number) => {
 		if (id === selectedUserAchievement) {
 			setSelectedUserAchievement(null);
@@ -27,54 +26,18 @@ const AchievementsList = ({user, achievements, userAchievements}: Props) => {
 			setSelectedUserAchievement(id);
 		}
 	};
-console.log(achievements)
-// 	React.useEffect(() => {
-// 		if (!userAchievements) {
-// 			db.transaction(
-// 				(tx: SQLite.SQLTransaction) => {
-// 					tx.executeSql(
-// 						`SELECT a.*, ua.*,
-//        CASE WHEN ua.user_id IS NOT NULL THEN 1 ELSE 0 END AS completed
-// FROM achievements a
-// LEFT JOIN user_achievements ua ON a.achievement_id = ua.achievement_id AND ua.user_id = ?
 
-//           `,
-// 						[user.user_id],
-// 						(_tx, resultSet) => {
-// 							console.log(
-// 								'Successfully got userAchievements from SQLite'
-// 							);
-// 							console.log(resultSet.rows._array);
-// 							setUserAchievements(resultSet.rows._array);
-// 						},
-// 						(_tx, error: SQLite.SQLError) => {
-// 							console.error(
-// 								'Error: unable to get userAchievements in useEffect executeSQL',
-// 								error
-// 							);
-// 							return false;
-// 						}
-// 					);
-// 				},
-// 				(error) =>
-// 					console.error(
-// 						'Error: unable to get userAchievements in useEffect executeSQL',
-// 						error
-// 					),
-// 				() => console.log('Successfully connected to db.transaction')
-// 			);
-// 		}
-// 	});
-	if (achievements)
+
+	if (achievementsWithCompletion)
 	{
 		return (
-      <View style={{ justifyContent: 'space-evenly', paddingTop: 22}}>
+      <View style={{justifyContent: 'space-evenly', paddingTop: 22}}>
         <FlatList
-          data={achievements}
+          data={achievementsWithCompletion}
           renderItem={({item}) => (
             <Pressable
               style={{
-                backgroundColor: completedAchievementIds[item.id]
+                backgroundColor: item.completed
                   ? 'rgba(210,180,140, 1)'
                   : 'black',
               }}
@@ -85,7 +48,7 @@ console.log(achievements)
                   padding: 10,
                   height: 60,
                   borderBottomWidth: 1,
-                  borderColor: completedAchievementIds[item.id]
+                  borderColor: item.completed
                     ? 'rgba(150,0,0,.1)'
                     : 'rgba(255,255,255,.3)',
                   flexDirection: 'row',
@@ -96,28 +59,28 @@ console.log(achievements)
                   style={{
                     color:
                       selectedUserAchievement == parseInt(item.id) &&
-                      completedAchievementIds[item.id]
+                      item.completed
                         ? 'rgba(150,0,0,1)'
-                        : completedAchievementIds[item.id]
+                        : item.completed
                         ? 'white'
                         : 'rgba(255, 255, 255, 0.1)',
                     fontWeight: 'bold',
                     fontSize: 26,
                   }}>
-                  {completedAchievementIds[item.id]
-                    ? item.achievementName
+                  {item.completed
+                    ? item.achievement_name
                     : 'Locked'}
                 </Text>
                 <Ionicons
                   color={
                     selectedUserAchievement == parseInt(item.id) &&
-                    completedAchievementIds[item.id]
+                    item.completed
                       ? 'rgba(150,0,0,1)'
                       : 'white'
                   }
                   size={20}
                   name={
-                    !completedAchievementIds[item.id]
+                    !item.completed
                       ? 'lock-closed-outline'
                       : selectedUserAchievement === parseInt(item.id)
                       ? 'caret-down-outline'
@@ -128,7 +91,7 @@ console.log(achievements)
                 style={{
                   display:
                     selectedUserAchievement == parseInt(item.id) &&
-                    completedAchievementIds[item.id]
+                    item.completed
                       ? 'flex'
                       : 'none',
                   backgroundColor: 'rgba(210,180,140, .2)',
@@ -142,7 +105,7 @@ console.log(achievements)
                     fontSize: 16,
                     textAlign: 'center',
                   }}>
-                  {item.achievementDescription}
+                  {item.achievement_description}
                 </Text>
                 <Text
                   style={{
@@ -153,12 +116,12 @@ console.log(achievements)
                     height: 30,
                     display:
                       selectedUserAchievement == parseInt(item.id) &&
-                      completedAchievementIds[item.id]
+                      item.completed
                         ? 'flex'
                         : 'none',
                     backgroundColor: 'rgba(210,180,140, .2)',
                   }}>
-                  Completed: {completedAchievementIds[item.id]}
+                  Completed: {item.completed}
                 </Text>
               </View>
             </Pressable>
@@ -169,16 +132,15 @@ console.log(achievements)
 	}
 	return (
     <View>
-      <Text style={{color: 'white'}}>'hello'</Text>
+      <Text style={{color: 'white'}}>Loading</Text>
     </View>
   );
 };
 
 
 
-const enhance = withObservables(['user', 'achievements', 'userAchievements'], ({user, achievements}) => ({
+const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
 	user,
-		//achievements,
 		userAchievements: user.usersAchievements.observe()
 }))
 

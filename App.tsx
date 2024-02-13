@@ -37,19 +37,18 @@ function App(): JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  //insert postgres tables
-  const seedPgTables = async () => {
-    try {
-      console.log('seedingPgTables');
-      const response = await fetch(`http://192.168.1.208:5500/api/seed`);
-      const data = await response.json();
-    } catch (error: any) {
-      console.error(
-        'Error in gettingPGTables function, app.tsx',
-        error.message
-      );
-    }
-  };
+  //uncomment to insert postgres tables with initial trails, parks, parkstates
+  // const seedPgTables = async () => {
+  //   try {
+  //     console.log('seedingPgTables');
+  //     const response = await fetch(`http://192.168.1.208:5500/api/seed`);
+  //   } catch (error: any) {
+  //     console.error(
+  //       'Error in gettingPGTables function, app.tsx',
+  //       error.message
+  //     );
+  //   }
+  // };
 
   useEffect(() => {
     // Do something with the Watermelon database instance
@@ -61,7 +60,7 @@ function App(): JSX.Element {
         console.log(`The database file is located at: ${dbFilePath}`);
         if (Platform.OS === 'android') {
           PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
-          PermissionsAndroid.request('android.permission.INTERNET');
+          //PermissionsAndroid.request('android.permission.INTERNET');
           PermissionsAndroid.request(
             'android.permission.READ_EXTERNAL_STORAGE'
           );
@@ -76,13 +75,13 @@ function App(): JSX.Element {
         //This checks to see if the mobile ldevices SQLITE DB
         //has a userID saved in the localstorage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
-        console.log('sync in app');
+        console.debug('sync in app @App.tsx');
 
         //SYNC call teh push and pull requests from mobile device to PG database
         await sync(watermelonDatabase);
         
       } catch (err) {
-        console.log('Error in onload in APP useEffect', err);
+        console.error('Error in onload in APP useEffect', err);
       }
     };
 

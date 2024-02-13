@@ -13,7 +13,6 @@ import {
   skipBreak,
 } from '../../helpers/Timer/timerFlow';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import {UserContext} from '../../App';
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
 import {
   Completed_Hike,
@@ -45,8 +44,7 @@ const SessionTimer = ({
   userMiles,
   completedHikes,
 }: Props) => {
-  //@ts-ignore
-  // const {userId} = React.useContext(UserContext);
+
   const watermelonDatabase = useDatabase();
    const [unlockedAchievements, setUnlockedAchievements] = useState([]);
 

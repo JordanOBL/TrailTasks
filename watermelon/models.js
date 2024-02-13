@@ -210,7 +210,7 @@ export class User extends Model {
   }
 
   //add user miles
-  @writer async addUserAchievement(completed_achievement_id) {
+  @writer async unlockAchievement(completed_achievement_id) {
     return await this.collections
       .get('users_achievements')
       .create((user_achievement) => {

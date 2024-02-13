@@ -1,19 +1,36 @@
+import { useDatabase } from "@nozbe/watermelondb/hooks"
+import { User, User_Miles } from "../../watermelon/models";
+import { AchievementsWithCompletion } from "../../types/achievements";
 const AchievmentManager = 
 {
   //*This function adds a row to the the users_achievmenets database, unlocking a user Achievment
-  async unlockAchievement('')
-  //Create a function that checks for achievments about a users total miles
-  async check_total_miles_achievements()
+  async unlockAchievement(user: User, achievement_id: string)
   {
     try
     {
-      //filter only achievements the user has NOT completed
-      // for each achievement in new filtered lockedAchievements Array
-        //if users total miles > achievement.condition
-          // call unlockAchievementFunction
+      const completedAchievement = await user.unlockAchievement(achievement_id)
+      return completedAchievement
     } catch (err)
     {
-      console.log('Error in check_total_milles_achievements', err)
+      console.error('Error in unlockAchievement() ', {err})
+   }
+  },
+
+  //Create a function that checks for achievments about a users total miles
+  async check_total_miles_achievements(userMiles: User_Miles[], achievementsWithCompletion: AchievementsWithCompletion[])
+  {
+    try
+    {
+      for (let achievement of achievementsWithCompletion)
+      {
+        if (!achievement.completed)
+        {
+           //check if user miles > achievement.conditions
+         }
+       }        
+    } catch (err)
+    {
+      console.error('Error in check_total_milles_achievements', {err})
     }
 
   }
