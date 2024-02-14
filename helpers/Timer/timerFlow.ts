@@ -1,5 +1,4 @@
 //creating a new session
-
 import {Database, Q} from '@nozbe/watermelondb';
 import {formatDateTime} from '../formatDateTime';
 import {
@@ -15,6 +14,8 @@ import {Vibration} from 'react-native';
 import nextHundredthMileSeconds from './nextHundrethMileSeconds';
 import getTimeDifference from './getTimeDifference';
 import {getBetterTime} from './getBetterTime';
+import { AchievementManager } from '../Achievements/AchievementManager';
+import { AchievementsWithCompletion } from '../../types/achievements';
 
 //increase distance hiked
 export async function increaseDistanceHiked({
@@ -24,6 +25,7 @@ export async function increaseDistanceHiked({
   sessionDetails,
   userSession,
   setSessionDetails,
+  achievementsWithCompletion,
 }: {
   user: User;
   userMiles: User_Miles[];
@@ -31,6 +33,7 @@ export async function increaseDistanceHiked({
   userSession: User_Session;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
+  achievementsWithCompletion: AchievementsWithCompletion[]
 }) {
   //UPDATE CURRENT TRAILDISTANCE in session when user walks .01 miles
 
@@ -59,6 +62,7 @@ export async function increaseDistanceHiked({
         userMiles: userMiles[0],
         userSession,
       });
+      await AchievementManager.check_total_miles_achievements(user, userMiles[0], achievementsWithCompletion);
     }
     if (
       sessionDetails.elapsedPomodoroTime ===
@@ -223,6 +227,7 @@ async function increaseElapsedTime({
   user,
   userMiles,
   currentTrail,
+  achievementsWithCompletion
 }: {
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
@@ -230,7 +235,8 @@ async function increaseElapsedTime({
   userSession: User_Session;
   user: User;
   userMiles: User_Miles;
-  currentTrail: Trail;
+    currentTrail: Trail;
+  achievementsWithCompletion: AchievementsWithCompletion[]
 }) {
   if (sessionDetails.isPaused === false) {
     if (
@@ -246,6 +252,7 @@ async function increaseElapsedTime({
         userSession,
         sessionDetails,
         setSessionDetails,
+        achievementsWithCompletion
       });
       setSessionDetails((prev: any) => {
         return {
@@ -407,7 +414,7 @@ export async function isTrailCompleted({
     if (Number(user.trailProgress) >= Number(currentTrail.trailDistance)) {
       //checkif completed hike table has column with the current trail and username
       const existingCompletedHike = await user.hasTrailBeenCompleted();
-      console.log('existingCompletedHike', existingCompletedHike);
+      console.debug('TimerFlow inside isTrailCompleted()', {existingCompletedHike});
 
       //set current date to now (YY-MM-DD H/H:mm:ss)
       const currentDateTime = formatDateTime(new Date());
@@ -417,14 +424,14 @@ export async function isTrailCompleted({
         currentDateTime,
         user.trailStartedAt
       );
-      console.log({timeToComplete});
+      console.debug('TimerFlow inside isTrailCompleted()', {timeToComplete});
 
       //if completed trail existed keep first completed date else set to now
       const firstCompletedTime: string = existingCompletedHike
         ? //@ts-ignore
           existingCompletedHike.firstCompletedAt
         : currentDateTime;
-      console.log({firstCompletedTime});
+      console.debug('TimerFlow inside isTrailCompleted()', {firstCompletedTime});
 
       //if already completed find best time between theat time vs this time
       //else set it to the time it just took to finish from start date / time
@@ -433,7 +440,7 @@ export async function isTrailCompleted({
           getBetterTime(timeToComplete, existingCompletedHike.bestCompletedTime)
         : timeToComplete;
 
-      console.log({betterTime});
+      console.debug('TimerFlow inside isTrailCompleted()', {betterTime});
 
       if (existingCompletedHike) {
         //@ts-ignore
@@ -451,14 +458,13 @@ export async function isTrailCompleted({
         }
       } else if (!existingCompletedHike) {
         //@ts-ignore
-        console.log('in here');
         const addedHike = await user.addCompletedHike({
           trailId: user.trailId,
           bestCompletedTime: betterTime,
           firstCompletedAt: firstCompletedTime,
           lastCompletedAt: currentDateTime,
         });
-        console.log({addedHike});
+        console.debug('TimerFlow, inside isTrailCompleted()', {addedHike});
 
         if (addedHike) {
           await updateUsersTrailAndQueue({
@@ -487,6 +493,7 @@ export async function Hike({
   queuedTrails,
   completedHikes,
   canHike,
+  achievementsWithCompletion
 }: {
   user: User;
   watermelonDatabase: Database;
@@ -498,9 +505,11 @@ export async function Hike({
   completedHikes: Completed_Hike[];
   currentTrail: Trail;
   queuedTrails: Queued_Trail[];
+  achievementsWithCompletion: AchievementsWithCompletion[]
 }) {
   try {
     //check for completed hike
+    console.debug('TimerFlow hike() calling isTrailCompleted()');
     isTrailCompleted({
       watermelonDatabase,
       user,
@@ -509,8 +518,10 @@ export async function Hike({
     });
 
     //modify Speed
+    console.debug('TimerFlow hike() calling speed Modifier()');
     speedModifier(setSessionDetails, sessionDetails);
 
+    console.debug('TimerFlow hike() calling increaseElapsedTime()')
     increaseElapsedTime({
       user,
       userMiles,
@@ -519,6 +530,7 @@ export async function Hike({
       sessionDetails,
       canHike,
       userSession,
+      achievementsWithCompletion
     });
     //save the users current session details in the database
   } catch (err) {

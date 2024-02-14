@@ -11,16 +11,45 @@ import {useFocusEffect} from '@react-navigation/native';
 
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
-import {Queued_Trail, Trail, User, User_Miles} from '../watermelon/models';
+import {Queued_Trail, Trail, User, User_Achievement, User_Miles} from '../watermelon/models';
 import {useNavigation} from '@react-navigation/native';
+import { AchievementsWithCompletion } from '../types/achievements';
 interface Props {
   user: User;
   setUser: any;
   currentTrail: Trail;
+  userAchievements: User_Achievement[]
 }
-const TimerScreen = ({user, setUser, currentTrail}: Props) => {
+const TimerScreen = ({user, setUser, currentTrail, userAchievements}: Props) => {
   //@ts-ignore
   const navigation = useNavigation();
+  const watermelonDatabase = useDatabase();
+  const [achievementsWithCompletion, setAchievementsWithCompletion] =
+    React.useState<AchievementsWithCompletion | null>(null);
+
+  async function getAchievementsWithCompletion() {
+    const query = `SELECT achievements.*, 
+               CASE WHEN users_achievements.achievement_id IS NOT NULL THEN 1 ELSE 0 END AS completed 
+               FROM achievements 
+               LEFT JOIN users_achievements ON achievements.id = users_achievements.achievement_id 
+               AND users_achievements.user_id = '${user.id}'`;
+
+    try {
+      const results: AchievementsWithCompletion[] = await watermelonDatabase
+        .get('achievements')
+        .query(Q.unsafeSqlQuery(query))
+        .unsafeFetchRaw();
+      if (results.length > 0) {
+        setAchievementsWithCompletion(results);
+      }
+      console.debug(
+        'DEBUG: joined achievements and usersachieveents with completeion',
+        {results}
+      );
+    } catch (err) {
+      console.error('Error in joinUsersAchievements', err);
+    }
+  }
 
   //observable user session
   const [userSession, setUserSession] = React.useState<any>();
@@ -62,6 +91,12 @@ const TimerScreen = ({user, setUser, currentTrail}: Props) => {
     }
   }, [navigation, sessionDetails.isSessionStarted]);
 
+  React.useEffect(() =>
+  {
+    getAchievementsWithCompletion()
+  }, [userAchievements])
+
+
   return (
     <SafeAreaView style={styles.container}>
       {sessionDetails.isLoading ? (
@@ -76,29 +111,35 @@ const TimerScreen = ({user, setUser, currentTrail}: Props) => {
       ) : (
         <EnhancedSessionTimer
           sessionDetails={sessionDetails}
-          setSessionDetails={setSessionDetails}
+              setSessionDetails={setSessionDetails}
+              achievementsWithCompletion={achievementsWithCompletion}
           userSession={userSession}
           user={user}
         />
       )}
-     { userSession && sessionDetails.isPaused == true ? <Pressable
-        onPress={() => navigation.goBack()}
-        style={[styles.returnButton, {backgroundColor: 'green'}]}>
-        <Text
-          style={{
-            color: 'rgb(28,29,31)',
-            fontSize: 18,
-            fontWeight: '800',
-          }}>
-          Return to Base Camp
-        </Text>
-      </Pressable> : <></>}
+      {userSession && sessionDetails.isPaused == true ? (
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={[styles.returnButton, {backgroundColor: 'green'}]}>
+          <Text
+            style={{
+              color: 'rgb(28,29,31)',
+              fontSize: 18,
+              fontWeight: '800',
+            }}>
+            Return to Base Camp
+          </Text>
+        </Pressable>
+      ) : (
+        <></>
+      )}
     </SafeAreaView>
   );
 };
 
-const enhance = withObservables(['user'], ({user}) => ({
+const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
   user: user.observe(),
+  userAchievements: user.usersAchievements.observe()
 }));
 
 const EnhancedTimerScreen = enhance(TimerScreen);

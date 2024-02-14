@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: 'parks',
@@ -70,6 +70,9 @@ const schema = appSchema({
         {name: 'achievement_name', type: 'string', isIndexed: true},
         {name: 'achievement_description', type: 'string'},
         {name: 'achievement_image_url', type: 'string'},
+        {name: 'achievement_type', type: 'string', isIndexed: true}, // e.g., "Total Miles", "Trail Completion"
+        {name: 'achievement_condition', type: 'string'}, // Conditions associated with the achievement
+        {name: 'achievement_fact', type: 'string', isOptional: true}, // Conditions associated with the achievement
       ],
     }),
     tableSchema({

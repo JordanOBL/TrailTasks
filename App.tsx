@@ -38,17 +38,17 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
   //uncomment to insert postgres tables with initial trails, parks, parkstates
-  // const seedPgTables = async () => {
-  //   try {
-  //     console.log('seedingPgTables');
-  //     const response = await fetch(`http://192.168.1.208:5500/api/seed`);
-  //   } catch (error: any) {
-  //     console.error(
-  //       'Error in gettingPGTables function, app.tsx',
-  //       error.message
-  //     );
-  //   }
-  // };
+  const seedPgTables = async () => {
+    try {
+      console.log('seedingPgTables');
+      const response = await fetch(`http://192.168.1.208:5500/api/seed`);
+    } catch (error: any) {
+      console.error(
+        'Error in gettingPGTables function, app.tsx',
+        error.message
+      );
+    }
+  };
 
   useEffect(() => {
     // Do something with the Watermelon database instance

@@ -1,4 +1,5 @@
 import {Model, Q} from '@nozbe/watermelondb';
+
 import {
   relation,
   immutableRelation,
@@ -9,6 +10,10 @@ import {
   date,
   lazy,
 } from '@nozbe/watermelondb/decorators';
+
+import formatDateTime from '../helpers/formatTime';
+
+
 
 export class Park extends Model {
   static table = 'parks';
@@ -209,14 +214,45 @@ export class User extends Model {
     });
   }
 
-  //add user miles
-  @writer async unlockAchievement(completed_achievement_id) {
-    return await this.collections
-      .get('users_achievements')
-      .create((user_achievement) => {
-        user_achievement.user_id.set(this);
-        user_achievement.achievement_id = completed_achievement_id;
-      });
+  //add user achievnments Batch
+  // @writer async unlockAchievements(completedAchievementIds) {
+  //   const unlockedAchievements = await completedAchievementIds.map(
+  //     (achievementId) =>
+  //       this.collections
+  //         .get('users_achievements')
+  //         .prepareCreate((user_achievement) => {
+  //           user_achievement.userId = this.userId;
+  //           user_achievement.achievementId = achievementId;
+  //         })
+  //   );
+  //   await this.database.batch(...unlockedAchievements);
+  //   return unlockedAchievements;
+  // }
+  @writer async unlockAchievements(userId, completedAchievementIds) {
+    try {
+      console.debug('Unlocking achievements:', completedAchievementIds);
+      const unlockedAchievements = await Promise.all(
+        completedAchievementIds.map(async (achievementId) => {
+          const newAchievement = this.collections
+            .get('users_achievements')
+            .prepareCreate((user_achievement) => {
+              user_achievement.userId = userId;
+              user_achievement.achievementId = achievementId;
+              user_achievement.completedAt = formatDateTime(new Date());
+            });
+          return newAchievement;
+        })
+      );
+      await this.database.batch(...unlockedAchievements);
+      console.debug(
+        'Successfully unlocked achievements:',
+        unlockedAchievements
+      );
+      return unlockedAchievements;
+    } catch (err) {
+      console.error('Error in unlockAchievements:', err);
+      throw err; // Rethrow the error to handle it at the higher level
+    }
   }
 
   @writer async updateTotalUserMiles({miles}) {
@@ -324,7 +360,9 @@ export class Achievement extends Model {
   };
   @field('achievement_name') achievementName;
   @field('achievement_description') achievementDescription;
-  @field('achievement_image_url') AchievementImageUrl;
+  @field('achievement_image_url') achievementImageUrl;
+  @field('type') achievementType;
+  @field('condition') achievementCondition;
 
   @immutableRelation('users_achievements', 'achievement_id') achievement;
 

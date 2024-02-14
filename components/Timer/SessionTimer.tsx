@@ -24,6 +24,7 @@ import {
 } from '../../watermelon/models';
 import withObservables from '@nozbe/with-observables';
 import formatTime from '../../helpers/formatTime';
+import { AchievementsWithCompletion } from '../../types/achievements';
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
@@ -33,6 +34,7 @@ interface Props {
   queuedTrails: Queued_Trail[];
   userMiles: User_Miles;
   completedHikes: Completed_Hike[];
+  achievementsWithCompletion: AchievementsWithCompletion[]
 }
 const SessionTimer = ({
   setSessionDetails,
@@ -43,6 +45,7 @@ const SessionTimer = ({
   queuedTrails,
   userMiles,
   completedHikes,
+  achievementsWithCompletion
 }: Props) => {
 
   const watermelonDatabase = useDatabase();
@@ -70,22 +73,26 @@ const SessionTimer = ({
     sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime;
   React.useEffect(() => {
     let intervalId: any;
-   
-        intervalId = setInterval(() => {
-          Hike({
-            watermelonDatabase,
-            user,
-            userSession,
-            completedHikes,
-            queuedTrails,
-            currentTrail,
-            userMiles,
-            setSessionDetails,
-            sessionDetails,
-            canHike,
-          });
-        }, 1000);
-
+    if (!sessionDetails.isPaused)
+    {
+      intervalId = setInterval(() =>
+      {
+        Hike({
+          watermelonDatabase,
+          user,
+          userSession,
+          completedHikes,
+          queuedTrails,
+          currentTrail,
+          userMiles,
+          setSessionDetails,
+          sessionDetails,
+          canHike,
+          achievementsWithCompletion
+        });
+        
+      }, 1000);
+    }
     return () => clearInterval(intervalId);
   }, [sessionDetails]);
 
@@ -170,14 +177,15 @@ const SessionTimer = ({
 };
 
 const enhance = withObservables(
-  ['user', 'currentTrail', 'completedHikes', 'queuedTrails', 'userMiles', 'userSession'],
+  ['user', 'currentTrail', 'completedHikes', 'queuedTrails', 'userMiles', 'userSession', 'usersAchievements'],
   ({user, userSession}) => ({
     user: user.observe(),
     currentTrail: user.trail.observe(),
     completedHikes: user.completedHikes.observe(),
     queuedTrails: user.queuedTrails.observe(),
     userMiles: user.userMiles.observe(),
-    userSession
+    userSession,
+    userAchievements: user.usersAchievements.observe()
   })
 );
 

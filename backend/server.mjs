@@ -16,6 +16,7 @@ import {
   User_Session,
   Subscription,
   Basic_Subscription_Trail,
+  User_Achievement,
 } from '../backend/db/sequelizeModel.mjs';
 
 // import pool from "./db/config.js";
@@ -2269,19 +2270,43 @@ app.get('/api/seed', async (req, res) => {
         achievement_name: 'Hiker Extraordinaire',
         achievement_description: 'Hiked 50 miles',
         achievement_image_url: 'https://example.com/achievement1.png',
+        achievement_type: 'Total Miles',
+        achievement_condition: '50',
       },
       {
         id: '2',
         achievement_name: 'Hiker Novice',
         achievement_description: 'Hiked 20 miles',
         achievement_image_url: 'https://example.com/achievement2.png',
+        achievement_type: 'Total Miles',
+        achievement_condition: '20',
       },
       {
         id: '3',
         achievement_name: 'First of Many',
         achievement_description: 'First 1.0 Miles',
         achievement_image_url: 'https://example.com/achievement2.png',
+        achievement_type: 'Total Miles',
+        achievement_condition: '1',
       },
+      {
+        id: '4',
+        achievement_name: 'Anti TLC',
+        achievement_description: 'Complete a trial with a waterfall',
+        achievement_image_url: 'https://example.com/achievement2.png',
+        achievement_type: 'Trail Completion',
+        achievement_condition: '42, 44, 63, 69, 78, 79, 94',
+      },
+      {
+        id: '5',
+        achievement_name: 'Hop Skip Jump',
+        achievement_description: 'Hike Yellowstone and Grand Teton National Park',
+        achievement_image_url: 'https://example.com/achievement2.png',
+        achievement_type: 'Trail Completion',
+        achievement_condition: '25, 61',
+        achievement_fact: 'Yellowstone and Gand Teton National Parks are at one point only 10 miles Apart',
+      },
+
     ]);
     const basic_subscription_trails = await Basic_Subscription_Trail.bulkCreate(
       [
@@ -2330,6 +2355,8 @@ app.get('/pull', async (req, res) => {
       console.log('first Parks Pull', createdParks);
       const createdTrails = await Trail.findAll({});
       console.log('first Trails Pull', createdTrails);
+      const createdParkStates = await Park_State.findAll({});
+      console.log('first Trails Pull', createdParkStates);
       const responseData = {
         changes: {
           parks: {
@@ -2344,6 +2371,11 @@ app.get('/pull', async (req, res) => {
           },
           trails: {
             created: createdTrails,
+            updated: [],
+            deleted: [],
+          },
+          park_states: {
+            created: createdParkStates,
             updated: [],
             deleted: [],
           },
@@ -2517,6 +2549,9 @@ app.post('/push', async (req, res) => {
     if (lastPulledAt !== 'null') {
       if (changes?.users?.created[0] !== undefined) {
         const users = await User.bulkCreate(changes.users.created);
+      }
+      if (changes?.users_achievements?.created[0] !== undefined) {
+        const users_achievements = await User_Achievement.bulkCreate(changes.users_achievements.created);
       }
       if (changes?.users_miles?.created[0] !== undefined) {
         const users_miles = await User_Miles.bulkCreate(

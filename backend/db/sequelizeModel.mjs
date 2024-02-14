@@ -164,6 +164,18 @@ export const Achievement = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    achievement_type: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    achievement_condition: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    achievement_fact: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: 'achievements',
@@ -181,7 +193,9 @@ export const User_Achievement = sequelize.define(
   'User_Achievement',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    completed_at: {type: DataTypes.DATE, allowNull: false},
+    completed_at: {type: DataTypes.STRING, allowNull: false},
+    user_id: {type: DataTypes.STRING, allowNull: false},
+    achievement_id: {type: DataTypes.STRING, allowNull: false},
   },
   {tableName: 'users_achievements', underscored: true}
 );
@@ -300,8 +314,14 @@ Park_State.belongsTo(Park);
 Park.hasMany(Trail, {foreignKey: 'park_id'});
 Trail.belongsTo(Park, {foreignKey: 'park_id'});
 
-Achievement.belongsToMany(User, {through: 'users_achievements'});
-User.belongsToMany(Achievement, {through: 'users_achievements'});
+User.hasMany(User_Achievement, {foriegnKey: 'user_id'});
+User_Achievement.belongsTo(User);
+
+Achievement.hasMany(User_Achievement, {foriegnKey: 'achievement_id'});
+User_Achievement.belongsTo(Achievement);
+
+// Achievement.belongsToMany(User, {through: 'users_achievements'});
+// User.belongsToMany(Achievement, {through: 'users_achievements'});
 
 Badge.belongsToMany(User, {through: 'users_badges'});
 User.belongsToMany(Badge, {through: 'users_badges'});
