@@ -11,16 +11,27 @@ import {useFocusEffect} from '@react-navigation/native';
 
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
-import {Queued_Trail, Trail, User, User_Achievement, User_Miles} from '../watermelon/models';
+import {
+  Queued_Trail,
+  Trail,
+  User,
+  User_Achievement,
+  User_Miles,
+} from '../watermelon/models';
 import {useNavigation} from '@react-navigation/native';
-import { AchievementsWithCompletion } from '../types/achievements';
+import {AchievementsWithCompletion} from '../types/achievements';
 interface Props {
   user: User;
   setUser: any;
   currentTrail: Trail;
-  userAchievements: User_Achievement[]
+  userAchievements: User_Achievement[];
 }
-const TimerScreen = ({user, setUser, currentTrail, userAchievements}: Props) => {
+const TimerScreen = ({
+  user,
+  setUser,
+  currentTrail,
+  userAchievements,
+}: Props) => {
   //@ts-ignore
   const navigation = useNavigation();
   const watermelonDatabase = useDatabase();
@@ -91,11 +102,9 @@ const TimerScreen = ({user, setUser, currentTrail, userAchievements}: Props) => 
     }
   }, [navigation, sessionDetails.isSessionStarted]);
 
-  React.useEffect(() =>
-  {
-    getAchievementsWithCompletion()
-  }, [userAchievements])
-
+  React.useEffect(() => {
+    getAchievementsWithCompletion();
+  }, [userAchievements]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -111,8 +120,8 @@ const TimerScreen = ({user, setUser, currentTrail, userAchievements}: Props) => 
       ) : (
         <EnhancedSessionTimer
           sessionDetails={sessionDetails}
-              setSessionDetails={setSessionDetails}
-              achievementsWithCompletion={achievementsWithCompletion}
+          setSessionDetails={setSessionDetails}
+          achievementsWithCompletion={achievementsWithCompletion}
           userSession={userSession}
           user={user}
         />
@@ -139,7 +148,7 @@ const TimerScreen = ({user, setUser, currentTrail, userAchievements}: Props) => 
 
 const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
   user: user.observe(),
-  userAchievements: user.usersAchievements.observe()
+  userAchievements: user.usersAchievements.observe(),
 }));
 
 const EnhancedTimerScreen = enhance(TimerScreen);

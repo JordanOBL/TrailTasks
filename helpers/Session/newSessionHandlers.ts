@@ -111,7 +111,6 @@ NewSessionHandlers.StartSessionClick = async (
       return newSession;
     });
     if (newSession) {
-      console.log(newSession);
       await database.localStorage.set('sessionId', newSession.id);
       await database.localStorage.set(
         'category ' + sessionDetails.sessionCategoryId + ' settings',

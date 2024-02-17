@@ -13,8 +13,6 @@ import {
 
 import formatDateTime from '../helpers/formatTime';
 
-
-
 export class Park extends Model {
   static table = 'parks';
   static associations = {

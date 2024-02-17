@@ -40,7 +40,7 @@ function App(): JSX.Element {
   //uncomment to insert postgres tables with initial trails, parks, parkstates
   const seedPgTables = async () => {
     try {
-      console.log('seedingPgTables');
+      console.debug('seeding PostgresDB Tables with information from /backend/server.ts');
       const response = await fetch(`http://192.168.1.208:5500/api/seed`);
     } catch (error: any) {
       console.error(
@@ -57,7 +57,7 @@ function App(): JSX.Element {
       {
         //This finds and prints file path in the phones memory for the sqlite DB
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
-        console.log(`The database file is located at: ${dbFilePath}`);
+        console.debug(`DATABASE LOCATION: ${dbFilePath}`);
         if (Platform.OS === 'android') {
           PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
           //PermissionsAndroid.request('android.permission.INTERNET');
@@ -75,8 +75,6 @@ function App(): JSX.Element {
         //This checks to see if the mobile ldevices SQLITE DB
         //has a userID saved in the localstorage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
-        console.debug('sync in app @App.tsx');
-
         //SYNC call teh push and pull requests from mobile device to PG database
         await sync(watermelonDatabase);
         

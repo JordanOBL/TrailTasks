@@ -15,7 +15,7 @@ export const checkExistingUser = async (
 
     return existingUser[0];
   } catch (err) {
-    console.log('error in checkexisting user function', err);
+    console.error('Error in checkExistingUser()', err);
   }
 };
 
@@ -24,12 +24,10 @@ export const setSubscriptionStatus = async (
   watermelonDatabase: Database
 ) => {
   try {
-    console.log('subscription existing user', user.id);
     const subscription: Subscription[]| any = await watermelonDatabase.collections
       .get('users_subscriptions')
       .query(Q.where('user_id', user.id))
       .fetch();
-    console.log(subscription);
     if (subscription[0]) {
       await watermelonDatabase.localStorage.set(
         'subscription_id',
@@ -37,7 +35,7 @@ export const setSubscriptionStatus = async (
       );
     } 
   } catch (err) {
-    console.log('error in setSubscriptionStatus help function', err);
+    console.error('Error in setSubscriptionStatus()', err);
   }
 };
 
@@ -47,13 +45,11 @@ export const setLocalStorageUserAndMiles = async (
 ) => {
   try {
     await watermelonDatabase.localStorage.set('user_id', existingUser.id);
-    console.log('Set localStorage userId');
     await watermelonDatabase.localStorage.set(
       'username',
       //@ts-ignore
       existingUser.username
     );
-    console.log('Set localStorage username');
     //get usersMilesId
     const usersMiles = await watermelonDatabase
       .get('users_miles')
@@ -64,11 +60,10 @@ export const setLocalStorageUserAndMiles = async (
         'user_miles_id',
         usersMiles[0].id
       );
-      console.log('Set localStorage UsersMilesId');
     }
     return true;
   } catch (err) {
-    console.log('Error setting localStorageUserMilesId', err);
+    console.error('Error setting localStorageUserMilesId', err);
   }
 };
 
@@ -81,11 +76,11 @@ export const checkForLoggedInUser = async (
     const userId: string | undefined | void = await watermelonDatabase.localStorage.get(
       'user_id'
     ); // string or undefined if no value for this key
-    console.log('User info from local Storage', userId);
+  
 
     if (userId) {
       let user = await watermelonDatabase.collections.get('users').find(userId);
-      console.log("checking logged in user", {user});
+      console.debug("checking logged in user information, checkForLoggedInUser()");
       //@ts-ignore
       if (user.id) {
         await setSubscriptionStatus(user, watermelonDatabase);
@@ -94,7 +89,7 @@ export const checkForLoggedInUser = async (
       setUser(user);
     }
   } catch (error) {
-    console.error('Error in checkForUser function, app.tsx', error);
+    console.error('Error in checkForUser(), app.tsx', error);
   }
 };
 

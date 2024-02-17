@@ -62,7 +62,7 @@ const AchievementsScreen = ({user, usersAchievements}: Props) => {
 
 
   useEffect(() => {
-    getCustomerInfo();
+    //getCustomerInfo();
     getAchievementsWithCompletion()
   }, [usersAchievements]);
 

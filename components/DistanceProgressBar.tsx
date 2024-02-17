@@ -21,11 +21,6 @@ const DistanceProgressBar = ({
 }: Props) =>
 {
   const width = Dimensions.get('window').width;
-  React.useEffect(() => {
-    // Handle trail or user change
-    console.log('Trail or user changed:', user);
-  }, [ currentTrail]);
-
   return (
     <View
       style={{

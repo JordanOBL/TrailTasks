@@ -51,7 +51,7 @@ const useRevenueCat = ({userId}: Props) => {
           );
         setIsProMember(proMember);
       } catch (error) {
-        console.error('Error fetching RevenueCat data:', error);
+        console.error('Error fetching in useRevenueCat():', error);
       }
     };
     fetchData().catch(console.error);

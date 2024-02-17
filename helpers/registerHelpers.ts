@@ -13,14 +13,14 @@ const checkExistingUser = async ({
   watermelonDatabase: any;
 }) => {
   try {
-    console.log(email);
+
     const ExistingUser = await watermelonDatabase
       .get('users')
       .query(Q.or(Q.where('email', email), Q.where('username', username)))
       .fetch();
     return ExistingUser[0];
   } catch (err) {
-    console.error('Error in checking for existing user in user register', err);
+    console.error('Error in checkExistingUser(), registerHelpers.tsx', err);
   }
 };
 
@@ -84,10 +84,8 @@ const createNewUser = async ({
           //   password,
           //   trailStartedAt
           // })
-          console.log({newUser});
         });
       if (newUser) {
-        console.log({newUser});
         const userMiles = await watermelonDatabase
           .get('users_miles')
           .create((user_miles: User_Miles) => {
@@ -108,14 +106,12 @@ const createNewUser = async ({
           });
 
         if (userMiles) {
-          console.log({userMiles});
           await watermelonDatabase.localStorage.set(
             'user_miles_id',
             userMiles.id
           );
         }
         if (subscription) {
-          console.log({subscription});
           await watermelonDatabase.localStorage.set(
             'subscription_id',
             subscription.id
@@ -183,7 +179,6 @@ export const handleRegister = async ({
       email,
       watermelonDatabase,
     });
-    console.log({ExistingUser});
     //create new user
     if (!ExistingUser) {
       const createdUser = await createNewUser({
@@ -197,7 +192,6 @@ export const handleRegister = async ({
         watermelonDatabase,
       });
 
-      console.log({createdUser});
 
       if (createdUser!) {
         console.log('successful user creation');

@@ -16,7 +16,7 @@ export async function sync(database: Database) {
   try {
     //check internet Connection
     const {connection} = await checkInternetConnection();
-    console.log('check connetion to sync', connection);
+    console.debug('sync() device internet:', connection.isConnected);
 
     //set locatStorage connection status
     await database.localStorage.set('isConnected', connection.isConnected);
@@ -24,11 +24,11 @@ export async function sync(database: Database) {
     if (!isRunning && connection.isConnected) {
       //stop more than one instance
       isRunning = true;
-      console.log('syncing');
-      // const isNotFirstSync = await database.localStorage.get('isFirstSync')
+      //console.debug('Running sync()');
+    
       await synchronize({
         database,
-        //log: logger.newLog(),
+     
         pullChanges: async ({lastPulledAt, schemaVersion, migration}) => {
           //get new changees in the watermelon database
           const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
@@ -36,13 +36,13 @@ export async function sync(database: Database) {
             `http://192.168.1.208:5500/pull?${urlParams}`
           );
           if (!response.ok) {
-            console.error('in pull in sync function');
+            console.error('in pull in sync()')
             throw new Error(await response.text());
           }
           const {changes, timestamp} = await response.json();
-          console.log({changes, timestamp});
 
-          //UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THESE LINES UNCOMMENTED!!!
+
+          //UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THES LINES UNCOMMENTED!!!
 //           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
 //             changes,
 //             false
@@ -52,7 +52,7 @@ export async function sync(database: Database) {
 
         //sending server user watermelondb changes
         pushChanges: async ({changes, lastPulledAt}) => {
-          console.log('in push on client side', changes);
+          console.debug('in push on client side sync()');
           const response = await fetch(
             `http://192.168.1.208:5500/push?last_pulled_at=${lastPulledAt}`,
             {
@@ -77,12 +77,12 @@ export async function sync(database: Database) {
       });
       isRunning = false;
     } else if (isRunning === true) {
-      console.log('Sync ALready Running');
+      console.debug('Sync() already running...');
     } else if (!connection.isConnected) {
-      console.log('not connected to internet for sync');
+      console.debug('not connected to internet for sync()');
     }
   } catch (err) {
     isRunning = false;
-    console.log('Caught Error in watermelon sync', err);
+    console.error('Error in sync()', err);
   }
 }

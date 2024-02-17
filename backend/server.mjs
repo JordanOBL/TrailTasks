@@ -2344,7 +2344,6 @@ app.get('/api/seed', async (req, res) => {
 app.get('/pull', async (req, res) => {
   try
   {
-    console.log(req.query);
     let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
     console.log('last pulled at', { lastPulledAt });
     if (!lastPulledAt || lastPulledAt == null)
@@ -2620,10 +2619,10 @@ const connect = async () => {
   try {
     //await SYNC({force: true});
     await SYNC();
-    console.log('connected to Postgres database trailtasks viia Sequelize!');
+    console.log('SERVER - connected to Postgres database trailtasks viia Sequelize!');
 
     app.listen(5500, () => {
-      console.log('listening and connected to express server trailtasks!');
+      console.log('SERVER-listening and connected to express server trailtasks!');
     });
   } catch (err) {
     console.log(err.message);

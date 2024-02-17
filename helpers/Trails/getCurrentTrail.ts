@@ -10,19 +10,18 @@ const getCurrentTrail = (user: any, watermelonDatabase: Database) => {
     const currentTrailFromDB = async (): Promise<void> => {
       try
       {
-        const userCurrentTrailId: string = user._raw.trail_id
+        const userCurrentTrailId: string = user.trailId
         const foundTrail: any = await watermelonDatabase
           .get('trails')
           .find(userCurrentTrailId)
      
         if (foundTrail)
         {
-          console.log({foundTrail})
           setCurrentTrail(foundTrail)
         }
 
       } catch (err) {
-        console.error(err);
+        console.error('Error in getCurrentTrail()', err);
       }
     };
     currentTrailFromDB();
