@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "server": "node backend/server.mjs",
-    "test": "jest"
+    "test": "jest --coverage --verbose"
   },
   "dependencies": {
     "@nozbe/watermelondb": "^0.26.0",
@@ -65,8 +65,7 @@
     "prettier": "^2.4.1",
     "react-test-renderer": "18.2.0",
     "typescript": "4.8.4"
-  },
-  "jest": {
-    "preset": "react-native"
   }
+
 }
+ 

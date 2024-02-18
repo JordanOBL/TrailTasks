@@ -1,4 +1,4 @@
-export function formatDateTime(date: Date): string {
+export default function formatDateTime(date: any): string {
   const year: number = date.getFullYear();
   const month: string = (date.getMonth() + 1).toString().padStart(2, '0');
   const day: string = date.getDate().toString().padStart(2, '0');
@@ -8,6 +8,8 @@ export function formatDateTime(date: Date): string {
   const formattedDateTime: string = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
   return formattedDateTime;
 }
+
+
 
 // Example usage:
 // const now: Date = new Date();

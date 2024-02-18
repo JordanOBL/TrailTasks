@@ -212,23 +212,9 @@ export class User extends Model {
     });
   }
 
-  //add user achievnments Batch
-  // @writer async unlockAchievements(completedAchievementIds) {
-  //   const unlockedAchievements = await completedAchievementIds.map(
-  //     (achievementId) =>
-  //       this.collections
-  //         .get('users_achievements')
-  //         .prepareCreate((user_achievement) => {
-  //           user_achievement.userId = this.userId;
-  //           user_achievement.achievementId = achievementId;
-  //         })
-  //   );
-  //   await this.database.batch(...unlockedAchievements);
-  //   return unlockedAchievements;
-  // }
+
   @writer async unlockAchievements(userId, completedAchievementIds) {
     try {
-      console.debug('Unlocking achievements:', completedAchievementIds);
       const unlockedAchievements = await Promise.all(
         completedAchievementIds.map(async (achievementId) => {
           const newAchievement = this.collections
@@ -242,10 +228,7 @@ export class User extends Model {
         })
       );
       await this.database.batch(...unlockedAchievements);
-      console.debug(
-        'Successfully unlocked achievements:',
-        unlockedAchievements
-      );
+    
       return unlockedAchievements;
     } catch (err) {
       console.error('Error in unlockAchievements:', err);
@@ -361,6 +344,7 @@ export class Achievement extends Model {
   @field('achievement_image_url') achievementImageUrl;
   @field('type') achievementType;
   @field('condition') achievementCondition;
+  @field('fact') achievementFact;
 
   @immutableRelation('users_achievements', 'achievement_id') achievement;
 

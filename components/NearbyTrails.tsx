@@ -20,7 +20,7 @@ import {
 } from '../watermelon/models';
 
 import EnhancedTrailCard from './Trails/TrailCard';
-import {formatDateTime} from '../helpers/formatDateTime';
+import formatDateTime from '../helpers/formatDateTime';
 
 interface Props {
   trailsCollection: Trail[];

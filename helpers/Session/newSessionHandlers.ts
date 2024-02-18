@@ -1,5 +1,5 @@
 import {Database} from '@nozbe/watermelondb';
-import {formatDateTime} from '../formatDateTime';
+import formatDateTime from '../formatDateTime';
 import {SessionDetails} from '../../types/session';
 import { User } from '../../watermelon/models';
 

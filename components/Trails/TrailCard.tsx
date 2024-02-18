@@ -1,6 +1,6 @@
 import {ImageBackground, Pressable, StyleSheet, Text, View} from 'react-native';
 
-import {formatDateTime} from '../../helpers/formatDateTime';
+import formatDateTime from '../../helpers/formatDateTime';
 import withObservables from '@nozbe/with-observables';
 import CapitalizeWord from '../../helpers/capitalizeWord';
 

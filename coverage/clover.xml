@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1708208707478" clover="3.2.0">
+  <project timestamp="1708208707478" name="All files">
+    <metrics statements="302" coveredstatements="185" conditionals="93" coveredconditionals="55" methods="56" coveredmethods="20" elements="451" coveredelements="260" complexity="0" loc="302" ncloc="302" packages="6" files="21" classes="21"/>
+    <package name="__tests__">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="mockTestUsers.js" path="/Users/jordan/Documents/TrailTasks/__tests__/mockTestUsers.js">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="4" count="3" type="stmt"/>
+      </file>
+    </package>
+    <package name="assets.RankBadges">
+      <metrics statements="10" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="advanced.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/advanced.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="amateur.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/amateur.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="beginner.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/beginner.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="elite.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/elite.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="experienced.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/experienced.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="expert.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/expert.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="intermediate.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/intermediate.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="journeyman.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/journeyman.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="legendary.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/legendary.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+      <file name="master.png" path="/Users/jordan/Documents/TrailTasks/assets/RankBadges/master.png">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="helpers">
+      <metrics statements="131" coveredstatements="103" conditionals="61" coveredconditionals="39" methods="15" coveredmethods="14"/>
+      <file name="formatDateTime.ts" path="/Users/jordan/Documents/TrailTasks/helpers/formatDateTime.ts">
+        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="2" count="9" type="stmt"/>
+        <line num="3" count="9" type="stmt"/>
+        <line num="4" count="9" type="stmt"/>
+        <line num="5" count="9" type="stmt"/>
+        <line num="6" count="9" type="stmt"/>
+        <line num="7" count="9" type="stmt"/>
+        <line num="8" count="9" type="stmt"/>
+        <line num="9" count="9" type="stmt"/>
+      </file>
+      <file name="formatTime.tsx" path="/Users/jordan/Documents/TrailTasks/helpers/formatTime.tsx">
+        <metrics statements="12" coveredstatements="12" conditionals="6" coveredconditionals="3" methods="1" coveredmethods="1"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="2" count="5" type="stmt"/>
+        <line num="3" count="5" type="stmt"/>
+        <line num="4" count="5" type="stmt"/>
+        <line num="6" count="5" type="stmt"/>
+        <line num="8" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="9" count="5" type="stmt"/>
+        <line num="12" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="16" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="17" count="5" type="stmt"/>
+        <line num="20" count="5" type="stmt"/>
+      </file>
+      <file name="loginHelpers.ts" path="/Users/jordan/Documents/TrailTasks/helpers/loginHelpers.ts">
+        <metrics statements="47" coveredstatements="28" conditionals="22" coveredconditionals="11" methods="5" coveredmethods="4"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="11" count="3" type="stmt"/>
+        <line num="16" count="3" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="22" count="2" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+        <line num="28" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="35" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="44" count="2" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="50" count="2" type="stmt"/>
+        <line num="54" count="1" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="66" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="72" count="1" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="79" count="2" type="stmt"/>
+        <line num="83" count="2" type="stmt"/>
+        <line num="85" count="2" type="stmt"/>
+        <line num="87" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="88" count="1" type="stmt"/>
+        <line num="91" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="95" count="1" type="stmt"/>
+        <line num="98" count="0" type="stmt"/>
+        <line num="102" count="2" type="stmt"/>
+        <line num="115" count="0" type="stmt"/>
+        <line num="116" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="117" count="0" type="stmt"/>
+        <line num="118" count="0" type="stmt"/>
+        <line num="121" count="0" type="stmt"/>
+        <line num="127" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="128" count="0" type="stmt"/>
+        <line num="129" count="0" type="stmt"/>
+        <line num="132" count="0" type="stmt"/>
+        <line num="133" count="0" type="stmt"/>
+        <line num="137" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="138" count="0" type="stmt"/>
+        <line num="139" count="0" type="stmt"/>
+        <line num="142" count="0" type="stmt"/>
+      </file>
+      <file name="registerHelpers.ts" path="/Users/jordan/Documents/TrailTasks/helpers/registerHelpers.ts">
+        <metrics statements="64" coveredstatements="55" conditionals="33" coveredconditionals="25" methods="8" coveredmethods="8"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="15" count="6" type="stmt"/>
+        <line num="16" count="6" type="stmt"/>
+        <line num="21" count="6" type="stmt"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="46" count="2" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="50" count="2" type="stmt"/>
+        <line num="51" count="2" type="stmt"/>
+        <line num="55" count="2" type="stmt"/>
+        <line num="57" count="2" type="stmt"/>
+        <line num="59" count="2" type="stmt"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="65" count="2" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="69" count="2" type="stmt"/>
+        <line num="71" count="2" type="stmt"/>
+        <line num="73" count="2" type="stmt"/>
+        <line num="88" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="89" count="2" type="stmt"/>
+        <line num="93" count="2" type="stmt"/>
+        <line num="95" count="2" type="stmt"/>
+        <line num="98" count="2" type="stmt"/>
+        <line num="102" count="2" type="stmt"/>
+        <line num="104" count="2" type="stmt"/>
+        <line num="105" count="2" type="stmt"/>
+        <line num="108" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="109" count="2" type="stmt"/>
+        <line num="114" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="115" count="2" type="stmt"/>
+        <line num="122" count="2" type="stmt"/>
+        <line num="124" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="125" count="2" type="stmt"/>
+        <line num="127" count="2" type="stmt"/>
+        <line num="128" count="2" type="stmt"/>
+        <line num="132" count="2" type="stmt"/>
+        <line num="133" count="2" type="stmt"/>
+        <line num="136" count="0" type="stmt"/>
+        <line num="140" count="2" type="stmt"/>
+        <line num="161" count="3" type="stmt"/>
+        <line num="162" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="169" count="0" type="stmt"/>
+        <line num="170" count="0" type="stmt"/>
+        <line num="172" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="173" count="0" type="stmt"/>
+        <line num="174" count="0" type="stmt"/>
+        <line num="177" count="3" type="stmt"/>
+        <line num="183" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="184" count="1" type="stmt"/>
+        <line num="195" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="196" count="1" type="stmt"/>
+        <line num="198" count="1" type="stmt"/>
+        <line num="200" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="206" count="1" type="stmt"/>
+        <line num="207" count="1" type="stmt"/>
+        <line num="208" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="214" count="1" type="stmt"/>
+        <line num="215" count="1" type="stmt"/>
+        <line num="217" count="0" type="stmt"/>
+        <line num="218" count="0" type="stmt"/>
+        <line num="221" count="0" type="stmt"/>
+        <line num="230" count="2" type="cond" truecount="2" falsecount="0"/>
+      </file>
+    </package>
+    <package name="helpers.Achievements">
+      <metrics statements="34" coveredstatements="14" conditionals="20" coveredconditionals="8" methods="4" coveredmethods="2"/>
+      <file name="AchievementManager.ts" path="/Users/jordan/Documents/TrailTasks/helpers/Achievements/AchievementManager.ts">
+        <metrics statements="34" coveredstatements="14" conditionals="20" coveredconditionals="8" methods="4" coveredmethods="2"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="13" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="14" count="3" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="10" type="cond" truecount="4" falsecount="0"/>
+        <line num="35" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="36" count="3" type="stmt"/>
+        <line num="41" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="42" count="2" type="stmt"/>
+        <line num="46" count="2" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="66" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="70" count="0" type="stmt"/>
+        <line num="72" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="80" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="82" count="0" type="stmt"/>
+        <line num="87" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="91" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="92" count="0" type="stmt"/>
+        <line num="98" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="helpers.Ranks">
+      <metrics statements="15" coveredstatements="14" conditionals="10" coveredconditionals="8" methods="1" coveredmethods="1"/>
+      <file name="getUserRank.ts" path="/Users/jordan/Documents/TrailTasks/helpers/Ranks/getUserRank.ts">
+        <metrics statements="14" coveredstatements="13" conditionals="10" coveredconditionals="8" methods="1" coveredmethods="1"/>
+        <line num="10" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="5" type="cond" truecount="4" falsecount="0"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+      </file>
+      <file name="ranksData.ts" path="/Users/jordan/Documents/TrailTasks/helpers/Ranks/ranksData.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="8" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="watermelon">
+      <metrics statements="110" coveredstatements="42" conditionals="2" coveredconditionals="0" methods="36" coveredmethods="3"/>
+      <file name="mockDB.ts" path="/Users/jordan/Documents/TrailTasks/watermelon/mockDB.ts">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="32" count="3" type="stmt"/>
+      </file>
+      <file name="models.js" path="/Users/jordan/Documents/TrailTasks/watermelon/models.js">
+        <metrics statements="107" coveredstatements="39" conditionals="2" coveredconditionals="0" methods="36" coveredmethods="3"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="18" count="3" type="stmt"/>
+        <line num="31" count="3" type="stmt"/>
+        <line num="32" count="3" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
+        <line num="66" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="82" count="3" type="stmt"/>
+        <line num="83" count="3" type="stmt"/>
+        <line num="93" count="3" type="stmt"/>
+        <line num="94" count="3" type="stmt"/>
+        <line num="129" count="0" type="stmt"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="136" count="0" type="stmt"/>
+        <line num="154" count="0" type="stmt"/>
+        <line num="156" count="0" type="stmt"/>
+        <line num="159" count="0" type="stmt"/>
+        <line num="162" count="0" type="stmt"/>
+        <line num="172" count="0" type="stmt"/>
+        <line num="173" count="0" type="stmt"/>
+        <line num="178" count="0" type="stmt"/>
+        <line num="179" count="0" type="stmt"/>
+        <line num="180" count="0" type="stmt"/>
+        <line num="181" count="0" type="stmt"/>
+        <line num="193" count="0" type="stmt"/>
+        <line num="194" count="0" type="stmt"/>
+        <line num="195" count="0" type="stmt"/>
+        <line num="196" count="0" type="stmt"/>
+        <line num="197" count="0" type="stmt"/>
+        <line num="198" count="0" type="stmt"/>
+        <line num="199" count="0" type="stmt"/>
+        <line num="200" count="0" type="stmt"/>
+        <line num="201" count="0" type="stmt"/>
+        <line num="202" count="0" type="stmt"/>
+        <line num="203" count="0" type="stmt"/>
+        <line num="205" count="0" type="stmt"/>
+        <line num="209" count="0" type="stmt"/>
+        <line num="210" count="0" type="stmt"/>
+        <line num="211" count="0" type="stmt"/>
+        <line num="217" count="3" type="stmt"/>
+        <line num="218" count="3" type="stmt"/>
+        <line num="220" count="5" type="stmt"/>
+        <line num="223" count="5" type="stmt"/>
+        <line num="224" count="5" type="stmt"/>
+        <line num="225" count="5" type="stmt"/>
+        <line num="227" count="5" type="stmt"/>
+        <line num="230" count="3" type="stmt"/>
+        <line num="232" count="3" type="stmt"/>
+        <line num="234" count="0" type="stmt"/>
+        <line num="235" count="0" type="stmt"/>
+        <line num="240" count="0" type="stmt"/>
+        <line num="241" count="0" type="stmt"/>
+        <line num="250" count="0" type="stmt"/>
+        <line num="253" count="0" type="stmt"/>
+        <line num="254" count="0" type="stmt"/>
+        <line num="255" count="0" type="stmt"/>
+        <line num="256" count="0" type="stmt"/>
+        <line num="257" count="0" type="stmt"/>
+        <line num="258" count="0" type="stmt"/>
+        <line num="268" count="0" type="stmt"/>
+        <line num="271" count="0" type="stmt"/>
+        <line num="272" count="0" type="stmt"/>
+        <line num="273" count="0" type="stmt"/>
+        <line num="274" count="0" type="stmt"/>
+        <line num="275" count="0" type="stmt"/>
+        <line num="284" count="0" type="stmt"/>
+        <line num="288" count="0" type="stmt"/>
+        <line num="289" count="0" type="stmt"/>
+        <line num="290" count="0" type="stmt"/>
+        <line num="296" count="0" type="stmt"/>
+        <line num="301" count="0" type="stmt"/>
+        <line num="306" count="3" type="stmt"/>
+        <line num="307" count="3" type="stmt"/>
+        <line num="318" count="3" type="stmt"/>
+        <line num="319" count="3" type="stmt"/>
+        <line num="332" count="0" type="stmt"/>
+        <line num="338" count="3" type="stmt"/>
+        <line num="339" count="3" type="stmt"/>
+        <line num="354" count="0" type="stmt"/>
+        <line num="359" count="3" type="stmt"/>
+        <line num="360" count="3" type="stmt"/>
+        <line num="378" count="3" type="stmt"/>
+        <line num="379" count="3" type="stmt"/>
+        <line num="401" count="3" type="stmt"/>
+        <line num="402" count="3" type="stmt"/>
+        <line num="419" count="0" type="stmt"/>
+        <line num="423" count="3" type="stmt"/>
+        <line num="424" count="3" type="stmt"/>
+        <line num="438" count="0" type="stmt"/>
+        <line num="439" count="0" type="stmt"/>
+        <line num="444" count="3" type="stmt"/>
+        <line num="445" count="3" type="stmt"/>
+        <line num="462" count="3" type="stmt"/>
+        <line num="463" count="3" type="stmt"/>
+        <line num="473" count="3" type="stmt"/>
+        <line num="474" count="3" type="stmt"/>
+        <line num="499" count="0" type="stmt"/>
+        <line num="500" count="0" type="stmt"/>
+        <line num="507" count="0" type="stmt"/>
+        <line num="508" count="0" type="stmt"/>
+        <line num="514" count="3" type="stmt"/>
+        <line num="515" count="3" type="stmt"/>
+        <line num="534" count="0" type="cond" truecount="0" falsecount="2"/>
+      </file>
+      <file name="schema.js" path="/Users/jordan/Documents/TrailTasks/watermelon/schema.js">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

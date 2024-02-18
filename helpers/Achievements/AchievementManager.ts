@@ -6,13 +6,14 @@ export const AchievementManager = {
   async unlockAchievement(user: User, completedAchievementIds: string[]) {
     try
     {
-      console.debug({ user, completedAchievementIds });
       const unlockedAchievements = await user.unlockAchievements(
         user.id,
         completedAchievementIds
       );
-      if (unlockedAchievements.length > 0) console.debug('successfuly added user achievement', { unlockedAchievements })
-      return unlockedAchievements;
+      if (unlockedAchievements.length > 0){
+        return unlockedAchievements;
+      }
+      return null
     } catch (err) {
       console.error('Error in unlockAchievement() ', {err});
     }
@@ -31,7 +32,7 @@ export const AchievementManager = {
       //if users total miles is >= current achievements condition (number), unlock achievement
       for (let achievement of achievementsWithCompletion) {
         if (!achievement.completed && achievement.achievement_type === 'Total Miles') {
-          if (userMiles.totalMiles > parseInt(achievement.achievement_condition)) {
+          if (userMiles.totalMiles >= parseInt(achievement.achievement_condition)) {
             unlockAchievementIds.push(achievement.id);
           }
         }
@@ -42,6 +43,7 @@ export const AchievementManager = {
           user,
           unlockAchievementIds
         );
+        return unlockedAchievements
       }
     } catch (err) {
       console.error('Error in check_total_miles_achievements', {err});

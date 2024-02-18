@@ -1,4 +1,4 @@
-import { formatDateTime } from "../../helpers/formatDateTime";
+import formatDateTime from "../../helpers/formatDateTime";
 
 test('formatDateTime Function should format new date to mm-dd-yyyy', () =>
 {

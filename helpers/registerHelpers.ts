@@ -1,9 +1,9 @@
 //import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {Q} from '@nozbe/watermelondb';
-import {formatDateTime} from './formatDateTime';
+import formatDateTime from './formatDateTime';
 import {Subscription, User, User_Miles} from '../watermelon/models';
 
-const checkExistingUser = async ({
+export const checkExistingUser = async ({
   username,
   email,
   watermelonDatabase,
@@ -13,18 +13,18 @@ const checkExistingUser = async ({
   watermelonDatabase: any;
 }) => {
   try {
-
     const ExistingUser = await watermelonDatabase
       .get('users')
       .query(Q.or(Q.where('email', email), Q.where('username', username)))
       .fetch();
+    
     return ExistingUser[0];
   } catch (err) {
     console.error('Error in checkExistingUser(), registerHelpers.tsx', err);
   }
 };
 
-const createNewUser = async ({
+export const createNewUser = async ({
   firstName,
   lastName,
   email,
@@ -121,7 +121,7 @@ const createNewUser = async ({
 
       return newUser;
     });
-    if (newUser.id.length > 0) {
+    if (newUser && newUser.id.length > 0) {
       await watermelonDatabase.localStorage.set('user_id', newUser.id);
       //@ts-ignore
       await watermelonDatabase.localStorage.set('username', newUser.username);
@@ -192,16 +192,29 @@ export const handleRegister = async ({
         watermelonDatabase,
       });
 
-
       if (createdUser!) {
         console.log('successful user creation');
-        return;
-      } //@ts-ignore
-    } else if (ExistingUser && ExistingUser.email === email) {
+      }
+      return;
+      //@ts-ignore
+    } else if (
+      ExistingUser &&
+      ExistingUser.email.toLowerCase() === email.toLowerCase()
+    )
+    {
+      
       setError('User Already Exists With Provided Email, Please Login');
       return; //@ts-ignore
-    } else if (ExistingUser && ExistingUser.username === username) {
+    } else if (
+      ExistingUser &&
+      ExistingUser.username.toLowerCase() === username.toLowerCase()
+    )
+    {
+      
       setError('User Already Exists With Username, Please Choose New Username');
+      return;
+    } else {
+      setError('Unkown Error, please Restart');
       return;
     }
   } catch (err) {

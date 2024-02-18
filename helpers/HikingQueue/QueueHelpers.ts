@@ -1,5 +1,5 @@
 import {Database} from '@nozbe/watermelondb';
-import {formatDateTime} from '../formatDateTime';
+import formatDateTime from '../formatDateTime';
 import { sync } from '../../watermelon/sync';
 
 export const onAddToQueueClick = async ({

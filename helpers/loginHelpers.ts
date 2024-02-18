@@ -23,19 +23,27 @@ export const setSubscriptionStatus = async (
   user: User,
   watermelonDatabase: Database
 ) => {
-  try {
-    const subscription: Subscription[]| any = await watermelonDatabase.collections
-      .get('users_subscriptions')
-      .query(Q.where('user_id', user.id))
-      .fetch();
-    if (subscription[0]) {
-      await watermelonDatabase.localStorage.set(
-        'subscription_id',
-        subscription[0].id
-      );
-    } 
+  try
+  {
+    if (user && user.id)
+    {
+      const subscription: Subscription[] | any =
+        await watermelonDatabase.collections
+          .get('users_subscriptions')
+          .query(Q.where('user_id', user.id))
+        
+      if (subscription && subscription[0])
+      {
+        await watermelonDatabase.localStorage.set(
+          'subscription_id',
+          subscription[0].id
+        );
+        return subscription[0].id
+      }
+    }
+    return undefined
   } catch (err) {
-    console.error('Error in setSubscriptionStatus()', err);
+    console.error('Error in setSubscriptionStatus()', {err});
   }
 };
 
@@ -53,8 +61,8 @@ export const setLocalStorageUserAndMiles = async (
     //get usersMilesId
     const usersMiles = await watermelonDatabase
       .get('users_miles')
-      .query(Q.where('user_id', existingUser.id))
-      .fetch();
+      .query(Q.where('userId', existingUser.id))
+
     if (usersMiles.length > 0) {
       await watermelonDatabase.localStorage.set(
         'user_miles_id',
@@ -73,14 +81,12 @@ export const checkForLoggedInUser = async (
   watermelonDatabase: Database
 ) => {
   try {
-    const userId: string | undefined | void = await watermelonDatabase.localStorage.get(
-      'user_id'
-    ); // string or undefined if no value for this key
-  
+    const userId: string | undefined | void =
+      await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
 
     if (userId) {
       let user = await watermelonDatabase.collections.get('users').find(userId);
-      console.debug("checking logged in user information, checkForLoggedInUser()");
+
       //@ts-ignore
       if (user.id) {
         await setSubscriptionStatus(user, watermelonDatabase);
