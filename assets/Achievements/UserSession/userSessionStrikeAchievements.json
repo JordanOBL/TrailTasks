@@ -1,0 +1,44 @@
+[
+  {
+    "achievement_name": "Focused Explorer",
+    "achievement_description": "Stay on track with no strikes during a single session.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Strikes",
+    "achievement_condition": "0"
+  },
+  {
+    "achievement_name": "Resilient Hiker",
+    "achievement_description": "Overcome distractions and obstacles with only 1 strike during a session.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Strikes",
+    "achievement_condition": "1"
+  },
+  {
+    "achievement_name": "Persevering Adventurer",
+    "achievement_description": "Show your determination by completing a session with 2 strikes.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Strikes",
+    "achievement_condition": "2"
+  },
+  {
+    "achievement_name": "Focused Trailblazer",
+    "achievement_description": "Navigate challenges with 3 strikes during a single session.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Strikes",
+    "achievement_condition": "3"
+  },
+  {
+    "achievement_name": "Resolute Wanderer",
+    "achievement_description": "Demonstrate your resolve by completing a session with 4 strikes.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Strikes",
+    "achievement_condition": "4"
+  },
+  {
+    "achievement_name": "Persistent Voyager",
+    "achievement_description": "Never give up! Finish a session despite 5 strikes.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Strikes",
+    "achievement_condition": "5"
+  }
+]

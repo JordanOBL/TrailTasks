@@ -61,7 +61,7 @@ export const setLocalStorageUserAndMiles = async (
     //get usersMilesId
     const usersMiles = await watermelonDatabase
       .get('users_miles')
-      .query(Q.where('userId', existingUser.id))
+      .query(Q.where('user_id', existingUser.id))
 
     if (usersMiles.length > 0) {
       await watermelonDatabase.localStorage.set(

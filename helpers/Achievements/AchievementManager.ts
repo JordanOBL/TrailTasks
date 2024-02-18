@@ -4,23 +4,22 @@ import {AchievementsWithCompletion} from '../../types/achievements';
 export const AchievementManager = {
   //*This function adds a row to the the users_achievments database, unlocking a user Achievment
   async unlockAchievement(user: User, completedAchievementIds: string[]) {
-    try
-    {
+    try {
       const unlockedAchievements = await user.unlockAchievements(
         user.id,
         completedAchievementIds
       );
-      if (unlockedAchievements.length > 0){
+      if (unlockedAchievements.length > 0) {
         return unlockedAchievements;
       }
-      return null
+      return null;
     } catch (err) {
       console.error('Error in unlockAchievement() ', {err});
     }
   },
 
   //Create a function that checks for achievments about a users total miles
-  async check_total_miles_achievements(
+  async checkTotalMilesAchievements(
     user: User,
     userMiles: User_Miles,
     achievementsWithCompletion: AchievementsWithCompletion[]
@@ -31,8 +30,13 @@ export const AchievementManager = {
       //select only locked achievements of type 'Total Miles'
       //if users total miles is >= current achievements condition (number), unlock achievement
       for (let achievement of achievementsWithCompletion) {
-        if (!achievement.completed && achievement.achievement_type === 'Total Miles') {
-          if (userMiles.totalMiles >= parseInt(achievement.achievement_condition)) {
+        if (
+          !achievement.completed &&
+          achievement.achievement_type === 'Total Miles'
+        ) {
+          if (
+            userMiles.totalMiles >= parseInt(achievement.achievement_condition)
+          ) {
             unlockAchievementIds.push(achievement.id);
           }
         }
@@ -43,59 +47,70 @@ export const AchievementManager = {
           user,
           unlockAchievementIds
         );
-        return unlockedAchievements
+        return unlockedAchievements;
       }
     } catch (err) {
-      console.error('Error in check_total_miles_achievements', {err});
+      console.error('Error in checkTotalMilesAchievements', {err});
     }
   },
-  //Create a function that checks for achievements about a users completed trails
-  async check_completed_trails_achievements(
+  // Function to check for achievements related to trail completion
+  async checkTrailCompletionAchievements(
     user: User,
     completedTrails: Completed_Hike[],
     achievementsWithCompletion: AchievementsWithCompletion[]
   ) {
     try {
-      //array of achievement ids to send to the writer to unlock
       const unlockAchievementIds = [];
-      //set of only completed Trail ids
-      const completedTrailIdCache: Map<string, boolean> = new Map<
-        string,
-        boolean
-      >();
-      completedTrails.forEach((trail: Completed_Hike) => {
-        completedTrailIdCache.set(trail.trailId, true);
-      });
+      const completedTrailIds = completedTrails.map((trail) => trail.trailId);
 
       for (let achievement of achievementsWithCompletion) {
-        //if achievement isnt completed by user and achievement is of type Trail completeion
-        if (!achievement.completed && achievement.achievement_type === 'Trail Completion') {
-          let unlockAchievementFlag = true;
-          //condition is CSV where values are trail ids
-          //get array of trail ids needed to be completed for single achievement
-          const conditionTrails = achievement.achievement_condition.split(',');
-          //for each needed trail(id)
-          // Inside check_completed_trails_achievements
-          for (const trailId of conditionTrails) {
-            if (!completedTrailIdCache.get(trailId)) {
-              unlockAchievementFlag = false;
-              break; // Exit the loop early if a condition trail is not found in completed trails
+        if (
+          !achievement.completed &&
+          (achievement.achievement_type === 'Single Trail Completion' ||
+            achievement.achievement_type === 'Group Trail Completion' ||
+            achievement.achievement_type === 'Partial Trail Completion')
+        ) {
+          const conditionTrails = achievement.achievement_condition.split(':');
+          const conditionTrailIds = conditionTrails[1]
+            ? conditionTrails[1].split(',').map((id) => parseInt(id))
+            : [parseInt(conditionTrails[0])];
+
+          // Check for Single Trail Completion
+          if (achievement.achievement_type === 'Single Trail Completion') {
+            const conditionTrailId = parseInt(conditionTrailIds[0]);
+            if (completedTrailIds.includes(conditionTrailId)) {
+              unlockAchievementIds.push(achievement.id);
             }
           }
 
-          //if all condition ids are found in completed trails -- Unlock flag still true, unlock achievement
-          if (unlockAchievementFlag) unlockAchievementIds.push(achievement.id);
+          // Check for Group Trail Completion
+          if (achievement.achievement_type === 'Group Trail Completion') {
+            const completedCount = conditionTrailIds.filter((trailId) =>
+              completedTrailIds.includes(trailId)
+            ).length;
+            if (completedCount === conditionTrailIds.length) {
+              unlockAchievementIds.push(achievement.id);
+            }
+          }
+
+          // Check for Partial Trail Completion
+          if (achievement.achievement_type === 'Partial Trail Completion') {
+            const requiredTrailCount = parseInt(conditionTrails[0]);
+            const completedCount = conditionTrailIds.filter((trailId) =>
+              completedTrailIds.includes(trailId)
+            ).length;
+            if (completedCount >= requiredTrailCount) {
+              unlockAchievementIds.push(achievement.id);
+            }
+          }
         }
       }
-      //only hit the watermelon server if needed
+
       if (unlockAchievementIds.length > 0) {
-        const unlockedAchievements = await this.unlockAchievement(
-          user,
-          unlockAchievementIds
-        );
+        await this.unlockAchievement(user, unlockAchievementIds);
       }
     } catch (err) {
-      console.error('Error in check_trail_completion_achievements', {err});
+      console.error('Error in checkTrailCompletionAchievements', err);
     }
   },
   //create a function that checks for achievements about user sessions

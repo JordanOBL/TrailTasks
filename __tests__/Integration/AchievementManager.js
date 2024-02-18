@@ -216,4 +216,6 @@ describe('check_total_miles_achievements()', () => {
     );
     expect(usersAchievements).toHaveLength(2);
   });
+
+  test('should unlock achievement')
 });

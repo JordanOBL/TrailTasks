@@ -156,7 +156,7 @@ export default EnhancedTimerScreen;
 
 const styles = StyleSheet.create({
   container: {flex: 1},
-  loading: {color: 'white'},
+  loading: {color: 'white', alignSelf: 'center', marginTop: 20},
   returnButton: {
     width: '80%',
     height: 50,
@@ -167,5 +167,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+    elevation: 6,
+  },
+  returnButtonText: {
+    color: 'rgb(28,29,31)',
+    fontSize: 18,
+    fontWeight: '800',
   },
 });

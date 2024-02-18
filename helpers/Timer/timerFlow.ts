@@ -1,6 +1,6 @@
 //creating a new session
 import {Database, Q} from '@nozbe/watermelondb';
-import {formatDateTime} from '../formatDateTime';
+import formatDateTime from '../formatDateTime';
 import {
   Completed_Hike,
   Queued_Trail,
@@ -56,12 +56,12 @@ export async function increaseDistanceHiked({
         userMiles: userMiles[0],
         userSession,
       });
-      await AchievementManager.check_total_miles_achievements(
+      await AchievementManager.checkTotalMilesAchievements(
         user,
         userMiles[0],
         achievementsWithCompletion
       );
-      await AchievementManager.check_completed_trails_achievements(
+      await AchievementManager.checkTrailCompletionAchievements(
         user,
         completedHikes,
         achievementsWithCompletion
@@ -458,7 +458,7 @@ export async function isTrailCompleted({
             queuedTrails,
           });
         }
-        await AchievementManager.check_completed_trails_achievements(user, completedHikes, achievementsWithCompletion)
+        await AchievementManager.checkTrailCompletionAchievements(user, completedHikes, achievementsWithCompletion)
       }
 
       return true;
