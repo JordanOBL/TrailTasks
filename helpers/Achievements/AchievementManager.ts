@@ -1,20 +1,30 @@
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {Completed_Hike, User, User_Miles} from '../../watermelon/models';
-import {AchievementsWithCompletion} from '../../types/achievements';
+import { AchievementsWithCompletion } from '../../types/achievements';
+
+
+  interface AchievementNameId {
+    achievementName: String;
+    achievementId: String;
+  }
 export const AchievementManager = {
   //*This function adds a row to the the users_achievments database, unlocking a user Achievment
-  async unlockAchievement(user: User, completedAchievementIds: string[]) {
-    try {
+
+  async unlockAchievement( user: User, unlockAchievements: AchievementNameId[]){
+    try
+    {
+    
       const unlockedAchievements = await user.unlockAchievements(
         user.id,
-        completedAchievementIds
+        unlockAchievements
       );
       if (unlockedAchievements.length > 0) {
         return unlockedAchievements;
       }
       return null;
     } catch (err) {
-      console.error('Error in unlockAchievement() ', {err});
+      console.error('Error in unlockAchievement() ', { err });
+      return null
     }
   },
 
@@ -24,7 +34,7 @@ export const AchievementManager = {
     userMiles: User_Miles,
     achievementsWithCompletion: AchievementsWithCompletion[]
   ) {
-    const unlockAchievementIds = [];
+    const unlockAchievements = [];
     try {
       //loop through each achievement
       //select only locked achievements of type 'Total Miles'
@@ -37,15 +47,15 @@ export const AchievementManager = {
           if (
             userMiles.totalMiles >= parseInt(achievement.achievement_condition)
           ) {
-            unlockAchievementIds.push(achievement.id);
+            unlockAchievements.push({achievementName: achievement.achievement_name, achievementId: achievement.id});
           }
         }
       }
       //only hit the watermelon server if needed
-      if (unlockAchievementIds.length > 0) {
+      if (unlockAchievements.length > 0) {
         const unlockedAchievements = await this.unlockAchievement(
           user,
-          unlockAchievementIds
+          unlockAchievements
         );
         return unlockedAchievements;
       }
@@ -107,7 +117,7 @@ export const AchievementManager = {
       }
 
       if (unlockAchievementIds.length > 0) {
-        await this.unlockAchievement(user, unlockAchievementIds);
+        const unlockedAchievements = await this.unlockAchievement(user, unlockAchievementIds);
       }
     } catch (err) {
       console.error('Error in checkTrailCompletionAchievements', err);

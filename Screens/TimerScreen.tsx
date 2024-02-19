@@ -53,17 +53,20 @@ const TimerScreen = ({
       if (results.length > 0) {
         setAchievementsWithCompletion(results);
       }
-      console.debug(
-        'DEBUG: joined achievements and usersachieveents with completeion',
-        {results}
-      );
+      return
+      // console.debug(
+      //   'DEBUG: joined achievements and usersachieveents with completeion',
+      //   {results}
+      // );
     } catch (err) {
       console.error('Error in joinUsersAchievements', err);
+      return null
     }
   }
 
   //observable user session
   const [userSession, setUserSession] = React.useState<any>();
+  
 
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
     isSessionStarted: false,
@@ -105,6 +108,11 @@ const TimerScreen = ({
   React.useEffect(() => {
     getAchievementsWithCompletion();
   }, [userAchievements]);
+
+  React.useEffect(() =>
+  {
+    
+  },[])
 
   return (
     <SafeAreaView style={styles.container}>

@@ -42,23 +42,15 @@ const AchievementsScreen = ({user, usersAchievements}: Props) => {
       {
         setAchievementsWithCompletion(results)
       }
-      console.debug('DEBUG: joined achievements and usersachieveents with completeion', {results})
+      return 
+      //console.debug('DEBUG: joined achievements and usersachieveents with completeion', {results})
     } catch (err)
     {
       console.error('Error in joinUsersAchievements', err)
+      return null
     }
   }
 
-
-  // async function getAchievementsCollection() {
-  //   const achievementsCollection = await watermelonDatabase.collections
-  //     .get('achievements')
-  //     .query()
-  //     .fetch();
-  //   setAchievementsCollection(achievementsCollection);
-  // }
-
-  
 
 
   useEffect(() => {

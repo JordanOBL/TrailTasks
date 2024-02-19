@@ -1,5 +1,5 @@
 import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import formatCountdown from '../../helpers/Timer/formatCountdown';
 import {JoinedUserTrail, SessionDetails} from '../../types/session';
 import {
@@ -15,6 +15,7 @@ import {
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
 import {
+  Achievement,
   Completed_Hike,
   Queued_Trail,
   Trail,
@@ -25,6 +26,7 @@ import {
 import withObservables from '@nozbe/with-observables';
 import formatTime from '../../helpers/formatTime';
 import { AchievementsWithCompletion } from '../../types/achievements';
+import { AchievementManager } from '../../helpers/Achievements/AchievementManager'
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
@@ -46,10 +48,21 @@ const SessionTimer = ({
   userMiles,
   completedHikes,
   achievementsWithCompletion
-}: Props) => {
+}: Props) =>
+{
 
   const watermelonDatabase = useDatabase();
-   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
+
+  const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);
+
+  const onAchievementEarned = (achievements: any[]) =>
+  {
+    setEarnedAchievements((prevAchievements) => [
+      ...prevAchievements,
+      ...achievements,
+    ]);
+  }
+
 
   let pomodoroCountdown = formatCountdown(
     sessionDetails.initialPomodoroTime,
@@ -88,7 +101,8 @@ const SessionTimer = ({
           setSessionDetails,
           sessionDetails,
           canHike,
-          achievementsWithCompletion
+          achievementsWithCompletion,
+          onAchievementEarned
         });
         
       }, 1000);
@@ -96,13 +110,7 @@ const SessionTimer = ({
     return () => clearInterval(intervalId);
   }, [sessionDetails]);
 
-  // useEffect(() => {
-  //   const achievementsUnlocked = [];
-  //   achievementsUnlocked.push(...checkTrailAchievements(user, completedTrail));
-  //   achievementsUnlocked.push(...checkMileageAchievements(user, userMiles));
-  //   achievementsUnlocked.push(...checkSessionAchievements(sessionDetails));
-  //   setUnlockedAchievements(achievementsUnlocked);
-  // }, [user, userMiles, completedTrail, sessionDetails]);
+
 
   return (
     <SafeAreaView>
@@ -169,8 +177,15 @@ const SessionTimer = ({
         user={user}
         trail={currentTrail}
       />
-      {unlockedAchievements.length > 0 && (
-        <Text>Unlocked Achievements: {unlockedAchievements.join(', ')}</Text>
+      {earnedAchievements.length > 0 && (
+        <View>
+          <Text style={{color: 'white'}}>Achievements Earned:</Text>
+          {earnedAchievements.map((achievement, index) => (
+            <Text key={index} style={{color: 'white'}}>
+              {achievement.achievementName}
+            </Text>
+          ))}
+        </View>
       )}
     </SafeAreaView>
   );
@@ -195,3 +210,5 @@ export default EnhancedSessionTimer;
 //export default SessionTimer;
 
 const styles = StyleSheet.create({});
+
+

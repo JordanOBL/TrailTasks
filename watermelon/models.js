@@ -212,24 +212,29 @@ export class User extends Model {
     });
   }
 
-
-  @writer async unlockAchievements(userId, completedAchievementIds) {
+  @writer async unlockAchievements(userId, completedAchievements) {
     try {
       const unlockedAchievements = await Promise.all(
-        completedAchievementIds.map(async (achievementId) => {
-          const newAchievement = this.collections
+        completedAchievements.map(async (achievement) => {
+          const newUserAchievement = this.collections
             .get('users_achievements')
             .prepareCreate((user_achievement) => {
               user_achievement.userId = userId;
-              user_achievement.achievementId = achievementId;
+              user_achievement.achievementId = achievement.achievementId;
               user_achievement.completedAt = formatDateTime(new Date());
             });
-          return newAchievement;
+          if (newUserAchievement) {
+            //console.debug(achievement)
+            return newUserAchievement;
+          }
+          throw new Error(
+            'Failed to prepare create new user achievement in unlocckAchievements writer'
+          );
         })
       );
-      await this.database.batch(...unlockedAchievements);
-    
-      return unlockedAchievements;
+
+      await this.database.batch(unlockedAchievements);
+      return completedAchievements;
     } catch (err) {
       console.error('Error in unlockAchievements:', err);
       throw err; // Rethrow the error to handle it at the higher level

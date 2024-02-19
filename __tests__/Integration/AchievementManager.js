@@ -4,56 +4,16 @@ import {MockTestUsers} from '../mockTestUsers.js';
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import {v4 as uuidv4} from 'uuid';
 import {Q} from '@nozbe/watermelondb';
-import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
+import { AchievementManager } from '../../helpers/Achievements/AchievementManager';
+import { achievements as masterAchievements } from '../../assets/Achievements/masterAchievementList';
+import {achievementsWithIds} from '../../assets/Achievements/addAchievementIds.js';
 setGenerator(uuidv4);
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => {});
 
+const newAchievements = achievementsWithIds(masterAchievements);
 
-const testAchievements = [
-  {
-    id: '1',
-    achievement_name: 'Hiker Extraordinaire',
-    achievement_description: 'Hiked 50 miles',
-    achievement_image_url: 'https://example.com/achievement1.png',
-    achievement_type: 'Total Miles',
-    achievement_condition: '50',
-  },
-  {
-    id: '2',
-    achievement_name: 'Hiker Novice',
-    achievement_description: 'Hiked 20 miles',
-    achievement_image_url: 'https://example.com/achievement2.png',
-    achievement_type: 'Total Miles',
-    achievement_condition: '20',
-  },
-  {
-    id: '3',
-    achievement_name: 'First of Many',
-    achievement_description: 'First 1.0 Miles',
-    achievement_image_url: 'https://example.com/achievement2.png',
-    achievement_type: 'Total Miles',
-    achievement_condition: '1',
-  },
-  {
-    id: '4',
-    achievement_name: 'Anti TLC',
-    achievement_description: 'Complete a trial with a waterfall',
-    achievement_image_url: 'https://example.com/achievement2.png',
-    achievement_type: 'Trail Completion',
-    achievement_condition: '42, 44, 63, 69, 78, 79, 94',
-  },
-  {
-    id: '5',
-    achievement_name: 'Hop Skip Jump',
-    achievement_description: 'Hike Yellowstone and Grand Teton National Park',
-    achievement_image_url: 'https://example.com/achievement2.png',
-    achievement_type: 'Trail Completion',
-    achievement_condition: '25, 61',
-    achievement_fact:
-      'Yellowstone and Gand Teton National Parks are at one point only 10 miles Apart',
-  },
-];
+
 //create existing user before each test
 beforeEach(async () => {
   await testDb.write(async () => {
@@ -86,7 +46,7 @@ beforeEach(async () => {
 beforeEach(async () => {
   await testDb.write(async () => {
     const Achievements = await Promise.all(
-      testAchievements.map(async (achievement) => {
+      newAchievements.map(async (achievement) => {
         const createdAchievement = testDb.collections
           .get('achievements')
           .prepareCreate((newAchievement) => {
@@ -121,28 +81,28 @@ describe('unlockAchievements()', () => {
       await testDb.unsafeResetDatabase();
     });
   });
-  test('it returns achievement with ID of achievements completed', async () => {
+  test('it returns achievement with array of objects of achievements completed', async () => {
   
       const user = await testDb.collections.get('users').query().fetch();
 
-    const completedAchievements = ['1', '2'];
+    const completedAchievements = [{ achievementName: 'First Steps', achievementId: '93' }];
     const unlockedAchievements = await AchievementManager.unlockAchievement(
       user[0],
       completedAchievements
     );
     expect(
-      unlockedAchievements.map((achievement) => achievement.achievementId)
-    ).toEqual(['1', '2']);
+      unlockedAchievements
+    ).toEqual(completedAchievements);
   });
 });
 
-describe('check_total_miles_achievements()', () => {
-  afterEach(async () => {
+describe('checkTotalMilesAchievements() for each total miles achievement', () => {
+  afterAll(async () => {
     await testDb.write(async () => {
       await testDb.unsafeResetDatabase();
     });
   });
-  test('it unlocks achievement when userMiles > 1.0', async () => {
+  test('it unlocks 007 achievement when userMiles >= 0.07', async () => {
     //change userrs miles to pass achievment 3
     await testDb.write(async () => {
       const userMiles = await testDb.collections
@@ -150,10 +110,10 @@ describe('check_total_miles_achievements()', () => {
         .query()
         .fetch();
       await userMiles[0].update((user_mile) => {
-        user_mile.totalMiles = '1.0';
+        user_mile.totalMiles = '.07';
       });
     });
-    const achievementsWithCompletions = testAchievements.map((achievement) => ({
+    const achievementsWithCompletions = newAchievements.map((achievement) => ({
       ...achievement,
       completed: 0,
     }));
@@ -161,23 +121,22 @@ describe('check_total_miles_achievements()', () => {
     const user = await testDb.collections.get('users').query().fetch();
 
     const userMiles = await user[0].usersMiles;
-    const results = await AchievementManager.check_total_miles_achievements(
+    const results = await AchievementManager.checkTotalMilesAchievements(
       user[0],
       userMiles[0],
       achievementsWithCompletions
     );
-    const testedAchievement = testAchievements.filter(
+    const testedAchievement = newAchievements.filter(
       (item) => item.id == results[0].achievementId
     );
 
-    expect(results[0].achievementId).toBe('3');
-    expect(testedAchievement[0].achievement_name).toEqual('First of Many');
-    expect(parseInt(userMiles[0].totalMiles, 10)).toBeGreaterThanOrEqual(
-      parseInt(testedAchievement[0].achievement_condition, 10)
+    expect(results).toStrictEqual([{achievementName: '007', achievementId: '94'}]);
+    expect(parseFloat(userMiles[0].totalMiles)).toBeGreaterThanOrEqual(
+      parseFloat(testedAchievement[0].achievement_condition)
     );
   });
 
-  test('it unlocks achievement when userMiles >= 20.0', async () => {
+  test('it unlocks National PieDay achievement when user miles >= 3.14', async () => {
     //change userrs miles to pass achievment 3
     await testDb.write(async () => {
       const userMiles = await testDb.collections
@@ -185,10 +144,10 @@ describe('check_total_miles_achievements()', () => {
         .query()
         .fetch();
       await userMiles[0].update((user_mile) => {
-        user_mile.totalMiles = '20.0';
+        user_mile.totalMiles = '3.14';
       });
     });
-    const achievementsWithCompletions = testAchievements.map((achievement) => {
+    const achievementsWithCompletions = newAchievements.map((achievement) => {
       return {
         ...achievement,
         completed: 0,
@@ -198,24 +157,16 @@ describe('check_total_miles_achievements()', () => {
     const user = await testDb.collections.get('users').query().fetch();
 
     const userMiles = await user[0].usersMiles;
-    const results = await AchievementManager.check_total_miles_achievements(
+    const results = await AchievementManager.checkTotalMilesAchievements(
       user[0],
       userMiles[0],
       achievementsWithCompletions
     );
-    const usersAchievements = await user[0].usersAchievements;
-   ;
-    const testedAchievement = testAchievements.filter(
-      (item) => item.id == results[0].achievementId
-    );
 
-    expect(results[0].achievementId).toBe('2');
-    expect(testedAchievement[0].achievement_name).toEqual('Hiker Novice');
-    expect(parseInt(userMiles[0].totalMiles, 10)).toBeGreaterThanOrEqual(
-      parseInt(testedAchievement[0].achievement_condition, 10)
-    );
-    expect(usersAchievements).toHaveLength(2);
+
+    expect(results).toStrictEqual([{achievementName: 'First Steps', achievementId: '93'}, {achievementName: '007', achievementId: '94'},
+      {achievementName: 'National Pie Day', achievementId: '98'}
+    ]);
   });
 
-  test('should unlock achievement')
 });

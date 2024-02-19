@@ -2,6 +2,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import formatDateTime from '../formatDateTime';
 import {
+  Achievement,
   Completed_Hike,
   Queued_Trail,
   Trail,
@@ -27,6 +28,7 @@ export async function increaseDistanceHiked({
   setSessionDetails,
   achievementsWithCompletion,
   completedHikes,
+  onAchievementEarned
 }: {
   user: User;
   userMiles: User_Miles[];
@@ -36,6 +38,7 @@ export async function increaseDistanceHiked({
   sessionDetails: SessionDetails;
   achievementsWithCompletion: AchievementsWithCompletion[];
   completedHikes: Completed_Hike;
+  onAchievementEarned: any
 }) {
   //UPDATE CURRENT TRAILDISTANCE in session when user walks .01 miles
 
@@ -56,16 +59,15 @@ export async function increaseDistanceHiked({
         userMiles: userMiles[0],
         userSession,
       });
-      await AchievementManager.checkTotalMilesAchievements(
+      const achievementsEarned = await AchievementManager.checkTotalMilesAchievements(
         user,
         userMiles[0],
         achievementsWithCompletion
       );
-      await AchievementManager.checkTrailCompletionAchievements(
-        user,
-        completedHikes,
-        achievementsWithCompletion
-      );
+        if (achievementsEarned && achievementsEarned.length > 0){
+          onAchievementEarned(achievementsEarned);
+        }
+      
     }
     if (
       sessionDetails.elapsedPomodoroTime ===
@@ -214,6 +216,7 @@ async function increaseElapsedTime({
   currentTrail,
   achievementsWithCompletion,
   completedHikes,
+  onAchievementEarned
 }: {
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
@@ -223,7 +226,8 @@ async function increaseElapsedTime({
   userMiles: User_Miles;
   currentTrail: Trail;
   achievementsWithCompletion: AchievementsWithCompletion[];
-  completedHikes:Completed_Hike[];
+    completedHikes: Completed_Hike[];
+  onAchievementEarned: any
 }) {
   if (sessionDetails.isPaused === false) {
     if (
@@ -239,7 +243,8 @@ async function increaseElapsedTime({
         sessionDetails,
         setSessionDetails,
         achievementsWithCompletion,
-        completedHikes
+        completedHikes,
+        onAchievementEarned
       });
       setSessionDetails((prev: any) => {
         return {
@@ -386,14 +391,16 @@ export async function isTrailCompleted({
   currentTrail,
   completedHikes,
   queuedTrails,
-  achievementsWithCompletion
+  achievementsWithCompletion,
+  onAchievementEarned
 }: {
   user: User;
   watermelonDatabase: Database;
   currentTrail: Trail;
   completedHikes: Completed_Hike[];
   queuedTrails: Queued_Trail[];
-  achievementsWithCompletion: AchievementsWithCompletion[]
+    achievementsWithCompletion: AchievementsWithCompletion[];
+  onAchievementEarned: any
 }) {
   try {
     if (Number(user.trailProgress) >= Number(currentTrail.trailDistance)) {
@@ -458,7 +465,10 @@ export async function isTrailCompleted({
             queuedTrails,
           });
         }
-        await AchievementManager.checkTrailCompletionAchievements(user, completedHikes, achievementsWithCompletion)
+        // const achievementsEarned  = await AchievementManager.checkTrailCompletionAchievements(user, completedHikes, achievementsWithCompletion)
+        // if (achievementsEarned && achievementsEarned.length > 0) {
+        //   onAchievementEarned(achievementsEarned);
+        // }
       }
 
       return true;
@@ -479,7 +489,8 @@ export async function Hike({
   queuedTrails,
   completedHikes,
   canHike,
-  achievementsWithCompletion
+  achievementsWithCompletion,
+  onAchievementEarned
 }: {
   user: User;
   watermelonDatabase: Database;
@@ -491,25 +502,27 @@ export async function Hike({
   completedHikes: Completed_Hike[];
   currentTrail: Trail;
   queuedTrails: Queued_Trail[];
-  achievementsWithCompletion: AchievementsWithCompletion[]
+  achievementsWithCompletion: AchievementsWithCompletion[];
+  onAchievementEarned: () => void;
 }) {
   try {
     //check for completed hike
-    console.debug('TimerFlow hike() calling isTrailCompleted()');
+    //console.debug('TimerFlow hike() calling isTrailCompleted()');
     isTrailCompleted({
       watermelonDatabase,
       user,
       completedHikes,
       currentTrail,
       queuedTrails,
-      achievementsWithCompletion
+      achievementsWithCompletion,
+      onAchievementEarned
     });
 
     //modify Speed
-    console.debug('TimerFlow hike() calling speed Modifier()');
+    //console.debug('TimerFlow hike() calling speed Modifier()');
     speedModifier(setSessionDetails, sessionDetails);
 
-    console.debug('TimerFlow hike() calling increaseElapsedTime()')
+    //console.debug('TimerFlow hike() calling increaseElapsedTime()')
     increaseElapsedTime({
       user,
       userMiles,
@@ -520,6 +533,7 @@ export async function Hike({
       userSession,
       achievementsWithCompletion,
       completedHikes,
+      onAchievementEarned
     });
     //save the users current session details in the database
   } catch (err) {

@@ -41,6 +41,7 @@ const AchievementsList = ({user, achievementsWithCompletion}: Props) => {
                   ? 'rgba(210,180,140, 1)'
                   : 'black',
               }}
+              key={item.id}
               id={item.id}
               onPress={() => handleAchievementClick(parseInt(item.id))}>
               <View
@@ -67,9 +68,10 @@ const AchievementsList = ({user, achievementsWithCompletion}: Props) => {
                     fontWeight: 'bold',
                     fontSize: 26,
                   }}>
-                  {item.completed
+                  {/* {item.completed
                     ? item.achievement_name
-                    : 'Locked'}
+                    : 'Locked'} */}
+                  {item.achievement_name}
                 </Text>
                 <Ionicons
                   color={
