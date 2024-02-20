@@ -1,18 +1,17 @@
 /* eslint-disable prettier/prettier */
-import {testDb} from '../../watermelon/mockDB'; // Import the test database instance
+import {testDb} from '../../watermelon/testDB'; // Import the test database instance
 import {MockTestUsers} from '../mockTestUsers.js';
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import {v4 as uuidv4} from 'uuid';
 import {Q} from '@nozbe/watermelondb';
-import { AchievementManager } from '../../helpers/Achievements/AchievementManager';
-import { achievements as masterAchievements } from '../../assets/Achievements/masterAchievementList';
+import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
+import {achievements as masterAchievements} from '../../assets/Achievements/masterAchievementList';
 import {achievementsWithIds} from '../../assets/Achievements/addAchievementIds.js';
 setGenerator(uuidv4);
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => {});
 
 const newAchievements = achievementsWithIds(masterAchievements);
-
 
 //create existing user before each test
 beforeEach(async () => {
@@ -75,24 +74,22 @@ afterAll(async () => {
 });
 
 describe('unlockAchievements()', () => {
-  
   afterEach(async () => {
     await testDb.write(async () => {
       await testDb.unsafeResetDatabase();
     });
   });
   test('it returns achievement with array of objects of achievements completed', async () => {
-  
-      const user = await testDb.collections.get('users').query().fetch();
+    const user = await testDb.collections.get('users').query().fetch();
 
-    const completedAchievements = [{ achievementName: 'First Steps', achievementId: '93' }];
+    const completedAchievements = [
+      {achievementName: 'First Steps', achievementId: '93'},
+    ];
     const unlockedAchievements = await AchievementManager.unlockAchievement(
       user[0],
       completedAchievements
     );
-    expect(
-      unlockedAchievements
-    ).toEqual(completedAchievements);
+    expect(unlockedAchievements).toEqual(completedAchievements);
   });
 });
 
@@ -130,7 +127,9 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
       (item) => item.id == results[0].achievementId
     );
 
-    expect(results).toStrictEqual([{achievementName: '007', achievementId: '94'}]);
+    expect(results).toStrictEqual([
+      {achievementName: '007', achievementId: '94'},
+    ]);
     expect(parseFloat(userMiles[0].totalMiles)).toBeGreaterThanOrEqual(
       parseFloat(testedAchievement[0].achievement_condition)
     );
@@ -163,10 +162,53 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
       achievementsWithCompletions
     );
 
-
-    expect(results).toStrictEqual([{achievementName: 'First Steps', achievementId: '93'}, {achievementName: '007', achievementId: '94'},
-      {achievementName: 'National Pie Day', achievementId: '98'}
+    expect(results).toStrictEqual([
+      {achievementName: 'First Steps', achievementId: '93'},
+      {achievementName: '007', achievementId: '94'},
+      {achievementName: 'National Pie Day', achievementId: '98'},
     ]);
   });
+});
 
+describe('checkTrailCompletionAchievements()', () => {
+  afterAll(async () => {
+    await testDb.write(async () => {
+      await testDb.unsafeResetDatabase();
+    });
+  });
+  test('if completeing specific trail returns achievement', async () => {
+    const user = await testDb.collections.get('users').query().fetch();
+    const newCompletedHike = await user[0].addCompletedHike({
+      trailId: '5',
+      bestCompletedTime: '0',
+      firstCompletedAt: '0',
+      lastCompletedAt: '0',
+    });
+
+    const completedHikes = await user[0].completedHikes;
+
+    const achievementsWithCompletions = newAchievements.map((achievement) => ({
+      ...achievement,
+      completed: 0,
+    }));
+
+    // const user = await testDb.collections.get('users').query().fetch();
+
+    const results = await AchievementManager.checkTrailCompletionAchievements(
+      user[0],
+      completedHikes,
+      achievementsWithCompletions
+    );
+
+    const usersAchievementsAfterAdd = await user[0].usersAchievements;
+
+    console.debug('users latest achievements', usersAchievementsAfterAdd[0]);
+    
+    //expect achievement manager to return correct achievement
+    expect(results).toStrictEqual([
+      {achievementName: 'American Samoa Park Explorer', achievementId: '35'},
+    ]);
+    //expect new achievement to be added to databses users Achievements
+    expect(usersAchievementsAfterAdd[0].achievementId).toBe('35');
+  });
 });

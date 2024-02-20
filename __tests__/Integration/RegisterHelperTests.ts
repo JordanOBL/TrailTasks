@@ -1,9 +1,9 @@
-import {testDb} from '../../watermelon/mockDB';
+import {testDb} from '../../watermelon/testDB';
 import * as helpers from '../../helpers/registerHelpers';
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import {v4 as uuidv4} from 'uuid';
 import formatDateTime from '../../helpers/formatDateTime';
-import { MockTestUsers } from '../mockTestUsers';
+import {MockTestUsers} from '../mockTestUsers';
 
 setGenerator(uuidv4);
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => {});
@@ -27,8 +27,7 @@ beforeAll(async () => {
       newUser.password = MockTestUsers.existingUserDetails.password;
       newUser.username = MockTestUsers.existingUserDetails.username;
       newUser.firstName = MockTestUsers.existingUserDetails.firstName;
-      newUser.lastName = MockTestUsers.existingUserDetails.lastName
-    
+      newUser.lastName = MockTestUsers.existingUserDetails.lastName;
     });
   });
 });
@@ -50,7 +49,6 @@ describe('checkExistingUser', () => {
   });
 
   it('should return user if user found by username', async () => {
-
     const existingUser = await helpers.checkExistingUser({
       username: MockTestUsers.existingUserDetails.username,
       email: MockTestUsers.existingUserDetails.email,
@@ -71,10 +69,8 @@ describe('checkExistingUser', () => {
   });
 });
 
-describe('createNewUser', () =>
-{
-  it('should create a new user and return user details', async () =>
-  {
+describe('createNewUser', () => {
+  it('should create a new user and return user details', async () => {
     const setUserMock = jest.fn();
     const setErrorMock = jest.fn();
     const trailStartedAt = formatDateTime(new Date());
@@ -100,9 +96,8 @@ describe('createNewUser', () =>
     expect(setUserMock).toHaveBeenCalledWith(createdUser);
     expect(setErrorMock).not.toHaveBeenCalled();
   });
-})
+});
 describe('handleRegister', () => {
-
   it('should not create a new user if user already exists with the same email', async () => {
     const setUserMock = jest.fn();
     const setErrorMock = jest.fn();

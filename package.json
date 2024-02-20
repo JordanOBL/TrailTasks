@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "server": "node backend/server.mjs",
-    "test": "jest --coverage --verbose",
+    "test": "jest --verbose",
     "achievements": "./assets/Achievements/makeMasterAchievementList"
   },
   "dependencies": {

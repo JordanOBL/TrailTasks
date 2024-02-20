@@ -1,5 +1,5 @@
 import {MockTestUsers} from '../mockTestUsers';
-import {testDb} from '../../watermelon/mockDB'; // Import the test database instance
+import {testDb} from '../../watermelon/testDB'; // Import the test database instance
 import * as helpers from '../../helpers/loginHelpers';
 import {handleRegister} from '../../helpers/registerHelpers';
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';

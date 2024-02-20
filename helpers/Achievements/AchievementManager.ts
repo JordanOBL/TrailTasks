@@ -65,64 +65,83 @@ export const AchievementManager = {
   },
   // Function to check for achievements related to trail completion
   async checkTrailCompletionAchievements(
-    user: User,
-    completedTrails: Completed_Hike[],
-    achievementsWithCompletion: AchievementsWithCompletion[]
-  ) {
-    try {
-      const unlockAchievementIds = [];
-      const completedTrailIds = completedTrails.map((trail) => trail.trailId);
+  user: User,
+  completedHikes: Completed_Hike[],
+  achievementsWithCompletion: AchievementsWithCompletion[]
+) {
+  try {
+    const unlockAchievementIds = [];
+    const completedTrailIds = completedHikes.map((hike) => parseInt(hike.trailId));
+    console.debug('Checking completedTrailIds', completedTrailIds)
 
-      for (let achievement of achievementsWithCompletion) {
-        if (
-          !achievement.completed &&
-          (achievement.achievement_type === 'Single Trail Completion' ||
-            achievement.achievement_type === 'Group Trail Completion' ||
-            achievement.achievement_type === 'Partial Trail Completion')
-        ) {
-          const conditionTrails = achievement.achievement_condition.split(':');
-          const conditionTrailIds = conditionTrails[1]
-            ? conditionTrails[1].split(',').map((id) => parseInt(id))
-            : [parseInt(conditionTrails[0])];
+    for (let achievement of achievementsWithCompletion) {
+      if (
+        !achievement.completed &&
+        (achievement.achievement_type === 'Single Trail Completion' ||
+          achievement.achievement_type === 'Group Trail Completion' ||
+          achievement.achievement_type === 'Park Completion')
+      ) {
+        const conditionTrails = achievement.achievement_condition.split(':');
+        const conditionTrailIds = conditionTrails[1]
+          ? conditionTrails[1].split(',').map((id) => parseInt(id))
+          : [parseInt(conditionTrails[0])];
 
-          // Check for Single Trail Completion
-          if (achievement.achievement_type === 'Single Trail Completion') {
-            const conditionTrailId = parseInt(conditionTrailIds[0]);
-            if (completedTrailIds.includes(conditionTrailId)) {
-              unlockAchievementIds.push(achievement.id);
-            }
+        // Check for Single Trail Completion
+        if (achievement.achievement_type === 'Single Trail Completion') {
+          const conditionTrailId = parseInt(conditionTrailIds[0]);
+          if (completedTrailIds.includes(conditionTrailId)) {
+            unlockAchievementIds.push({
+              achievementName: achievement.achievement_name,
+              achievementId: achievement.id,
+            });
           }
+        }
 
-          // Check for Group Trail Completion
-          if (achievement.achievement_type === 'Group Trail Completion') {
-            const completedCount = conditionTrailIds.filter((trailId) =>
-              completedTrailIds.includes(trailId)
-            ).length;
-            if (completedCount === conditionTrailIds.length) {
-              unlockAchievementIds.push(achievement.id);
-            }
+        // Check for Group Trail Completion
+        if (achievement.achievement_type === 'Group Trail Completion') {
+          const completedCount = conditionTrailIds.filter((trailId) =>
+            completedTrailIds.includes(trailId)
+          ).length;
+          if (completedCount === conditionTrailIds.length) {
+            unlockAchievementIds.push({
+              achievementName: achievement.achievement_name,
+              achievementId: achievement.id,
+            });
           }
+        }
 
-          // Check for Partial Trail Completion
-          if (achievement.achievement_type === 'Partial Trail Completion') {
-            const requiredTrailCount = parseInt(conditionTrails[0]);
-            const completedCount = conditionTrailIds.filter((trailId) =>
-              completedTrailIds.includes(trailId)
-            ).length;
-            if (completedCount >= requiredTrailCount) {
-              unlockAchievementIds.push(achievement.id);
-            }
+        // Check for Partial Trail Completion
+        if (achievement.achievement_type === 'Park Completion')
+        {
+
+          const requiredTrailCount = parseInt(conditionTrails[0]);
+         
+          const completedCount = conditionTrailIds.filter((trailId) =>
+            completedTrailIds.includes(trailId)
+          ).length;
+        
+          if (completedCount >= requiredTrailCount) {
+            unlockAchievementIds.push({
+              achievementName: achievement.achievement_name,
+              achievementId: achievement.id,
+            });
           }
         }
       }
-
-      if (unlockAchievementIds.length > 0) {
-        const unlockedAchievements = await this.unlockAchievement(user, unlockAchievementIds);
-      }
-    } catch (err) {
-      console.error('Error in checkTrailCompletionAchievements', err);
     }
-  },
+
+    if (unlockAchievementIds.length > 0) {
+      const unlockedAchievements = await AchievementManager.unlockAchievement(
+        user,
+        unlockAchievementIds
+      );
+      return unlockedAchievements;
+    }
+  } catch (err) {
+    console.error('Error in checkTrailCompletionAchievementsOnTrailCompletion', err);
+  }
+}
+
   //create a function that checks for achievements about user sessions
   //Create a function that unlocks a specific achievement
 };

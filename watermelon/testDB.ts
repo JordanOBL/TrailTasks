@@ -1,7 +1,7 @@
 import {Database} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 
-import mySchema from '../watermelon/schema';
+import mySchema from './schema';
 import {
   Park,
   Trail,
@@ -29,7 +29,7 @@ const adapter = new LokiJSAdapter({
   },
 });
 
-export const testDb =  new Database({
+export const testDb = new Database({
   adapter,
   modelClasses: [
     Park,
