@@ -202,8 +202,6 @@ describe('checkTrailCompletionAchievements()', () => {
 
     const usersAchievementsAfterAdd = await user[0].usersAchievements;
 
-    console.debug('users latest achievements', usersAchievementsAfterAdd[0]);
-    
     //expect achievement manager to return correct achievement
     expect(results).toStrictEqual([
       {achievementName: 'American Samoa Park Explorer', achievementId: '35'},
@@ -211,4 +209,49 @@ describe('checkTrailCompletionAchievements()', () => {
     //expect new achievement to be added to databses users Achievements
     expect(usersAchievementsAfterAdd[0].achievementId).toBe('35');
   });
+});
+
+describe('User Session Achievements', () => {
+  afterAll(async () => {
+    await testDb.write(async () => {
+      await testDb.unsafeResetDatabase();
+    });
+  });
+  test(
+    'checkUserSessionAchievments finds first time category achievment',
+    async () => {
+      const user = await testDb.collections.get('users').query().fetch();
+
+      //add new user session
+      await user[0].addUserSession({
+        sessionName: 'test Name',
+        sessionDescription: 'test Description',
+        sessionCategoryId: '6',
+      });
+
+      const userSessions = await user[0].usersSessions;
+
+      const achievementsWithCompletions = newAchievements.map(
+        (achievement) => ({
+          ...achievement,
+          completed: 0,
+        })
+      );
+
+      let results = await AchievementManager.checkUserSessionAchievements(
+        user[0],
+        userSessions,
+        achievementsWithCompletions
+      );
+
+      let usersAchievementsAfterAdd = await user[0].usersAchievements;
+
+      //expect achievement manager to return correct achievement
+      expect(results).toStrictEqual([
+        {achievementName: 'First Family Time', achievementId: '123'},
+      ]);
+      //expect new achievement to be added to databses users Achievements
+      expect(usersAchievementsAfterAdd[0].achievementId).toBe('123');
+    }
+  );
 });

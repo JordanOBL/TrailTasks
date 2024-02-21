@@ -22,8 +22,9 @@ import {
 } from '../../watermelon/models';
 import withObservables from '@nozbe/with-observables';
 import formatTime from '../../helpers/formatTime';
-import { SessionDetails } from '../../types/session';
-import { AchievementsWithCompletion } from '../../types/achievements';
+import {SessionDetails} from '../../types/session';
+import {AchievementsWithCompletion} from '../../types/achievements';
+import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
 
 interface Props {
   sessionDetails: SessionDetails;
@@ -34,7 +35,7 @@ interface Props {
   queuedTrails: Queued_Trail[];
   userMiles: User_Miles;
   completedHikes: Completed_Hike[];
-  achievementsWithCompletion: AchievementsWithCompletion[]
+  achievementsWithCompletion: AchievementsWithCompletion[];
 }
 
 const SessionTimer = ({
@@ -46,7 +47,7 @@ const SessionTimer = ({
   queuedTrails,
   userMiles,
   completedHikes,
-  achievementsWithCompletion
+  achievementsWithCompletion,
 }: Props) => {
   const watermelonDatabase = useDatabase();
 
@@ -114,6 +115,20 @@ const SessionTimer = ({
     }
     return () => clearInterval(intervalId);
   }, [sessionDetails]);
+
+  const checkUserSessionAchievements = async () => {
+    const results = await AchievementManager.checkUserSessionAchievements(
+      user,
+      achievementsWithCompletion
+    );
+    if (results) {
+      onAchievementEarned(results);
+    }
+  };
+
+  useEffect(() => {
+    checkUserSessionAchievements();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -451,7 +466,15 @@ const styles = StyleSheet.create({
 // };
 
 const enhance = withObservables(
-  ['user', 'currentTrail', 'completedHikes', 'queuedTrails', 'userMiles', 'userSession', 'usersAchievements'],
+  [
+    'user',
+    'currentTrail',
+    'completedHikes',
+    'queuedTrails',
+    'userMiles',
+    'userSession',
+    'usersAchievements',
+  ],
   ({user, userSession}) => ({
     user: user.observe(),
     currentTrail: user.trail.observe(),
@@ -459,7 +482,7 @@ const enhance = withObservables(
     queuedTrails: user.queuedTrails.observe(),
     userMiles: user.userMiles.observe(),
     userSession,
-    userAchievements: user.usersAchievements.observe()
+    userAchievements: user.usersAchievements.observe(),
   })
 );
 

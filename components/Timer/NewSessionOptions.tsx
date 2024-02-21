@@ -13,7 +13,7 @@ import React from 'react';
 import SelectDropdown from 'react-native-select-dropdown';
 import {User, User_Session} from '../../watermelon/models';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import {formatDateTime} from '../../helpers/formatDateTime';
+import formatDateTime from '../../helpers/formatDateTime';
 import {UserContext} from '../../App';
 import sessionCategories from '../../helpers/Session/sessionCategories';
 import timeOptions from '../../helpers/Session/timeOptions';

@@ -255,13 +255,25 @@ export class User extends Model {
     return await this.collections
       .get('users_sessions')
       .create((user_session) => {
-        user_session.user_id.set(this);
+        user_session.userId = this.id;
         user_session.sessionName = sessionName;
         user_session.sessionDescription = sessionDescription;
         user_session.totalMilesHiked = '0.00';
         user_session.totalSessionTime = 0;
         user_session.sessionCategoryId = sessionCategoryId;
       });
+  }
+
+  @writer async getSessionsOfCategoryCount(categoryId, categoryCount) {
+    console.debug('getSessionsOfCategoryCount', categoryCount, categoryId);
+    const results = await this.collections
+      .get('users_sessions')
+      .query(
+        Q.where('session_category_id', Q.eq(categoryId)),
+        Q.take(categoryCount)
+      );
+    console.debug('writer getsessionofcategorycount', {results});
+    return results.length;
   }
   //create completed_hike
   @writer async addCompletedHike({
