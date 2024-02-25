@@ -1,13 +1,6 @@
-import {Pressable, StyleSheet, Text, View} from 'react-native';
 import * as React from 'react';
-import NewSessionOptions from '../components/Timer/NewSessionOptions';
-import EnhancedSessionTimer from '../components/Timer/SessionTimer';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
-import {SessionDetails} from '../types/session';
 
-import {Q} from '@nozbe/watermelondb';
-import withObservables from '@nozbe/with-observables';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {
   Queued_Trail,
   Session_Category,
@@ -16,8 +9,17 @@ import {
   User_Achievement,
   User_Miles,
 } from '../watermelon/models';
-import {useNavigation} from '@react-navigation/native';
+
 import {AchievementsWithCompletion} from '../types/achievements';
+import EnhancedSessionTimer from '../components/Timer/SessionTimer';
+import NewSessionOptions from '../components/Timer/NewSessionOptions';
+import {Q} from '@nozbe/watermelondb';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {SessionDetails} from '../types/session';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import {useNavigation} from '@react-navigation/native';
+import withObservables from '@nozbe/with-observables';
+
 interface Props {
   user: User;
   setUser: any;
@@ -39,7 +41,7 @@ const TimerScreen = ({
   const [currentSessionCategory, setCurrentSessionCategory] =
     React.useState('');
   const [sessionCategories, setSessionCategories] = React.useState<
-    Session_Category[] | [] 
+    Session_Category[] | []
   >([]);
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
     isSessionStarted: false,
@@ -70,12 +72,12 @@ const TimerScreen = ({
                CASE WHEN users_achievements.achievement_id IS NOT NULL THEN 1 ELSE 0 END AS completed 
                FROM achievements 
                LEFT JOIN users_achievements ON achievements.id = users_achievements.achievement_id 
-               AND users_achievements.user_id = '${user.id}'`;
+               AND users_achievements.user_id = ?`;
 
     try {
       const results: AchievementsWithCompletion[] = await watermelonDatabase
         .get('achievements')
-        .query(Q.unsafeSqlQuery(query))
+        .query(Q.unsafeSqlQuery(query, [user.id]))
         .unsafeFetchRaw();
       if (results.length > 0) {
         setAchievementsWithCompletion(results);
@@ -108,14 +110,13 @@ const TimerScreen = ({
 
   async function getCurrentSessionCategory() {
     try {
-      
-        const sessionCategory = await watermelonDatabase
-          .get('session_categories')
-          .query(Q.where('id', sessionDetails.sessionCategoryId));
+      const sessionCategory = await watermelonDatabase
+        .get('session_categories')
+        .query(Q.where('id', sessionDetails.sessionCategoryId));
 
-        if (sessionCategory) {
-          setCurrentSessionCategory(sessionCategory[0].sessionCategoryName);
-        }
+      if (sessionCategory) {
+        setCurrentSessionCategory(sessionCategory[0].sessionCategoryName);
+      }
     } catch (err) {
       console.error(
         'Failed to get session Categories from wdb, getSessionCategoories()'

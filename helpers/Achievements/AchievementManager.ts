@@ -1,12 +1,12 @@
-import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {
   Completed_Hike,
   User,
   User_Miles,
   User_Session,
 } from '../../watermelon/models';
+
 import {AchievementsWithCompletion} from '../../types/achievements';
-import { SessionDetails } from '../../types/session';
+import {SessionDetails} from '../../types/session';
 
 interface AchievementNameId {
   achievementName: String;
@@ -16,8 +16,7 @@ export const AchievementManager = {
   //*This function adds a row to the the users_achievments database, unlocking a user Achievment
 
   async unlockAchievement(user: User, unlockAchievements: AchievementNameId[]) {
-    try
-    {
+    try {
       //call the watermelinDB writer
       //returns {AcihevementName: string, achievementId: string}
       const unlockedAchievements = await user.unlockAchievements(
@@ -83,7 +82,6 @@ export const AchievementManager = {
       const completedTrailIds = completedHikes.map((hike) =>
         parseInt(hike.trailId)
       );
-      console.debug('Checking completedTrailIds', completedTrailIds);
 
       for (let achievement of achievementsWithCompletion) {
         if (
@@ -92,14 +90,14 @@ export const AchievementManager = {
             achievement.achievement_type === 'Group Trail Completion' ||
             achievement.achievement_type === 'Park Completion')
         ) {
-          const conditionTrails = achievement.achievement_condition.split(':');
-          const conditionTrailIds = conditionTrails[1]
+          const conditionTrails: string[]= achievement.achievement_condition.split(':');
+          const conditionTrailIds: number[] = conditionTrails[1]
             ? conditionTrails[1].split(',').map((id) => parseInt(id))
             : [parseInt(conditionTrails[0])];
 
           // Check for Single Trail Completion
           if (achievement.achievement_type === 'Single Trail Completion') {
-            const conditionTrailId = parseInt(conditionTrailIds[0]);
+            const conditionTrailId: number  = parseInt(conditionTrailIds[0]);
             if (completedTrailIds.includes(conditionTrailId)) {
               unlockAchievementIds.push({
                 achievementName: achievement.achievement_name,
@@ -157,12 +155,10 @@ export const AchievementManager = {
   async checkUserSessionAchievements(
     user: User,
     sessionDetails: SessionDetails,
-    currentSessionCategory:string,
+    currentSessionCategory: string,
     achievementsWithCompletion: AchievementsWithCompletion[]
   ) {
-    try
-    {
-      
+    try {
       const unlockAchievementIds = [];
       //get an array of only session Category Ids
       for (let achievement of achievementsWithCompletion) {
@@ -174,21 +170,20 @@ export const AchievementManager = {
             achievement.achievement_type === 'User Session Strikes')
         ) {
           // Check for Categorys
-          if (achievement.achievement_type === 'User Session Category')
-          {
+          if (achievement.achievement_type === 'User Session Category') {
             const achievementConditions =
               achievement.achievement_condition.split(':');
             const conditionAmount: number = parseInt(achievementConditions[0]);
             const conditionSessionCategory: string = achievementConditions[1];
             //get sessions via category, limit by amount
-            if (conditionSessionCategory === currentSessionCategory)
-            {
+            if (conditionSessionCategory === currentSessionCategory) {
               //@user.writer
-              const sessionsByCount: number = await user.getSessionsOfCategoryCount(
-                sessionDetails.sessionCategoryId,
-                conditionAmount
-              );
-             //check if number returned by writer is equal to achievement codition aomunt
+              const sessionsByCount: number =
+                await user.getSessionsOfCategoryCount(
+                  sessionDetails.sessionCategoryId,
+                  conditionAmount
+                );
+              //check if number returned by writer is equal to achievement codition aomunt
               if (sessionsByCount >= conditionAmount) {
                 unlockAchievementIds.push({
                   achievementName: achievement.achievement_name,
@@ -206,15 +201,12 @@ export const AchievementManager = {
           user,
           unlockAchievementIds
         );
-        console.log({unlockedAchievements})
+        console.log({unlockedAchievements});
         return unlockedAchievements;
       }
-       return null
+      return null;
     } catch (err) {
-      console.error(
-        'Error in checkUsersSessionsAchievements',
-        err
-      );
+      console.error('Error in checkUsersSessionsAchievements', err);
     }
   },
   //Create a function that unlocks a specific achievement

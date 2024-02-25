@@ -1,14 +1,13 @@
 import {Model, Q} from '@nozbe/watermelondb';
-
 import {
-  relation,
-  immutableRelation,
   children,
+  date,
   field,
+  immutableRelation,
+  lazy,
+  relation,
   text,
   writer,
-  date,
-  lazy,
 } from '@nozbe/watermelondb/decorators';
 
 import formatDateTime from '../helpers/formatTime';
@@ -128,6 +127,9 @@ export class User extends Model {
 
   @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
 
+  @lazy userSessionsWithCategory = this.usersSessions.extend(
+    Q.on('session_categories', 'id', 'session_category_id')
+  );
   @writer async getUserSessionsByCategoryCount(categoryId) {
     const userSessions = await this.collections
       .get('users_sessions')

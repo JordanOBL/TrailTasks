@@ -1,27 +1,24 @@
 import {
+  Pressable,
+  SafeAreaView,
   StyleSheet,
   Text,
-  SafeAreaView,
-  Pressable,
-  View,
   TextInput,
+  View,
 } from 'react-native';
-
-import {useNavigation} from '@react-navigation/native';
-
 import React, {useState} from 'react';
-import SelectDropdown from 'react-native-select-dropdown';
 import {User, User_Session} from '../../watermelon/models';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
-import formatDateTime from '../../helpers/formatDateTime';
 
-//import sessionCategories from '../../helpers/Session/sessionCategories';
-import timeOptions from '../../helpers/Session/timeOptions';
-import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
-import {Session_Category} from '../../watermelon/models';
 import { AchievementManager } from '../../helpers/Achievements/AchievementManager';
+import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
+import SelectDropdown from 'react-native-select-dropdown';
+import {Session_Category} from '../../watermelon/models';
 import { achievements } from '../../assets/Achievements/masterAchievementList';
 import { achievementsWithIds } from '../../assets/Achievements/addAchievementIds';
+import formatDateTime from '../../helpers/formatDateTime';
+import timeOptions from '../../helpers/Session/timeOptions';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import {useNavigation} from '@react-navigation/native';
 
 interface Props {
   sessionDetails: any;

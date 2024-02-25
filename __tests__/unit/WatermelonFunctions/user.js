@@ -1,9 +1,8 @@
-import {testDb} from '../../../watermelon/testDB'; // Import the test database instance
 import {MockTestUsers} from '../../mockTestUsers.js';
-import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
-import {v4 as uuidv4} from 'uuid';
-import {Q} from '@nozbe/watermelondb';
 import sessionCategories from '../../../helpers/Session/sessionCategories';
+import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
+import {testDb} from '../../../watermelon/testDB'; // Import the test database instance
+import {v4 as uuidv4} from 'uuid';
 
 setGenerator(uuidv4);
 

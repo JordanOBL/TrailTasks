@@ -1,16 +1,3 @@
-import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import formatCountdown from '../../helpers/Timer/formatCountdown';
-import {
-  Hike,
-  endSession,
-  pauseSession,
-  resumeSession,
-  shortBreak,
-  skipBreak,
-} from '../../helpers/Timer/timerFlow';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
-import EnhancedDistanceProgressBar from '../DistanceProgressBar';
 import {
   Achievement,
   Completed_Hike,
@@ -20,11 +7,25 @@ import {
   User_Miles,
   User_Session,
 } from '../../watermelon/models';
-import withObservables from '@nozbe/with-observables';
-import formatTime from '../../helpers/formatTime';
-import {SessionDetails} from '../../types/session';
-import {AchievementsWithCompletion} from '../../types/achievements';
+import {
+  Hike,
+  endSession,
+  pauseSession,
+  resumeSession,
+  shortBreak,
+  skipBreak,
+} from '../../helpers/Timer/timerFlow';
+import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+
 import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
+import {AchievementsWithCompletion} from '../../types/achievements';
+import EnhancedDistanceProgressBar from '../DistanceProgressBar';
+import {SessionDetails} from '../../types/session';
+import formatCountdown from '../../helpers/Timer/formatCountdown';
+import formatTime from '../../helpers/formatTime';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import withObservables from '@nozbe/with-observables';
 
 interface Props {
   sessionDetails: SessionDetails;
@@ -130,15 +131,16 @@ const SessionTimer = ({
     }
   };
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     if (
       user &&
       sessionDetails &&
       currentSessionCategory &&
       achievementsWithCompletion
     ) {
-      console.debug('Checking user session achievements',{currentSessionCategory});
+      console.debug('Checking user session achievements', {
+        currentSessionCategory,
+      });
       checkUserSessionAchievements();
     }
   }, [achievementsWithCompletion]);
