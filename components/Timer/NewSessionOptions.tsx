@@ -9,20 +9,25 @@ import {
 
 import {useNavigation} from '@react-navigation/native';
 
-import React from 'react';
+import React, {useState} from 'react';
 import SelectDropdown from 'react-native-select-dropdown';
 import {User, User_Session} from '../../watermelon/models';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import formatDateTime from '../../helpers/formatDateTime';
-import {UserContext} from '../../App';
-import sessionCategories from '../../helpers/Session/sessionCategories';
+
+//import sessionCategories from '../../helpers/Session/sessionCategories';
 import timeOptions from '../../helpers/Session/timeOptions';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
+import {Session_Category} from '../../watermelon/models';
+import { AchievementManager } from '../../helpers/Achievements/AchievementManager';
+import { achievements } from '../../assets/Achievements/masterAchievementList';
+import { achievementsWithIds } from '../../assets/Achievements/addAchievementIds';
 
 interface Props {
   sessionDetails: any;
   setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
   setUserSession: React.Dispatch<React.SetStateAction<any>>;
+  sessionCategories: Session_Category[];
   user: User;
 }
 
@@ -30,13 +35,14 @@ const NewSessionOptions = ({
   sessionDetails,
   setSessionDetails,
   setUserSession,
+  sessionCategories,
   user,
 }: Props) => {
   //@ts-ignore
-  const {userId} = React.useContext(UserContext);
   const watermelonDatabase = useDatabase();
-const navigation = useNavigation()
-  //React.useEffect(() => {}, [sessionDetails.sessionCategoryId])
+  const navigation = useNavigation();
+  
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={[styles.dropdownContainer, {width: '100%'}]}>
@@ -63,22 +69,23 @@ const navigation = useNavigation()
         <Text style={styles.label}>Session Category:</Text>
         <SelectDropdown
           data={sessionCategories}
-          onSelect={(selectedItem, index) => {
+          onSelect={(selectedItem, index) =>
+          {
             NewSessionHandlers.SelectSessionCategoryId(
               setSessionDetails,
-              selectedItem.session_category_id,
+              selectedItem.id,
               watermelonDatabase
             );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             // text represented after item is selected
             // if data array is an array of objects then return selectedItem.property to render after item is selected
-            return selectedItem.session_category_name;
+            return selectedItem.sessionCategoryName;
           }}
           rowTextForSelection={(item, index) => {
             // text represented for each item in dropdown
             // if data array is an array of objects then return item.property to represent item in dropdown
-            return item.session_category_name;
+            return item.sessionCategoryName;
           }}
           defaultButtonText={'Select a category'}
           defaultValue={null}
@@ -127,8 +134,8 @@ const navigation = useNavigation()
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
         />
       </View>
+      {/* Short Break Time */}
       <View style={styles.dropdownContainer}>
-        {/* Short Break Time */}
         <Text style={styles.label}>Short Break Duration:</Text>
         <SelectDropdown
           data={timeOptions}
@@ -158,8 +165,8 @@ const navigation = useNavigation()
           buttonTextStyle={styles.dropdownButtonText}
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
         />
-        {/* Long Break Time */}
       </View>
+      {/* Long Break Time */}
       <View style={styles.dropdownContainer}>
         <Text style={styles.label}>Long Break Duration:</Text>
         <SelectDropdown
@@ -243,9 +250,10 @@ const navigation = useNavigation()
           Start Session
         </Text>
       </Pressable>
-      <Pressable onPress={() => navigation.goBack()} style={[styles.startBtn, {backgroundColor: 'green'}]}>
+      <Pressable
+        onPress={() => navigation.goBack()}
+        style={[styles.startBtn, {backgroundColor: 'green'}]}>
         <Text
-          
           style={{
             color: 'rgb(28,29,31)',
             fontSize: 18,

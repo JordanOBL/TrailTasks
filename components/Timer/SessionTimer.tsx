@@ -36,6 +36,7 @@ interface Props {
   userMiles: User_Miles;
   completedHikes: Completed_Hike[];
   achievementsWithCompletion: AchievementsWithCompletion[];
+  currentSessionCategory: string;
 }
 
 const SessionTimer = ({
@@ -48,6 +49,7 @@ const SessionTimer = ({
   userMiles,
   completedHikes,
   achievementsWithCompletion,
+  currentSessionCategory,
 }: Props) => {
   const watermelonDatabase = useDatabase();
 
@@ -119,6 +121,8 @@ const SessionTimer = ({
   const checkUserSessionAchievements = async () => {
     const results = await AchievementManager.checkUserSessionAchievements(
       user,
+      sessionDetails,
+      currentSessionCategory,
       achievementsWithCompletion
     );
     if (results) {
@@ -126,9 +130,18 @@ const SessionTimer = ({
     }
   };
 
-  useEffect(() => {
-    checkUserSessionAchievements();
-  }, []);
+  useEffect(() =>
+  {
+    if (
+      user &&
+      sessionDetails &&
+      currentSessionCategory &&
+      achievementsWithCompletion
+    ) {
+      console.debug('Checking user session achievements',{currentSessionCategory});
+      checkUserSessionAchievements();
+    }
+  }, [achievementsWithCompletion]);
 
   return (
     <SafeAreaView style={styles.container}>

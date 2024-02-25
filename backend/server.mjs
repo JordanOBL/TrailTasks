@@ -6,7 +6,7 @@ import cors from 'cors';
 import bodyparser from 'body-parser';
 import { achievements as masterAchievements } from '../assets/Achievements/masterAchievementList.js'
 import { achievementsWithIds } from '../assets/Achievements/addAchievementIds.js';
-
+import  sessionCategories from '../helpers/Session/sessionCategories.js'
 import {
   Achievement,
   Park,
@@ -2316,6 +2316,7 @@ app.get('/api/seed', async (req, res) => {
       ],
       {ignoreDuplicates: true}
     );
+    const session_categories = await Session_Category.bulkCreate(sessionCategories, {ignoreDuplicates: true});
     console.log('Seed Successful)');
     res.status(200);
   } catch (err) {

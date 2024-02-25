@@ -127,9 +127,13 @@ export class User extends Model {
   @children('users_subscriptions') usersSubscriptions;
 
   @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
-  @lazy userSessionsWithCategory = this.usersSessions.extend(
-    Q.on('session_categories', 'id', 'session_category_id')
-  );
+
+  @writer async getUserSessionsByCategoryCount(categoryId) {
+    const userSessions = await this.collections
+      .get('users_sessions')
+      .query(Q.where('session_category_id', categoryId));
+    return userSessions.length;
+  }
 
   // getUser
   @writer async getUser() {
@@ -215,6 +219,7 @@ export class User extends Model {
   @writer async unlockAchievements(userId, completedAchievements) {
     try {
       const unlockedAchievements = await Promise.all(
+        //create user_achievment of all newly unlocked achievements
         completedAchievements.map(async (achievement) => {
           const newUserAchievement = this.collections
             .get('users_achievements')
@@ -224,7 +229,6 @@ export class User extends Model {
               user_achievement.completedAt = formatDateTime(new Date());
             });
           if (newUserAchievement) {
-            //console.debug(achievement)
             return newUserAchievement;
           }
           throw new Error(
@@ -234,6 +238,7 @@ export class User extends Model {
       );
 
       await this.database.batch(unlockedAchievements);
+      //returns {AcihevementName: string, achievementId: string}
       return completedAchievements;
     } catch (err) {
       console.error('Error in unlockAchievements:', err);
@@ -263,16 +268,15 @@ export class User extends Model {
         user_session.sessionCategoryId = sessionCategoryId;
       });
   }
-
+  //return number o sessions with category Id, only return enough to achieve
+  //achievement condition
   @writer async getSessionsOfCategoryCount(categoryId, categoryCount) {
-    console.debug('getSessionsOfCategoryCount', categoryCount, categoryId);
     const results = await this.collections
       .get('users_sessions')
       .query(
         Q.where('session_category_id', Q.eq(categoryId)),
         Q.take(categoryCount)
       );
-    console.debug('writer getsessionofcategorycount', {results});
     return results.length;
   }
   //create completed_hike

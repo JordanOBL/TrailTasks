@@ -2,17 +2,15 @@ import {Pressable, StyleSheet, Text, View} from 'react-native';
 import * as React from 'react';
 import NewSessionOptions from '../components/Timer/NewSessionOptions';
 import EnhancedSessionTimer from '../components/Timer/SessionTimer';
-import {UserContext} from '../App';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import getJoinedUserTrail from '../helpers/Timer/getJoinedUserTrail';
-import {JoinedUserTrail, SessionDetails} from '../types/session';
-import {useFocusEffect} from '@react-navigation/native';
+import {SessionDetails} from '../types/session';
 
 import {Q} from '@nozbe/watermelondb';
 import withObservables from '@nozbe/with-observables';
 import {
   Queued_Trail,
+  Session_Category,
   Trail,
   User,
   User_Achievement,
@@ -37,37 +35,12 @@ const TimerScreen = ({
   const watermelonDatabase = useDatabase();
   const [achievementsWithCompletion, setAchievementsWithCompletion] =
     React.useState<AchievementsWithCompletion | null>(null);
-
-  async function getAchievementsWithCompletion() {
-    const query = `SELECT achievements.*, 
-               CASE WHEN users_achievements.achievement_id IS NOT NULL THEN 1 ELSE 0 END AS completed 
-               FROM achievements 
-               LEFT JOIN users_achievements ON achievements.id = users_achievements.achievement_id 
-               AND users_achievements.user_id = '${user.id}'`;
-
-    try {
-      const results: AchievementsWithCompletion[] = await watermelonDatabase
-        .get('achievements')
-        .query(Q.unsafeSqlQuery(query))
-        .unsafeFetchRaw();
-      if (results.length > 0) {
-        setAchievementsWithCompletion(results);
-      }
-      return
-      // console.debug(
-      //   'DEBUG: joined achievements and usersachieveents with completeion',
-      //   {results}
-      // );
-    } catch (err) {
-      console.error('Error in joinUsersAchievements', err);
-      return null
-    }
-  }
-
-  //observable user session
   const [userSession, setUserSession] = React.useState<any>();
-  
-
+  const [currentSessionCategory, setCurrentSessionCategory] =
+    React.useState('');
+  const [sessionCategories, setSessionCategories] = React.useState<
+    Session_Category[] | [] 
+  >([]);
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
     isSessionStarted: false,
     isPaused: false,
@@ -92,6 +65,64 @@ const TimerScreen = ({
     isError: false,
   });
 
+  async function getAchievementsWithCompletion() {
+    const query = `SELECT achievements.*, 
+               CASE WHEN users_achievements.achievement_id IS NOT NULL THEN 1 ELSE 0 END AS completed 
+               FROM achievements 
+               LEFT JOIN users_achievements ON achievements.id = users_achievements.achievement_id 
+               AND users_achievements.user_id = '${user.id}'`;
+
+    try {
+      const results: AchievementsWithCompletion[] = await watermelonDatabase
+        .get('achievements')
+        .query(Q.unsafeSqlQuery(query))
+        .unsafeFetchRaw();
+      if (results.length > 0) {
+        setAchievementsWithCompletion(results);
+      }
+      return;
+    } catch (err) {
+      console.error('Error in joinUsersAchievements', err);
+      return null;
+    }
+  }
+
+  async function getSessionCategories() {
+    try {
+      const sessionCategories = await watermelonDatabase
+        .get('session_categories')
+        .query()
+        .fetch();
+
+      if (sessionCategories) {
+        setSessionCategories(sessionCategories);
+        return;
+      }
+      throw new Error('Error getting session Categories, fetch empty');
+    } catch (err) {
+      console.error(
+        'Failed to get session Categories from wdb, getSessionCategories()'
+      );
+    }
+  }
+
+  async function getCurrentSessionCategory() {
+    try {
+      
+        const sessionCategory = await watermelonDatabase
+          .get('session_categories')
+          .query(Q.where('id', sessionDetails.sessionCategoryId));
+
+        if (sessionCategory) {
+          setCurrentSessionCategory(sessionCategory[0].sessionCategoryName);
+        }
+    } catch (err) {
+      console.error(
+        'Failed to get session Categories from wdb, getSessionCategoories()'
+      );
+    }
+  }
+
   React.useEffect(() => {
     // Hide the bottom tab bar when the session is active
     if (sessionDetails.isSessionStarted) {
@@ -109,10 +140,15 @@ const TimerScreen = ({
     getAchievementsWithCompletion();
   }, [userAchievements]);
 
-  React.useEffect(() =>
-  {
-    
-  },[])
+  React.useEffect(() => {
+    getSessionCategories();
+  }, []);
+
+  React.useEffect(() => {
+    if (sessionDetails.sessionCategoryId) {
+      getCurrentSessionCategory();
+    }
+  }, [sessionDetails.sessionCategoryId]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -123,6 +159,7 @@ const TimerScreen = ({
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
           setUserSession={setUserSession}
+          sessionCategories={sessionCategories}
           user={user}
         />
       ) : (
@@ -131,6 +168,7 @@ const TimerScreen = ({
           setSessionDetails={setSessionDetails}
           achievementsWithCompletion={achievementsWithCompletion}
           userSession={userSession}
+          currentSessionCategory={currentSessionCategory}
           user={user}
         />
       )}

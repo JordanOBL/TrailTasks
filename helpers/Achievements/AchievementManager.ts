@@ -6,6 +6,7 @@ import {
   User_Session,
 } from '../../watermelon/models';
 import {AchievementsWithCompletion} from '../../types/achievements';
+import { SessionDetails } from '../../types/session';
 
 interface AchievementNameId {
   achievementName: String;
@@ -15,7 +16,10 @@ export const AchievementManager = {
   //*This function adds a row to the the users_achievments database, unlocking a user Achievment
 
   async unlockAchievement(user: User, unlockAchievements: AchievementNameId[]) {
-    try {
+    try
+    {
+      //call the watermelinDB writer
+      //returns {AcihevementName: string, achievementId: string}
       const unlockedAchievements = await user.unlockAchievements(
         user.id,
         unlockAchievements
@@ -152,6 +156,8 @@ export const AchievementManager = {
   //create a function that checks for achievements about user sessions
   async checkUserSessionAchievements(
     user: User,
+    sessionDetails: SessionDetails,
+    currentSessionCategory:string,
     achievementsWithCompletion: AchievementsWithCompletion[]
   ) {
     try
@@ -168,18 +174,21 @@ export const AchievementManager = {
             achievement.achievement_type === 'User Session Strikes')
         ) {
           // Check for Categorys
-          if (achievement.achievement_type === 'User Session Category') {
+          if (achievement.achievement_type === 'User Session Category')
+          {
             const achievementConditions =
               achievement.achievement_condition.split(':');
-            const conditionAmount = parseInt(achievementConditions[0]);
-            const conditionSessionCategory = achievementConditions[1];
+            const conditionAmount: number = parseInt(achievementConditions[0]);
+            const conditionSessionCategory: string = achievementConditions[1];
             //get sessions via category, limit by amount
-            if (conditionSessionCategory === 'Family') {
-              const sessionsByCount = await user.getSessionsOfCategoryCount(
-                '6',
+            if (conditionSessionCategory === currentSessionCategory)
+            {
+              //@user.writer
+              const sessionsByCount: number = await user.getSessionsOfCategoryCount(
+                sessionDetails.sessionCategoryId,
                 conditionAmount
               );
-              console.debug('session by count', sessionsByCount)
+             //check if number returned by writer is equal to achievement codition aomunt
               if (sessionsByCount >= conditionAmount) {
                 unlockAchievementIds.push({
                   achievementName: achievement.achievement_name,
@@ -188,45 +197,19 @@ export const AchievementManager = {
               }
             }
           }
-
-          //     // Check for Group Trail Completion
-          //     if (achievement.achievement_type === 'Group Trail Completion') {
-          //       const completedCount = conditionTrailIds.filter((trailId) =>
-          //         completedTrailIds.includes(trailId)
-          //       ).length;
-          //       if (completedCount === conditionTrailIds.length) {
-          //         unlockAchievementIds.push({
-          //           achievementName: achievement.achievement_name,
-          //           achievementId: achievement.id,
-          //         });
-          //       }
-          //     }
-
-          //     // Check for Partial Trail Completion
-          //     if (achievement.achievement_type === 'Park Completion') {
-          //       const requiredTrailCount = parseInt(conditionTrails[0]);
-
-          //       const completedCount = conditionTrailIds.filter((trailId) =>
-          //         completedTrailIds.includes(trailId)
-          //       ).length;
-
-          //       if (completedCount >= requiredTrailCount) {
-          //         unlockAchievementIds.push({
-          //           achievementName: achievement.achievement_name,
-          //           achievementId: achievement.id,
-          //         });
-          //       }
-          //     }
         }
       }
-
+      //once all achievements have been checked
+      //send possible achievement in a array to be unlocked
       if (unlockAchievementIds.length > 0) {
         const unlockedAchievements = await AchievementManager.unlockAchievement(
           user,
           unlockAchievementIds
         );
+        console.log({unlockedAchievements})
         return unlockedAchievements;
       }
+       return null
     } catch (err) {
       console.error(
         'Error in checkUsersSessionsAchievements',

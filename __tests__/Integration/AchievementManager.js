@@ -217,41 +217,58 @@ describe('User Session Achievements', () => {
       await testDb.unsafeResetDatabase();
     });
   });
-  test(
-    'checkUserSessionAchievments finds first time category achievment',
-    async () => {
-      const user = await testDb.collections.get('users').query().fetch();
+  test('checkUserSessionAchievments finds first time category achievment', async () => {
+    const achievementsWithCompletions = newAchievements.map((achievement) => ({
+      ...achievement,
+      completed: 0,
+    }));
 
-      //add new user session
-      await user[0].addUserSession({
-        sessionName: 'test Name',
-        sessionDescription: 'test Description',
-        sessionCategoryId: '6',
-      });
+    const user = await testDb.collections.get('users').query().fetch();
+    const sessionDetails = {
+      isSessionStarted: false,
+      isPaused: false,
+      sessionName: '',
+      sessionDescription: '',
+      sessionCategoryId: '8',
+      initialPomodoroTime: 1500,
+      initialShortBreakTime: 300,
+      initialLongBreakTime: 2700,
+      elapsedPomodoroTime: 0,
+      elapsedShortBreakTime: 0,
+      elapsedLongBreakTime: 0,
+      sets: 3,
+      currentSet: 1,
+      pace: 2,
+      completedHike: false,
+      strikes: 0,
+      endSessionModal: false,
+      totalSessionTime: 0,
+      totalDistanceHiked: 0.0,
+      isLoading: false,
+      isError: false,
+    };
+    //add new user session
+    await user[0].addUserSession({
+      sessionName: 'test Name',
+      sessionDescription: 'test Description',
+      sessionCategoryId: sessionDetails.sessionCategoryId,
+    });
 
-      const userSessions = await user[0].usersSessions;
+    //call check user session achievements on databse
+    let results = await AchievementManager.checkUserSessionAchievements(
+      user[0],
+      sessionDetails,
+      'Family',
+      achievementsWithCompletions
+    );
+    console.debug('TESTS', {results});
+    let usersAchievementsAfterAdd = await user[0].usersAchievements;
 
-      const achievementsWithCompletions = newAchievements.map(
-        (achievement) => ({
-          ...achievement,
-          completed: 0,
-        })
-      );
-
-      let results = await AchievementManager.checkUserSessionAchievements(
-        user[0],
-        userSessions,
-        achievementsWithCompletions
-      );
-
-      let usersAchievementsAfterAdd = await user[0].usersAchievements;
-
-      //expect achievement manager to return correct achievement
-      expect(results).toStrictEqual([
-        {achievementName: 'First Family Time', achievementId: '123'},
-      ]);
-      //expect new achievement to be added to databses users Achievements
-      expect(usersAchievementsAfterAdd[0].achievementId).toBe('123');
-    }
-  );
+    //expect achievement manager to return correct achievement
+    expect(results).toStrictEqual([
+      {achievementName: 'First Family Time', achievementId: '123'},
+    ]);
+    //expect new achievement to be added to databses users Achievements
+    expect(usersAchievementsAfterAdd[0].achievementId).toBe('123');
+  });
 });
