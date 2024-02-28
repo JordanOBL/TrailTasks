@@ -17,6 +17,7 @@ import {Pressable} from 'react-native';
 import Ranks from '../helpers/Ranks/ranksData';
 import ScreenLink from '../components/HomeScreen/screenLink';
 import SyncIndicator from '../components/SyncIndicator';
+import TutorialModal from '../components/HomeScreen/tutorialModal';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import getUserRank from '../helpers/Ranks/getUserRank';
 import {handleLogOut} from '../helpers/logoutHelpers';
@@ -56,11 +57,16 @@ const HomeScreen: React.FC<Props> = ({
   const [activeIndex, setActiveIndex] = React.useState(0);
   const data = [...new Array(2).keys()]; // Your data array
   const width = Dimensions.get('window').width;
-
+  const [showTutorial, setShowTutorial] = React.useState(false);
   const {currentOffering, customerInfo, isProMember} = useRevenueCat({
     userId: user.id,
   });
 
+  const handleTutorialClose = () => {
+    setShowTutorial(false); // Close the tutorial modal
+  };
+
+  //this useEffect checks if a phone is connected to the internet
   React.useEffect(() => {
     async function isConnected() {
       const {connection} = await checkInternetConnection();
@@ -69,6 +75,16 @@ const HomeScreen: React.FC<Props> = ({
     isConnected();
   }, []);
 
+  //Check to see if user is new to the app by checking if theyve hiked any miles
+  //if not, show the tutorial Modal
+  React.useEffect(() => {
+    // Check if the user has any miles hiked
+    if (totalMiles && totalMiles[0].totalMiles === '0.00') {
+      setShowTutorial(true); // Show the tutorial if the user has no miles hiked
+    }
+  }, []);
+
+  //this useEffect gets the correct Rank based on  the users miles
   useFocusEffect(
     React.useCallback(() => {
       sync(watermelonDatabase);
@@ -87,6 +103,7 @@ const HomeScreen: React.FC<Props> = ({
   ) : (
     <View style={styles.container}>
       {/* <SyncIndicator delay={3000} /> */}
+      {<TutorialModal visible={showTutorial} onClose={handleTutorialClose} />}
       <Text style={styles.onlineStatus}>
         {isConnected ? 'Online' : 'Offline'}
       </Text>
