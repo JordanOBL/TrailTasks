@@ -1,73 +1,63 @@
-import { StyleSheet, Text, View } from 'react-native';
-import withObservables from '@nozbe/with-observables';
-import {Achievement, User, User_Achievement} from '../watermelon/models';
+import {Achievement, User} from '../watermelon/models';
 import React, {useEffect, useState} from 'react';
-import Purchases from 'react-native-purchases';
-import { useDatabase } from '@nozbe/watermelondb/hooks';
-import AchievementsList from '../components/Achievements/AchievementsList';
+import {StyleSheet, Text, View} from 'react-native';
+
 import EnhancedAchievementsList from '../components/Achievements/AchievementsList';
-import { Q } from '@nozbe/watermelondb';
+import Purchases from 'react-native-purchases';
+import {Q} from '@nozbe/watermelondb';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import withObservables from '@nozbe/with-observables';
+
 interface Props {
   user: User;
-  usersAchievements: Achievement[];
 }
-const AchievementsScreen = ({user, usersAchievements}: Props) => {
 
+const AchievementsScreen = ({user}: Props) => {
   const watermelonDatabase = useDatabase();
-  const [achievementsWithCompletion, setAchievementsWithCompletion] = useState<any>(null);
+  const [achievementsWithCompletion, setAchievementsWithCompletion] =
+    useState<any>(null);
 
-  async function getCustomerInfo() {
-    try {
-      const customerInfo = await Purchases.getCustomerInfo();
-      // access latest customerInfo
-      console.log(customerInfo);
-    } catch (e) {
-      // Error fetching customer info
-    }
-  }
-
-  //make an unsafe query to join users_achievements on achievements and add  a completed column if achievement exists in users achievements 
-  async function getAchievementsWithCompletion()
-  {
+  async function getAchievementsWithCompletion() {
     const query = `SELECT achievements.*, 
                CASE WHEN users_achievements.achievement_id IS NOT NULL THEN 1 ELSE 0 END AS completed 
                FROM achievements 
                LEFT JOIN users_achievements ON achievements.id = users_achievements.achievement_id 
                AND users_achievements.user_id = '${user.id}'`;
-    
-    try
-    {
-      const results = await watermelonDatabase.get('achievements').query(Q.unsafeSqlQuery(query)).unsafeFetchRaw()
-      if (results.length > 0)
-      {
-        setAchievementsWithCompletion(results)
+
+    try {
+      const results = await watermelonDatabase
+        .get('achievements')
+        .query(Q.unsafeSqlQuery(query))
+        .unsafeFetchRaw();
+      if (results.length > 0) {
+        console.log('Achievements with completion:', results); // Add this logging
+        setAchievementsWithCompletion(results);
       }
-      return 
-      //console.debug('DEBUG: joined achievements and usersachieveents with completeion', {results})
-    } catch (err)
-    {
-      console.error('Error in joinUsersAchievements', err)
-      return null
+    } catch (err) {
+      console.error('Error in joinUsersAchievements', err);
     }
   }
 
-
-
   useEffect(() => {
-    //getCustomerInfo();
-    getAchievementsWithCompletion()
-  }, [usersAchievements]);
+    getAchievementsWithCompletion();
+  }, []);
 
-if(achievementsWithCompletion){
-  return (
-    <View>
-      <EnhancedAchievementsList
-        user={user}
-        achievementsWithCompletion={achievementsWithCompletion}
-      />
-    </View>
-  );
-}
+  console.log(
+    'Achievements with completion state:',
+    achievementsWithCompletion
+  ); // Add this logging
+
+  if (achievementsWithCompletion) {
+    return (
+      <View>
+        <EnhancedAchievementsList
+          user={user}
+          achievementsWithCompletion={achievementsWithCompletion}
+        />
+      </View>
+    );
+  }
+
   return (
     <View>
       <Text style={{color: 'white'}}>Loading Achievements</Text>
@@ -75,16 +65,8 @@ if(achievementsWithCompletion){
   );
 };
 
-
-
-const enhance = withObservables(['user', 'usersAchievements'], ({ user }) =>
-({ 
-  user,
-  usersAchievements: user.usersAchievements.observe(),
-
-}))
-
-const EnhancedAchievementsScreen = enhance(AchievementsScreen)
+const enhance = withObservables(['user'], ({user}) => ({user}));
+const EnhancedAchievementsScreen = enhance(AchievementsScreen);
 export default EnhancedAchievementsScreen;
 
 const styles = StyleSheet.create({});

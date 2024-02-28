@@ -1,9 +1,11 @@
-import {StyleSheet, Text, View, SafeAreaView, FlatList} from 'react-native';
-import React from 'react';
+import {FlatList, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+
 import EnhancedUserMile from './UserMile';
-import withObservables from '@nozbe/with-observables';
-import {User} from '../../watermelon/models';
 import {Pressable} from 'react-native';
+import React from 'react';
+import {User} from '../../watermelon/models';
+import withObservables from '@nozbe/with-observables';
+
 interface Props {
   usersMilesCollection: any;
   userMiles: any;
@@ -11,7 +13,6 @@ interface Props {
 }
 
 const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
-
   const sortUsersMiles = (usersMilesCollection: any) => {
     return usersMilesCollection.sort((a: any, b: any) => {
       const aMiles = parseFloat(a.totalMiles);
@@ -26,13 +27,11 @@ const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
       }
     });
   };
+
   const sortedUsersMiles = sortUsersMiles(usersMilesCollection);
+
   return (
-    <SafeAreaView
-      style={{
-        backgroundColor: 'black',
-        width: '100%',
-      }}>
+    <SafeAreaView style={styles.container}>
       <View>
         <Text style={styles.sectionTitle}>Your Rank:</Text>
 
@@ -49,37 +48,47 @@ const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
           }
         })}
       </View>
+
       <Text style={styles.sectionTitle}>All Users: </Text>
-      <SafeAreaView style={{marginBottom: 400}}>
-        <FlatList
-          data={sortedUsersMiles}
-          renderItem={({item, index}) => (
-            <EnhancedUserMile
-              key={item.userId}
-              userMiles={item}
-              index={index}
-              user={user}
-            />
-          )}
-        />
-      </SafeAreaView>
+
+      <FlatList
+        data={sortedUsersMiles}
+        renderItem={({item, index}) => (
+          <EnhancedUserMile
+            key={item.userId}
+            userMiles={item}
+            index={index}
+            user={user}
+          />
+        )}
+        keyExtractor={(item) => item.userId}
+        contentContainerStyle={styles.listContainer}
+      />
     </SafeAreaView>
   );
 };
 
 const enhance = withObservables(['userMiles', 'user'], ({userMiles, user}) => ({
   userMiles,
-  user
+  user,
 }));
 
 const EnhancedLeaderboard = enhance(Leaderboard);
 export default EnhancedLeaderboard;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+    paddingHorizontal: 16,
+  },
   sectionTitle: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
     marginVertical: 10,
+  },
+  listContainer: {
+    paddingBottom: 400, // Adjust this value as needed
   },
 });

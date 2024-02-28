@@ -11,10 +11,11 @@ const searchFilterFunction = <T>(
   // Function to execute the search logic
   const executeSearch = (searchText: string) => {
     // Filter the masterDataSource
+    console.log(masterDataSource);
     const newData = masterDataSource.filter(function (item) {
-      const itemData = (item[keyToQuery] as unknown as string).toUpperCase();
-      const textData = searchText.toUpperCase();
-      return itemData.indexOf(textData) > -1;
+      const itemData = (item[keyToQuery] as string)?.toLowerCase(); // Use optional chaining here
+      const textData = searchText.toLowerCase();
+      return itemData?.indexOf(textData) > -1; // Use optional chaining here
     });
     setFilteredDataSource(newData);
     setSearchCallback(searchText);
@@ -43,4 +44,4 @@ const searchFilterFunction = <T>(
   }
 };
 
-export default searchFilterFunction
+export default searchFilterFunction;

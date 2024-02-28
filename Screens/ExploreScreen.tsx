@@ -1,10 +1,3 @@
-import {ScrollView, StyleSheet, Text, SafeAreaView} from 'react-native';
-import EnhancedNearbyTrails from '../components/NearbyTrails';
-import React, {useContext, useState} from 'react';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
-import searchFilterFunction from '../helpers/searchFilter';
-import SearchBar from '../components/searchBar';
-import withObservables from '@nozbe/with-observables';
 import {
   Completed_Hike,
   Queued_Trail,
@@ -12,6 +5,14 @@ import {
   Trail,
   User,
 } from '../watermelon/models';
+import React, {useContext, useState} from 'react';
+import {SafeAreaView, ScrollView, StyleSheet, Text} from 'react-native';
+
+import EnhancedNearbyTrails from '../components/NearbyTrails';
+import SearchBar from '../components/searchBar';
+import searchFilterFunction from '../helpers/searchFilter';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import withObservables from '@nozbe/with-observables';
 
 interface Props {
   user: User;
@@ -68,7 +69,7 @@ const ExploreScreen = ({
 
   return (
     <SafeAreaView>
-      <ScrollView>
+    
         <EnhancedNearbyTrails
           user={user}
           trailsCollection={trailsCollection}
@@ -77,7 +78,7 @@ const ExploreScreen = ({
           completedHikes={completedHikes}
           userSubscription={userSubscription[0]}
         />
-      </ScrollView>
+      
     </SafeAreaView>
   );
 };

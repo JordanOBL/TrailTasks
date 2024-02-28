@@ -1,12 +1,12 @@
+import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
+import {MockTestUsers} from '../mockTestUsers.js';
+import {Q} from '@nozbe/watermelondb';
+import {achievementsWithIds} from '../../assets/Achievements/addAchievementIds.js';
+import {achievements as masterAchievements} from '../../assets/Achievements/masterAchievementList';
+import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 /* eslint-disable prettier/prettier */
 import {testDb} from '../../watermelon/testDB'; // Import the test database instance
-import {MockTestUsers} from '../mockTestUsers.js';
-import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import {v4 as uuidv4} from 'uuid';
-import {Q} from '@nozbe/watermelondb';
-import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
-import {achievements as masterAchievements} from '../../assets/Achievements/masterAchievementList';
-import {achievementsWithIds} from '../../assets/Achievements/addAchievementIds.js';
 setGenerator(uuidv4);
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => {});
@@ -261,7 +261,7 @@ describe('User Session Achievements', () => {
       'Family',
       achievementsWithCompletions
     );
-    console.debug('TESTS', {results});
+  
     let usersAchievementsAfterAdd = await user[0].usersAchievements;
 
     //expect achievement manager to return correct achievement

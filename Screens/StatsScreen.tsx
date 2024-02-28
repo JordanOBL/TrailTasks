@@ -1,28 +1,28 @@
+import * as React from 'react';
+
 import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
   FlatList,
   Pressable,
   SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import {RadioButton, SegmentedButtons} from 'react-native-paper';
-import * as React from 'react';
+import {Session_Category, User, User_Session} from '../watermelon/models';
 
-import SelectDropdown from 'react-native-select-dropdown';
+import {FilterBy} from '../helpers/Stats/FilterFunction';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
+import {Q} from '@nozbe/watermelondb';
+import SelectDropdown from 'react-native-select-dropdown';
 import SessionList from '../components/Stats/SessionList';
 import Stats from '../components/Stats/Stats';
-import {FilterBy} from '../helpers/Stats/FilterFunction';
-import {User, User_Session} from '../watermelon/models';
-import withObservables from '@nozbe/with-observables';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 type TimeFrame = {
   label: string;
   value: number;
 };
+
 const timeFrames: TimeFrame[] = [
   {label: 'All Time', value: 0},
   {label: '1 Year', value: 365},
@@ -33,27 +33,6 @@ const timeFrames: TimeFrame[] = [
   {label: '1 Week', value: 7},
   {label: '1 Day', value: 1},
 ];
-const categories: string[] = [
-  'All Categories',
-'Chores',
-'Cooking',
-'Drawing',
-'Driving',
-'Errands',
-'Family',
-'Meditating',
-'Other',
-'Outdoors',
-'Pets',
-'Reading',
-'Social',
-'Sports',
-'Study',
-'Work',
-'Workout',
-'Writing',
-'Yoga',
-];
 
 type Props = {
   user: User;
@@ -62,239 +41,242 @@ type Props = {
 
 const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   const watermelonDatabase = useDatabase();
-  // const [usersSessionsCollection, setUsersSessionsCollection] = React.useState<any>()
-  // const getUsersSession = async () =>
-  // {
-  //   const usersSessionsCollection = await watermelonDatabase.collections.get('users_sessions').query().fetch()
-  //   setUsersSessionsCollection(usersSessionsCollection)
-  // }
 
- 
+  const [sessionCategories, setSessionCategories] = React.useState<
+    Session_Category[] | []
+  >([]);
+  const [userSessionsWithCategories, setUserSessionsWithCategories] =
+    React.useState<Session_Category[] | []>([]);
   const [timeFilter, setTimeFilter] = React.useState<string>(
     timeFrames[0].label
   );
-  const [categoryFilter, setCategoryFilter] = React.useState<string>(
-    categories[0]
+  const [categoryFilter, setCategoryFilter] =
+    React.useState<string>('All Categories');
+  const [filteredUserSessions, setFilteredUserSessions] = React.useState<any[]>(
+    userSessionsWithCategories
   );
-  // const [userSessions, setUserSessions] = React.useState<any[]>([]);
-  const [filteredUserSessions, setFilteredUserSessions] = React.useState<
-    User_Session[]
-  >(userSessions);
-
-  const [view, setView] = React.useState('stats');
+  const [view, setView] = React.useState<'stats' | 'sessions'>('stats');
   const [showFilterMenu, setShowFilterMenu] = React.useState(false);
-
-  function pad(value: number): string {
-    return value < 10 ? `0${value}` : `${value}`;
-  }
-
-  // function formatTime(seconds: number): string {
-  //   const hours = Math.floor(seconds / 3600);
-  //   const minutes = Math.floor((seconds % 3600) / 60);
-  //   const remainingSeconds = seconds % 60;
-  //   return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
-  // }
 
   const handleTimeFilterChange = (str: string) => {
     setTimeFilter(str);
   };
 
-  const handleCategoryFilterChange = (str: string) => {
-    setCategoryFilter(str);
+  const handleCategoryFilterChange = (categoryName: string) => {
+    setCategoryFilter(categoryName);
+    setFilteredUserSessions(
+      categoryName === 'All Categories'
+        ? userSessionsWithCategories
+        : userSessionsWithCategories.filter(
+            (session) => session.sessionCategoryName === categoryName
+          )
+    );
   };
 
-console.log(userSessions)
+  async function getUserSessionsWithCategories() {
+    try {
+      const query = `SELECT users_sessions.*, session_categories.session_category_name 
+      FROM users_sessions 
+      LEFT JOIN session_categories ON users_sessions.session_category_id = session_categories.id 
+      WHERE users_sessions.user_id = ?
+      ORDER BY users_sessions.date_added DESC;`;
+      const userSessionsWithCategories: any[] = await watermelonDatabase
+        .get('users_sessions')
+        .query(Q.unsafeSqlQuery(query, [user.id]))
+        .unsafeFetchRaw();
+      if (userSessionsWithCategories) {
+        setUserSessionsWithCategories(userSessionsWithCategories);
+        setFilteredUserSessions(userSessionsWithCategories);
+      }
+    } catch (err) {
+      console.error(
+        'Error getting userSessionsWithCategories in Stats Screen',
+        err
+      );
+    }
+  }
+
+  async function getSessionCategories() {
+    try {
+      const sessionCategories: Session_Category[] = await watermelonDatabase
+        .get('session_categories')
+        .query()
+        .fetch();
+      if (sessionCategories) {
+        setSessionCategories(sessionCategories);
+      }
+    } catch (err) {
+      console.error('Error getting session categories in Stats Screen', err);
+    }
+  }
+
+  React.useEffect(() => {
+    getSessionCategories();
+    getUserSessionsWithCategories();
+  }, [user]);
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Filter Toggle */}
       <Pressable
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          padding: 10,
-          backgroundColor: 'rgba(0,200,250, 1)',
-        }}
+        style={styles.filterToggle}
         onPress={() => setShowFilterMenu((prev) => !prev)}>
-        <Text
-          style={{
-            color: 'black',
-            fontWeight: 'bold',
-            fontSize: 22,
-          }}>
-          Filter Menu
-        </Text>
-        {showFilterMenu ? (
-          <Ionicons name="caret-down-outline" size={20} color="white" />
-        ) : (
-          <Ionicons size={20} name="caret-forward-outline" color="white" />
-        )}
+        <Text style={styles.filterToggleText}>Filter</Text>
+        <Ionicons
+          name={showFilterMenu ? 'caret-up-outline' : 'caret-down-outline'}
+          size={20}
+          color="rgb(221, 224, 226)"
+        />
       </Pressable>
-      {showFilterMenu ? (
-        <View
-          style={{
-            backgroundColor: 'rgba(50, 50, 50, 1)',
-            position: 'absolute',
-            zIndex: 10,
-            width: '100%',
-            top: 45,
-            padding: 20,
-          }}>
-          <View style={styles.filterContainer}>
-            <SelectDropdown
-              data={categories}
-              onSelect={(item) => handleCategoryFilterChange(item)}
-              defaultButtonText={categoryFilter}
-              buttonStyle={styles.filterButton}
-              buttonTextStyle={styles.filterButtonText}
-              dropdownStyle={styles.filterDropdown}
-              //dropdownTextStyle={styles.filterDropdownText}
-            />
 
-            <SelectDropdown
-              data={timeFrames}
-              onSelect={(selectedItem, index) =>
-                handleTimeFilterChange(selectedItem.label)
-              }
-              buttonTextAfterSelection={(selectedItem, index) => {
-                // text represented after item is selected
-                // if data array is an array of objects then return selectedItem.property to render after item is selected
-                return selectedItem.label;
-              }}
-              rowTextForSelection={(item, index) => {
-                // text represented for each item in dropdown
-                // if data array is an array of objects then return item.property to represent item in dropdown
-                return item.label;
-              }}
-              defaultButtonText={timeFilter}
-              buttonStyle={styles.filterButton}
-              buttonTextStyle={styles.filterButtonText}
-              dropdownStyle={styles.filterDropdown}
+      {/* Filter Menu */}
+      {showFilterMenu && (
+        <View style={styles.filterMenu}>
+          {/* Category Filter Dropdown */}
+          <SelectDropdown
+            data={[
+              {sessionCategoryName: 'All Categories'},
+              ...sessionCategories,
+            ]}
+            onSelect={(selectedItem) =>
+              handleCategoryFilterChange(selectedItem.sessionCategoryName)
+            }
+            buttonTextAfterSelection={(selectedItem) =>
+              selectedItem.sessionCategoryName
+            }
+            rowTextForSelection={(item) => item.sessionCategoryName}
+            defaultButtonText={categoryFilter}
+            buttonStyle={styles.filterButton}
+            buttonTextStyle={styles.filterButtonText}
+            dropdownStyle={styles.filterDropdown}
+          />
 
-              //dropdownTextStyle={styles.filterDropdownText}
-            />
-          </View>
-          <View style={{alignItems: 'center'}}>
-            <Pressable
-              style={{
-                backgroundColor: 'rgba(0,200,250, 1)',
-                padding: 10,
-                width: '90%',
-                borderRadius: 10,
-              }}
-              onPress={() =>
-                FilterBy(
-                  timeFilter,
-                  categoryFilter,
-                  userSessions,
-                  setFilteredUserSessions
-                )
-              }>
-              <Text
-                style={{
-                  color: 'black',
-                  textAlign: 'center',
-                  padding: 5,
-                  fontSize: 16,
-                  fontWeight: 'bold',
-                }}>
-                Filter
-              </Text>
-            </Pressable>
-          </View>
+          {/* Time Filter Dropdown */}
+          <SelectDropdown
+            data={timeFrames}
+            onSelect={(selectedItem) =>
+              handleTimeFilterChange(selectedItem.label)
+            }
+            buttonTextAfterSelection={(selectedItem) => selectedItem.label}
+            rowTextForSelection={(item) => item.label}
+            defaultButtonText={timeFilter}
+            buttonStyle={styles.filterButton}
+            buttonTextStyle={styles.filterButtonText}
+            dropdownStyle={styles.filterDropdown}
+          />
+
+          {/* Filter Button */}
+          <Pressable
+            style={[styles.filterButton, styles.filterApplyButton]}
+            onPress={() =>
+              FilterBy(
+                timeFilter,
+                categoryFilter,
+                userSessionsWithCategories,
+                setFilteredUserSessions
+              )
+            }>
+            <Text style={styles.filterApplyButtonText}>Apply</Text>
+          </Pressable>
         </View>
-      ) : (
-        <View></View>
       )}
+
+      {/* Content */}
       {view === 'sessions' ? (
-        <SessionList filteredUserSessions={filteredUserSessions} sessionCategories={categories} />
+        <SessionList
+          filteredUserSessions={filteredUserSessions}
+          sessionCategories={sessionCategories}
+        />
       ) : (
         <Stats
           filteredUserSessions={filteredUserSessions}
           filteredCategory={categoryFilter}
-            filteredTime={timeFilter}
-            sessionCategories={categories}
+          filteredTime={timeFilter}
+          sessionCategories={sessionCategories}
         />
       )}
-      <SegmentedButtons
-        style={{
-          paddingHorizontal: 20,
-          paddingVertical: 20,
-          position: 'absolute',
-          bottom: 10,
-        }}
-        value={view}
-        onValueChange={setView}
-        buttons={[
-          {
-            value: 'stats',
-            label: 'Stats',
-            icon: 'information',
-            style: {backgroundColor: 'white'},
-          },
-          {
-            value: 'sessions',
-            label: 'Sessions',
-            icon: 'format-list-bulleted-square',
-            style: {backgroundColor: 'white'},
-          },
-        ]}
-      />
+
+      {/* Screen View Toggle */}
+      <Pressable
+        style={styles.toggleButton}
+        onPress={() => setView(view === 'stats' ? 'sessions' : 'stats')}>
+        <Ionicons
+          name={view === 'stats' ? 'disc' : 'information'}
+          size={24}
+          color="rgb(18, 19, 21)"
+        />
+      </Pressable>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
-    height: '100%',
+    flex: 1,
+    backgroundColor: 'rgb(18, 19, 21)',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  filterContainer: {
+  filterToggle: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginBottom: 5,
-    paddingRight: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 10,
+    backgroundColor: 'rgb(7, 254, 213)',
+  },
+  filterToggleText: {
+    color: 'rgb(18, 19, 21)',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  filterMenu: {
+    position: 'absolute',
+    top: 90,
+    left: 10,
+    backgroundColor: 'rgb(18, 19, 21)',
+    borderRadius: 10,
+    elevation: 5,
+    padding: 20,
+    zIndex: 1,
   },
   filterButton: {
-    backgroundColor: '#ddd',
+    backgroundColor: 'rgb(31, 33, 35)',
     borderRadius: 5,
-    marginRight: 10,
-    width: '45%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 10,
   },
   filterButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: 'rgb(221, 224, 226)',
   },
   filterDropdown: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgb(31, 33, 35)',
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: 'rgb(221, 224, 226)',
     marginTop: 5,
   },
-  filterDropdownText: {
-    fontSize: 16,
-    color: '#333',
+  filterApplyButton: {
+    backgroundColor: 'rgb(7, 254, 213)',
+    alignItems: 'center',
   },
-  listItem: {
-    borderBottomWidth: 1,
-    borderColor: 'rgba(150, 100, 0, .3)',
-    padding: 20,
+  filterApplyButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'rgb(18, 19, 21)',
+  },
+  toggleButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    backgroundColor: 'rgb(7, 254, 213)',
+    borderRadius: 30,
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
   },
 });
-const enhance = withObservables(['user', 'userSessions'], ({user}) => ({
-  user: user.observe(),
-  userSessions: user.usersSessions.observe(),
-  userSessionsWithCategory: user.userSessionsWithCategory.observe()
-  // Shortcut syntax for `post.comments.observe()`
-}));
 
-const EnhancedStatsScreen = enhance(StatsScreen);
-export default EnhancedStatsScreen;
-
+export default StatsScreen;

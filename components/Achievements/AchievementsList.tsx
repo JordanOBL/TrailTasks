@@ -1,151 +1,137 @@
-import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
 import * as React from 'react';
+
+import {Achievement, User, User_Achievement} from '../../watermelon/models';
+import {FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
+
+import {AchievementsWithCompletion} from '../../types/achievements';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import withObservables from '@nozbe/with-observables';
-import { Achievement, User, User_Achievement } from '../../watermelon/models';
-import { AchievementsWithCompletion } from '../../types/achievements';
 
-
-interface Props
-{
-	user: User
-	achievementsWithCompletion: AchievementsWithCompletion[]
-	userAchievements: User_Achievement[]
+interface Props {
+  user: User;
+  achievementsWithCompletion: AchievementsWithCompletion[];
+  userAchievements: User_Achievement[];
 }
 
-const AchievementsList = ({user, achievementsWithCompletion}: Props) => {
-	
-	const [selectedUserAchievement, setSelectedUserAchievement] =
-		React.useState<number | null>(null);
+const AchievementsList: React.FC<Props> = ({
+  user,
+  achievementsWithCompletion,
+}) => {
+  const [selectedUserAchievement, setSelectedUserAchievement] = React.useState<
+    string | null
+  >(null);
 
+  const handleAchievementClick = (id: string) => {
+    setSelectedUserAchievement(selectedUserAchievement === id ? null : id);
+  };
 
-	const handleAchievementClick = (id: number) => {
-		if (id === selectedUserAchievement) {
-			setSelectedUserAchievement(null);
-		} else {
-			setSelectedUserAchievement(id);
-		}
-	};
-
-
-	if (achievementsWithCompletion)
-	{
-		return (
-      <View style={{justifyContent: 'space-evenly', paddingTop: 22}}>
+  if (achievementsWithCompletion) {
+    return (
+      <View style={styles.container}>
         <FlatList
           data={achievementsWithCompletion}
           renderItem={({item}) => (
             <Pressable
-              style={{
-                backgroundColor: item.completed
-                  ? 'rgba(210,180,140, 1)'
-                  : 'black',
-              }}
+              style={[
+                styles.achievementContainer,
+                {
+                  backgroundColor: item.completed
+                    ? 'rgb(7, 254, 213)'
+                    : 'black',
+                },
+              ]}
               key={item.id}
               id={item.id}
-              onPress={() => handleAchievementClick(parseInt(item.id))}>
-              <View
-                style={{
-                  padding: 10,
-                  height: 60,
-                  borderBottomWidth: 1,
-                  borderColor: item.completed
-                    ? 'rgba(150,0,0,.1)'
-                    : 'rgba(255,255,255,.3)',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}>
+              onPress={() =>
+              {
+                if(item.completed) handleAchievementClick(item.id)
+              }}>
+              <View style={styles.achievementContent}>
                 <Text
-                  style={{
-                    color:
-                      selectedUserAchievement == parseInt(item.id) &&
-                      item.completed
-                        ? 'rgba(150,0,0,1)'
-                        : item.completed
-                        ? 'white'
-                        : 'rgba(255, 255, 255, 0.1)',
-                    fontWeight: 'bold',
-                    fontSize: 26,
-                  }}>
-                  {/* {item.completed
-                    ? item.achievement_name
-                    : 'Locked'} */}
+                  style={[
+                    styles.achievementText,
+                    {
+                      color: item.completed
+                        ? 'black'
+                        : 'rgba(255, 255, 255, 0.8)',
+                    },
+                  ]}>
                   {item.achievement_name}
                 </Text>
                 <Ionicons
-                  color={
-                    selectedUserAchievement == parseInt(item.id) &&
-                    item.completed
-                      ? 'rgba(150,0,0,1)'
-                      : 'white'
-                  }
+                  color={item.completed ? 'black' : 'white'}
                   size={20}
                   name={
-                    !item.completed
-                      ? 'lock-closed-outline'
-                      : selectedUserAchievement === parseInt(item.id)
+                    selectedUserAchievement === item.id
                       ? 'caret-down-outline'
                       : 'caret-forward-outline'
-                  }></Ionicons>
+                  }
+                />
               </View>
-              <View
-                style={{
-                  display:
-                    selectedUserAchievement == parseInt(item.id) &&
-                    item.completed
-                      ? 'flex'
-                      : 'none',
-                  backgroundColor: 'rgba(210,180,140, .2)',
-                  padding: 10,
-                  height: 40,
-                }}>
-                <Text
-                  style={{
-                    color: 'rgba(150,0,0,1)',
-                    fontWeight: 'bold',
-                    fontSize: 16,
-                    textAlign: 'center',
-                  }}>
-                  {item.achievement_description}
-                </Text>
-                <Text
-                  style={{
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: 10,
-                    padding: 10,
-                    height: 30,
-                    display:
-                      selectedUserAchievement == parseInt(item.id) &&
-                      item.completed
-                        ? 'flex'
-                        : 'none',
-                    backgroundColor: 'rgba(210,180,140, .2)',
-                  }}>
-                  Completed: {item.completed}
-                </Text>
-              </View>
+              {selectedUserAchievement === item.id && item.completed && (
+                <View style={styles.achievementDescription}>
+                  <Text style={styles.descriptionText}>
+                    {item.achievement_description}
+                  </Text>
+                </View>
+              )}
             </Pressable>
           )}
         />
       </View>
     );
-	}
-	return (
+  }
+  return (
     <View>
-      <Text style={{color: 'white'}}>Loading</Text>
+      <Text style={styles.loadingText}>Loading</Text>
     </View>
   );
 };
 
-
-
 const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
-	user,
-		userAchievements: user.usersAchievements.observe()
-}))
+  user,
+  userAchievements: user.usersAchievements.observe(),
+}));
 
-const EnhancedAchievementsList = enhance(AchievementsList)
+const EnhancedAchievementsList = enhance(AchievementsList);
 export default EnhancedAchievementsList;
-const styles = StyleSheet.create({});
+
+const styles = StyleSheet.create({
+  container: {
+    justifyContent: 'space-evenly',
+    paddingTop: 22,
+  },
+  achievementContainer: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  achievementContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  achievementText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  achievementDescription: {
+    backgroundColor: 'rgba(210,180,140, .2)',
+    padding: 10,
+  },
+  descriptionText: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  completedText: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    textAlign: 'center',
+    color: '#960000',
+  },
+  loadingText: {
+    color: 'white',
+  },
+});

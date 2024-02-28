@@ -1,44 +1,59 @@
-import {StyleSheet, Text, SafeAreaView} from 'react-native';
 import React, {useEffect, useState} from 'react';
+import {SafeAreaView, StyleSheet, Text} from 'react-native';
+import {User, User_Miles} from '../watermelon/models';
+
+import EnhancedLeaderboard from '../components/Leaderboards/Leaderboard';
 import SyncIndicator from '../components/SyncIndicator';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import EnhancedLeaderboard from '../components/Leaderboards/Leaderboard';
 import withObservables from '@nozbe/with-observables';
-import {User, User_Miles} from '../watermelon/models';
+
 interface Props {
   user: User;
   currentUsersMiles: User_Miles[];
 }
+
 const LeaderboardsScreen = ({currentUsersMiles, user}: Props) => {
   const watermelonDatabase = useDatabase();
-  const [usersMilesCollection, setUsersMilesCollection] = useState<any>(null);
-
-  async function getUsersMiles() {
-    const usersMilesCollection = await watermelonDatabase.collections
-      .get('users_miles')
-      .query()
-      .fetch();
-    setUsersMilesCollection(usersMilesCollection);
-  }
+  const [usersMilesCollection, setUsersMilesCollection] = useState<
+    User_Miles[] | null
+  >(null);
 
   useEffect(() => {
-    if (usersMilesCollection == null || currentUsersMiles === null) {
-      console.log('sync in lbs');
+    if (!currentUsersMiles || !currentUsersMiles.length) {
+      console.log('Syncing in LeaderboardsScreen');
       sync(watermelonDatabase)
-        .then(() => getUsersMiles())
-        .catch((e) => console.log('error in leaderboeardscreen useeffect', e));
+        .then(() => {
+          getUsersMiles();
+        })
+        .catch((error) => {
+          console.log('Error in LeaderboardsScreen useEffect:', error);
+        });
+    } else {
+      getUsersMiles();
     }
-  }, [currentUsersMiles, usersMilesCollection, watermelonDatabase]);
+  }, [currentUsersMiles, watermelonDatabase]);
+
+  async function getUsersMiles() {
+    try {
+      const usersMiles = await watermelonDatabase.collections
+        .get<User_Miles>('users_miles')
+        .query()
+        .fetch();
+      setUsersMilesCollection(usersMiles);
+    } catch (error) {
+      console.log('Error fetching users miles:', error);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <SyncIndicator database={watermelonDatabase} delay={3000} /> */}
-      {currentUsersMiles !== null && usersMilesCollection !== null ? (
+      <SyncIndicator database={watermelonDatabase} delay={3000} />
+      {usersMilesCollection ? (
         <EnhancedLeaderboard
           usersMilesCollection={usersMilesCollection}
           user={user}
-          userMiles={currentUsersMiles[0]}
+          userMiles={currentUsersMiles[0]} // Assuming currentUsersMiles is an array
         />
       ) : (
         <Text>Loading...</Text>
@@ -50,13 +65,14 @@ const LeaderboardsScreen = ({currentUsersMiles, user}: Props) => {
 const enhance = withObservables(['user'], ({user}) => ({
   user,
   currentUsersMiles: user.usersMiles.observe(),
-
 }));
 
 const EnhancedLeaderboardsScreen = enhance(LeaderboardsScreen);
 export default EnhancedLeaderboardsScreen;
+
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
   },
 });

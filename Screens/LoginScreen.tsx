@@ -1,6 +1,8 @@
-import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+
 import Login from '../components/Login';
 import React from 'react';
+
 interface Props
 {
   setUser: React.Dispatch<React.SetStateAction<any>>;
@@ -25,7 +27,5 @@ export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

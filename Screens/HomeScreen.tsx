@@ -1,36 +1,30 @@
+import * as React from 'react';
+
 import {
   Dimensions,
+  Image,
+  ScrollView,
   StyleSheet,
   Text,
   View,
-  ScrollView,
-  Image,
 } from 'react-native';
-import * as React from 'react';
-import Purchases, {
-  CustomerInfo,
-  PurchasesOffering,
-} from 'react-native-purchases';
-import SyncIndicator from '../components/SyncIndicator';
-import DistanceProgressBar from '../components/DistanceProgressBar';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {Pressable} from 'react-native';
-import withObservables from '@nozbe/with-observables';
-import {handleLogOut} from '../helpers/logoutHelpers';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
-import Ranks from '../helpers/Ranks/ranksData';
-import getUserRank from '../helpers/Ranks/getUserRank';
-import {sync} from '../watermelon/sync';
 import {Subscription, User, User_Miles} from '../watermelon/models';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+
 import Carousel from 'react-native-reanimated-carousel';
-
-import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
-import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
-
+import DistanceProgressBar from '../components/DistanceProgressBar';
+import {Pressable} from 'react-native';
+import Ranks from '../helpers/Ranks/ranksData';
 import ScreenLink from '../components/HomeScreen/screenLink';
-import EnhancedDistanceProgressBar from '../components/DistanceProgressBar';
-import { useEffect } from 'react';
-// import useUserSubscription from '../helpers/useUserSubscription';
+import SyncIndicator from '../components/SyncIndicator';
+import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
+import getUserRank from '../helpers/Ranks/getUserRank';
+import {handleLogOut} from '../helpers/logoutHelpers';
+import {sync} from '../watermelon/sync';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
+import withObservables from '@nozbe/with-observables';
+
 interface Rank {
   level: string;
   group: string;
@@ -38,6 +32,7 @@ interface Rank {
   range: number[];
   title: string;
 }
+
 interface Props {
   user: User;
   currentTrail?: any;
@@ -46,29 +41,26 @@ interface Props {
   userSubscription: Subscription[];
   totalMiles: User_Miles[];
 }
-const HomeScreen = ({
+
+const HomeScreen: React.FC<Props> = ({
   navigation,
   user,
   setUser,
   currentTrail,
   userSubscription,
   totalMiles,
-}: Props) => {
+}) => {
   const watermelonDatabase = useDatabase();
-  
   const [userRank, setUserRank] = React.useState<Rank | undefined>();
   const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const data = [...new Array(2).keys()]; // Your data array
   const width = Dimensions.get('window').width;
 
-//fetch revenue cat info with current user id = customerID in revcat
   const {currentOffering, customerInfo, isProMember} = useRevenueCat({
     userId: user.id,
   });
 
-    
-// console.log({currentOffering, customerInfo, isProMember})
   React.useEffect(() => {
     async function isConnected() {
       const {connection} = await checkInternetConnection();
@@ -76,8 +68,6 @@ const HomeScreen = ({
     }
     isConnected();
   }, []);
-
-  
 
   useFocusEffect(
     React.useCallback(() => {
@@ -90,96 +80,51 @@ const HomeScreen = ({
     }, [watermelonDatabase, user, totalMiles])
   );
 
-  //console.log('DEBUG', customerInfo )
   return !user || !currentTrail ? (
-    <View>
-      <Text style={{color: 'white'}}>Loading Your Data...</Text>
+    <View style={styles.loadingContainer}>
+      <Text style={styles.loadingText}>Loading Your Data...</Text>
     </View>
   ) : (
-    <View style={styles.Container}>
+    <View style={styles.container}>
       {/* <SyncIndicator delay={3000} /> */}
-      <Text
-        style={{
-          color: isConnected ? 'green' : 'gray',
-          paddingHorizontal: 10,
-          paddingVertical: 0,
-          textAlign: 'right',
-        }}>
+      <Text style={styles.onlineStatus}>
         {isConnected ? 'Online' : 'Offline'}
       </Text>
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          width: '100%',
-          alignItems: 'flex-start',
-          marginVertical: 0,
-          paddingHorizontal: 10,
-        }}>
-        <Text style={styles.H1}>{user.username}</Text>
-      </View>
-      <View style={{alignItems: 'center', justifyContent: 'center'}}>
-        <Carousel
-          loop
-          pagingEnabled={true}
-          snapEnabled={true}
-          // mode="parallax"
-          width={width}
-          height={width / 2}
-          autoPlay={false}
-          data={[...new Array(2).keys()]}
-          scrollAnimationDuration={1000}
-          onSnapToItem={(index) => setActiveIndex(index)}
-          renderItem={({index}) => (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flex: 1,
-                marginVertical: 10,
-                paddingHorizontal: 10,
-              }}>
-              {userRank && index === 0 ? (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: '100%',
-                    alignItems: 'center',
-                    marginVertical: 10,
-                    paddingHorizontal: 10,
-                  }}>
-                  <Image
-                    source={userRank ? userRank.image : null}
-                    style={{width: 125, height: 125}}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.H2}>Level {userRank.level}</Text>
-                  <Text style={styles.H3}>
-                    {userRank.group} {userRank.title}
-                  </Text>
-                </View>
-              ) : (
-                <View
-                  style={{
-                      padding: 10,
-                    width: '100%',
-                    backgroundColor: 'rgb(28,29,31)',
-                    borderColor: 'rgb(7,254,213)',
-                    borderWidth: 1,
-                    borderRadius: 10,
-                  }}>
-                  <Text
-                    style={[styles.H3, {margin: 0, color: 'rgb(7,254,213)'}]}>
-                    Current Trail:
-                  </Text>
-                  <Text style={styles.H3}>{currentTrail.trailName}</Text>
-                  <EnhancedDistanceProgressBar user={user} trail={currentTrail} />
-                </View>
-              )}
-            </View>
-          )}
-        />
-      </View>
+      <Text style={styles.username}>{user.username}</Text>
+      <Carousel
+        loop
+        pagingEnabled={true}
+        snapEnabled={true}
+        width={width}
+        height={width / 2}
+        autoPlay={false}
+        data={[...new Array(2).keys()]}
+        scrollAnimationDuration={1000}
+        onSnapToItem={(index) => setActiveIndex(index)}
+        renderItem={({index}) => (
+          <View style={styles.carouselItem}>
+            {userRank && index === 0 ? (
+              <View style={styles.rankContainer}>
+                <Image
+                  source={userRank.image}
+                  style={styles.rankImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.rankLevel}>Level {userRank.level}</Text>
+                <Text style={styles.rankTitle}>
+                  {userRank.group} {userRank.title}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.currentTrailContainer}>
+                <Text style={styles.trailText}>Current Trail:</Text>
+                <Text style={styles.trailName}>{currentTrail.trailName}</Text>
+                <DistanceProgressBar user={user} trail={currentTrail} />
+              </View>
+            )}
+          </View>
+        )}
+      />
       <View style={styles.paginationDotsContainer}>
         {data.map((item, index) => (
           <View
@@ -191,95 +136,88 @@ const HomeScreen = ({
           />
         ))}
       </View>
+      <ScrollView style={styles.linkContainer}>
+        <ScreenLink
+          user={user}
+          needsActiveSubscription={false}
+          hasActiveSubscription={
+            userSubscription[0] ? userSubscription[0].isActive : false
+          }
+          navigation={navigation}
+          navTo={'Stats'}>
+          Stats
+        </ScreenLink>
+        <ScreenLink
+          user={user}
+          needsActiveSubscription={true}
+          hasActiveSubscription={
+            userSubscription[0] ? userSubscription[0].isActive : false
+          }
+          navigation={navigation}
+          navTo={'HikingQueue'}>
+          Hiking Queue
+        </ScreenLink>
+        <ScreenLink
+          needsActiveSubscription={true}
+          hasActiveSubscription={
+            userSubscription[0] ? userSubscription[0].isActive : false
+          }
+          user={user}
+          navigation={navigation}
+          navTo={'Friends'}>
+          Friends
+        </ScreenLink>
+        <ScreenLink
+          needsActiveSubscription={false}
+          hasActiveSubscription={
+            userSubscription[0] ? userSubscription[0].isActive : false
+          }
+          user={user}
+          navigation={navigation}
+          navTo={'Achievements'}>
+          Achievements
+        </ScreenLink>
+        <ScreenLink
+          user={user}
+          navigation={navigation}
+          navTo={'Leaderboards'}
+          needsActiveSubscription={true}
+          hasActiveSubscription={
+            userSubscription[0] ? userSubscription[0].isActive : false
+          }>
+          Leaderboards
+        </ScreenLink>
+        <ScreenLink
+          user={user}
+          navigation={navigation}
+          navTo={'CompletedHikes'}
+          needsActiveSubscription={true}
+          hasActiveSubscription={
+            userSubscription[0] ? userSubscription[0].isActive : false
+          }>
+          Completed Trails
+        </ScreenLink>
+        <ScreenLink
+          user={user}
+          navigation={navigation}
+          navTo={'Settings'}
+          needsActiveSubscription={false}
+          hasActiveSubscription={
+            userSubscription[0] ? userSubscription[0].isActive : false
+          }>
+          Settings
+        </ScreenLink>
 
-      <View style={styles.Container}>
-        <ScrollView
-          style={{
-            marginTop: 10,
-            backgroundColor: 'rgb(18,19,21)',
-            flex: 1,
-          }}>
-          <ScreenLink
-            user={user}
-            needsActiveSubscription={false}
-            hasActiveSubscription={
-              userSubscription[0] ? userSubscription[0].isActive : false
-            }
-            navigation={navigation}
-            navTo={'Stats'}>
-            Stats
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            needsActiveSubscription={true}
-            hasActiveSubscription={
-              userSubscription[0] ? userSubscription[0].isActive : false
-            }
-            navigation={navigation}
-            navTo={'HikingQueue'}>
-            Hiking Queue
-          </ScreenLink>
-          <ScreenLink
-            needsActiveSubscription={true}
-            hasActiveSubscription={
-              userSubscription[0] ? userSubscription[0].isActive : false
-            }
-            user={user}
-            navigation={navigation}
-            navTo={'Friends'}>
-            Friends
-          </ScreenLink>
-          <ScreenLink
-            needsActiveSubscription={false}
-            hasActiveSubscription={
-              userSubscription[0] ? userSubscription[0].isActive : false
-            }
-            user={user}
-            navigation={navigation}
-            navTo={'Achievements'}>
-            Achievements
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            navigation={navigation}
-            navTo={'Leaderboards'}
-            needsActiveSubscription={true}
-            hasActiveSubscription={
-              userSubscription[0] ? userSubscription[0].isActive : false
-            }>
-            Leaderboards
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            navigation={navigation}
-            navTo={'CompletedHikes'}
-            needsActiveSubscription={true}
-            hasActiveSubscription={
-              userSubscription[0] ? userSubscription[0].isActive : false
-            }>
-            Completed Trails
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            navigation={navigation}
-            navTo={'Settings'}
-            needsActiveSubscription={false}
-            hasActiveSubscription={
-              userSubscription[0] ? userSubscription[0].isActive : false
-            }>
-            Settings
-          </ScreenLink>
-
-          <Pressable
-            onPress={async () => handleLogOut(setUser, watermelonDatabase)}
-            style={styles.LinkContainer}>
-            <Text style={[styles.H2, {color: 'red'}]}>Logout</Text>
-          </Pressable>
-        </ScrollView>
-      </View>
+        <Pressable
+          onPress={async () => handleLogOut(setUser, watermelonDatabase)}
+          style={styles.logoutButton}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </Pressable>
+      </ScrollView>
     </View>
   );
 };
+
 const enhance = withObservables(['user'], ({user}) => ({
   user: user.observe(),
   totalMiles: user.usersMiles.observe(),
@@ -289,51 +227,80 @@ const enhance = withObservables(['user'], ({user}) => ({
 
 const EnhancedHomeScreen = enhance(HomeScreen);
 export default EnhancedHomeScreen;
-// export default HomeScreen;
 
 const styles = StyleSheet.create({
-  Container: {
-    padding: 5,
-    backgroundColor: 'rgb(18,19,21)',
+  container: {
     flex: 1,
+    backgroundColor: 'rgb(18, 19, 21)',
+    padding: 10,
   },
-  H1: {
-    color: 'rgb(249,253,255)',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  onlineStatus: {
+    color: 'green',
+    textAlign: 'right',
+    marginVertical: 5,
+  },
+  username: {
+    color: 'rgb(249, 253, 255)',
     fontSize: 26,
     fontWeight: '800',
-    padding: 5,
+    paddingHorizontal: 10,
   },
-  H2: {
-    color: 'rgb(249,253,255)',
+  carouselItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    marginVertical: 10,
+    paddingHorizontal: 10,
+  },
+  rankContainer: {
+    alignItems: 'center',
+  },
+  rankImage: {
+    width: 125,
+    height: 125,
+  },
+  rankLevel: {
+    color: 'rgb(249, 253, 255)',
     fontSize: 22,
     fontWeight: '700',
-    textAlign: 'left',
+    textAlign: 'center',
   },
-  H3: {
-    color: 'rgb(249,253,255)',
+  rankTitle: {
+    color: 'rgb(249, 253, 255)',
     fontSize: 18,
     fontWeight: '700',
-    textAlign: 'left',
+    textAlign: 'center',
   },
-  trailText: {
-    color: 'rgb(221,224,226)',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-
-  LinkContainer: {
-    borderColor: 'rgb(31,33,35)',
+  currentTrailContainer: {
+    padding: 10,
+    width: '100%',
+    backgroundColor: 'rgb(28, 29, 31)',
+    borderColor: 'rgb(7, 254, 213)',
     borderWidth: 1,
     borderRadius: 10,
-    backgroundColor: 'rgb(31,33,35)',
-    flex: 1,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    color: 'rgb(221,224,226)',
-    fontWeight: '900',
+  },
+  trailText: {
+    color: 'rgba(221, 224, 226, .7)',
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 10,
-    padding: 20,
+    textAlign: 'center',
+  },
+  trailName: {
+    color: 'rgb(249, 253, 255)',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   paginationDotsContainer: {
     flexDirection: 'row',
@@ -352,5 +319,26 @@ const styles = StyleSheet.create({
   },
   activePaginationDot: {
     backgroundColor: 'rgb(7, 254, 213)',
+  },
+  linkContainer: {
+    marginTop: 10,
+    backgroundColor: 'rgb(18, 19, 21)',
+  },
+  logoutButton: {
+    borderColor: 'rgb(31, 33, 35)',
+    borderWidth: 1,
+    borderRadius: 10,
+    backgroundColor: 'rgb(31, 33, 35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'rgb(221, 224, 226)',
+    fontWeight: '900',
+    marginBottom: 10,
+    padding: 20,
+  },
+  logoutButtonText: {
+    color: 'red',
+    fontSize: 22,
+    fontWeight: 'bold',
   },
 });

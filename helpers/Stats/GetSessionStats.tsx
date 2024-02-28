@@ -39,17 +39,17 @@ export const getSessionStats = (
 
 	// Calculate total time and distance
 	const totalTime = filteredUserSessions.reduce(
-		(acc, session) => acc + session.totalSessionTime,
+		(acc, session) => acc + session.total_session_time,
 		0
 	);
 	const totalDistance = filteredUserSessions.reduce(
-		(acc, session) => acc + parseFloat(session.totalDistanceHiked),
+		(acc, session) => acc + parseFloat(session.total_distance_hiked),
 		0
 	);
 
 	// Calculate most productive time of day
 	const productiveTimes = filteredUserSessions.map((session) => {
-		const date = new Date(session.dateAdded);
+		const date = new Date(session.date_added);
 		const hour = date.getHours();
 		const timeOfDay =
 			hour >= 5 && hour < 12
@@ -71,9 +71,8 @@ export const getSessionStats = (
 
 	// Calculate most used category and least used category
 	const categoryCounts = filteredUserSessions.reduce((acc, session) => {
-		acc[session.sessionCategoryId] =
-			(acc[session.sessionCategoryId] || 0) + 1;
-		console.log(acc)
+		acc[session.session_category_name] =
+      (acc[session.session_category_name] || 0) + 1;
 		return acc;
 	}, {} as { [key: string]: number });
 
@@ -100,14 +99,7 @@ export const getSessionStats = (
 			productiveTimesCount[timeOfDay] ===
 			productiveTimesCount[productiveTimesSortedByCount[0]]
 	);
-	console.log({
-		totalTime,
-		totalDistance,
-		mostProductiveTime,
-		mostUsedCategory,
-		leastUsedCategory,
-		mostProductiveTimes,
-	});
+
 	setTotalDistance(totalDistance);
   setTotalTime(totalTime);
   setMostUsedCategory(mostUsedCategory)

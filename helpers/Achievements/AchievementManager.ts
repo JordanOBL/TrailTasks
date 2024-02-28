@@ -97,7 +97,7 @@ export const AchievementManager = {
 
           // Check for Single Trail Completion
           if (achievement.achievement_type === 'Single Trail Completion') {
-            const conditionTrailId: number  = parseInt(conditionTrailIds[0]);
+            const conditionTrailId: number  =  conditionTrailIds[0]
             if (completedTrailIds.includes(conditionTrailId)) {
               unlockAchievementIds.push({
                 achievementName: achievement.achievement_name,

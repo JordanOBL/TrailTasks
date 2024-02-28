@@ -1,66 +1,89 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native'
-import React from 'react'
-import formatTime  from '../../helpers/formatTime';
+import {FlatList, StyleSheet, Text, View} from 'react-native';
 
-interface Props
-{
-	filteredUserSessions: any[]
-	sessionCategories: string[]
+import React from 'react';
+import {Session_Category} from '../../watermelon/models';
+import formatTime from '../../helpers/formatTime';
+
+interface Props {
+  filteredUserSessions: any[];
+  sessionCategories: Session_Category[];
 }
 
-const SessionList = ({filteredUserSessions, sessionCategories}: Props) => {
-  return (
-		<View style={{ height: 575 }}>
-			<FlatList
-				data={filteredUserSessions}
-				renderItem={({ item, index }) => (
-					<View
-						key={index}
-						style={styles.listItem}>
-						<Text
-							style={{
-								color: 'white',
-								fontSize: 18,
-								fontWeight: 'bold',
-							}}>
-							Title: {item.sessionName}
-						</Text>
-						<Text
-							style={{
-								color: 'white',
-								fontSize: 18,
-								fontWeight: 'bold',
-							}}>
-							Category: {sessionCategories[Number(item.sessionCategoryId)]}
-						</Text>
-
-						{item.sessionDescription && (
-							<Text style={{ color: 'white', fontSize: 16 }}>
-								Desc: {item.sessionDescription}
-							</Text>
-						)}
-						<Text style={{ color: 'white', fontSize: 16 }}>
-							Date: {item.dateAdded}
-						</Text>
-						<Text style={{ color: 'white', fontSize: 16 }}>
-							Miles: {(item.totalDistanceHiked)} mi.
-						</Text>
-						<Text style={{ color: 'white', fontSize: 16 }}>
-							Time: {formatTime(item.totalSessionTime)} 
-						</Text>
-					</View>
-				)}
-			/>
-		</View>
+const SessionList = ({filteredUserSessions}: Props) => {
+  const renderSessionItem = ({item}) => (
+    <View style={styles.sessionContainer}>
+      <Text style={styles.title}>{item.session_name}</Text>
+      <Text style={styles.category}>
+        Category: {item.session_category_name}
+      </Text>
+      {item.sessionDescription && (
+        <Text style={styles.description}>
+          Description: {item.session_description}
+        </Text>
+      )}
+      <Text style={styles.date}>Date: {item.date_added}</Text>
+      <View style={styles.infoContainer}>
+        <Text style={styles.info}>Miles: {item.total_distance_hiked} mi.</Text>
+        <Text style={styles.info}>
+          Time: {formatTime(item.total_session_time)}
+        </Text>
+      </View>
+    </View>
   );
-}
 
-export default SessionList
+  return (
+    <FlatList
+      data={filteredUserSessions}
+      renderItem={renderSessionItem}
+      keyExtractor={(item, index) => index.toString()}
+      contentContainerStyle={styles.container}
+    />
+  );
+};
+
+export default SessionList;
 
 const styles = StyleSheet.create({
-	listItem: {
-		borderBottomWidth: 1,
-		borderColor: 'rgba(150, 100, 0, .3)',
-		padding: 20,
-	},
+  container: {
+    flexGrow: 1,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgb(18, 19, 21)',
+  },
+  sessionContainer: {
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgb(31, 33, 35)',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: 'rgb(221, 224, 226)',
+  },
+  category: {
+    fontSize: 16,
+    marginBottom: 8,
+    color: 'rgb(221, 224, 226)',
+  },
+  description: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontStyle: 'italic',
+    color: 'rgb(221, 224, 226)',
+  },
+  date: {
+    fontSize: 14,
+    marginBottom: 8,
+    color: 'rgb(221, 224, 226)',
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  info: {
+    fontSize: 16,
+    color: 'rgb(221, 224, 226)',
+  },
 });

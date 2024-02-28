@@ -1,73 +1,60 @@
 import {StyleSheet, Text, View} from 'react-native';
+
+import {Completed_Hike} from '../../watermelon/models';
 import React from 'react';
 import withObservables from '@nozbe/with-observables';
-import {Completed_Hike} from '../../watermelon/models';
 
 interface Props {
   completedHike: Completed_Hike;
   trail: any;
-
 }
 
-const CompletedHikeCard = ({completedHike, trail }: Props) => {
+const CompletedHikeCard = ({completedHike, trail}: Props) => {
   return (
-    <View style={styles.TrailContainer}>
-      <Text style={styles.TrailName}>{trail.trailName}</Text>
-      {/* <Text style={styles.TrailPark}>
-        {item.park_name} {.park_type} Park
-      </Text> */}
-      <Text style={styles.TrailStats}>
-        Distance: {' '}
-        <Text style={{fontWeight: '600'}}>
-          {trail.trailDistance} / {trail.trailDistance} miles
-        </Text>
+    <View style={styles.container}>
+      <Text style={styles.trailName}>{trail.trailName}</Text>
+      <Text style={styles.trailInfo}>
+        Distance: {trail.trailDistance} / {trail.trailDistance} miles
       </Text>
-      <Text style={styles.TrailStats}>
-        First Completed: <Text style={{fontWeight: '600'}}> {completedHike.firstCompletedAt}</Text>
+      <Text style={styles.trailInfo}>
+        First Completed: {completedHike.firstCompletedAt}
       </Text>
-      <Text style={styles.TrailStats}>
-        Last Completed: <Text style={{fontWeight: '600'}}> {completedHike.lastCompletedAt}</Text>
+      <Text style={styles.trailInfo}>
+        Last Completed: {completedHike.lastCompletedAt}
       </Text>
-      <Text style={styles.TrailStats}>
-        Best Time:<Text style={{fontWeight: '600'}}> {completedHike.bestCompletedTime}</Text> 
+      <Text style={styles.trailInfo}>
+        Best Time: {completedHike.bestCompletedTime}
       </Text>
     </View>
   );
 };
 
-const enhance = withObservables(['completedHike', 'trail'], ({completedHike}) => ({
-  completedHike: completedHike.observe(),
-  trail: completedHike.trail.observe(),
-}));
+const enhance = withObservables(
+  ['completedHike', 'trail'],
+  ({completedHike}) => ({
+    completedHike: completedHike.observe(),
+    trail: completedHike.trail.observe(),
+  })
+);
 
-const EnhancedCompletedHikeCard = enhance(CompletedHikeCard);
-
-export default EnhancedCompletedHikeCard;
+export default enhance(CompletedHikeCard);
 
 const styles = StyleSheet.create({
-  TrailContainer: {
-    padding: 10,
-    flex: 1,
-    marginVertical: 10,
-    backgroundColor: 'rgb(31, 33, 35)',
+  container: {
+    padding: 16,
+    backgroundColor: '#1f2123',
     borderRadius: 10,
+    marginBottom: 16,
   },
-  TrailName: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: 'rgb(7,254,213)',
-    padding: 5,
+  trailName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#07fed5',
+    marginBottom: 8,
   },
-  TrailStats: {
+  trailInfo: {
     fontSize: 16,
-    fontWeight: '800',
-    color: 'rgb(221,224,226)',
-    padding: 5,
-  },
-  TrailPark: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: 'rgb(221,224,226)',
-    padding: 5,
+    color: '#dddfe2',
+    marginBottom: 4,
   },
 });

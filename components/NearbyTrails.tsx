@@ -1,35 +1,28 @@
+import { Basic_Subscription_Trail, Completed_Hike, Queued_Trail, Subscription, Trail, User } from '../watermelon/models';
 import {
+  FlatList,
+  Modal,
+  Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   View,
-  Pressable,
-  Modal,
 } from 'react-native';
-import * as React from 'react';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
-import withObservables from '@nozbe/with-observables';
-import {
-  Basic_Subscription_Trail,
-  Completed_Hike,
-  Queued_Trail,
-  Subscription,
-  Trail,
-  User,
-} from '../watermelon/models';
+import React, {useEffect, useState} from 'react';
 
 import EnhancedTrailCard from './Trails/TrailCard';
 import formatDateTime from '../helpers/formatDateTime';
+import withObservables from '@nozbe/with-observables';
 
 interface Props {
   trailsCollection: Trail[];
   user: User;
   queuedTrails: Queued_Trail[];
-  basicSubscriptionTrails: any;
+  basicSubscriptionTrails: Basic_Subscription_Trail[];
   completedHikes: Completed_Hike[];
   userSubscription: Subscription;
 }
+
 const NearbyTrails = ({
   trailsCollection,
   user,
@@ -38,149 +31,97 @@ const NearbyTrails = ({
   basicSubscriptionTrails,
   userSubscription,
 }: Props) => {
-  const [showReplaceTrailModal, setShowReplaceTrailModal] =
-    React.useState<boolean>(false);
-  const [replacementTrailId, setReplacementTrailId] = React.useState<
-    number | string | null
-  >(null);
+  const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
+  const [replacementTrailId, setReplacementTrailId] = useState<null | number>(null);
 
-  const filterTrails = (title: string, trailsArr: any): any => {
-    if (title === 'Short Trails') {
-      return trailsArr.filter(
-        (trail: any) => trail.trailDifficulty === 'short'
-      );
-    } else if (title === 'Moderate Trails') {
-      return trailsArr.filter(
-        (trail: any) => trail.trailDifficulty === 'moderate'
-      );
-    } else if (title === 'Long Trails') {
-      return trailsArr.filter(
-        (trail: any) => trail.trailDiifficulty === 'long'
-      );
-    }
-  };
   const queuedCache: {[key: string]: boolean} = {};
   const completedCache: {[key: string]: boolean} = {};
-  const basicTrailsCache: {[key: string]: boolean} = {};
+  const basicTrailsCache: { [key: string]: boolean }  = {};
 
-  React.useEffect(() => {
-    completedHikes.forEach(
-      (trail: Completed_Hike) => (completedCache[trail.trailId] = true)
+  useEffect(() => {
+    completedHikes.forEach((trail) => (completedCache[trail.trailId] = true));
+    queuedTrails.forEach((trail) => (queuedCache[trail.trailId] = true));
+    basicSubscriptionTrails.forEach(
+      (trail: { trailId: string | number; }) => (basicTrailsCache[trail.trailId] = true)
     );
-  }, [completedHikes]);
+  }, [completedHikes, queuedTrails, basicSubscriptionTrails]);
 
-  React.useEffect(() => {
-    queuedTrails.forEach(
-      (trail: Queued_Trail) => (queuedCache[trail.trailId] = true)
-    );
-  }, [queuedTrails]);
+  const handleReplaceTrail = async () => {
+    await user.updateUserTrail({
+      trailId: replacementTrailId?.toString(),
+      trailStartedAt: formatDateTime(new Date()),
+    });
+    setShowReplaceTrailModal(false);
+    setReplacementTrailId(null);
+  };
 
-  basicSubscriptionTrails
-    .map((trail: any) => trail.trailId)
-    .forEach((trailId: any) => (basicTrailsCache[trailId] = true));
+  const renderTrailItem = ({item}) => (
+    <EnhancedTrailCard
+      userSubscription={userSubscription}
+      queuedCache={queuedCache}
+      completedCache={completedCache}
+      user={user}
+      setReplacementTrailId={setReplacementTrailId}
+      setShowReplaceTrailModal={setShowReplaceTrailModal}
+      trail={item}
+      completedHikes={completedHikes}
+      queuedTrails={queuedTrails}
+      basicSubscriptionTrails={basicTrailsCache}
+    />
+  );
 
-  return showReplaceTrailModal ? (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={showReplaceTrailModal}
-      onRequestClose={() => {
-        setShowReplaceTrailModal(!showReplaceTrailModal);
-      }}>
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.modalText}>
-            Are you sure you want to replace your trail? ( Trail progress will
-            be RESET, but total user miles hiked will be saved.)
-          </Text>
-          <Pressable
-            style={[styles.button, styles.buttonCancel]}
-            onPress={() => {
-              setShowReplaceTrailModal((prev) => !prev);
-              setReplacementTrailId(null);
-            }}>
-            <Text style={styles.textStyle}>Cancel</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.button, styles.buttonExit]}
-            onPress={async () => {
-              await user.updateUserTrail({
-                trailId: replacementTrailId?.toString(),
-                trailStartedAt: formatDateTime(new Date()),
-              });
-              setShowReplaceTrailModal((prev) => !prev);
-              setReplacementTrailId(null);
-            }}>
-            <Text style={styles.textStyle}>Change</Text>
-          </Pressable>
-        </View>
-      </View>
-    </Modal>
-  ) : (
+  return (
     <SafeAreaView>
-      <ScrollView
-        style={{
-          backgroundColor: 'transparent',
-          borderTopWidth: 1,
-          borderColor: 'rgb(31,33,35)',
-          padding: 10,
-        }}>
-        {userSubscription.isActive === false ? (
-          <View>
-            <Text style={styles.H2}> Free Monthly Trails</Text>
-            <ScrollView horizontal>
-              {trailsCollection && user ? (
-                trailsCollection.map((trail: any) => {
-                  if (basicTrailsCache && basicTrailsCache[trail.id]) {
-                    return (
-                      <EnhancedTrailCard
-                        userSubscription={userSubscription}
-                        queuedCache={queuedCache}
-                        completedCache={completedCache}
-                        user={user}
-                        key={trail.id}
-                        setReplacementTrailId={setReplacementTrailId}
-                        setShowReplaceTrailModal={setShowReplaceTrailModal}
-                        trail={trail}
-                        completedHikes={completedHikes}
-                        queuedTrails={queuedTrails}
-                        basicSubscriptionTrails={basicTrailsCache}
-                      />
-                    );
-                  }
-                })
-              ) : (
-                <Text>Loading...</Text>
-              )}
-            </ScrollView>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showReplaceTrailModal}
+        onRequestClose={() => setShowReplaceTrailModal(false)}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Are you sure you want to replace your trail? ( Trail progress will
+              be RESET, but total user miles hiked will be saved.)
+            </Text>
+            <Pressable
+              style={[styles.button, styles.buttonCancel]}
+              onPress={() => setShowReplaceTrailModal(false)}>
+              <Text style={styles.textStyle}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.buttonExit]}
+              onPress={handleReplaceTrail}>
+              <Text style={styles.textStyle}>Change</Text>
+            </Pressable>
           </View>
-        ) : (
-          <></>
-        )}
+        </View>
+      </Modal>
 
+      {userSubscription.isActive === false && (
+        <View>
+          <Text style={styles.H2}> Free Monthly Trails</Text>
+          <FlatList
+            data={trailsCollection.filter(
+              (trail) => basicTrailsCache[trail.id]
+            )}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            renderItem={renderTrailItem}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        </View>
+      )}
+
+      <View>
         <Text style={styles.H2}>All Trails</Text>
-        <ScrollView horizontal>
-          {trailsCollection && user ? (
-            trailsCollection.map((trail: any) => (
-              <EnhancedTrailCard
-                userSubscription={userSubscription}
-                queuedCache={queuedCache}
-                completedCache={completedCache}
-                user={user}
-                key={trail.id}
-                setReplacementTrailId={setReplacementTrailId}
-                setShowReplaceTrailModal={setShowReplaceTrailModal}
-                trail={trail}
-                completedHikes={completedHikes}
-                queuedTrails={queuedTrails}
-                basicSubscriptionTrails={basicTrailsCache}
-              />
-            ))
-          ) : (
-            <Text>Loading...</Text>
-          )}
-        </ScrollView>
-      </ScrollView>
+        <FlatList
+          data={trailsCollection}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          renderItem={renderTrailItem}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -192,40 +133,13 @@ const enhance = withObservables(
     completedHikes: user.completedHikes.observe(),
     queuedTrails: user.queuedTrails.observe(),
     userSubscription,
-
-    // Shortcut syntax for `post.comments.observe()`
   })
 );
 
 const EnhancedNearbyTrails = enhance(NearbyTrails);
 export default EnhancedNearbyTrails;
 
-//export default NearbyTrails;
-
 const styles = StyleSheet.create({
-  Container: {
-    flex: 1,
-    padding: 20,
-    marginTop: 0,
-  },
-  QueueButtons: {
-    color: 'rgb(249,253,255)',
-    fontSize: 26,
-    fontWeight: '900',
-  },
-  H1: {
-    color: 'rgb(249,253,255)',
-    fontSize: 24,
-    fontWeight: '900',
-    marginBottom: 10,
-  },
-  H2: {
-    color: 'rgb(249,253,255)',
-    fontSize: 22,
-    fontWeight: '800',
-    marginVertical: 10,
-  },
-
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -266,5 +180,11 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
+  },
+  H2: {
+    color: 'rgb(249,253,255)',
+    fontSize: 22,
+    fontWeight: '800',
+    marginVertical: 10,
   },
 });

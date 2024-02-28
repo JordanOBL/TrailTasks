@@ -1,50 +1,49 @@
-import {StyleSheet, Text, SafeAreaView, FlatList, View} from 'react-native';
 import * as React from 'react';
-import withObservables from '@nozbe/with-observables';
+
 import {Completed_Hike, User} from '../watermelon/models';
+import {FlatList, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+
 import CompletedHikeCard from '../components/CompletedHikes/CompletedHikeCard';
-import searchFilterFunction from '../helpers/searchFilter';
 import SearchBar from '../components/searchBar';
+import searchFilterFunction from '../helpers/searchFilter';
+import withObservables from '@nozbe/with-observables';
+
 interface Props {
   user: User;
   completedHikes: Completed_Hike[];
 }
+
 const _emptyComponent = () => {
   return (
     <View style={styles.emptyWrapper}>
-      <Text style={[styles.TrailName, {textAlign: 'center'}]}>
+      <Text style={[styles.emptyText, {textAlign: 'center'}]}>
         Come back when you've completed a hike!
       </Text>
     </View>
   );
 };
+
 const CompletedHikesScreen = ({user, completedHikes}: Props) => {
   const [search, setSearch] = React.useState<string>('');
   const [filteredDataSource, setFilteredDataSource] = React.useState<
     Completed_Hike[] | []
   >([]);
-  const [masterDataSource, setMasterDataSource] =
-    React.useState<Completed_Hike[] | []>(completedHikes);
-  
-  console.log(completedHikes);
+  const [masterDataSource, setMasterDataSource] = React.useState<
+    Completed_Hike[] | []
+  >(completedHikes);
+
   return (
-    <SafeAreaView>
-      <Text>CompletedHikes</Text>
+    <SafeAreaView style={styles.container}>
+      {/* <Text style={styles.header}>Completed Hikes</Text> */}
       <SearchBar
         onSearch={searchFilterFunction}
         search={search}
         masterDataSource={completedHikes}
         setFilteredDataSource={setFilteredDataSource}
         setSearchCallback={setSearch}
-        keyToQuery={"trailName"}
+        keyToQuery={'trailName'}
       />
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: '700',
-          color: 'white',
-          padding: 10,
-        }}>
+      <Text style={styles.totalTrails}>
         Total Completed Trails: {completedHikes.length}
       </Text>
       <FlatList
@@ -53,6 +52,7 @@ const CompletedHikesScreen = ({user, completedHikes}: Props) => {
           <CompletedHikeCard key={item.id} completedHike={item} />
         )}
         ListEmptyComponent={_emptyComponent}
+        keyExtractor={(item) => item.id}
       />
     </SafeAreaView>
   );
@@ -60,41 +60,40 @@ const CompletedHikesScreen = ({user, completedHikes}: Props) => {
 
 const enhance = withObservables(['user', 'completedHikes'], ({user}) => ({
   user,
-  completedHikes: user.completedHikes.observe()
-  // Shortcut syntax for `post.comments.observe()`
+  completedHikes: user.completedHikes.observe(),
 }));
 
 const EnhancedCompletedHikesScreen = enhance(CompletedHikesScreen);
 export default EnhancedCompletedHikesScreen;
 
 const styles = StyleSheet.create({
-  TrailContainer: {
-    padding: 10,
+  container: {
     flex: 1,
-    backgroundColor: 'rgb(31, 33, 35)',
-    borderRadius: 10,
+    backgroundColor: 'black',
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
-  TrailName: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: 'rgb(7,254,213)',
-    padding: 5,
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 10,
   },
-  TrailStats: {
+  totalTrails: {
     fontSize: 16,
-    fontWeight: '600',
-    color: 'rgb(221,224,226)',
-    padding: 5,
-  },
-  TrailPark: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: 'rgb(221,224,226)',
-    padding: 5,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   emptyWrapper: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 22,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: 'white',
   },
 });

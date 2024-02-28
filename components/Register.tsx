@@ -1,16 +1,18 @@
 import {
+  Pressable,
+  SafeAreaView,
   StyleSheet,
   Text,
-  SafeAreaView,
-  Pressable,
   TextInput,
 } from 'react-native';
-import * as React from 'react';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
-import {sync} from '../watermelon/sync';
+import React, {useState} from 'react';
+
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
-const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 import {handleRegister} from '../helpers/registerHelpers';
+import {sync} from '../watermelon/sync';
+import {useDatabase} from '@nozbe/watermelondb/hooks';
+
+const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
   setisRegistering: React.Dispatch<React.SetStateAction<any>>;
@@ -18,59 +20,60 @@ interface Props {
 }
 const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   const watermelonDatabase = useDatabase();
-  const [firstName, setFirstName] = React.useState<string>('');
-  const [lastName, setLastName] = React.useState<string>('');
-  const [email, setEmail] = React.useState<string>('');
-  const [password, setPassword] = React.useState<string>('');
-  const [confirmPassword, setConfirmPassword] = React.useState<string>('');
-  const [error, setError] = React.useState<any>(null);
-  const [username, setUsername] = React.useState<string>('');
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [username, setUsername] = useState('');
 
   return (
     <SafeAreaView style={styles.container}>
       <TextInput
         value={firstName}
-        onChangeText={(text) => setFirstName(text)}
+        onChangeText={setFirstName}
         placeholder="First Name"
-        placeholderTextColor={'rgba(255, 255, 255, .1)'}
+        placeholderTextColor={'rgba(255, 255, 255, .5)'}
         style={styles.input}
       />
       <TextInput
         value={lastName}
-        onChangeText={(text) => setLastName(text)}
+        onChangeText={setLastName}
         placeholder="Last Name"
-        placeholderTextColor={'rgba(255, 255, 255, .1)'}
+        placeholderTextColor={'rgba(255, 255, 255, .5)'}
         style={styles.input}
       />
       <TextInput
         value={email}
-        onChangeText={(text) => setEmail(text)}
+        onChangeText={setEmail}
         placeholder="Email"
-        placeholderTextColor={'rgba(255, 255, 255, .1)'}
+        placeholderTextColor={'rgba(255, 255, 255, .5)'}
         keyboardType="email-address"
         style={styles.input}
       />
       <TextInput
         value={password}
-        onChangeText={(text) => setPassword(text)}
+        onChangeText={setPassword}
         placeholder="Password"
-        placeholderTextColor={'rgba(255, 255, 255, .1)'}
+        placeholderTextColor={'rgba(255, 255, 255, .5)'}
         secureTextEntry={true}
         style={styles.input}
       />
       <TextInput
         value={confirmPassword}
-        onChangeText={(text) => setConfirmPassword(text)}
+        onChangeText={setConfirmPassword}
         placeholder="Confirm Password"
-        placeholderTextColor={'rgba(255, 255, 255, .1)'}
+        placeholderTextColor={'rgba(255, 255, 255, .5)'}
         secureTextEntry={true}
         style={styles.input}
       />
       <TextInput
         value={username}
-        onChangeText={(text) => setUsername(text)}
+        onChangeText={setUsername}
         placeholder="Username"
-        placeholderTextColor={'rgba(255, 255, 255, .1)'}
+        placeholderTextColor={'rgba(255, 255, 255, .5)'}
         style={styles.input}
       />
       <Pressable
@@ -113,14 +116,15 @@ const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
                 : 'rgb(7,254,213)',
           },
         ]}>
-        <Text style={{fontSize: 20, color: 'black', fontWeight: 'bold'}}>
-          Create Account
-        </Text>
+        <Text style={styles.buttonText}>Create Account</Text>
       </Pressable>
       <Pressable
-        onPress={() => setisRegistering((prev: boolean) => !prev)}
-        style={[styles.button, {backgroundColor: 'rgb(61,63,65)',  borderWidth: 0}]}>
-        <Text style={{color: 'black', fontWeight: 'bold'}}>
+        onPress={() => setisRegistering((prev:boolean) => !prev)}
+        style={[
+          styles.button,
+          {backgroundColor: 'rgb(61,63,65)', borderWidth: 0},
+        ]}>
+        <Text style={styles.buttonText}>
           {isRegistering ? 'Login' : 'Create an Account'}
         </Text>
       </Pressable>
@@ -129,31 +133,39 @@ const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   );
 };
 
-export default Register;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'black',
   },
   input: {
-    padding: 10,
-    fontSize: 30,
-    color: 'rgb(7,254,213)',
+    width: '80%',
+    padding: 15,
+    fontSize: 18,
+    color: 'white',
+    backgroundColor: 'rgba(31, 33, 35, 0.5)',
+    borderRadius: 10,
+    marginBottom: 20,
   },
   button: {
-    padding: 10,
-    marginTop: 20,
-    fontWeight: 'bold',
+    padding: 15,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgb(7,254,213)',
-    backgroundColor: 'rgb(7,254,213)',
-    width: 200,
+    width: '80%',
     alignItems: 'center',
   },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'black',
+  },
   error: {
+    marginTop: 20,
     color: 'red',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
+
+export default Register;

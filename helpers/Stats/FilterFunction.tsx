@@ -1,13 +1,13 @@
 export const FilterBy = (
 	timeFilter: string,
 	categoryFilter: string,
-	userSessions: any[],
+	userSessionsWithCategories: any[],
 	setFilteredUserSessions: React.Dispatch<React.SetStateAction<any[]>>
 ) =>
 {
-  console.log({timeFilter, categoryFilter, userSessions, setFilteredUserSessions})
+  console.log({timeFilter, categoryFilter, userSessionsWithCategories, setFilteredUserSessions})
 	// Filter userSessions based on the selected time and category filters
-	let filteredSessions = userSessions
+	let filteredSessions = userSessionsWithCategories
 		.filter((session) => {
 			const sessionDate = new Date(session.date_added);
 			const today = new Date();
@@ -46,7 +46,7 @@ export const FilterBy = (
 					return (
 						sessionDate.toDateString() ===
 						new Date(
-							today.setDate(today.getDate() - 1)
+							today.setDate(today.getDate())
 						).toDateString()
 					);
 				default:
