@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
     marginVertical: 10,
-    paddingHorizontal: 10,
+    paddingRight: 20,
   },
   rankContainer: {
     alignItems: 'center',
