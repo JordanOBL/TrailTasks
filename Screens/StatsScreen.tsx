@@ -144,6 +144,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
             buttonTextAfterSelection={(selectedItem) =>
               selectedItem.sessionCategoryName
             }
+            rowTextStyle={styles.filterRowText}
             rowTextForSelection={(item) => item.sessionCategoryName}
             defaultButtonText={categoryFilter}
             buttonStyle={styles.filterButton}
@@ -158,6 +159,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
               handleTimeFilterChange(selectedItem.label)
             }
             buttonTextAfterSelection={(selectedItem) => selectedItem.label}
+            rowTextStyle={styles.filterRowText}
             rowTextForSelection={(item) => item.label}
             defaultButtonText={timeFilter}
             buttonStyle={styles.filterButton}
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
   },
   filterMenu: {
     position: 'absolute',
-    top: 90,
+    top: 50,
     left: 10,
     backgroundColor: 'rgb(18, 19, 21)',
     borderRadius: 10,
@@ -252,9 +254,12 @@ const styles = StyleSheet.create({
   filterDropdown: {
     backgroundColor: 'rgb(31, 33, 35)',
     borderRadius: 5,
-    borderWidth: 1,
+    borderWidth: 0,
     borderColor: 'rgb(221, 224, 226)',
     marginTop: 5,
+  },
+  filterRowText: {
+    color: 'rgb(221, 224, 226)',
   },
   filterApplyButton: {
     backgroundColor: 'rgb(7, 254, 213)',
