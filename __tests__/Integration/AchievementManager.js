@@ -107,7 +107,7 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
         .query()
         .fetch();
       await userMiles[0].update((user_mile) => {
-        user_mile.totalMiles = '.07';
+        user_mile.totalMiles = '0.07';
       });
     });
     const achievementsWithCompletions = newAchievements.map((achievement) => ({

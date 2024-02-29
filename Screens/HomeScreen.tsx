@@ -79,10 +79,10 @@ const HomeScreen: React.FC<Props> = ({
   //if not, show the tutorial Modal
   React.useEffect(() => {
     // Check if the user has any miles hiked
-    if (totalMiles && totalMiles[0].totalMiles === '0.00') {
+    if (totalMiles && parseFloat(totalMiles[0].totalMiles) <= 0.0) {
       setShowTutorial(true); // Show the tutorial if the user has no miles hiked
     }
-  }, []);
+  }, [user]);
 
   //this useEffect gets the correct Rank based on  the users miles
   useFocusEffect(
@@ -282,8 +282,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rankImage: {
-    width: 125,
-    height: 125,
+    width: 100,
+    height: 100,
   },
   rankLevel: {
     color: 'rgb(249, 253, 255)',
