@@ -30,7 +30,6 @@ const AchievementsScreen = ({user}: Props) => {
         .query(Q.unsafeSqlQuery(query))
         .unsafeFetchRaw();
       if (results.length > 0) {
-        console.log('Achievements with completion:', results); // Add this logging
         setAchievementsWithCompletion(results);
       }
     } catch (err) {
@@ -41,11 +40,6 @@ const AchievementsScreen = ({user}: Props) => {
   useEffect(() => {
     getAchievementsWithCompletion();
   }, []);
-
-  console.log(
-    'Achievements with completion state:',
-    achievementsWithCompletion
-  ); // Add this logging
 
   if (achievementsWithCompletion) {
     return (

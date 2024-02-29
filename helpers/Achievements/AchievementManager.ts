@@ -50,8 +50,10 @@ export const AchievementManager = {
           achievement.achievement_type === 'Total Miles'
         ) {
           if (
-            userMiles.totalMiles >= parseInt(achievement.achievement_condition)
-          ) {
+            userMiles.totalMiles >= parseFloat(achievement.achievement_condition)
+          )
+          {
+            console.debug({userTotalMiles: userMiles.totalMiles, achievementsCondition:parseInt(achievement.achievement_condition)})
             unlockAchievements.push({
               achievementName: achievement.achievement_name,
               achievementId: achievement.id,
