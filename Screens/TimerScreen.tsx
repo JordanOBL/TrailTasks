@@ -25,13 +25,15 @@ interface Props {
   setUser: any;
   currentTrail: Trail;
   userAchievements: User_Achievement[];
+  //usersAchievements: User_Achievement[];
 }
 const TimerScreen = ({
   user,
   setUser,
   currentTrail,
   userAchievements,
-}: Props) => {
+}: //usersAchievements
+Props) => {
   //@ts-ignore
   const navigation = useNavigation();
   const watermelonDatabase = useDatabase();
@@ -123,9 +125,8 @@ const TimerScreen = ({
       );
     }
   }
-
+  // Hide the bottom tab bar when the session is active
   React.useEffect(() => {
-    // Hide the bottom tab bar when the session is active
     if (sessionDetails.isSessionStarted) {
       navigation.setOptions({
         tabBarVisible: false,
@@ -137,14 +138,15 @@ const TimerScreen = ({
     }
   }, [navigation, sessionDetails.isSessionStarted]);
 
+  //Get usersAchievements table with completion joined on table
   React.useEffect(() => {
     getAchievementsWithCompletion();
   }, [userAchievements]);
-
+  //Get session Categories
   React.useEffect(() => {
     getSessionCategories();
   }, []);
-
+  //Get current sessionCategoryId for achievement checking
   React.useEffect(() => {
     if (sessionDetails.sessionCategoryId) {
       getCurrentSessionCategory();
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 0,
+    bottom: 20,
     alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: {

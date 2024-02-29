@@ -39,7 +39,6 @@ interface Props {
   achievementsWithCompletion: AchievementsWithCompletion[];
   currentSessionCategory: string;
 }
-
 const SessionTimer = ({
   setSessionDetails,
   sessionDetails,
@@ -57,11 +56,19 @@ const SessionTimer = ({
   const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>(
     []
   );
+  const [completedTrails, setCompletedTrails] = useState<Trail[]>([]);
 
   const onAchievementEarned = useCallback((achievements: Achievement[]) => {
     setEarnedAchievements((prevAchievements) => [
       ...prevAchievements,
       ...achievements,
+    ]);
+  }, []);
+
+  const onCompletedTrail = useCallback((trail: Trail) => {
+    setCompletedTrails((prevCompletedTrails) => [
+      ...prevCompletedTrails,
+      trail,
     ]);
   }, []);
 
@@ -89,10 +96,7 @@ const SessionTimer = ({
       ),
     [sessionDetails.initialLongBreakTime, sessionDetails.elapsedLongBreakTime]
   );
-  // const totalFormattedSessionTime = useMemo(
-  //   () => formatCountdown(sessionDetails.totalSessionTime, 0),
-  //   [sessionDetails.totalSessionTime]
-  // );
+
   const canHike =
     sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime;
 
@@ -113,6 +117,7 @@ const SessionTimer = ({
           canHike,
           achievementsWithCompletion,
           onAchievementEarned,
+          onCompletedTrail,
         });
       }, 1000);
     }
@@ -138,9 +143,6 @@ const SessionTimer = ({
       currentSessionCategory &&
       achievementsWithCompletion
     ) {
-      console.debug('Checking user session achievements', {
-        currentSessionCategory,
-      });
       checkUserSessionAchievements();
     }
   }, [achievementsWithCompletion]);
@@ -151,63 +153,41 @@ const SessionTimer = ({
         <Text
           style={[
             styles.timerText,
-            {
-              color: sessionDetails.isPaused
-                ? 'rgb(81,83,85)'
-                : sessionDetails.isSessionStarted && !canHike
-                ? 'rgb(217,49,7)'
-                : 'rgb(7,254,213)',
-            },
+            sessionDetails.isPaused && styles.pausedText,
           ]}>
-          {sessionDetails.isPaused === true
+          {sessionDetails.isPaused
             ? 'Paused'
-            : canHike === true
+            : canHike
             ? pomodoroCountdown
-            : sessionDetails.currentSet < sessionDetails.sets
-            ? shortBreakCountdown
-            : longBreakCountdown}
+            : shortBreakCountdown}
         </Text>
-        <Text style={styles.subtitle}>Strikes: {sessionDetails.strikes}</Text>
-        <Text style={styles.subtitle}>
-          Current set: {sessionDetails.currentSet}
-        </Text>
-        <Text style={styles.subtitle}>Total Sets: {sessionDetails.sets}</Text>
-        <Text style={styles.subtitle}>
-          Total Session Time: {formatTime(userSession.totalSessionTime)}
-        </Text>
-        <View style={styles.buttonsContainer}>
-          <Pressable
-            onPress={() => endSession({setSessionDetails, sessionDetails})}
-            style={[styles.button, styles.endSessionButton]}>
-            <Text style={styles.buttonText}>End Session</Text>
-          </Pressable>
-          {sessionDetails.elapsedPomodoroTime >=
-            sessionDetails.initialPomodoroTime && (
-            <Pressable
-              onPress={() => skipBreak(setSessionDetails, sessionDetails)}
-              style={[styles.button, styles.skipBreakButton]}>
-              <Text style={styles.buttonText}>Skip Break</Text>
-            </Pressable>
-          )}
-          <Pressable
-            onPress={() =>
-              sessionDetails.isPaused
-                ? resumeSession(setSessionDetails)
-                : pauseSession(setSessionDetails)
-            }
-            style={[styles.button, styles.pauseResumeButton]}>
-            <Text style={styles.buttonText}>
-              {sessionDetails.isPaused ? 'Resume Session' : 'Pause Session'}
+        <View style={styles.trailNameContainer}>
+          <Text style={styles.trailName}>{currentTrail.trailName}</Text>
+          <EnhancedDistanceProgressBar
+            sessionDetails={sessionDetails}
+            pace={sessionDetails.pace}
+            user={user}
+            trail={currentTrail}
+          />
+        </View>
+        <View style={styles.infoContainer}>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Current Set</Text>
+            <Text style={styles.infoValue}>
+              {sessionDetails.currentSet}/{sessionDetails.sets}
             </Text>
-          </Pressable>
+          </View>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Strikes</Text>
+            <Text style={styles.infoValue}>{sessionDetails.strikes}</Text>
+          </View>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Pace</Text>
+            <Text style={styles.infoValue}>{sessionDetails.pace}</Text>
+          </View>
         </View>
       </View>
-      <EnhancedDistanceProgressBar
-        sessionDetails={sessionDetails}
-        pace={sessionDetails.pace}
-        user={user}
-        trail={currentTrail}
-      />
+      
       <View style={styles.achievementsContainer}>
         <Text style={styles.title}>Achievements Earned</Text>
         {earnedAchievements.length > 0 ? (
@@ -217,10 +197,46 @@ const SessionTimer = ({
             </Text>
           ))
         ) : (
-          <Text style={styles.emptyAchievements}>
-            No achievements earned yet
-          </Text>
+          <></>
         )}
+      </View>
+
+      <View style={styles.completedTrailsContainer}>
+        <Text style={styles.title}>Completed Trails</Text>
+        {completedTrails.length > 0 ? (
+          completedTrails.map((trail, index) => (
+            <Text key={index} style={styles.achievementItem}>
+              {trail.trailName}
+            </Text>
+          ))
+        ) : (
+          <></>
+        )}
+      </View><View style={styles.buttonsContainer}>
+        <Pressable
+          onPress={() => endSession({setSessionDetails, sessionDetails})}
+          style={[styles.button, styles.endSessionButton]}>
+          <Text style={styles.buttonText}>End Session</Text>
+        </Pressable>
+        {sessionDetails.elapsedPomodoroTime >=
+          sessionDetails.initialPomodoroTime && (
+          <Pressable
+            onPress={() => skipBreak(setSessionDetails, sessionDetails)}
+            style={[styles.button, styles.skipBreakButton]}>
+            <Text style={styles.buttonText}>Skip Break</Text>
+          </Pressable>
+        )}
+        <Pressable
+          onPress={() =>
+            sessionDetails.isPaused
+              ? resumeSession(setSessionDetails)
+              : pauseSession(setSessionDetails)
+          }
+          style={[styles.button, styles.pauseResumeButton]}>
+          <Text style={styles.buttonText}>
+            {sessionDetails.isPaused ? 'Resume' : 'Pause'}
+          </Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -241,38 +257,51 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 20,
+    color: 'rgb(7,254,213)',
   },
-  subtitle: {
-    color: 'white',
-    marginBottom: 10,
+  pausedText: {
+    color: 'rgb(81,83,85)',
   },
-  buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  trailNameContainer: {
     marginBottom: 20,
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
     alignItems: 'center',
   },
-  buttonText: {
+  trailName: {
     color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 30,
   },
-  endSessionButton: {
-    backgroundColor: 'red',
+  infoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 30,
   },
-  skipBreakButton: {
-    backgroundColor: 'blue',
+  infoBox: {
+    flex: 1,
+    alignItems: 'center',
   },
-  pauseResumeButton: {
-    backgroundColor: 'green',
+  infoLabel: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  infoValue: {
+    color: 'white',
+    fontSize: 16,
   },
   achievementsContainer: {
-    backgroundColor: 'gray',
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
+    padding: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  completedTrailsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
+    padding: 20,
+    borderRadius: 10,
+    marginVertical: 10,
   },
   title: {
     color: 'white',
@@ -283,11 +312,65 @@ const styles = StyleSheet.create({
   achievementItem: {
     color: 'white',
     marginBottom: 5,
+    fontSize: 16,
   },
   emptyAchievements: {
     color: 'white',
+    fontSize: 16,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10, // Add padding between buttons and screen bottom
+  },
+  button: {
+    flex: 1, // Equal flex to ensure same size buttons
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+  },
+  endSessionButton: {
+    backgroundColor: 'red',
+    marginRight: 5, // Add margin between buttons
+  },
+  skipBreakButton: {
+    backgroundColor: 'blue',
+    marginHorizontal: 5, // Add margin between buttons
+  },
+  pauseResumeButton: {
+    backgroundColor: 'green',
+    marginLeft: 5, // Add margin between buttons
   },
 });
+
+const enhance = withObservables(
+  [
+    'user',
+    'currentTrail',
+    'completedHikes',
+    'queuedTrails',
+    'userMiles',
+    'userSession',
+    'usersAchievements',
+  ],
+  ({user, userSession}) => ({
+    user: user.observe(),
+    currentTrail: user.trail.observe(),
+    completedHikes: user.completedHikes.observe(),
+    queuedTrails: user.queuedTrails.observe(),
+    userMiles: user.userMiles.observe(),
+    userSession,
+    userAchievements: user.usersAchievements.observe(),
+  })
+);
+
+const EnhancedSessionTimer = enhance(SessionTimer);
+export default EnhancedSessionTimer;
 
 // import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 // import React, { useEffect, useState } from 'react';
@@ -479,29 +562,5 @@ const styles = StyleSheet.create({
 //     </SafeAreaView>
 //   );
 // };
-
-const enhance = withObservables(
-  [
-    'user',
-    'currentTrail',
-    'completedHikes',
-    'queuedTrails',
-    'userMiles',
-    'userSession',
-    'usersAchievements',
-  ],
-  ({user, userSession}) => ({
-    user: user.observe(),
-    currentTrail: user.trail.observe(),
-    completedHikes: user.completedHikes.observe(),
-    queuedTrails: user.queuedTrails.observe(),
-    userMiles: user.userMiles.observe(),
-    userSession,
-    userAchievements: user.usersAchievements.observe(),
-  })
-);
-
-const EnhancedSessionTimer = enhance(SessionTimer);
-export default EnhancedSessionTimer;
 
 // const styles = StyleSheet.create({});

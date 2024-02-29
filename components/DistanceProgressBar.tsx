@@ -1,10 +1,10 @@
-import {StyleSheet, Text, View, Dimensions} from 'react-native';
-import React from 'react';
 import * as Progress from 'react-native-progress';
-import {  SessionDetails } from '../types/session';
+
+import {Dimensions, StyleSheet, Text, View} from 'react-native';
+
+import React from 'react';
+import { SessionDetails } from '../types/session';
 import withObservables from '@nozbe/with-observables';
-
-
 
 interface Props {
   user: any;
@@ -32,11 +32,11 @@ const DistanceProgressBar = ({
           alignSelf: 'flex-end',
           fontWeight: '600',
           fontSize: 16,
-          marginRight: 20,
+          marginRight: 25,
           marginBottom: 5,
         }}>
         {Number(user.trailProgress)} / {Number(currentTrail.trailDistance)} mi.
-        {pace && `- ${pace} mph`}
+        
       </Text>
 
       <Progress.Bar
