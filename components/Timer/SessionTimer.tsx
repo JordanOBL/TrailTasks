@@ -187,7 +187,7 @@ const SessionTimer = ({
           </View>
         </View>
       </View>
-      
+
       <View style={styles.achievementsContainer}>
         <Text style={styles.title}>Achievements Earned</Text>
         {earnedAchievements.length > 0 ? (
@@ -212,7 +212,8 @@ const SessionTimer = ({
         ) : (
           <></>
         )}
-      </View><View style={styles.buttonsContainer}>
+      </View>
+      <View style={styles.buttonsContainer}>
         <Pressable
           onPress={() => endSession({setSessionDetails, sessionDetails})}
           style={[styles.button, styles.endSessionButton]}>
