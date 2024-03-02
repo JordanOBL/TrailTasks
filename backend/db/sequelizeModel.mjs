@@ -1,4 +1,4 @@
-import {Sequelize, DataTypes} from 'sequelize';
+import {DataTypes, Sequelize} from 'sequelize';
 //const {Sequelize, DataTypes} = require('sequelize');
 
 // const PGUSER = 'jordan';
@@ -264,6 +264,7 @@ export const User_Session = sequelize.define(
   'User_Session',
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    user_id: {type: DataTypes.STRING, allowNull: false},
     session_name: {type: DataTypes.STRING, allowNull: false},
     session_description: {
       type: DataTypes.STRING,

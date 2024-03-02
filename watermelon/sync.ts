@@ -1,37 +1,39 @@
-import {synchronize} from '@nozbe/watermelondb/sync';
-
-import {User, Park} from './models';
+import {Database} from '@nozbe/watermelondb';
 // your_local_machine_ip_address usually looks like 192.168.0.x
 // on *nix system, you would find it out by running the ifconfig command
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
-import {Database} from '@nozbe/watermelondb';
-const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
+import {User} from './models';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
+import {synchronize} from '@nozbe/watermelondb/sync';
+
+const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
 //singleton
 let isRunning = false;
 const IP = 'localhost'
 
-export async function sync(database: Database) {
+export async function sync(database: Database, user: User) {
   try {
     //check internet Connection
     const {connection} = await checkInternetConnection();
     console.debug('sync() device internet:', connection.isConnected);
-
     //set locatStorage connection status
+    
     await database.localStorage.set('isConnected', connection.isConnected);
 
-    if (!isRunning && connection.isConnected) {
+    if (!isRunning && user && connection.isConnected) {
       //stop more than one instance
       isRunning = true;
       //console.debug('Running sync()');
     
       await synchronize({
         database,
-     
-        pullChanges: async ({lastPulledAt, schemaVersion, migration}) => {
+        user,
+        pullChanges: async ({ lastPulledAt, schemaVersion, migration }) =>
+        {
+          console.debug('user from pull changes', user.id)
           //get new changees in the watermelon database
-          const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
+          const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${user.id}`;
           const response = await fetch(
             `http://192.168.1.208:5500/pull?${urlParams}`
           );

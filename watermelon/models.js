@@ -276,9 +276,13 @@ export class User extends Model {
     const results = await this.collections
       .get('users_sessions')
       .query(
-        Q.where('session_category_id', Q.eq(categoryId)),
+        Q.and(
+          Q.where('user_id', this.id),
+          Q.where('session_category_id', Q.eq(categoryId))
+        ),
         Q.take(categoryCount)
       );
+    console.debug('results of getSessionCategoryCount: ', results);
     return results.length;
   }
   //create completed_hike

@@ -1,28 +1,27 @@
 import 'react-native-gesture-handler';
-import React, {useEffect, useState, createContext} from 'react';
-import {checkForLoggedInUser} from './helpers/loginHelpers';
-import RNFS from 'react-native-fs';
+
+import {DarkTheme, NavigationContainer} from '@react-navigation/native';
 import {
+  PermissionsAndroid,
+  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
-  PermissionsAndroid,
-  Platform,
 } from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import React, {createContext, useEffect, useState} from 'react';
 
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import LoginScreen from './Screens/LoginScreen';
+import RNFS from 'react-native-fs';
 import RegisterScreen from './Screens/RegisterScreen';
 import SyncIndicator from './components/SyncIndicator';
-import {sync} from './watermelon/sync';
-import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
-import {NavigationContainer, DarkTheme} from '@react-navigation/native';
-
 import TabNavigator from './components/Navigation/TabNavigator';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-
+import {checkForLoggedInUser} from './helpers/loginHelpers';
+import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
+import {sync} from './watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 export const UserContext = createContext<any>('');
@@ -76,7 +75,7 @@ function App(): JSX.Element {
         //has a userID saved in the localstorage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
         //SYNC call teh push and pull requests from mobile device to PG database
-        await sync(watermelonDatabase);
+        await sync(watermelonDatabase, user);
         
       } catch (err) {
         console.error('Error in onload in APP useEffect', err);

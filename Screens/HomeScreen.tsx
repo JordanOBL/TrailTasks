@@ -87,7 +87,7 @@ const HomeScreen: React.FC<Props> = ({
   //this useEffect gets the correct Rank based on  the users miles
   useFocusEffect(
     React.useCallback(() => {
-      sync(watermelonDatabase);
+      sync(watermelonDatabase, user);
       const rank = getUserRank(Ranks, totalMiles[0].totalMiles);
       setUserRank(rank);
       return async () => {

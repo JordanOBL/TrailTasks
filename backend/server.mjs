@@ -1,29 +1,30 @@
 /* eslint-disable no-sparse-arrays */
 /* eslint-disable prettier/prettier */
 
-import express from 'express';
-import cors from 'cors';
-import bodyparser from 'body-parser';
-import { achievements as masterAchievements } from '../assets/Achievements/masterAchievementList.js'
-import { achievementsWithIds } from '../assets/Achievements/addAchievementIds.js';
-import  sessionCategories from '../helpers/Session/sessionCategories.js'
 import {
   Achievement,
+  Basic_Subscription_Trail,
   Park,
   Park_State,
+  SYNC,
   Session_Category,
+  Subscription,
   Trail,
   User,
-  SYNC,
+  User_Achievement,
   User_Miles,
   User_Session,
-  Subscription,
-  Basic_Subscription_Trail,
-  User_Achievement,
 } from '../backend/db/sequelizeModel.mjs';
 
 // import pool from "./db/config.js";
 import {Sequelize} from 'sequelize';
+import { achievementsWithIds } from '../assets/Achievements/addAchievementIds.js';
+import bodyparser from 'body-parser';
+import cors from 'cors';
+import express from 'express';
+import { achievements as masterAchievements } from '../assets/Achievements/masterAchievementList.js'
+import  sessionCategories from '../helpers/Session/sessionCategories.js'
+
 // import pkg from "pg";
 // const {Pool} = pkg;
 
@@ -64,7 +65,8 @@ app.use(cors());
 
 const getSafeLastPulledAt = (lastPulledAt) => {
   console.log('last pulled at exists and it is', lastPulledAt);
-  if (lastPulledAt !== 'null') {
+  if (lastPulledAt !== 'null')
+  {
     return new Date(parseInt(lastPulledAt, 10)).toISOString();
   }
 
@@ -2330,6 +2332,8 @@ app.get('/pull', async (req, res) => {
   try
   {
     let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
+    const userId = req.query.userId;
+    console.debug('user in pull id', userId);
     console.log('last pulled at', { lastPulledAt });
     if (!lastPulledAt || lastPulledAt == null)
     {
@@ -2414,6 +2418,22 @@ app.get('/pull', async (req, res) => {
           },
         },
       });
+      const createdUserAchievements = await User_Achievement.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
+          user_id: userId,
+        },
+      });
+      const createdUserSessions = await User_Session.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
+          user_id: userId,
+        },
+      });
       const createdParkStates = await Park_State.findAll({
         where: {
           createdAt: {
@@ -2457,6 +2477,14 @@ app.get('/pull', async (req, res) => {
           },
         },
       });
+      const updatedUserSessions = await User_Session.findAll({
+        where: {
+          updatedAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
+          user_id: userId,
+        },
+      });
       const updatedUserMiles = await User_Miles.findAll({
         where: {
           updatedAt: {
@@ -2485,6 +2513,16 @@ app.get('/pull', async (req, res) => {
           users_miles: {
             created: [],
             updated: updatedUserMiles.length ? updatedUserMiles : [],
+            deleted: [],
+          },
+          users_achievements: {
+            created: createdUserAchievements,
+            updated: [],
+            deleted: [],
+          },
+          users_sessions: {
+            created: [],
+            updated: updatedUserSessions,
             deleted: [],
           },
           trails: {
@@ -2516,7 +2554,7 @@ app.get('/pull', async (req, res) => {
         timestamp: Date.now(),
       };
   
-      console.log('responseData', responseData);
+      console.log('responseData from pull', responseData);
       return res.json(responseData);
     }
   } catch (err) {
@@ -2537,6 +2575,11 @@ app.post('/push', async (req, res) => {
       if (changes?.users_achievements?.created[0] !== undefined) {
         const users_achievements = await User_Achievement.bulkCreate(changes.users_achievements.created);
       }
+      if (changes?.users_sessions?.created[0] !== undefined) {
+        const users_sessions = await User_Session.bulkCreate(
+          changes.users_sessions.created
+        );
+      }
       if (changes?.users_miles?.created[0] !== undefined) {
         const users_miles = await User_Miles.bulkCreate(
           changes.users_miles.created
@@ -2547,6 +2590,7 @@ app.post('/push', async (req, res) => {
           changes.users_subscriptions.created
         );
       }
+      //updates to created rows in pg database
       if (changes?.users?.updated[0] !== undefined) {
         const updateQueries = changes.users.updated.map((remoteEntry) => {
           console.log({remoteEntry});
@@ -2570,6 +2614,38 @@ app.post('/push', async (req, res) => {
             }
           );
         });
+        await Promise.all(updateQueries);
+      }
+       if (changes?.users_sessions?.updated[0] !== undefined) {
+         const updateQueries = changes.users_sessions.updated.map(
+           (remoteEntry) => {
+             console.log({remoteEntry});
+             return User_Session.update(
+               {...remoteEntry},
+               {
+                 where: {
+                   id: remoteEntry.id,
+                 },
+               }
+             );
+           }
+         );
+         await Promise.all(updateQueries);
+       }
+      if (changes?.users_achievements?.updated[0] !== undefined) {
+        const updateQueries = changes.users_achievements.updated.map(
+          (remoteEntry) => {
+            console.log({remoteEntry});
+            return User_Achievement.update(
+              {...remoteEntry},
+              {
+                where: {
+                  id: remoteEntry.id,
+                },
+              }
+            );
+          }
+        );
         await Promise.all(updateQueries);
       }
       if (changes?.users_subscriptions?.updated[0] !== undefined) {
