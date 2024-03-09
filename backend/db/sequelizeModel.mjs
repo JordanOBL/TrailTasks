@@ -73,6 +73,18 @@ export const Trail = sequelize.define(
       allowNull: true,
     },
     trail_elevation: {type: DataTypes.STRING, allowNull: true},
+    is_free: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false},
+    is_subscribers_only: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    trail_of_the_week: {
+      name: 'trail_of_the_week',
+      type: 'boolean',
+      isIndexed: true,
+      defaultValue: false,
+    },
   },
   {
     tableName: 'trails',
@@ -117,7 +129,7 @@ export const User = sequelize.define(
       // Create a unique index on field
       {
         unique: true,
-        fields: ['username', 'email'],
+        fields: ['username', 'email', 'id'],
       },
     ],
   }
@@ -198,7 +210,16 @@ export const User_Achievement = sequelize.define(
     user_id: {type: DataTypes.STRING, allowNull: false},
     achievement_id: {type: DataTypes.STRING, allowNull: false},
   },
-  {tableName: 'users_achievements', underscored: true}
+  {
+    tableName: 'users_achievements',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        fields: ['user_id'],
+      },
+    ],
+  }
 );
 export const Completed_Hike = sequelize.define(
   'Completed_Hike',
@@ -208,7 +229,16 @@ export const Completed_Hike = sequelize.define(
     last_completed_at: {type: DataTypes.STRING, allowNull: false},
     best_completed_time: {type: DataTypes.STRING, allowNull: false},
   },
-  {tableName: 'completed_hikes', underscored: true}
+  {
+    tableName: 'completed_hikes',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        fields: ['user_id'],
+      },
+    ],
+  }
 );
 export const Queued_Trail = sequelize.define(
   'Queued_Trail',
@@ -227,16 +257,19 @@ export const User_Purchased_Trail = sequelize.define(
     trail_id: {type: DataTypes.STRING, allowNull: false},
     purchased_at: {type: DataTypes.STRING, allowNull: true},
   },
-  {tableName: 'users_purchased_trails', underscored: true}
-);
-export const Basic_Subscription_Trail = sequelize.define(
-  'Basic_Subscription_Trail',
   {
-    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    trail_id: {type: DataTypes.STRING, allowNull: false},
-  },
-  {tableName: 'basic_subscription_trails', underscored: true}
+    tableName: 'users_purchased_trails',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['user_id'],
+      },
+    ],
+  }
 );
+
 export const User_Miles = sequelize.define(
   'User_Miles',
   {
@@ -261,7 +294,16 @@ export const User_Badge = sequelize.define(
   {
     id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
   },
-  {tableName: 'users_badges', underscored: true}
+  {
+    tableName: 'users_badges',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        fields: ['user_id'],
+      },
+    ],
+  }
 );
 export const Session_Category = sequelize.define(
   'Session_Category',
@@ -293,7 +335,16 @@ export const User_Session = sequelize.define(
       defaultValue: 0.0,
     },
   },
-  {tableName: 'users_sessions', underscored: true}
+  {
+    tableName: 'users_sessions',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        fields: ['user_id'],
+      },
+    ],
+  }
 );
 
 export const Subscription = sequelize.define(
@@ -357,9 +408,6 @@ User_Purchased_Trail.belongsTo(Trail, {foreignKey: 'trail_id'});
 
 Subscription.hasOne(User, {foreignKey: 'user_id'});
 User.belongsTo(Subscription, {key: 'id'});
-
-Basic_Subscription_Trail.hasOne(Trail, {foreignKey: 'trail_id'});
-Trail.belongsTo(Basic_Subscription_Trail, {key: 'id'});
 
 export const SYNC = async (cb) => {
   await sequelize.sync({...cb});

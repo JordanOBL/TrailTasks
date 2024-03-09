@@ -2,6 +2,7 @@
   "name": "TrailTasks",
   "version": "0.0.1",
   "private": true,
+  "type":"module",
   "scripts": {
     "android": "react-native run-android",
     "androidBundle": "cd android && ./gradlew bundleRelease",

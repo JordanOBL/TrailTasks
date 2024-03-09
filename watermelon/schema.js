@@ -25,12 +25,27 @@ const schema = appSchema({
         {name: 'nps_url', type: 'string', isOptional: true},
         {name: 'hiking_project_url', type: 'string', isOptional: true},
         {name: 'trail_elevation', type: 'string', isOptional: true},
+        {
+          name: 'is_free',
+          type: 'boolean',
+          isIndexed: true,
+          defaultValue: false,
+        },
+        {
+          name: 'is_subscribers_only',
+          type: 'boolean',
+          isIndexed: true,
+          defaultValue: false,
+        },
+        {
+          name: 'trail_of_the_week',
+          type: 'boolean',
+          isIndexed: true,
+          defaultValue: false,
+        },
       ],
     }),
-    tableSchema({
-      name: 'basic_subscription_trails',
-      columns: [{name: 'trail_id', type: 'string', isIndexed: true}],
-    }),
+
     tableSchema({
       name: 'users',
       columns: [

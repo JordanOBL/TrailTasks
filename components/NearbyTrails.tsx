@@ -1,11 +1,10 @@
 import {
-  Basic_Subscription_Trail,
-  Completed_Hike,
-  Queued_Trail,
-  Subscription,
-  Trail,
-  User,
-  User_Purchased_Trail,
+Completed_Hike,
+Queued_Trail,
+Subscription,
+Trail,
+User,
+User_Purchased_Trail,
 } from '../watermelon/models';
 import {
   FlatList,
@@ -29,7 +28,7 @@ interface Props {
   trailsCollection: Trail[];
   user: User;
   queuedTrails: Queued_Trail[];
-  basicSubscriptionTrails: Basic_Subscription_Trail[];
+ 
   completedHikes: Completed_Hike[];
   userSubscription: Subscription;
   userPurchasedTrails: User_Purchased_Trail[];
@@ -40,7 +39,7 @@ const NearbyTrails = ({
   user,
   completedHikes,
   queuedTrails,
-  basicSubscriptionTrails,
+
   userSubscription,
   userPurchasedTrails,
 }: Props) => {
@@ -60,9 +59,7 @@ const NearbyTrails = ({
   useEffect(() => {
     completedHikes.forEach((trail) => (completedCache[trail.trailId] = true));
     queuedTrails.forEach((trail) => (queuedCache[trail.trailId] = true));
-    basicSubscriptionTrails.forEach(
-      (trail) => (basicTrailsCache[trail.trailId] = true)
-    );
+
     userPurchasedTrails.forEach(
       (trail: {trailId: string | number}) =>
         (purchasedTrailsCache[trail.trailId] = true)
@@ -100,7 +97,6 @@ const NearbyTrails = ({
       setShowReplaceTrailModal={setShowReplaceTrailModal}
       trail={item}
       completedHikes={completedHikes}
-      basicSubscriptionTrails={basicTrails}
      
     />
   );  
@@ -116,7 +112,7 @@ const NearbyTrails = ({
       trail={item}
       completedHikes={completedHikes}
       queuedTrails={queuedTrails}
-      basicSubscriptionTrails={basicTrails}
+
 
     />
   );  
@@ -134,7 +130,6 @@ const NearbyTrails = ({
       trail={item}
       completedHikes={completedHikes}
       queuedTrails={queuedTrails}
-      basicSubscriptionTrails={basicTrails}
       purchasedTrailsCache={purchasedTrailsCache}
     />
   );

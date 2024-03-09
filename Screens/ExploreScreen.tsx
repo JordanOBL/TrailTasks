@@ -33,10 +33,7 @@ const ExploreScreen = ({
   const watermelonDatabase = useDatabase();
 
   const [trailsCollection, setTrailsCollection] = React.useState<any>();
-  const [
-    basicSubscriptionTrailsCollection,
-    setBasicSubscriptionTrailsCollection,
-  ] = React.useState<any>(null);
+
   // const[usersPurchasedTrails, setUsersPurchasedTrails] = React.useState<any>() 
 
   const getTrails = async () => {
@@ -47,18 +44,13 @@ const ExploreScreen = ({
         .fetch();
      
 
-      const basicSubscriptionTrailsCollection =
-        await watermelonDatabase
-          .get('basic_subscription_trails')
-          .query()
-          .fetch();
       // const usersPurchasedTrailsCollection =
       //   await watermelonDatabase.collections.get('users_purchased_trails')
       //     .query()
       //     .fetch();
 
 
-      setBasicSubscriptionTrailsCollection(basicSubscriptionTrailsCollection);
+
       setTrailsCollection(trailsCollection);
     // setUsersPurchasedTrails(usersPurchasedTrailsCollection);
       console.debug(userPurchasedTrails[0])
@@ -72,7 +64,7 @@ const ExploreScreen = ({
     
   }, [user, userPurchasedTrails, queuedTrails]);
 
-  if (!basicSubscriptionTrailsCollection || !trailsCollection) {
+  if ( !trailsCollection) {
     return (
       <SafeAreaView>
         <Text>Loading...</Text>
@@ -86,7 +78,7 @@ const ExploreScreen = ({
         <EnhancedNearbyTrails
           user={user}
           trailsCollection={trailsCollection}
-          basicSubscriptionTrails={basicSubscriptionTrailsCollection}
+         
           queuedTrails={queuedTrails}
           completedHikes={completedHikes}
         userSubscription={userSubscription[0]}

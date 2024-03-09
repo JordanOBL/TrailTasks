@@ -33,7 +33,7 @@ export class Trail extends Model {
     users: {type: 'has_many', foreignKey: 'trail_id'},
     completed_hikes: {type: 'has_many', foreignKey: 'trail_id'},
     queued_trails: {type: 'has_many', foreignKey: 'trail_id'},
-    basic_subscription_trails: {type: 'has_many', foreignKey: 'trail_id'},
+
     users_purchased_trails: {type: 'has_many', foreignKey: 'trail_id'},
   };
   //fields
@@ -49,6 +49,9 @@ export class Trail extends Model {
   @field('nps_url') npsUrl;
   @field('hiking_project_url') hikingProjectUrl;
   @field('trail_elevation') trailElevation;
+  @field('is_free') isFree;
+  @field('is_subscribers_only') isSubscribersOnly;
+  @field('trail_of_the_week') trailOfTheWeek;
 
   @relation('parks', 'park_id') park;
 
@@ -56,7 +59,6 @@ export class Trail extends Model {
   @children('users') users;
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
-  @children('basic_subscription_trails') basicSubscriptionTrails;
 
   //Add To Hiking Queue
   @writer async addToQueuedTrails({userId}) {
@@ -77,18 +79,6 @@ export class Trail extends Model {
     await deleteThisHike[0].markAsDeleted();
   }
 }
-
-export class Basic_Subscription_Trail extends Model {
-  static table = 'basic_subscription_trails';
-  static associations = {
-    trails: {type: 'belongs_to', key: 'trail_id'},
-  };
-  //fields
-  @field('trail_id') trailId;
-  @relation('trails', 'trail_id') trail;
-  @children('trails') trails;
-}
-
 export class User extends Model {
   static table = 'users';
   static associations = {

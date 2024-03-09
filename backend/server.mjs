@@ -3,7 +3,6 @@
 
 import {
   Achievement,
-  Basic_Subscription_Trail,
   Park,
   Park_State,
   SYNC,
@@ -2286,31 +2285,7 @@ app.get('/api/seed', async (req, res) => {
     const achievements = await Achievement.bulkCreate(newAchievements, {
       ignoreDuplicates: true,
     });
-    const basic_subscription_trails = await Basic_Subscription_Trail.bulkCreate(
-      [
-        {
-          id: '1',
-          trail_id: '1',
-        },
-        {
-          id: '2',
-          trail_id: '5',
-        },
-        {
-          id: '3',
-          trail_id: '19',
-        },
-        {
-          id: '4',
-          trail_id: '33',
-        },
-        {
-          id: '5',
-          trail_id: '41',
-        },
-      ],
-      {ignoreDuplicates: true}
-    );
+
     const session_categories = await Session_Category.bulkCreate(
       sessionCategories,
       {ignoreDuplicates: true}
@@ -2351,8 +2326,6 @@ app.get('/pull', async (req, res) => {
       console.log('first Trails Pull', createdTrails);
       const createdParkStates = await Park_State.findAll({});
       console.log('first ParkStates Pull', createdParkStates);
-      const createdBasicSubscriptionTrails = await Basic_Subscription_Trail.findAll({});
-      console.log('first Baic Trails Pull', createdBasicSubscriptionTrails);
       const createdSessionCategories = await Session_Category.findAll({});
       console.log('first categories Pull', createdSessionCategories);
       const responseData = {
@@ -2382,11 +2355,7 @@ app.get('/pull', async (req, res) => {
             updated: [],
             deleted: [],
           },
-          basic_subscription_trails: {
-            created: createdBasicSubscriptionTrails,
-            updated: [],
-            deleted: [],
-          },
+
           session_categories: {
             created: createdSessionCategories,
             updated: [],
@@ -2480,14 +2449,7 @@ app.get('/pull', async (req, res) => {
           },
         },
       });
-      const createdBasicSubscriptionTrails =
-        await Basic_Subscription_Trail.findAll({
-          where: {
-            createdAt: {
-              [Sequelize.Op.gt]: lastPulledAt,
-            },
-          },
-        });
+    
       const updatedSubscriptions = await Subscription.findAll({
         where: {
           updatedAt: {
@@ -2519,6 +2481,14 @@ app.get('/pull', async (req, res) => {
         },
       });
       const updatedUserMiles = await User_Miles.findAll({
+        where: {
+          updatedAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
+        },
+        
+      });
+      const updatedTrails = await Trail.findAll({
         where: {
           updatedAt: {
             [Sequelize.Op.gt]: lastPulledAt,
@@ -2565,7 +2535,7 @@ app.get('/pull', async (req, res) => {
           },
           trails: {
             created: [],
-            updated: createdTrails,
+            updated: updatedTrails,
             deleted: [],
           },
           park_states: {
@@ -2581,11 +2551,6 @@ app.get('/pull', async (req, res) => {
           session_categories: {
             created: [],
             updated: createdSessionCategories,
-            deleted: [],
-          },
-          basic_subscription_trails: {
-            created: [],
-            updated: createdBasicSubscriptionTrails,
             deleted: [],
           },
         },

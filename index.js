@@ -1,7 +1,6 @@
 import {
   Achievement,
   Badge,
-  Basic_Subscription_Trail,
   Completed_Hike,
   Park,
   Park_State,
@@ -52,7 +51,6 @@ const WrappedApp = () => {
       Session_Category,
       User_Session,
       Subscription,
-      Basic_Subscription_Trail,
       User_Purchased_Trail,
     ],
   });
