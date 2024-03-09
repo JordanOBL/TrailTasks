@@ -22,9 +22,9 @@ interface Props {
   userSubscription: Subscription;
   queuedCache: any;
   completedCache: any;
-  purchasedTrailsCache: any;
+
 }
-const TrailCard = ({
+const FreeTrailCard = ({
   user,
   trail,
   completedHikes,
@@ -36,15 +36,12 @@ const TrailCard = ({
   park,
   basicSubscriptionTrails,
   userSubscription,
-  purchasedTrailsCache,
-}: Props) => {
-  const isFreeTrail = basicSubscriptionTrails[trail.id] !== undefined;
-  const isActiveSubscription = userSubscription.isActive === true;
-  const isCompleted = completedCache[trail.id] !== 'undefined';
-  const isQueued = queuedCache[trail.id] !== 'undefined';
-  const isPurchasedTrail = purchasedTrailsCache[trail.id] !== 'undefined';
 
-
+}: Props) =>
+{
+    const isFreeTrail = basicSubscriptionTrails[trail.id];
+    const isActiveSubscription = userSubscription.isActive === true;
+    const isCompleted = completedCache[trail.id];
   return user && basicSubscriptionTrails && userSubscription ? (
     <View
       key={trail.id}
@@ -74,7 +71,7 @@ const TrailCard = ({
         }}>
         <Text
           style={
-            completedHikes && isCompleted
+            completedHikes && completedCache[trail.id]
               ? {
                   position: 'absolute',
                   backgroundColor: 'rgb(41,184,169)',
@@ -84,7 +81,7 @@ const TrailCard = ({
                 }
               : {}
           }>
-          {completedHikes && isCompleted ? (
+          {completedHikes && completedCache[trail.id] ? (
             <Text
               style={{
                 color: 'white',
@@ -157,7 +154,9 @@ const TrailCard = ({
                       styles.QueueButtons,
                       {
                         color:
-                          queuedTrails && !isQueued ? 'rgb(7,254,213)' : 'red',
+                          queuedTrails && queuedCache[trail.id] === undefined
+                            ? 'rgb(7,254,213)'
+                            : 'red',
                       },
                     ]}>
                     +
@@ -173,11 +172,8 @@ const TrailCard = ({
               backgroundColor:
                 user.trailId == trail.id
                   ? 'grey'
-                  :  isFreeTrail
-                  ? 'rgb(7,254,213)'
-                  : isActiveSubscription
-                  ? 'rgb(7,254,213)'
-                  : 'grey',
+                  : 'rgb(7,254,213)',
+                  
 
               width: '50%',
               borderRadius: 10,
@@ -215,13 +211,8 @@ const TrailCard = ({
               }}>
               {user.trailId == trail.id
                 ? 'In Progress'
-                : isFreeTrail
-                ? 'Start Now'
-                : isActiveSubscription && isPurchasedTrail
-                ? 'Start Now'
-                : isActiveSubscription && !isPurchasedTrail
-                ? 'Buy Now'
-                : 'Unlock with Pro'}
+                : 'Start Now'
+              }
             </Text>
           </Pressable>
         </View>
@@ -247,8 +238,8 @@ const enhance = withObservables(
   })
 );
 
-const EnhancedTrailCard = enhance(TrailCard);
-export default EnhancedTrailCard;
+const EnhancedFreeTrailCard = enhance(FreeTrailCard);
+export default EnhancedFreeTrailCard;
 
 //export default TrailCard;
 

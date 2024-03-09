@@ -34,6 +34,7 @@ export class Trail extends Model {
     completed_hikes: {type: 'has_many', foreignKey: 'trail_id'},
     queued_trails: {type: 'has_many', foreignKey: 'trail_id'},
     basic_subscription_trails: {type: 'has_many', foreignKey: 'trail_id'},
+    users_purchased_trails: {type: 'has_many', foreignKey: 'trail_id'},
   };
   //fields
 
@@ -99,6 +100,7 @@ export class User extends Model {
     queued_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_miles: {type: 'has_many', foreignKey: 'user_id'},
     users_subscriptions: {type: 'has_many', foreignKey: 'user_id'},
+    users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
   };
 
   @field('username') username;
@@ -111,6 +113,7 @@ export class User extends Model {
   @field('trail_id') trailId;
   @field('trail_progress') trailProgress;
   @field('trail_started_at') trailStartedAt;
+  @field('trail_tokens') trailTokens;
   @field('is_subscribed') isSubscribed;
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;
@@ -124,8 +127,12 @@ export class User extends Model {
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
   @children('users_subscriptions') usersSubscriptions;
+  @children('users_purchased_trails') usersPurchasedTrails;
 
   @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
+  @lazy userTrails = this.usersPurchasedTrails.extend(
+    Q.where('user_id', this.id)
+  );
 
   @lazy userSessionsWithCategory = this.usersSessions.extend(
     Q.on('session_categories', 'id', 'session_category_id')
@@ -207,15 +214,34 @@ export class User extends Model {
       user.trailId = '1';
       user.trailProgress = '0.0';
       user.traiStartedAt = trailStartedAt;
+      user.trailTokens = 20;
     });
-    return newUser;
+    console.debug(newUser[0]);
+    return newUser[0];
   }
   //add user miles
   @writer async addUserMile() {
-    return await this.collections.get('users_miles').create((user_miles) => {
-      user_miles.user_id.set(this);
-      user_miles.totalMiles = '0.00';
-    });
+    const userMile = await this.collections
+      .get('users_miles')
+      .create((user_miles) => {
+        user_miles.userId = this.id;
+        user_miles.totalMiles = '0.00';
+      });
+    return userMile[0];
+  }
+
+  @writer async addUserSubscription() {
+    const subscription = await this.collections
+      .get('users_subscriptions')
+      .create((user_subscription) => {
+        //@ts-ignore
+        user_subscription.userId = this.id;
+        //@ts-ignore
+        user_subscription.isActive = false;
+        user_subscription.expiresAt = formatDateTime(new Date());
+      });
+
+    return subscription[0];
   }
 
   @writer async unlockAchievements(userId, completedAchievements) {
@@ -399,6 +425,25 @@ export class User_Achievement extends Model {
 
   @children('users') users;
   @children('achievements') achievements;
+}
+
+export class User_Purchased_Trail extends Model {
+  static table = 'users_purchased_trails';
+  static associations = {
+    trails: {type: 'belongs_to', key: 'trail_id'},
+    users: {type: 'belongs_to', key: 'user_id'},
+  };
+  @field('user_id') userId;
+  @field('trail_id') trailId;
+  @field('purchased_at') purchasedAt;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
+
+  @immutableRelation('users', 'user_id') user;
+  @immutableRelation('trails', 'trail_id') trail;
+
+  @children('users') users;
+  @children('trails') trails;
 }
 
 export class Completed_Hike extends Model {

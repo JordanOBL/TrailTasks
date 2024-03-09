@@ -87,7 +87,7 @@ const HomeScreen: React.FC<Props> = ({
   //this useEffect gets the correct Rank based on  the users miles
   useFocusEffect(
     React.useCallback(() => {
-      sync(watermelonDatabase, user);
+      sync(watermelonDatabase, user.id);
       const rank = getUserRank(Ranks, totalMiles[0].totalMiles);
       setUserRank(rank);
       return async () => {
@@ -107,6 +107,8 @@ const HomeScreen: React.FC<Props> = ({
       <Text style={styles.onlineStatus}>
         {isConnected ? 'Online' : 'Offline'}
       </Text>
+      <Text style={styles.onlineStatus}>Trail Tokens: {user.trailTokens}</Text>
+      <Text style={styles.onlineStatus}>Daily Streak: Number of days </Text>
       <Text style={styles.username}>{user.username}</Text>
       <Carousel
         loop

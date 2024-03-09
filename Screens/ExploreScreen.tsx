@@ -4,6 +4,7 @@ import {
   Subscription,
   Trail,
   User,
+  User_Purchased_Trail,
 } from '../watermelon/models';
 import React, {useContext, useState} from 'react';
 import {SafeAreaView, ScrollView, StyleSheet, Text} from 'react-native';
@@ -19,6 +20,7 @@ interface Props {
   completedHikes: Completed_Hike[];
   queuedTrails: Queued_Trail[];
   userSubscription: Subscription[];
+  userPurchasedTrails: User_Purchased_Trail[];
 }
 
 const ExploreScreen = ({
@@ -26,6 +28,7 @@ const ExploreScreen = ({
   completedHikes,
   queuedTrails,
   userSubscription,
+  userPurchasedTrails
 }: Props) => {
   const watermelonDatabase = useDatabase();
 
@@ -34,30 +37,40 @@ const ExploreScreen = ({
     basicSubscriptionTrailsCollection,
     setBasicSubscriptionTrailsCollection,
   ] = React.useState<any>(null);
+  // const[usersPurchasedTrails, setUsersPurchasedTrails] = React.useState<any>() 
 
   const getTrails = async () => {
     try {
-      const trailsCollection = await watermelonDatabase.collections
+      const trailsCollection = await watermelonDatabase
         .get('trails')
         .query()
         .fetch();
-      setTrailsCollection(trailsCollection);
+     
 
       const basicSubscriptionTrailsCollection =
-        await watermelonDatabase.collections
+        await watermelonDatabase
           .get('basic_subscription_trails')
           .query()
           .fetch();
+      // const usersPurchasedTrailsCollection =
+      //   await watermelonDatabase.collections.get('users_purchased_trails')
+      //     .query()
+      //     .fetch();
+
 
       setBasicSubscriptionTrailsCollection(basicSubscriptionTrailsCollection);
+      setTrailsCollection(trailsCollection);
+    // setUsersPurchasedTrails(usersPurchasedTrailsCollection);
+      console.debug(userPurchasedTrails[0])
     } catch (err) {
-      console.error('Error in get trails exploreScreen', err);
+      console.error('Error in get trails exploreScreen', {err});
     }
   };
 
   React.useEffect(() => {
     getTrails();
-  }, []);
+    
+  }, [user, userPurchasedTrails, queuedTrails]);
 
   if (!basicSubscriptionTrailsCollection || !trailsCollection) {
     return (
@@ -76,7 +89,8 @@ const ExploreScreen = ({
           basicSubscriptionTrails={basicSubscriptionTrailsCollection}
           queuedTrails={queuedTrails}
           completedHikes={completedHikes}
-          userSubscription={userSubscription[0]}
+        userSubscription={userSubscription[0]}
+        userPurchasedTrails={userPurchasedTrails}
         />
       
     </SafeAreaView>
@@ -88,6 +102,9 @@ const enhance = withObservables(['user'], ({user}) => ({
   completedHikes: user.completedHikes.observe(),
   queuedTrails: user.queuedTrails.observe(),
   userSubscription: user.usersSubscriptions.observe(),
+  userPurchasedTrails: user.usersPurchasedTrails.observe() 
+  
+  
 }));
 
 const EnhancedExploreScreen = enhance(ExploreScreen);

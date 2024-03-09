@@ -1,31 +1,33 @@
+import {
+  Achievement,
+  Badge,
+  Basic_Subscription_Trail,
+  Completed_Hike,
+  Park,
+  Park_State,
+  Queued_Trail,
+  Session_Category,
+  Subscription,
+  Trail,
+  User,
+  User_Achievement,
+  User_Badge,
+  User_Miles,
+  User_Purchased_Trail,
+  User_Session,
+} from './watermelon/models';
+
+import App from './App';
+import {AppRegistry} from 'react-native';
+import {Database} from '@nozbe/watermelondb';
+import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 /**
  * @format
  */
 import React from 'react';
-import {AppRegistry} from 'react-native';
-import App from './App';
-import {name as appName} from './app.json';
-import {
-  Park,
-  Trail,
-  User,
-  Park_State,
-  Badge,
-  Achievement,
-  User_Achievement,
-  Completed_Hike,
-  Queued_Trail,
-  User_Miles,
-  User_Badge,
-  Session_Category,
-  User_Session,
-  Subscription,
-  Basic_Subscription_Trail,
-} from './watermelon/models';
-import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import {name as appName} from './app.json';
 import schema from './watermelon/schema';
-import {Database} from '@nozbe/watermelondb';
 
 const WrappedApp = () => {
   const adapter = new SQLiteAdapter({
@@ -51,6 +53,7 @@ const WrappedApp = () => {
       User_Session,
       Subscription,
       Basic_Subscription_Trail,
+      User_Purchased_Trail,
     ],
   });
   return (

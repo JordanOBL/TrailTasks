@@ -1,7 +1,8 @@
+import {Subscription, User, User_Miles} from '../watermelon/models';
+
 //import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {Q} from '@nozbe/watermelondb';
 import formatDateTime from './formatDateTime';
-import {Subscription, User, User_Miles} from '../watermelon/models';
 
 export const checkExistingUser = async ({
   username,
@@ -17,7 +18,7 @@ export const checkExistingUser = async ({
       .get('users')
       .query(Q.or(Q.where('email', email), Q.where('username', username)))
       .fetch();
-    
+
     return ExistingUser[0];
   } catch (err) {
     console.error('Error in checkExistingUser(), registerHelpers.tsx', err);
@@ -48,79 +49,59 @@ export const createNewUser = async ({
 
     //!BCYPT PASSWORD BEFORE ADDING TO DB
     const newUser = await watermelonDatabase.write(async () => {
-      const newUser = await watermelonDatabase
-        .get('users')
-        .create((user: User) => {
-          //@ts-ignore
-          user.firstName = firstName;
-          //@ts-ignore
-          user.lastName = lastName;
-          //@ts-ignore
-          user.email = email;
-          //@ts-ignore
-          user.password = password;
-          //@ts-ignore
-          user.username = username;
-          //@ts-ignore
-          user.pushNotificationsEnabled = true;
-          //@ts-ignore
-          user.themePreference = 'light';
-          //@ts-ignore
-          user.trailId = '1';
-          //@ts-ignore
-          user.trailProgress = '0.0';
-          //@ts-ignore
-          user.trailStartedAt = trailStartedAt;
-          //@ts-ignore
-          // user.createdAt = trailStartedAt;
-          // //@ts-ignore
-          // user.updatedAt = trailStartedAt;
+    const newUser = await watermelonDatabase
+      .get('users')
+      .create((user: User) =>
+      {
+        //@ts-ignore
+        user.firstName = firstName;
+        //@ts-ignore
+        user.lastName = lastName;
+        //@ts-ignore
+        user.email = email;
+        //@ts-ignore
+        user.password = password;
+        //@ts-ignore
+        user.username = username;
+        //@ts-ignore
+        user.pushNotificationsEnabled = true;
+        //@ts-ignore
+        user.themePreference = 'light';
+        //@ts-ignore
+        user.trailId = '1';
+        //@ts-ignore
+        user.trailProgress = '0.0';
+        //@ts-ignore
+        user.trailStartedAt = trailStartedAt;
+        //@ts-ignore
+        user.trailTokens = 20;
 
-          // const newUser = await watermelonDatabase.get('users').addUser({
-          //   username,
-          //   firstName,
-          //   lastName,
-          //   email,
-          //   password,
-          //   trailStartedAt
-          // })
-        });
-      if (newUser) {
-        const userMiles = await watermelonDatabase
-          .get('users_miles')
-          .create((user_miles: User_Miles) => {
-            //@ts-ignore
-            user_miles.userId = newUser.id;
-            //@ts-ignore
-            user_miles.totalMiles = '0.00';
-          });
+      })
+   
+    return newUser
+     });
+    if (newUser) {
+     
+      const userMiles = await newUser.addUserMile();
 
-        const subscription = await watermelonDatabase
-          .get('users_subscriptions')
-          .create((subscription: Subscription) => {
-            //@ts-ignore
-            subscription.userId = newUser.id;
-            //@ts-ignore
-            subscription.isActive = false;
-            subscription.expiresAt = formatDateTime(new Date());
-          });
+      const subscription = await newUser.addUserSubscription();
 
-        if (userMiles) {
-          await watermelonDatabase.localStorage.set(
-            'user_miles_id',
-            userMiles.id
-          );
-        }
-        if (subscription) {
-          await watermelonDatabase.localStorage.set(
-            'subscription_id',
-            subscription.id
-          );
-        }
+      if (userMiles) {
+        await watermelonDatabase.localStorage.set(
+          'user_miles_id',
+          userMiles.id
+        );
       }
+      if (subscription) {
+        await watermelonDatabase.localStorage.set(
+          'subscription_id',
+          subscription.id
+        );
+      }
+    }
 
-      return newUser;
-    });
+    // return newUser;
+
     if (newUser && newUser.id.length > 0) {
       await watermelonDatabase.localStorage.set('user_id', newUser.id);
       //@ts-ignore
@@ -192,7 +173,7 @@ export const handleRegister = async ({
         watermelonDatabase,
       });
 
-      if (createdUser!) {
+      if (createdUser) {
         console.log('successful user creation');
       }
       return;
@@ -200,17 +181,13 @@ export const handleRegister = async ({
     } else if (
       ExistingUser &&
       ExistingUser.email.toLowerCase() === email.toLowerCase()
-    )
-    {
-      
+    ) {
       setError('User Already Exists With Provided Email, Please Login');
       return; //@ts-ignore
     } else if (
       ExistingUser &&
       ExistingUser.username.toLowerCase() === username.toLowerCase()
-    )
-    {
-      
+    ) {
       setError('User Already Exists With Username, Please Choose New Username');
       return;
     } else {

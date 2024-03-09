@@ -15,22 +15,18 @@ interface Props {
   setReplacementTrailId: any;
   setShowReplaceTrailModal: any;
   user: any;
-  queuedTrails: any;
   completedHikes: any;
   park: any;
   basicSubscriptionTrails: any;
   userSubscription: Subscription;
-  queuedCache: any;
   completedCache: any;
-  purchasedTrailsCache: any;
+  purchasedTrailsCache:any
 }
-const TrailCard = ({
+const TrailOfTheDayCard = ({
   user,
   trail,
   completedHikes,
   completedCache,
-  queuedTrails,
-  queuedCache,
   setReplacementTrailId,
   setShowReplaceTrailModal,
   park,
@@ -38,11 +34,9 @@ const TrailCard = ({
   userSubscription,
   purchasedTrailsCache,
 }: Props) => {
-  const isFreeTrail = basicSubscriptionTrails[trail.id] !== undefined;
+  const isFreeTrail = basicSubscriptionTrails[trail.id];
   const isActiveSubscription = userSubscription.isActive === true;
-  const isCompleted = completedCache[trail.id] !== 'undefined';
-  const isQueued = queuedCache[trail.id] !== 'undefined';
-  const isPurchasedTrail = purchasedTrailsCache[trail.id] !== 'undefined';
+  const isCompleted = completedCache[trail.id];
 
 
   return user && basicSubscriptionTrails && userSubscription ? (
@@ -74,7 +68,7 @@ const TrailCard = ({
         }}>
         <Text
           style={
-            completedHikes && isCompleted
+            completedCache && isCompleted
               ? {
                   position: 'absolute',
                   backgroundColor: 'rgb(41,184,169)',
@@ -84,7 +78,7 @@ const TrailCard = ({
                 }
               : {}
           }>
-          {completedHikes && isCompleted ? (
+          {completedCache && isCompleted ? (
             <Text
               style={{
                 color: 'white',
@@ -118,64 +112,14 @@ const TrailCard = ({
           {(trail.trailDistance / 2).toFixed()} hr.
         </Text>
         <View style={{position: 'relative'}}>
-          <Text
-            style={{
-              position: 'absolute',
-              right: 10,
-              bottom: 90,
-            }}>
-            {userSubscription && userSubscription.isActive ? (
-              queuedTrails && queuedCache[trail.id] ? (
-                <Pressable
-                  onPress={async () => {
-                    console.log('trailId', trail.id);
-                    console.log('userId', user.id);
-                    console.log(user.queuedTrails);
-
-                    await trail.deleteFromQueuedTrails({userId: user.id});
-                  }}>
-                  <Text
-                    style={[
-                      styles.QueueButtons,
-                      {
-                        color:
-                          queuedTrails && queuedCache[trail.id]
-                            ? 'red'
-                            : 'rgb(7,254,213)',
-                      },
-                    ]}>
-                    -
-                  </Text>
-                </Pressable>
-              ) : (
-                <Pressable
-                  onPress={async () =>
-                    await trail.addToQueuedTrails({userId: user.id})
-                  }>
-                  <Text
-                    style={[
-                      styles.QueueButtons,
-                      {
-                        color:
-                          queuedTrails && !isQueued ? 'rgb(7,254,213)' : 'red',
-                      },
-                    ]}>
-                    +
-                  </Text>
-                </Pressable>
-              )
-            ) : (
-              <></>
-            )}
-          </Text>
           <Pressable
             style={{
               backgroundColor:
                 user.trailId == trail.id
                   ? 'grey'
-                  :  isFreeTrail
+                  : basicSubscriptionTrails && isFreeTrail
                   ? 'rgb(7,254,213)'
-                  : isActiveSubscription
+                  : userSubscription && isActiveSubscription
                   ? 'rgb(7,254,213)'
                   : 'grey',
 
@@ -199,13 +143,7 @@ const TrailCard = ({
                 console.log('error Setting new trail for user', err);
               }
             }}
-            disabled={
-              user.trailId == trail.id ||
-              (userSubscription &&
-                !userSubscription.isActive &&
-                basicSubscriptionTrails &&
-                !basicSubscriptionTrails[trail.id])
-            }>
+            disabled={user.trailId == trail.id}>
             <Text
               style={{
                 color: 'rgb(31,33,35)',
@@ -215,13 +153,11 @@ const TrailCard = ({
               }}>
               {user.trailId == trail.id
                 ? 'In Progress'
-                : isFreeTrail
+                : basicSubscriptionTrails && isFreeTrail
                 ? 'Start Now'
-                : isActiveSubscription && isPurchasedTrail
+                : userSubscription && isActiveSubscription
                 ? 'Start Now'
-                : isActiveSubscription && !isPurchasedTrail
-                ? 'Buy Now'
-                : 'Unlock with Pro'}
+                : 'Buy Now'}
             </Text>
           </Pressable>
         </View>
@@ -234,21 +170,18 @@ const TrailCard = ({
 
 const enhance = withObservables(
   ['user', 'trail', 'queuedTrails', 'userSubscription'],
-  ({user, trail, userSubscription}) => ({
+  ({user, trail}) => ({
     user: user.observe(),
     completedHikes: user.completedHikes.observe(),
-    queuedTrails: user.queuedTrails.observe(),
     trail: trail.observe(),
     park: trail.park.observe(),
-    userSubscription,
-    // userTrails: user.usersTrails
 
     // Shortcut syntax for `post.comments.observe()`
   })
 );
 
-const EnhancedTrailCard = enhance(TrailCard);
-export default EnhancedTrailCard;
+const EnhancedTrailOfTheDayCard = enhance(TrailOfTheDayCard);
+export default EnhancedTrailOfTheDayCard;
 
 //export default TrailCard;
 

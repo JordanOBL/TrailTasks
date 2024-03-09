@@ -108,6 +108,7 @@ export const User = sequelize.define(
       defaultValue: 0.0,
     },
     trail_started_at: {type: DataTypes.STRING, allowNull: false},
+    trail_tokens: {type: DataTypes.INTEGER, allowNull: false},
   },
   {
     tableName: 'users',
@@ -217,6 +218,16 @@ export const Queued_Trail = sequelize.define(
     trail_id: {type: DataTypes.STRING, allowNull: false},
   },
   {tableName: 'queued_trails', underscored: true}
+);
+export const User_Purchased_Trail = sequelize.define(
+  'User_Purchased_Trail',
+  {
+    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    user_id: {type: DataTypes.STRING, allowNull: false},
+    trail_id: {type: DataTypes.STRING, allowNull: false},
+    purchased_at: {type: DataTypes.STRING, allowNull: true},
+  },
+  {tableName: 'users_purchased_trails', underscored: true}
 );
 export const Basic_Subscription_Trail = sequelize.define(
   'Basic_Subscription_Trail',
@@ -335,6 +346,14 @@ Trail.belongsToMany(User, {through: 'queued_trails'});
 
 User.hasMany(User_Session, {foriegnKey: 'user_id'});
 User_Session.belongsTo(User);
+
+User_Purchased_Trail.belongsTo(User, {foreignKey: 'user_id'});
+User.hasMany(User_Purchased_Trail, {foreignKey: 'user_id'});
+
+User_Purchased_Trail.belongsTo(Trail, {foreignKey: 'trail_id'});
+
+// User.belongsToMany(Trail, {through: 'users_purchased_trails'});
+// Trail.belongsToMany(User, {through: 'users_purchased_trails'});
 
 Subscription.hasOne(User, {foreignKey: 'user_id'});
 User.belongsTo(Subscription, {key: 'id'});

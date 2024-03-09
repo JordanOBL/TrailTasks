@@ -75,8 +75,17 @@ function App(): JSX.Element {
         //has a userID saved in the localstorage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
         //SYNC call teh push and pull requests from mobile device to PG database
-        await sync(watermelonDatabase, user);
+        console.debug("calling sync")
+        if (user)
+        {
+           await sync(watermelonDatabase, user.id);
         
+        } else
+        {
+          await sync(watermelonDatabase);
+        }
+        
+       
       } catch (err) {
         console.error('Error in onload in APP useEffect', err);
       }

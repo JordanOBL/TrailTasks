@@ -1,16 +1,27 @@
-import { Basic_Subscription_Trail, Completed_Hike, Queued_Trail, Subscription, Trail, User } from '../watermelon/models';
+import {
+  Basic_Subscription_Trail,
+  Completed_Hike,
+  Queued_Trail,
+  Subscription,
+  Trail,
+  User,
+  User_Purchased_Trail,
+} from '../watermelon/models';
 import {
   FlatList,
   Modal,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 
+import EnhancedFreeTrailCard from './Trails/FreeTrailsCard';
 import EnhancedTrailCard from './Trails/TrailCard';
+import EnhancedTrailOfTheDayCard from './Trails/TrailOfTheDayCard';
 import formatDateTime from '../helpers/formatDateTime';
 import withObservables from '@nozbe/with-observables';
 
@@ -21,6 +32,7 @@ interface Props {
   basicSubscriptionTrails: Basic_Subscription_Trail[];
   completedHikes: Completed_Hike[];
   userSubscription: Subscription;
+  userPurchasedTrails: User_Purchased_Trail[];
 }
 
 const NearbyTrails = ({
@@ -30,21 +42,45 @@ const NearbyTrails = ({
   queuedTrails,
   basicSubscriptionTrails,
   userSubscription,
+  userPurchasedTrails,
 }: Props) => {
   const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
-  const [replacementTrailId, setReplacementTrailId] = useState<null | number>(null);
-
+  const [replacementTrailId, setReplacementTrailId] = useState<null | number>(
+    null
+  );
+  const [basicTrails, setBasicTrails] = useState<any>([]);
+  const [purchasedTrails, setPurchasedTrails] = useState<any>([]);
+  const [dailyTrail, setDailyTrail] = useState<any>([]);
+  
   const queuedCache: {[key: string]: boolean} = {};
   const completedCache: {[key: string]: boolean} = {};
-  const basicTrailsCache: { [key: string]: boolean }  = {};
+  const basicTrailsCache: {[key: string]: boolean} = {};
+  const purchasedTrailsCache: {[key: string]: boolean} = {};
 
   useEffect(() => {
     completedHikes.forEach((trail) => (completedCache[trail.trailId] = true));
     queuedTrails.forEach((trail) => (queuedCache[trail.trailId] = true));
     basicSubscriptionTrails.forEach(
-      (trail: { trailId: string | number; }) => (basicTrailsCache[trail.trailId] = true)
+      (trail) => (basicTrailsCache[trail.trailId] = true)
     );
-  }, [completedHikes, queuedTrails, basicSubscriptionTrails]);
+    userPurchasedTrails.forEach(
+      (trail: {trailId: string | number}) =>
+        (purchasedTrailsCache[trail.trailId] = true)
+    );
+
+   const freeTrails =  trailsCollection.filter((trail) => basicTrailsCache[trail.id] === true)
+    
+    setBasicTrails(freeTrails)
+    ;
+    setPurchasedTrails(() =>
+      trailsCollection.filter((trail) => purchasedTrailsCache[trail.id])
+    );
+    setDailyTrail(() =>
+      trailsCollection.filter((trail) => trail.id == '2')
+    );
+    
+  }, [
+  ]);
 
   const handleReplaceTrail = async () => {
     await user.updateUserTrail({
@@ -55,7 +91,39 @@ const NearbyTrails = ({
     setReplacementTrailId(null);
   };
 
-  const renderTrailItem = ({item}) => (
+  const renderTrailOfTheDayItem = ({item}: any) => (
+    <EnhancedTrailOfTheDayCard
+      userSubscription={userSubscription}
+      completedCache={completedCache}
+      user={user}
+      setReplacementTrailId={setReplacementTrailId}
+      setShowReplaceTrailModal={setShowReplaceTrailModal}
+      trail={item}
+      completedHikes={completedHikes}
+      basicSubscriptionTrails={basicTrails}
+     
+    />
+  );  
+
+  const renderFreeTrailsItem = ({item}: any) => (
+    <EnhancedFreeTrailCard
+      userSubscription={userSubscription}
+      queuedCache={queuedCache}
+      completedCache={completedCache}
+      user={user}
+      setReplacementTrailId={setReplacementTrailId}
+      setShowReplaceTrailModal={setShowReplaceTrailModal}
+      trail={item}
+      completedHikes={completedHikes}
+      queuedTrails={queuedTrails}
+      basicSubscriptionTrails={basicTrails}
+
+    />
+  );  
+
+
+
+  const renderAllTrailsItem = ({item}: any) => (
     <EnhancedTrailCard
       userSubscription={userSubscription}
       queuedCache={queuedCache}
@@ -66,64 +134,80 @@ const NearbyTrails = ({
       trail={item}
       completedHikes={completedHikes}
       queuedTrails={queuedTrails}
-      basicSubscriptionTrails={basicTrailsCache}
+      basicSubscriptionTrails={basicTrails}
+      purchasedTrailsCache={purchasedTrailsCache}
     />
   );
 
-  return (
-    <SafeAreaView>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showReplaceTrailModal}
-        onRequestClose={() => setShowReplaceTrailModal(false)}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Are you sure you want to replace your trail? ( Trail progress will
-              be RESET, but total user miles hiked will be saved.)
-            </Text>
-            <Pressable
-              style={[styles.button, styles.buttonCancel]}
-              onPress={() => setShowReplaceTrailModal(false)}>
-              <Text style={styles.textStyle}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.button, styles.buttonExit]}
-              onPress={handleReplaceTrail}>
-              <Text style={styles.textStyle}>Change</Text>
-            </Pressable>
-          </View>
+return (
+  <ScrollView style={styles.container}>
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showReplaceTrailModal}
+      onRequestClose={() => setShowReplaceTrailModal(false)}>
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>
+            Are you sure you want to replace your trail? ( Trail progress will
+            be RESET, but total user miles hiked will be saved.)
+          </Text>
+          <Pressable
+            style={[styles.button, styles.buttonCancel]}
+            onPress={() => setShowReplaceTrailModal(false)}>
+            <Text style={styles.textStyle}>Cancel</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.button, styles.buttonExit]}
+            onPress={handleReplaceTrail}>
+            <Text style={styles.textStyle}>Change</Text>
+          </Pressable>
         </View>
-      </Modal>
-
-      {userSubscription.isActive === false && (
-        <View>
-          <Text style={styles.H2}> Free Monthly Trails</Text>
-          <FlatList
-            data={trailsCollection.filter(
-              (trail) => basicTrailsCache[trail.id]
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            renderItem={renderTrailItem}
-            keyExtractor={(item) => item.id.toString()}
-          />
-        </View>
-      )}
-
-      <View>
-        <Text style={styles.H2}>All Trails</Text>
-        <FlatList
-          data={trailsCollection}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={renderTrailItem}
-          keyExtractor={(item) => item.id.toString()}
-        />
       </View>
-    </SafeAreaView>
-  );
+    </Modal>
+
+    {/* Trail of The Day*/}
+
+    <View style={styles.trailsContainer}>
+      <Text style={styles.H2}> Trail of The Week</Text>
+      <FlatList
+        data={dailyTrail}
+        initialNumToRender={1}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        renderItem={renderTrailOfTheDayItem}
+        keyExtractor={(item) => item.id.toString()}
+      />
+    </View>
+    {/* Free Trails */}
+
+    <View style={styles.trailsContainer}>
+      <Text style={styles.H2}> Free Trails</Text>
+      <FlatList
+        data={basicTrails}
+      
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        renderItem={renderFreeTrailsItem}
+        keyExtractor={(item) => item.id.toString()}
+      />
+    </View>
+
+    {/* All Trails */}
+    <View style={styles.trailsContainer}>
+      <Text style={styles.H2}>All Trails</Text>
+      <FlatList
+        data={trailsCollection}
+       
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        renderItem={renderAllTrailsItem}
+        keyExtractor={(item) => item.id.toString()}
+      />
+    </View>
+  </ScrollView>
+);
+
 };
 
 const enhance = withObservables(
@@ -133,6 +217,8 @@ const enhance = withObservables(
     completedHikes: user.completedHikes.observe(),
     queuedTrails: user.queuedTrails.observe(),
     userSubscription,
+    
+    
   })
 );
 
@@ -140,6 +226,20 @@ const EnhancedNearbyTrails = enhance(NearbyTrails);
 export default EnhancedNearbyTrails;
 
 const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    backgroundColor: 'black',
+  },
+  trailsContainer: {
+    marginBottom: 20, // Add margin to separate the two lists
+  },
+  H2: {
+    color: 'rgb(249, 253, 255)',
+    fontSize: 22,
+    fontWeight: '800',
+    marginVertical: 10,
+  },
+
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -180,11 +280,5 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
-  },
-  H2: {
-    color: 'rgb(249,253,255)',
-    fontSize: 22,
-    fontWeight: '800',
-    marginVertical: 10,
   },
 });

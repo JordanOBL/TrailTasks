@@ -13,17 +13,18 @@ import {
   User,
   User_Achievement,
   User_Miles,
+  User_Purchased_Trail,
   User_Session,
 } from '../backend/db/sequelizeModel.mjs';
+import {achievements, achievements as masterAchievements} from '../assets/Achievements/masterAchievementList.js';
 
 // import pool from "./db/config.js";
 import {Sequelize} from 'sequelize';
-import { achievementsWithIds } from '../assets/Achievements/addAchievementIds.js';
+import {achievementsWithIds} from '../assets/Achievements/addAchievementIds.js';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
-import { achievements as masterAchievements } from '../assets/Achievements/masterAchievementList.js'
-import  sessionCategories from '../helpers/Session/sessionCategories.js'
+import sessionCategories from '../helpers/Session/sessionCategories.js';
 
 // import pkg from "pg";
 // const {Pool} = pkg;
@@ -63,15 +64,7 @@ app.use(cors());
 
 //app.use("/api/sync", router);
 
-const getSafeLastPulledAt = (lastPulledAt) => {
-  console.log('last pulled at exists and it is', lastPulledAt);
-  if (lastPulledAt !== 'null')
-  {
-    return new Date(parseInt(lastPulledAt, 10)).toISOString();
-  }
 
-  return new Date(0).toISOString();
-};
 
 app.get('/api/seed', async (req, res) => {
   console.log('seeding postgres table...');
@@ -2318,7 +2311,10 @@ app.get('/api/seed', async (req, res) => {
       ],
       {ignoreDuplicates: true}
     );
-    const session_categories = await Session_Category.bulkCreate(sessionCategories, {ignoreDuplicates: true});
+    const session_categories = await Session_Category.bulkCreate(
+      sessionCategories,
+      {ignoreDuplicates: true}
+    );
     console.log('Seed Successful)');
     res.status(200);
   } catch (err) {
@@ -2326,17 +2322,27 @@ app.get('/api/seed', async (req, res) => {
   }
 });
 
+const getSafeLastPulledAt = (lastPulledAt) =>
+{
+  console.debug({lastPulledAt})
+  if (lastPulledAt !== 'null') {
+    console.debug('last pulled at exists and it is', lastPulledAt);
+    return new Date(parseInt(lastPulledAt, 10)).toISOString();
+  }
+  console.debug('last pulled does NOT exist and it is null', lastPulledAt);
+  return new Date(0).toISOString();
+};
 //send updated and new changes to the user that were done after 'lastPulledAt
 //*currently successfully send new users to users watermelon database !
 app.get('/pull', async (req, res) => {
-  try
-  {
+  try {
     let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
     const userId = req.query.userId;
     console.debug('user in pull id', userId);
-    console.log('last pulled at', { lastPulledAt });
-    if (!lastPulledAt || lastPulledAt == null)
-    {
+    console.log('last pulled at', {lastPulledAt});
+    if (lastPulledAt === new Date(0).toISOString()) {
+      const createdAchievements = await Achievement.findAll({});
+      console.log('first Achievements Pull', createdAchievements);
       const createdUsers = await User.findAll({});
       console.log('first Users Pull', createdUsers);
       const createdParks = await Park.findAll({});
@@ -2344,9 +2350,18 @@ app.get('/pull', async (req, res) => {
       const createdTrails = await Trail.findAll({});
       console.log('first Trails Pull', createdTrails);
       const createdParkStates = await Park_State.findAll({});
-      console.log('first Trails Pull', createdParkStates);
+      console.log('first ParkStates Pull', createdParkStates);
+      const createdBasicSubscriptionTrails = await Basic_Subscription_Trail.findAll({});
+      console.log('first Baic Trails Pull', createdBasicSubscriptionTrails);
+      const createdSessionCategories = await Session_Category.findAll({});
+      console.log('first categories Pull', createdSessionCategories);
       const responseData = {
         changes: {
+          achievements: {
+            created: createdAchievements,
+            updated: [],
+            deleted: [],
+          },
           parks: {
             created: createdParks,
             updated: [],
@@ -2367,14 +2382,23 @@ app.get('/pull', async (req, res) => {
             updated: [],
             deleted: [],
           },
+          basic_subscription_trails: {
+            created: createdBasicSubscriptionTrails,
+            updated: [],
+            deleted: [],
+          },
+          session_categories: {
+            created: createdSessionCategories,
+            updated: [],
+            deleted: [],
+          },
         },
-        timestamp: new Date(),
+        timestamp: Date.now(),
       };
 
       console.log('responseData for new trailtask db', responseData);
       return res.json(responseData);
-    } else
-    {
+    } else {
       const createdParks = await Park.findAll({
         where: {
           createdAt: {
@@ -2396,7 +2420,7 @@ app.get('/pull', async (req, res) => {
           },
         },
       });
-      console.log({ createdUsers });
+      console.log({createdUsers});
       const createdUserMiles = await User_Miles.findAll({
         where: {
           createdAt: {
@@ -2434,6 +2458,14 @@ app.get('/pull', async (req, res) => {
           user_id: userId,
         },
       });
+      const createdUserPurchasedTrails = await User_Purchased_Trail.findAll({
+        where: {
+          createdAt: {
+            [Sequelize.Op.gt]: lastPulledAt,
+          },
+          user_id: userId,
+        },
+      });
       const createdParkStates = await Park_State.findAll({
         where: {
           createdAt: {
@@ -2448,13 +2480,14 @@ app.get('/pull', async (req, res) => {
           },
         },
       });
-      const createdBasicSubscriptionTrails = await Basic_Subscription_Trail.findAll({
-        where: {
-          createdAt: {
-            [Sequelize.Op.gt]: lastPulledAt,
+      const createdBasicSubscriptionTrails =
+        await Basic_Subscription_Trail.findAll({
+          where: {
+            createdAt: {
+              [Sequelize.Op.gt]: lastPulledAt,
+            },
           },
-        },
-      });
+        });
       const updatedSubscriptions = await Subscription.findAll({
         where: {
           updatedAt: {
@@ -2520,6 +2553,11 @@ app.get('/pull', async (req, res) => {
             updated: [],
             deleted: [],
           },
+          users_purchased_trails: {
+            created: createdUserPurchasedTrails,
+            updated: [],
+            deleted: [],
+          },
           users_sessions: {
             created: [],
             updated: updatedUserSessions,
@@ -2553,14 +2591,14 @@ app.get('/pull', async (req, res) => {
         },
         timestamp: Date.now(),
       };
-  
+
       console.log('responseData from pull', responseData);
       return res.json(responseData);
     }
   } catch (err) {
     console.log('Error in server /pull', err);
   }
-  });
+});
 
 //pull changes from users watermelon database
 app.post('/push', async (req, res) => {
@@ -2573,7 +2611,9 @@ app.post('/push', async (req, res) => {
         const users = await User.bulkCreate(changes.users.created);
       }
       if (changes?.users_achievements?.created[0] !== undefined) {
-        const users_achievements = await User_Achievement.bulkCreate(changes.users_achievements.created);
+        const users_achievements = await User_Achievement.bulkCreate(
+          changes.users_achievements.created
+        );
       }
       if (changes?.users_sessions?.created[0] !== undefined) {
         const users_sessions = await User_Session.bulkCreate(
@@ -2583,6 +2623,11 @@ app.post('/push', async (req, res) => {
       if (changes?.users_miles?.created[0] !== undefined) {
         const users_miles = await User_Miles.bulkCreate(
           changes.users_miles.created
+        );
+      }
+      if (changes?.users_purchased_trails?.created[0] !== undefined) {
+        const users_purchased_trails = await User_Purchased_Trail.bulkCreate(
+          changes.users_purchased_trails.created
         );
       }
       if (changes?.users_subscriptions?.created[0] !== undefined) {
@@ -2616,22 +2661,22 @@ app.post('/push', async (req, res) => {
         });
         await Promise.all(updateQueries);
       }
-       if (changes?.users_sessions?.updated[0] !== undefined) {
-         const updateQueries = changes.users_sessions.updated.map(
-           (remoteEntry) => {
-             console.log({remoteEntry});
-             return User_Session.update(
-               {...remoteEntry},
-               {
-                 where: {
-                   id: remoteEntry.id,
-                 },
-               }
-             );
-           }
-         );
-         await Promise.all(updateQueries);
-       }
+      if (changes?.users_sessions?.updated[0] !== undefined) {
+        const updateQueries = changes.users_sessions.updated.map(
+          (remoteEntry) => {
+            console.log({remoteEntry});
+            return User_Session.update(
+              {...remoteEntry},
+              {
+                where: {
+                  id: remoteEntry.id,
+                },
+              }
+            );
+          }
+        );
+        await Promise.all(updateQueries);
+      }
       if (changes?.users_achievements?.updated[0] !== undefined) {
         const updateQueries = changes.users_achievements.updated.map(
           (remoteEntry) => {
@@ -2649,17 +2694,19 @@ app.post('/push', async (req, res) => {
         await Promise.all(updateQueries);
       }
       if (changes?.users_subscriptions?.updated[0] !== undefined) {
-        const updateQueries = changes.users_subscriptions.updated.map((remoteEntry) => {
-          console.log({remoteEntry});
-          return Subscription.update(
-            {...remoteEntry},
-            {
-              where: {
-                id: remoteEntry.id,
-              },
-            }
-          );
-        });
+        const updateQueries = changes.users_subscriptions.updated.map(
+          (remoteEntry) => {
+            console.log({remoteEntry});
+            return Subscription.update(
+              {...remoteEntry},
+              {
+                where: {
+                  id: remoteEntry.id,
+                },
+              }
+            );
+          }
+        );
         await Promise.all(updateQueries);
       }
       if (changes?.users?.deleted[0]) {
@@ -2680,10 +2727,14 @@ const connect = async () => {
   try {
     //await SYNC({force: true});
     await SYNC();
-    console.log('SERVER - connected to Postgres database trailtasks viia Sequelize!');
+    console.log(
+      'SERVER - connected to Postgres database trailtasks viia Sequelize!'
+    );
 
     app.listen(5500, () => {
-      console.log('SERVER-listening and connected to express server trailtasks!');
+      console.log(
+        'SERVER-listening and connected to express server trailtasks!'
+      );
     });
   } catch (err) {
     console.log(err.message);

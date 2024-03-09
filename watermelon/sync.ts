@@ -10,46 +10,50 @@ const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
 //singleton
 let isRunning = false;
-const IP = 'localhost'
+const IP = 'localhost';
 
-export async function sync(database: Database, user: User) {
+export async function sync(database: Database, userId: string = '0') {
   try {
     //check internet Connection
     const {connection} = await checkInternetConnection();
     console.debug('sync() device internet:', connection.isConnected);
     //set locatStorage connection status
-    
+
     await database.localStorage.set('isConnected', connection.isConnected);
 
-    if (!isRunning && user && connection.isConnected) {
+    if (!isRunning && connection.isConnected) {
       //stop more than one instance
       isRunning = true;
       //console.debug('Running sync()');
-    
+
       await synchronize({
         database,
-        user,
-        pullChanges: async ({ lastPulledAt, schemaVersion, migration }) =>
-        {
-          console.debug('user from pull changes', user.id)
-          //get new changees in the watermelon database
-          const urlParams = `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${user.id}`;
-          const response = await fetch(
-            `http://192.168.1.208:5500/pull?${urlParams}`
-          );
-          if (!response.ok) {
-            console.error('in pull in sync()')
-            throw new Error(await response.text());
+        pullChanges: async ({lastPulledAt, schemaVersion, migration}) => {
+          try {
+            console.debug('user from pull changes', userId);
+            //get new changees in the watermelon database
+            const urlParams = userId
+              ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
+              : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
+            const response = await fetch(
+              `http://192.168.1.208:5500/pull?${urlParams}`
+            );
+            if (!response.ok) {
+              console.error('in pull in sync()');
+              throw new Error(await response.text());
+            }
+            const {changes, timestamp} = await response.json();
+
+            //UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THES LINES UNCOMMENTED!!!
+            //           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
+            //             changes,
+            //             false
+            //           );
+            return {changes, timestamp};
+          } catch (err) {
+            console.error('error in PULLCHANGES sync()', err);
+            return {changes: [], timestamp: Date.now()};
           }
-          const {changes, timestamp} = await response.json();
-
-
-          //UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THES LINES UNCOMMENTED!!!
-//           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
-//             changes,
-//             false
-//           );
-          return {changes, timestamp};
         },
 
         //sending server user watermelondb changes
@@ -66,10 +70,10 @@ export async function sync(database: Database, user: User) {
             }
           );
           // UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THESE LINES UNCOMMENTED!!!
-//           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
-//             changes,
-//             true
-//           );
+          //           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
+          //             changes,
+          //             true
+          //           );
           if (!response.ok) {
             console.error('in push in sync function');
             throw new Error(await response.text());
