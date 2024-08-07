@@ -1,7 +1,7 @@
 # OSX
 #
 .DS_Store
-
+tags
 # Xcode
 #
 build/
@@ -64,3 +64,4 @@ yarn-error.log
 
 #test coverage
 coverage/
+tags
