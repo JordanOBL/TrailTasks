@@ -17,29 +17,74 @@ interface Props {
   user: any;
   completedHikes: any;
   park: any;
-  basicSubscriptionTrails: any;
+  freeTrailsCache: any;
   userSubscription: Subscription;
   completedCache: any;
-  purchasedTrailsCache:any
+  userPurchasedTrailsCache: any;
 }
-const TrailOfTheDayCard = ({
+const TrailOfTheWeekCard = ({
   user,
   trail,
-  completedHikes,
   completedCache,
   setReplacementTrailId,
   setShowReplaceTrailModal,
   park,
-  basicSubscriptionTrails,
+  freeTrailsCache,
   userSubscription,
-  purchasedTrailsCache,
+  userPurchasedTrailsCache,
 }: Props) => {
-  const isFreeTrail = basicSubscriptionTrails[trail.id];
+  const isFreeTrail = freeTrailsCache[trail.id];
   const isActiveSubscription = userSubscription.isActive === true;
   const isCompleted = completedCache[trail.id];
+  const isPurchased = userPurchasedTrailsCache[trail.id];
 
+  const calculateCoinReward = () => {
+    let reward = trail.trailDistance;
+    if (trail.trailDistance >= 5 && trail.trailDistance < 10) {
+      reward *= 1.5;
+    } else if (trail.trailDistance >= 10) {
+      reward *= 2;
+    }
+    return isActiveSubscription ? Math.ceil(reward + 10) : Math.ceil(reward);
+  };
 
-  return user && basicSubscriptionTrails && userSubscription ? (
+  const renderCoinReward = () => {
+    const coinReward = calculateCoinReward();
+    return (
+      <>
+        <Text
+          style={{
+            color: 'gold',
+          }}>
+          Reward: {coinReward} Trail Tokens
+        </Text>
+        <Text
+          style={{
+            color: 'gold',
+          }}>
+          Event Badge
+        </Text>
+      </>
+    );
+  };
+
+  const renderBadge = () => {
+    return (
+      <Text
+        style={{
+          position: 'absolute',
+          backgroundColor: 'gold',
+          top: 10,
+          right: 10,
+          padding: 5,
+          borderRadius: 5,
+        }}>
+        Badge
+      </Text>
+    );
+  };
+
+  return user && userSubscription ? (
     <View
       key={trail.id}
       style={{
@@ -66,32 +111,7 @@ const TrailOfTheDayCard = ({
           shadowColor: 'white',
           shadowRadius: 20,
         }}>
-        <Text
-          style={
-            completedCache && isCompleted
-              ? {
-                  position: 'absolute',
-                  backgroundColor: 'rgb(41,184,169)',
-                  top: 20,
-                  width: 80,
-                  textAlign: 'center',
-                }
-              : {}
-          }>
-          {completedCache && isCompleted ? (
-            <Text
-              style={{
-                color: 'white',
-                fontSize: 12,
-                fontWeight: '600',
-                marginLeft: 5,
-              }}>
-              Completed
-            </Text>
-          ) : (
-            <></>
-          )}
-        </Text>
+        {renderBadge()}
       </ImageBackground>
 
       <View style={{marginTop: 10, padding: 5}}>
@@ -111,18 +131,12 @@ const TrailOfTheDayCard = ({
           Distance: {trail.trailDistance} mi - Est{' '}
           {(trail.trailDistance / 2).toFixed()} hr.
         </Text>
+        {renderCoinReward()}
         <View style={{position: 'relative'}}>
           <Pressable
             style={{
               backgroundColor:
-                user.trailId == trail.id
-                  ? 'grey'
-                  : basicSubscriptionTrails && isFreeTrail
-                  ? 'rgb(7,254,213)'
-                  : userSubscription && isActiveSubscription
-                  ? 'rgb(7,254,213)'
-                  : 'grey',
-
+                user.trailId == trail.id ? 'grey' : 'rgb(7,254,213)',
               width: '50%',
               borderRadius: 10,
               paddingVertical: 5,
@@ -153,11 +167,9 @@ const TrailOfTheDayCard = ({
               }}>
               {user.trailId == trail.id
                 ? 'In Progress'
-                : basicSubscriptionTrails && isFreeTrail
+                : isActiveSubscription
                 ? 'Start Now'
-                : userSubscription && isActiveSubscription
-                ? 'Start Now'
-                : 'Buy Now'}
+                : 'Buy Event'}
             </Text>
           </Pressable>
         </View>
@@ -180,8 +192,8 @@ const enhance = withObservables(
   })
 );
 
-const EnhancedTrailOfTheDayCard = enhance(TrailOfTheDayCard);
-export default EnhancedTrailOfTheDayCard;
+const EnhancedTrailOfTheWeekCard = enhance(TrailOfTheWeekCard);
+export default EnhancedTrailOfTheWeekCard;
 
 //export default TrailCard;
 

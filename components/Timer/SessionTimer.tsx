@@ -153,7 +153,7 @@ const SessionTimer = ({
         <Text
           style={[
             styles.timerText,
-            sessionDetails.isPaused && styles.pausedText,
+            (sessionDetails.isPaused || !canHike) && styles.pausedText,
           ]}>
           {sessionDetails.isPaused
             ? 'Paused'
@@ -172,50 +172,56 @@ const SessionTimer = ({
         </View>
         <View style={styles.infoContainer}>
           <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Current Set</Text>
+            <Text style={styles.infoLabel}>Sets</Text>
             <Text style={styles.infoValue}>
-              {sessionDetails.currentSet}/{sessionDetails.sets}
+              {sessionDetails.currentSet} / {sessionDetails.sets}
             </Text>
           </View>
           <View style={styles.infoBox}>
             <Text style={styles.infoLabel}>Strikes</Text>
-            <Text style={styles.infoValue}>{sessionDetails.strikes}</Text>
+            <Text style={[styles.infoValue, {color: 'rgb(217,49,7)'}]}>
+              {sessionDetails.strikes}
+            </Text>
           </View>
           <View style={styles.infoBox}>
             <Text style={styles.infoLabel}>Pace</Text>
-            <Text style={styles.infoValue}>{sessionDetails.pace}</Text>
+            <Text style={styles.infoValue}>{sessionDetails.pace} mph</Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.achievementsContainer}>
-        <Text style={styles.title}>Achievements Earned</Text>
-        {earnedAchievements.length > 0 ? (
-          earnedAchievements.map((achievement, index) => (
-            <Text key={index} style={styles.achievementItem}>
-              {achievement.achievementName}
-            </Text>
-          ))
-        ) : (
-          <></>
-        )}
-      </View>
+      {!sessionDetails.isPaused && (
+        <View style={styles.achievementsContainer}>
+          <Text style={styles.title}>Achievements Earned</Text>
+          {earnedAchievements.length > 0 ? (
+            earnedAchievements.map((achievement, index) => (
+              <Text key={index} style={styles.achievementItem}>
+                {achievement.achievementName}
+              </Text>
+            ))
+          ) : (
+            <></>
+          )}
+        </View>
+      )}
 
-      <View style={styles.completedTrailsContainer}>
-        <Text style={styles.title}>Completed Trails</Text>
-        {completedTrails.length > 0 ? (
-          completedTrails.map((trail, index) => (
-            <Text key={index} style={styles.achievementItem}>
-              {trail.trailName}
-            </Text>
-          ))
-        ) : (
-          <></>
-        )}
-      </View>
+      {!sessionDetails.isPaused && (
+        <View style={styles.completedTrailsContainer}>
+          <Text style={styles.title}>Completed Trails</Text>
+          {completedTrails.length > 0 ? (
+            completedTrails.map((trail, index) => (
+              <Text key={index} style={styles.achievementItem}>
+                {trail.trailName}
+              </Text>
+            ))
+          ) : (
+            <></>
+          )}
+        </View>
+      )}
       <View style={styles.buttonsContainer}>
         <Pressable
-          onPress={() => endSession({setSessionDetails, sessionDetails})}
+          onPress={() => endSession({user, setSessionDetails, sessionDetails})}
           style={[styles.button, styles.endSessionButton]}>
           <Text style={styles.buttonText}>End Session</Text>
         </Pressable>
@@ -257,30 +263,38 @@ const styles = StyleSheet.create({
     fontSize: 60,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom: 10,
     color: 'rgb(7,254,213)',
   },
   pausedText: {
-    color: 'rgb(81,83,85)',
+    color: 'rgb(217,49,7)',
   },
   trailNameContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
+    padding: 10,
+    borderRadius: 10,
   },
   trailName: {
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
-    marginVertical: 30,
+    marginVertical: 10,
   },
   infoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: 10,
   },
   infoBox: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
+    padding: 10,
+    borderRadius: 10,
+    margin: 10,
   },
   infoLabel: {
     color: 'white',
@@ -289,35 +303,38 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   infoValue: {
-    color: 'white',
-    fontSize: 16,
+    color: 'rgb(7,254,213)',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   achievementsContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
-    padding: 20,
+    padding: 10,
     borderRadius: 10,
     marginVertical: 10,
   },
   completedTrailsContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
-    padding: 20,
+    padding: 10,
     borderRadius: 10,
     marginVertical: 10,
   },
   title: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   achievementItem: {
     color: 'white',
     marginBottom: 5,
-    fontSize: 16,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   emptyAchievements: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
   },
   buttonsContainer: {
     flexDirection: 'row',

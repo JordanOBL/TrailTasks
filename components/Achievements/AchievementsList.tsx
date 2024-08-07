@@ -60,7 +60,7 @@ const AchievementsList: React.FC<Props> = ({
                 </Text>
                 <Ionicons
                   color={item.completed ? 'black' : 'white'}
-                  size={20}
+                  size={12}
                   name={
                     selectedUserAchievement === item.id
                       ? 'caret-down-outline'

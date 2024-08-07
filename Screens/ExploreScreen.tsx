@@ -6,12 +6,14 @@ import {
   User,
   User_Purchased_Trail,
 } from '../watermelon/models';
-import React, {useContext, useState} from 'react';
+import {Model, Q} from '@nozbe/watermelondb';
 import {SafeAreaView, ScrollView, StyleSheet, Text} from 'react-native';
+import {useCallback, useEffect, useState} from 'react';
 
 import EnhancedNearbyTrails from '../components/NearbyTrails';
 import SearchBar from '../components/searchBar';
 import searchFilterFunction from '../helpers/searchFilter';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
 
@@ -28,43 +30,58 @@ const ExploreScreen = ({
   completedHikes,
   queuedTrails,
   userSubscription,
-  userPurchasedTrails
+  userPurchasedTrails,
 }: Props) => {
   const watermelonDatabase = useDatabase();
 
-  const [trailsCollection, setTrailsCollection] = React.useState<any>();
-
-  // const[usersPurchasedTrails, setUsersPurchasedTrails] = React.useState<any>() 
+  const [trailsCollection, setTrailsCollection] = useState<Trail[]>([]);
+  const [trailOfTheWeek, setTrailOfTheWeek] = useState<Trail[]>();
+  const [freeTrails, setFreeTrails] = useState<Trail[]>([]);
+  const [subscriptionTrails, setSubscriptionTrails] = useState<Trail[]>([])
+  // const [usersPurchasedTrails, setUsersPurchasedTrails] = useState<User_Purchased_Trail[]>();
 
   const getTrails = async () => {
     try {
-      const trailsCollection = await watermelonDatabase
+      const trailsCollection = (await watermelonDatabase
         .get('trails')
         .query()
-        .fetch();
-     
+        .fetch()) as Trail[];
+      const trailOfTheWeekCollection = (await watermelonDatabase
+        .get('trails')
+        .query(Q.where('trail_of_the_week', true))
+        .fetch()) as Trail[];
+      const freeTrailsCollection = (await watermelonDatabase
+        .get('trails')
+        .query(Q.where('is_free', true))
+        .fetch()) as Trail[];
+      const subscriptionTrailsCollection = (await watermelonDatabase
+        .get('trails')
+        .query(Q.where('is_subscribers_only', true))
+        .fetch()) as Trail[];
 
       // const usersPurchasedTrailsCollection =
-      //   await watermelonDatabase.collections.get('users_purchased_trails')
+      //   (await watermelonDatabase.collections
+      //     .get('users_purchased_trails')
       //     .query()
-      //     .fetch();
-
-
+      //     .fetch()) as User_Purchased_Trail[]
 
       setTrailsCollection(trailsCollection);
-    // setUsersPurchasedTrails(usersPurchasedTrailsCollection);
-      console.debug(userPurchasedTrails[0])
+      setTrailOfTheWeek(trailOfTheWeekCollection);
+      setFreeTrails(freeTrailsCollection);
+      setSubscriptionTrails(subscriptionTrailsCollection)
+      // setUsersPurchasedTrails(usersPurchasedTrailsCollection);
     } catch (err) {
       console.error('Error in get trails exploreScreen', {err});
     }
   };
 
-  React.useEffect(() => {
+useFocusEffect(
+  useCallback(() => {
     getTrails();
-    
-  }, [user, userPurchasedTrails, queuedTrails]);
+  }, [user, userPurchasedTrails, queuedTrails])
+);
 
-  if ( !trailsCollection) {
+  if (!trailsCollection) {
     return (
       <SafeAreaView>
         <Text>Loading...</Text>
@@ -74,17 +91,17 @@ const ExploreScreen = ({
 
   return (
     <SafeAreaView>
-    
-        <EnhancedNearbyTrails
-          user={user}
-          trailsCollection={trailsCollection}
-         
-          queuedTrails={queuedTrails}
-          completedHikes={completedHikes}
+      <EnhancedNearbyTrails
+        user={user}
+        trailsCollection={trailsCollection}
+        queuedTrails={queuedTrails}
+        completedHikes={completedHikes}
         userSubscription={userSubscription[0]}
         userPurchasedTrails={userPurchasedTrails}
-        />
-      
+        freeTrails={freeTrails}
+        trailOfTheWeek={trailOfTheWeek}
+        subscriptionTrails={subscriptionTrails}
+      />
     </SafeAreaView>
   );
 };
@@ -94,9 +111,7 @@ const enhance = withObservables(['user'], ({user}) => ({
   completedHikes: user.completedHikes.observe(),
   queuedTrails: user.queuedTrails.observe(),
   userSubscription: user.usersSubscriptions.observe(),
-  userPurchasedTrails: user.usersPurchasedTrails.observe() 
-  
-  
+  userPurchasedTrails: user.usersPurchasedTrails.observe(),
 }));
 
 const EnhancedExploreScreen = enhance(ExploreScreen);

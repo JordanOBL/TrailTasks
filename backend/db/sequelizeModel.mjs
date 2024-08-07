@@ -1,29 +1,31 @@
 import {DataTypes, Sequelize} from 'sequelize';
 //const {Sequelize, DataTypes} = require('sequelize');
 
-// const PGUSER = 'jordan';
-// //const PGHOST = '192.168.76.16';
-// const PGHOST = 'localhost';
-// const PGDBNAME = 'trailtasks';
-// const PGPORT = 5433;
-// const PGPASSWORD = '4046';
+ const PGUSER = 'jordan';
+//const PGHOST = '192.168.1.208';
+ const PGHOST = 'localhost';
+ const PGDBNAME = 'trailtasks';
+ const PGPORT = 5433;
+ const PGPASSWORD = '4046';
 
-const PGUSER = 'hikeflowadmin';
+//const PGUSER = 'hikeflowadmin';
 //const PGHOST = "192.168.76.16";
-const PGHOST = 'trailtasks2024.cbpjcjatkypj.us-west-2.rds.amazonaws.com';
-const PGDBNAME = 'hikeFlowDB';
-const PGPORT = 5432;
-const PGPASSWORD = 'Sk8mafia116!';
+//const PGHOST = 'trailtasks2024.cbpjcjatkypj.us-west-2.rds.amazonaws.com';
+//const PGDBNAME = 'hikeFlowDB';
+//const PGPORT = 5432;
+//const PGPASSWORD = 'Sk8mafia116!';
 
 const sequelize = new Sequelize(PGDBNAME, PGUSER, PGPASSWORD, {
   host: PGHOST,
   port: PGPORT,
+  password: PGPASSWORD,
   dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+//  dialectOptions: {
+//    ssl: {
+//      require: true,
+//      rejectUnauthorized: false,
+//    },
+//  },
 });
 
 export const Park = sequelize.define(
@@ -108,6 +110,8 @@ export const User = sequelize.define(
     email: {type: DataTypes.STRING, allowNull: false},
     password: {type: DataTypes.STRING, allowNull: false},
     push_notifications_enabled: {type: DataTypes.BOOLEAN, defaultValue: false},
+    daily_streak: {type: DataTypes.INTEGER, defaultValue: 0},
+    last_daily_streak_date: {type: DataTypes.DATEONLY, defaultValue: 0},
     theme_preference: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -263,7 +267,6 @@ export const User_Purchased_Trail = sequelize.define(
     indexes: [
       // Create a unique index on field
       {
-        unique: true,
         fields: ['user_id'],
       },
     ],

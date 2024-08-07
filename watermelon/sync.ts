@@ -10,7 +10,7 @@ const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
 //singleton
 let isRunning = false;
-const IP = 'localhost';
+const IP = '10.0.2.2';
 
 export async function sync(database: Database, userId: string = '0') {
   try {
@@ -36,7 +36,7 @@ export async function sync(database: Database, userId: string = '0') {
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
             const response = await fetch(
-              `http://192.168.1.208:5500/pull?${urlParams}`
+              `http://${IP}:5500/pull?${urlParams}`
             );
             if (!response.ok) {
               console.error('in pull in sync()');
@@ -60,7 +60,7 @@ export async function sync(database: Database, userId: string = '0') {
         pushChanges: async ({changes, lastPulledAt}) => {
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `http://192.168.1.208:5500/push?last_pulled_at=${lastPulledAt}`,
+            `http://${IP}:5500/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),

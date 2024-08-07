@@ -5,13 +5,13 @@ import {
   Text,
   TextInput,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import {handleRegister} from '../helpers/registerHelpers';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-
+import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection.ts'
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
@@ -20,7 +20,7 @@ interface Props {
 }
 const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   const watermelonDatabase = useDatabase();
-
+  const [isConnectedToInternet, setIsConnectedToInternet] = useState();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -29,7 +29,42 @@ const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   const [error, setError] = useState(null);
   const [username, setUsername] = useState('');
 
+   const [refreshing, setRefreshing] = useState(true); // State to manage refreshing
+
+useEffect(() => {
+  // Check internet connection when component mounts
+  if(refreshing){
+  checkInternetConnection().then(({ connection }) => {
+    if (connection) {
+      setIsConnectedToInternet(connection.isConnected);
+      console.debug(connection.isConnected);
+    }
+  }).catch(error => {
+    console.error('Error checking internet connection:', error);
+    setIsConnectedToInternet(false);
+  });
+
+    setRefreshing(false)
+  }
+  
+  return () => {
+    // Clean up when component unmounts
+  };
+}, [refreshing]);
+
+  
+// Function to refresh internet connection status
+//  const refreshConnection = async () => {
+//    const { connection } =  await checkInternetConnection();
+//    if(connection){
+//      setIsConnectedToInternet(connection.isConnected);
+//    }
+//    setRefreshing(false);
+//  };
+
+
   return (
+   isConnectedToInternet ? ( 
     <SafeAreaView style={styles.container}>
       <TextInput
         value={firstName}
@@ -130,6 +165,34 @@ const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
       </Pressable>
       <Text style={styles.error}>{error || ''}</Text>
     </SafeAreaView>
+    ) :(
+/* Render offline message if not connected */
+        <SafeAreaView style={[styles.container, {display: 'flex', flexDirection: 'column', justifyContent: 'center'}]}>
+          <Text style={{color: "white", fontSize: 20, padding: 8, margin: 12, textAlign: 'center'}}>You need an internet connection to register.</Text>
+          <Pressable onPress={() => setRefreshing(prev => !refreshing)} style={[
+          styles.button,
+          {
+            backgroundColor: 'rgba(30, 139, 195, .7)', marginVertical: 12
+          },
+        ]} >
+            <Text style={styles.buttonText}>Refresh Connection</Text>
+          
+          </Pressable>
+         <Pressable
+            onPress={() => setisRegistering((prev:boolean) => !prev)}
+            style={[
+              styles.button,
+              {backgroundColor: 'rgb(7,254,213)', borderWidth: 0},
+            ]}>
+            <Text style={styles.buttonText}>
+              {'Login'}
+          </Text>
+        </Pressable>
+
+
+          
+        </SafeAreaView>
+    )
   );
 };
 

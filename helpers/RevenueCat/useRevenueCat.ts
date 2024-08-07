@@ -7,11 +7,11 @@ import Purchases, {
 
 const APIKeys = {
   apple: 'appl_lUErcJwyCLTUHuBLXxzHcbsgLdm',
-  google: 'goog_BrHufAvbFVeBEWbWigLNIHTPshJ',
+  google: 'goog_QpLqbTzTPpaMLprBaGAhxbhpiwt',
 };
 const typesOfMemberships = {
   monthly: 'proMonthly',
-  annually: 'proAnnual',
+  annually: 'proAnnual'
 };
 
 interface Props {

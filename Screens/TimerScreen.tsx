@@ -25,20 +25,20 @@ interface Props {
   setUser: any;
   currentTrail: Trail;
   userAchievements: User_Achievement[];
-  //usersAchievements: User_Achievement[];
 }
 const TimerScreen = ({
   user,
   setUser,
   currentTrail,
   userAchievements,
-}: //usersAchievements
-Props) => {
+}: 
+  Props) =>
+{
   //@ts-ignore
   const navigation = useNavigation();
   const watermelonDatabase = useDatabase();
   const [achievementsWithCompletion, setAchievementsWithCompletion] =
-    React.useState<AchievementsWithCompletion | null>(null);
+    React.useState<AchievementsWithCompletion[]>();
   const [userSession, setUserSession] = React.useState<any>();
   const [currentSessionCategory, setCurrentSessionCategory] =
     React.useState('');
@@ -77,10 +77,10 @@ Props) => {
                AND users_achievements.user_id = ?`;
 
     try {
-      const results: AchievementsWithCompletion[] = await watermelonDatabase
+      const results = (await watermelonDatabase
         .get('achievements')
         .query(Q.unsafeSqlQuery(query, [user.id]))
-        .unsafeFetchRaw();
+        .unsafeFetchRaw()) as AchievementsWithCompletion[];
       if (results.length > 0) {
         setAchievementsWithCompletion(results);
       }
@@ -93,10 +93,10 @@ Props) => {
 
   async function getSessionCategories() {
     try {
-      const sessionCategories = await watermelonDatabase
+      const sessionCategories = (await watermelonDatabase
         .get('session_categories')
         .query()
-        .fetch();
+        .fetch()) as Session_Category[]
 
       if (sessionCategories) {
         setSessionCategories(sessionCategories);
@@ -112,9 +112,9 @@ Props) => {
 
   async function getCurrentSessionCategory() {
     try {
-      const sessionCategory = await watermelonDatabase
+      const sessionCategory = (await watermelonDatabase
         .get('session_categories')
-        .query(Q.where('id', sessionDetails.sessionCategoryId));
+        .query(Q.where('id', sessionDetails.sessionCategoryId))) as Session_Category[];
 
       if (sessionCategory) {
         setCurrentSessionCategory(sessionCategory[0].sessionCategoryName);
@@ -208,13 +208,13 @@ const styles = StyleSheet.create({
   loading: {color: 'white', alignSelf: 'center', marginTop: 20},
   returnButton: {
     width: '80%',
-    height: 50,
+    height: 40,
     borderRadius: 10,
-    marginVertical: 15,
+    marginVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 20,
+    bottom: 0,
     alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: {

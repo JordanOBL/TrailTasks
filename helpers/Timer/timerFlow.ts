@@ -18,6 +18,7 @@ import formatDateTime from '../formatDateTime';
 import {getBetterTime} from './getBetterTime';
 import getTimeDifference from './getTimeDifference';
 import nextHundredthMileSeconds from './nextHundrethMileSeconds';
+import checkDailyStreak from '../Session/checkDailyStreak';
 
 //increase distance hiked
 export async function increaseDistanceHiked({
@@ -225,16 +226,22 @@ export async function pauseSession(
 
 //end a session by caling reset session state
 export async function endSession({
-
+  user,
+  sessionDetails,
   setSessionDetails,
 }: 
 {
- 
+    user: User;
+    sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  sessionDetails: SessionDetails;
+  
  
 }) {
   try {
+    
+
+    //check daily streak
+    await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
   } catch (err: any) {
     console.debug(`Error in EndSession()`, err);
@@ -339,7 +346,7 @@ async function speedModifier(
     sessionDetails.elapsedShortBreakTime === 0 &&
     sessionDetails.elapsedLongBreakTime === 0
   ) {
-    Vibration.vibrate();
+    Vibration.vibrate(1000);
     if (sessionDetails.strikes === 0) increasePace(cb, sessionDetails);
     else decreasePace(cb, sessionDetails);
   }

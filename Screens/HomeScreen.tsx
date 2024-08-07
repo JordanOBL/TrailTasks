@@ -8,7 +8,12 @@ import {
   Text,
   View,
 } from 'react-native';
-import {Subscription, User, User_Miles} from '../watermelon/models';
+import {
+  Subscription,
+  User,
+  User_Miles,
+  User_Session,
+} from '../watermelon/models';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 
 import Carousel from 'react-native-reanimated-carousel';
@@ -25,6 +30,9 @@ import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 import withObservables from '@nozbe/with-observables';
+import isYesterday from '../helpers/isYesterday';
+import isToday from '../helpers/isToday';
+import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 
 interface Rank {
   level: string;
@@ -41,6 +49,7 @@ interface Props {
   setUser: any;
   userSubscription: Subscription[];
   totalMiles: User_Miles[];
+  userSessions: User_Session[];
 }
 
 const HomeScreen: React.FC<Props> = ({
@@ -50,6 +59,7 @@ const HomeScreen: React.FC<Props> = ({
   currentTrail,
   userSubscription,
   totalMiles,
+  userSessions,
 }) => {
   const watermelonDatabase = useDatabase();
   const [userRank, setUserRank] = React.useState<Rank | undefined>();
@@ -66,6 +76,23 @@ const HomeScreen: React.FC<Props> = ({
     setShowTutorial(false); // Close the tutorial modal
   };
 
+  //this useEffect checks daily streak and resets if needed
+  React.useEffect(() => {
+    async function resetDailyStreak() {
+      if (
+        !isYesterday(user.lastDailyStreakDate) &&
+        !isToday(user.lastDailyStreakDate)
+      ) {
+        console.debug('resetting dailyStreak', user.lastDailyStreakDate);
+        await user.resetDailyStreak();
+      }
+    }
+    if (user && user.lastDailyStreakDate) {
+      resetDailyStreak();
+    }
+  }, [user]);
+
+  
   //this useEffect checks if a phone is connected to the internet
   React.useEffect(() => {
     async function isConnected() {
@@ -79,7 +106,7 @@ const HomeScreen: React.FC<Props> = ({
   //if not, show the tutorial Modal
   React.useEffect(() => {
     // Check if the user has any miles hiked
-    if (totalMiles && parseFloat(totalMiles[0].totalMiles) <= 0.0) {
+    if (user && totalMiles && parseFloat(totalMiles[0]?.totalMiles) <= 0.0) {
       setShowTutorial(true); // Show the tutorial if the user has no miles hiked
     }
   }, [user]);
@@ -88,7 +115,7 @@ const HomeScreen: React.FC<Props> = ({
   useFocusEffect(
     React.useCallback(() => {
       sync(watermelonDatabase, user.id);
-      const rank = getUserRank(Ranks, totalMiles[0].totalMiles);
+      const rank = getUserRank(Ranks, totalMiles[0]?.totalMiles);
       setUserRank(rank);
       return async () => {
         console.log('Home Screen was unfocused');
@@ -104,12 +131,23 @@ const HomeScreen: React.FC<Props> = ({
     <View style={styles.container}>
       {/* <SyncIndicator delay={3000} /> */}
       {<TutorialModal visible={showTutorial} onClose={handleTutorialClose} />}
-      <Text style={styles.onlineStatus}>
-        {isConnected ? 'Online' : 'Offline'}
-      </Text>
-      <Text style={styles.onlineStatus}>Trail Tokens: {user.trailTokens}</Text>
-      <Text style={styles.onlineStatus}>Daily Streak: Number of days </Text>
-      <Text style={styles.username}>{user.username}</Text>
+
+      <View
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}>
+        <Text style={styles.trailTokens}>Trail Tokens: {user.trailTokens}</Text>
+        <Text style={styles.onlineStatus}>
+          {isConnected ? 'Online' : 'Offline'}
+        </Text>
+        <Text style={styles.dailyStreak}>
+          Daily Streak: {user.dailyStreak}
+        </Text>
+      </View>
+
+      {/* <Text style={styles.username}>{user.username}</Text> */}
       <Carousel
         loop
         pagingEnabled={true}
@@ -129,7 +167,7 @@ const HomeScreen: React.FC<Props> = ({
                   style={styles.rankImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.rankLevel}>Level {userRank.level}</Text>
+                <Text style={styles.rankLevel}>Rank {userRank.level}</Text>
                 <Text style={styles.rankTitle}>
                   {userRank.group} {userRank.title}
                 </Text>
@@ -242,6 +280,7 @@ const enhance = withObservables(['user'], ({user}) => ({
   totalMiles: user.usersMiles.observe(),
   currentTrail: user.trail.observe(),
   userSubscription: user.usersSubscriptions.observe(),
+  userSessions: user.usersSessions.observe(),
 }));
 
 const EnhancedHomeScreen = enhance(HomeScreen);
@@ -252,6 +291,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgb(18, 19, 21)',
     padding: 10,
+  },
+  dailyStreak: {
+    color: 'rgb(7, 254, 213)',
+    fontSize: 12,
   },
   loadingContainer: {
     flex: 1,
@@ -264,8 +307,8 @@ const styles = StyleSheet.create({
   },
   onlineStatus: {
     color: 'green',
-    textAlign: 'right',
-    marginVertical: 5,
+    textAlign: 'center',
+    fontSize: 12,
   },
   username: {
     color: 'rgb(249, 253, 255)',
@@ -284,18 +327,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rankImage: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
   },
   rankLevel: {
     color: 'rgb(249, 253, 255)',
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
     textAlign: 'center',
   },
   rankTitle: {
     color: 'rgb(249, 253, 255)',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     textAlign: 'center',
   },
@@ -316,10 +359,14 @@ const styles = StyleSheet.create({
   },
   trailName: {
     color: 'rgb(249, 253, 255)',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
+  },
+  trailTokens: {
+    color: 'rgb(7, 254, 213)',
+    fontSize: 12,
   },
   paginationDotsContainer: {
     flexDirection: 'row',
@@ -357,7 +404,7 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: 'red',
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
   },
 });

@@ -98,10 +98,10 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 
   async function getSessionCategories() {
     try {
-      const sessionCategories: Session_Category[] = await watermelonDatabase
+      const sessionCategories = (await watermelonDatabase
         .get('session_categories')
         .query()
-        .fetch();
+        .fetch()) as Session_Category[];
       if (sessionCategories) {
         setSessionCategories(sessionCategories);
       }
@@ -203,7 +203,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
         style={styles.toggleButton}
         onPress={() => setView(view === 'stats' ? 'sessions' : 'stats')}>
         <Ionicons
-          name={view === 'stats' ? 'disc' : 'information'}
+          name={view === 'stats' ? 'list-outline' : 'podium-outline'}
           size={24}
           color="rgb(18, 19, 21)"
         />

@@ -1,7 +1,8 @@
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+
+import Icon from 'react-native-vector-icons/Ionicons';
 import React from 'react';
 import {User} from '../../watermelon/models';
-import Icon from 'react-native-vector-icons/Ionicons';
 
 interface Props {
   children: any;
@@ -43,7 +44,7 @@ const ScreenLink = ({
           },
         ]}>
         {needsActiveSubscription && !hasActiveSubscription ? (
-          <Icon name="lock-closed" size={25} color="rgb(149,153,155)" />
+          <Icon name="lock-closed" size={18} color="rgb(149,153,155)" />
         ) : (
           <></>
         )}
@@ -63,7 +64,7 @@ export default ScreenLink;
 const styles = StyleSheet.create({
   H2: {
     color: 'rgb(249,253,255)',
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
     textAlign: 'left',
   },

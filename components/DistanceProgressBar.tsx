@@ -26,18 +26,7 @@ const DistanceProgressBar = ({
       style={{
         alignItems: 'center',
       }}>
-      <Text
-        style={{
-          color: 'rgb(249,253,255)',
-          alignSelf: 'flex-end',
-          fontWeight: '600',
-          fontSize: 16,
-          marginRight: 25,
-          marginBottom: 5,
-        }}>
-        {Number(user.trailProgress)} / {Number(currentTrail.trailDistance)} mi.
-        
-      </Text>
+      
 
       <Progress.Bar
         width={width - 50}
@@ -59,7 +48,18 @@ const DistanceProgressBar = ({
             ? 'rgb(217,49,7)'
             : 'rgb(7,254,213)'
         }
-      />
+      /><Text
+        style={{
+          color: 'rgba(249,253,255, .5)',
+          alignSelf: 'center',
+          fontWeight: 'bold',
+          fontSize: 14,
+          marginRight: 0,
+          marginVertical: 5,
+        }}>
+        {Number(user.trailProgress)} / {Number(currentTrail.trailDistance)} mi.
+        
+      </Text>
     </View>
   );
 }

@@ -1,5 +1,4 @@
-function errorHandler(err, req, res, next) {
-  console.error(err);
+function errorHandler(err, req, res, next) { console.error(err);
 
   // set default status code to 500
   const statusCode = err.statusCode || 500;

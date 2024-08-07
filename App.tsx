@@ -24,12 +24,11 @@ import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
 import {sync} from './watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 
-export const UserContext = createContext<any>('');
 
 function App(): JSX.Element {
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-  
+
   const [user, setUser] = useState<any>();
 
   const isDarkMode = useColorScheme() === 'dark';
@@ -39,8 +38,10 @@ function App(): JSX.Element {
   //uncomment to insert postgres tables with initial trails, parks, parkstates
   const seedPgTables = async () => {
     try {
-      console.debug('seeding PostgresDB Tables with information from /backend/server.ts');
-      const response = await fetch(`http://192.168.1.208:5500/api/seed`);
+      console.debug(
+        'seeding PostgresDB Tables with information from /backend/server.ts'
+      );
+      const response = await fetch(`http://localhost:5500/api/seed`);
     } catch (error: any) {
       console.error(
         'Error in gettingPGTables function, app.tsx',
@@ -52,8 +53,7 @@ function App(): JSX.Element {
   useEffect(() => {
     // Do something with the Watermelon database instance
     const onLoad = async () => {
-      try
-      {
+      try {
         //This finds and prints file path in the phones memory for the sqlite DB
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.debug(`DATABASE LOCATION: ${dbFilePath}`);
@@ -75,17 +75,12 @@ function App(): JSX.Element {
         //has a userID saved in the localstorage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
         //SYNC call teh push and pull requests from mobile device to PG database
-        console.debug("calling sync")
-        if (user)
-        {
-           await sync(watermelonDatabase, user.id);
-        
-        } else
-        {
+        console.debug('calling sync');
+        if (user) {
+          await sync(watermelonDatabase, user.id);
+        } else {
           await sync(watermelonDatabase);
         }
-        
-       
       } catch (err) {
         console.error('Error in onload in APP useEffect', err);
       }
@@ -95,7 +90,7 @@ function App(): JSX.Element {
   }, []);
 
   return (
-    <UserContext.Provider value={{user, setUser}}>
+    
       <GestureHandlerRootView style={{flex: 1}}>
         <NavigationContainer theme={DarkTheme}>
           <SafeAreaView style={[backgroundStyle, styles.container]}>
@@ -124,7 +119,7 @@ function App(): JSX.Element {
           </SafeAreaView>
         </NavigationContainer>
       </GestureHandlerRootView>
-    </UserContext.Provider>
+ 
   );
 }
 

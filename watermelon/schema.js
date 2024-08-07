@@ -54,6 +54,8 @@ const schema = appSchema({
         {name: 'last_name', type: 'string'},
         {name: 'email', type: 'string'},
         {name: 'password', type: 'string'},
+        {name: 'daily_streak', type: 'number', isOptional: true},
+        {name: 'last_daily_streak_date', type: 'number', isOptional: true},
         {name: 'push_notifications_enabled', type: 'boolean'},
         {name: 'theme_preference', type: 'string'},
         {name: 'trail_id', type: 'string'}, //reference
@@ -166,7 +168,7 @@ const schema = appSchema({
         },
         {name: 'session_category_id', type: 'string'}, //ref
         {name: 'date_added', type: 'string', isIndexed: true},
-        {name: 'total_session_time', type: 'number'},
+        {name: 'total_session_time', type: 'number', isIndexed: true},
         {name: 'total_distance_hiked', type: 'string'},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},

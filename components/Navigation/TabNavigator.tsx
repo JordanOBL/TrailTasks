@@ -1,11 +1,11 @@
-import {StyleSheet} from 'react-native';
-import React from 'react';
 import EnhancedExploreScreen from '../../Screens/ExploreScreen';
 import EnhancedTimerScreen from '../../Screens/TimerScreen';
 import {HomeStack} from './NavigationStacks';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import React from 'react';
+import {StyleSheet} from 'react-native';
 import {User} from '../../watermelon/models';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 const Tab = createBottomTabNavigator();
 interface Props {
   user: User;
@@ -23,13 +23,13 @@ const TabNavigator = ({ user, setUser }: Props) =>
           if (route.name === 'Timer') {
             iconName = focused ? 'alarm' : 'stopwatch';
           } else if (route.name === 'Explore') {
-            iconName = focused ? 'globe' : 'globe';
-          } else if (route.name === 'Home') {
+            iconName = focused ? 'earth' : 'earth';
+          } else if (route.name === 'Basecamp') {
             iconName = focused ? 'home' : 'home';
           }
 
           // You can return any component that you like here!
-          return <Ionicons name={iconName!} size={30} color={color} />;
+          return <Ionicons name={iconName!} size={26} color={color} />;
         },
         tabBarActiveTintColor: 'orange',
         tabBarInactiveTintColor: 'gray',

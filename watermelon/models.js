@@ -98,6 +98,8 @@ export class User extends Model {
   @field('last_name') lastName;
   @field('email') email;
   @field('password') password;
+  @field('daily_streak') dailyStreak;
+  @date('last_daily_streak_date') lastDailyStreakDate;
   @field('push_notifications_enabled') pushNotificationsEnabled;
   @field('theme_preference') themePreference;
   @field('trail_id') trailId;
@@ -119,10 +121,41 @@ export class User extends Model {
   @children('users_subscriptions') usersSubscriptions;
   @children('users_purchased_trails') usersPurchasedTrails;
 
+  @writer async purchaseTrail(trail, cost) {
+    const results = await this.collections
+      .get('users_purchased_trails')
+      .create((purchased_trail) => {
+        purchased_trail.userId = this.id;
+        purchased_trail.trailId = trail.id;
+        purchased_trail.purchasedAt = Date.now();
+      });
+    if (results) {
+      await this.update(() => {
+        this.trailTokens -= cost;
+      });
+
+      return true;
+    }
+
+    return null;
+  }
+
   @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
   @lazy userTrails = this.usersPurchasedTrails.extend(
     Q.where('user_id', this.id)
   );
+  @writer async getTodaysTotalSessionTime() {
+    const query = `SELECT SUM(total_session_time) AS total_time_today
+FROM users_sessions
+WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
+`;
+    const totalTimeToday = await this.collections
+      .get('users_sessions')
+      .query(Q.unsafeSqlQuery(query, [this.id]))
+      .unsafeFetchRaw();
+
+    return totalTimeToday[0].total_time_today;
+  }
 
   @lazy userSessionsWithCategory = this.usersSessions.extend(
     Q.on('session_categories', 'id', 'session_category_id')
@@ -151,6 +184,29 @@ export class User extends Model {
       updated_at: this.updatedAt,
       created_at: this.createdAt,
     };
+  }
+
+  @writer async increaseDailyStreak() {
+    const subscriptions = await this.usersSubscriptions;
+    //only subscribers get daily streak reward
+    if (subscriptions[0].isActive) {
+      return await this.update(() => {
+        this.dailyStreak += 1;
+        this.lastDailyStreakDate = new Date();
+        this.trailTokens += 5;
+      });
+    } else {
+      return await this.update(() => {
+        this.dailyStreak += 1;
+        this.lastDailyStreakDate = new Date();
+      });
+    }
+  }
+
+  @writer async resetDailyStreak() {
+    return await this.update(() => {
+      this.dailyStreak = 0;
+    });
   }
 
   @writer async increaseDistanceHikedWriter({user, userMiles, userSession}) {
@@ -202,11 +258,13 @@ export class User extends Model {
       user.pushNotificationsEnabled = true;
       user.themePreference = 'light';
       user.trailId = '1';
+      user.dailyStreak = 0;
+      user.lastDailyStreakDate = new Date();
       user.trailProgress = '0.0';
       user.traiStartedAt = trailStartedAt;
       user.trailTokens = 20;
     });
-    console.debug(newUser[0]);
+    console.debug('Watermelon User Model', newUser[0]);
     return newUser[0];
   }
   //add user miles

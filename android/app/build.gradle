@@ -91,7 +91,6 @@ def reactNativeArchitectures() {
 
 android {
     ndkVersion rootProject.ext.ndkVersion
-
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     namespace "com.trailtasks"
@@ -99,9 +98,13 @@ android {
         applicationId "com.trailtasks"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 12
+        versionCode 14
         versionName "1.0"
     }
+    lintOptions {
+        abortOnError false
+    }
+
     packagingOptions {
      pickFirst '**/libc++_shared.so' // ⬅️ This (if missing)
   }
@@ -163,6 +166,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation project(':watermelondb-jsi')
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
+    implementation("com.revenuecat.purchases:purchases:8.4.0")
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {

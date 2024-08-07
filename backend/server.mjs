@@ -15,44 +15,44 @@ import {
   User_Purchased_Trail,
   User_Session,
 } from '../backend/db/sequelizeModel.mjs';
-import {achievements, achievements as masterAchievements} from '../assets/Achievements/masterAchievementList.js';
 
 // import pool from "./db/config.js";
 import {Sequelize} from 'sequelize';
-import {achievementsWithIds} from '../assets/Achievements/addAchievementIds.js';
+import achievementsWithIds from '../assets/Achievements/addAchievementIds.js';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
+import masterAchievementList from '../assets/Achievements/masterAchievementList.js';
 import sessionCategories from '../helpers/Session/sessionCategories.js';
 
 // import pkg from "pg";
 // const {Pool} = pkg;
 
-// const PGUSER = 'jordan';
-// //const PGHOST = "192.168.76.16";
-// const PGHOST = 'localhost';
-// const PGDBNAME = 'trailtasks';
-// const PGPORT = 5433;
-// const PGPASSWORD = '4046';
+const PGUSER = 'jordan';
+//const PGHOST = "192.168.1.208";
+const PGHOST = 'localhost'
+const PGDBNAME = 'trailtasks';
+const PGPORT = 5433;
+const PGPASSWORD = '4046';
 
-const newAchievements = achievementsWithIds(masterAchievements);
+const newAchievements = achievementsWithIds(masterAchievementList);
 
-const PGUSER = 'hikeflowadmin';
-//const PGHOST = "192.168.76.16";
-const PGHOST = 'trailtasks2024.cbpjcjatkypj.us-west-2.rds.amazonaws.com';
-const PGDBNAME = 'hikeFlowDB';
-const PGPORT = 5432;
-const PGPASSWORD = 'Sk8mafia116!';
-
+//const PGUSER = 'hikeflowadmin';
+////const PGHOST = "192.168.76.16";
+//const PGDBNAME = 'hikeFlowDB';
+//const PGPORT = 5432;
+//const PGPASSWORD = 'Sk8mafia116!';
+//
 export const sequelize = new Sequelize(PGDBNAME, PGUSER, PGPASSWORD, {
   host: PGHOST,
   port: PGPORT,
   dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+//  dialectOptions: {
+//    ssl: {
+//      require: true,
+//      rejectUnauthorized: false,
+//    },
+ // },
 });
 
 const app = express();
@@ -62,7 +62,58 @@ app.use(bodyparser.urlencoded({extended: true}));
 app.use(cors());
 
 //app.use("/api/sync", router);
+//
+const findUser = async (req, res, next) => {
+  const { email, password } = req.body;
 
+  try {
+    // Query the database for the user
+    const user = await User.findOne({ where: { email, password } });
+    console.log('user from findUser()', user);
+
+    // Set userId in res.locals
+    if (user) {
+      const userMiles = await User_Miles.findOne({ where: { user_id: user.id } });
+      const userSubscription = await Subscription.findOne({ where: { user_id: user.id } });
+      const userSessions = await User_Session.findAll({ where: { user_id: user.id } });
+      const userPurchasedTrails = await User_Purchased_Trail.findAll({ where: { user_id: user.id } });
+      const userAchievements = await User_Achievement.findAll({ where: { user_id: user.id } });
+    
+      res.locals.user = user;
+      res.locals.userMiles = userMiles;
+      res.locals.userSubscription = userSubscription;
+      res.locals.userSessions = userSessions;
+      res.locals.userPurchasedTrails = userPurchasedTrails;
+      res.locals.userAchievements = userAchievements;
+    } else {
+      res.locals.user = null;
+      res.locals.userMiles = null;
+      res.locals.userSubscription = null;
+      res.locals.userSessions = null;
+      res.locals.userPurchasedTrails = null;
+      res.locals.userAchievements = null;
+    }
+    
+    // Continue to the next middleware/route handler
+    return next();
+  } catch (error) {
+    // Handle any errors that occur
+    console.error('Error in findUser middleware:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+app.post('/api/users', findUser, async (req, res, next) => {
+  const { user, userMiles, userSubscription, userSessions, userPurchasedTrails, userAchievements} = res.locals;
+
+  if (user) {
+    // Respond with userId if found
+    return res.status(200).json({ user, userMiles, userSubscription, userSessions, userPurchasedTrails, userAchievements });
+  } else {
+    // Respond with a 404 status code if user not found
+    return res.status(404).json({ message: 'User not found' });
+  }
+});
 
 
 app.get('/api/seed', async (req, res) => {
@@ -2690,8 +2741,8 @@ app.post('/push', async (req, res) => {
 
 const connect = async () => {
   try {
-    //await SYNC({force: true});
-    await SYNC();
+  //await SYNC({force: true});
+  await SYNC();
     console.log(
       'SERVER - connected to Postgres database trailtasks viia Sequelize!'
     );

@@ -1,4 +1,4 @@
-export const achievements = [
+const masterAchievementList = [
   {
     achievement_name: 'Acadia Park Conqueror',
     achievement_description: 'Hike all trails in Acadia National Park.',
@@ -1395,3 +1395,4 @@ export const achievements = [
     achievement_condition: '5:16,20',
   },
 ];
+export default masterAchievementList;

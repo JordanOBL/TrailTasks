@@ -33,7 +33,7 @@ const AchievementsScreen = ({user}: Props) => {
         setAchievementsWithCompletion(results);
       }
     } catch (err) {
-      console.error('Error in joinUsersAchievements', err);
+      console.error('Error in getAchievementsWithCompletion', err);
     }
   }
 

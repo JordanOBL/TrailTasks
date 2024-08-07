@@ -9,43 +9,174 @@ import {ImageBackground, Pressable, StyleSheet, Text, View} from 'react-native';
 import CapitalizeWord from '../../helpers/capitalizeWord';
 import formatDateTime from '../../helpers/formatDateTime';
 import withObservables from '@nozbe/with-observables';
+import {useEffect, useState} from 'react';
 
 interface Props {
   trail: any;
   setReplacementTrailId: any;
   setShowReplaceTrailModal: any;
   user: any;
-  queuedTrails: any;
   completedHikes: any;
   park: any;
-  basicSubscriptionTrails: any;
+  freeTrailsCache: any;
   userSubscription: Subscription;
-  queuedCache: any;
   completedCache: any;
-  purchasedTrailsCache: any;
+  userPurchasedTrailsCache: any;
+  subscriptionTrailsCache: any;
+  onBuyTrail: (trail: any) => void;
 }
-const TrailCard = ({
+const AllTrailsCard = ({
   user,
   trail,
-  completedHikes,
   completedCache,
-  queuedTrails,
-  queuedCache,
   setReplacementTrailId,
   setShowReplaceTrailModal,
   park,
-  basicSubscriptionTrails,
+  freeTrailsCache,
   userSubscription,
-  purchasedTrailsCache,
+  userPurchasedTrailsCache,
+  subscriptionTrailsCache,
+  onBuyTrail,
 }: Props) => {
-  const isFreeTrail = basicSubscriptionTrails[trail.id] !== undefined;
-  const isActiveSubscription = userSubscription.isActive === true;
-  const isCompleted = completedCache[trail.id] !== 'undefined';
-  const isQueued = queuedCache[trail.id] !== 'undefined';
-  const isPurchasedTrail = purchasedTrailsCache[trail.id] !== 'undefined';
+  const [isFreeTrail, setIsFreeTrail] = useState(false);
+  const [isActiveSubscription, setIsActiveSubscription] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [isSubscribersOnly, setIsSubscribersOnly] = useState(false);
+  const [trailDifficulty, setTrailDifficulty] = useState('');
 
+  useEffect(() => {
+    setIsFreeTrail(freeTrailsCache[trail.id] ?? false);
+    setIsActiveSubscription(userSubscription.isActive === true);
+    setIsCompleted(completedCache[trail.id] ?? false);
+    setIsPurchased(userPurchasedTrailsCache[trail.id] ?? false);
+    if (Object.keys(subscriptionTrailsCache).length > 0) {
+      setIsSubscribersOnly(trail.isSubscribersOnly);
+    }
 
-  return user && basicSubscriptionTrails && userSubscription ? (
+    const calculateTrailDifficulty = () => {
+      if (trail.trailDistance > 20) {
+        setTrailDifficulty('Insane');
+      } else if (trail.trailDistance > 10) {
+        setTrailDifficulty('Long');
+      } else if (trail.trailDistance > 5) {
+        setTrailDifficulty('Moderate');
+      } else {
+        setTrailDifficulty('Short');
+      }
+    };
+
+    calculateTrailDifficulty();
+  }, [
+    freeTrailsCache,
+    trail.id,
+    userSubscription.isActive,
+    completedCache,
+    userPurchasedTrailsCache,
+    subscriptionTrailsCache,
+    trail.trailDistance,
+  ]);
+
+  const calculateCoinReward = () => {
+    let reward = trail.trailDistance;
+    if (isActiveSubscription) {
+      if (trail.trailDistance >= 5 && trail.trailDistance < 10) {
+        reward *= 1.5;
+      } else if (trail.trailDistance >= 10) {
+        reward *= 2;
+      }
+    }
+    return Math.round(reward);
+  };
+
+  const renderCoinReward = () => {
+    const coinReward = calculateCoinReward();
+    return (
+      <>
+        <Text
+          style={{
+            color: 'gold',
+            fontWeight: 'bold',
+          }}>
+          Reward: {coinReward} Trail Tokens
+        </Text>
+      </>
+    );
+  };
+
+  const handleBuyTrail = async () => {
+    try {
+      // Call the onBuyTrail function
+      await onBuyTrail(trail);
+    } catch (error) {
+      console.log('Error buying trail:', error);
+    }
+  };
+
+  const handleStartTrail = async () => {
+    try {
+      if (user.trailId) {
+        setShowReplaceTrailModal(true);
+        setReplacementTrailId(trail.id);
+      } else {
+        user.updateCurrentTrailId({
+          trailId: trail.trailId,
+          formatDateTime: formatDateTime(new Date()),
+        });
+      }
+    } catch (err) {
+      console.log('error Setting new trail for user', err);
+    }
+  };
+
+  const handleTrailActionButton = async () => {
+    try {
+      if (user.trailId == trail.id) return;
+      else if (isFreeTrail || isPurchased) {
+        console.debug('clicking', trail);
+        await handleStartTrail();
+        return;
+      } else if (!isActiveSubscription && isSubscribersOnly) return;
+      else {
+        await handleBuyTrail();
+        return;
+      }
+    } catch (err) {
+      console.log('error in handle trail action click ', err);
+    }
+  };
+
+  let buttonText;
+
+  if (user.trailId === trail.id) {
+    buttonText = 'In Progress';
+  } else if (isFreeTrail || isPurchased) {
+    buttonText = 'Start Now';
+  } else if (isActiveSubscription && !isPurchased) {
+    if (trail.trailDistance < 5) {
+      buttonText = 'Buy 5';
+    } else if (trail.trailDistance < 10) {
+      buttonText = 'Buy 35';
+    } else if (trail.trailDistance < 20) {
+      buttonText = 'Buy 50';
+    } else {
+      buttonText = 'Buy 100';
+    }
+  } else if (isSubscribersOnly) {
+    buttonText = 'Unlock With Subscription';
+  } else {
+    if (trail.trailDistance < 5) {
+      buttonText = 'Buy 5';
+    } else if (trail.trailDistance < 10) {
+      buttonText = 'Buy 35';
+    } else if (trail.trailDistance < 20) {
+      buttonText = 'Buy 50';
+    } else {
+      buttonText = 'Buy 100';
+    }
+  }
+
+  return user && userSubscription ? (
     <View
       key={trail.id}
       style={{
@@ -74,7 +205,7 @@ const TrailCard = ({
         }}>
         <Text
           style={
-            completedHikes && isCompleted
+            completedCache && isCompleted
               ? {
                   position: 'absolute',
                   backgroundColor: 'rgb(41,184,169)',
@@ -84,7 +215,7 @@ const TrailCard = ({
                 }
               : {}
           }>
-          {completedHikes && isCompleted ? (
+          {completedCache && isCompleted ? (
             <Text
               style={{
                 color: 'white',
@@ -103,13 +234,13 @@ const TrailCard = ({
       <View style={{marginTop: 10, padding: 5}}>
         <Text
           style={
-            trail.trailDifficulty === 'short'
+            trailDifficulty === 'Short'
               ? styles.TrailEasy
-              : trail.trailDifficulty === 'moderate'
+              : trailDifficulty === 'Moderate'
               ? styles.TrailModerate
               : styles.TrailHard
           }>
-          {CapitalizeWord(trail.trailDifficulty)}
+          {trailDifficulty}
         </Text>
         <Text style={styles.TrailName}>{trail.trailName}</Text>
         <Text style={styles.TrailPark}>{park.parkName} Park</Text>
@@ -117,95 +248,29 @@ const TrailCard = ({
           Distance: {trail.trailDistance} mi - Est{' '}
           {(trail.trailDistance / 2).toFixed()} hr.
         </Text>
+        {renderCoinReward()}
         <View style={{position: 'relative'}}>
-          <Text
-            style={{
-              position: 'absolute',
-              right: 10,
-              bottom: 90,
-            }}>
-            {userSubscription && userSubscription.isActive ? (
-              queuedTrails && queuedCache[trail.id] ? (
-                <Pressable
-                  onPress={async () => {
-                    console.log('trailId', trail.id);
-                    console.log('userId', user.id);
-                    console.log(user.queuedTrails);
-
-                    await trail.deleteFromQueuedTrails({userId: user.id});
-                  }}>
-                  <Text
-                    style={[
-                      styles.QueueButtons,
-                      {
-                        color:
-                          queuedTrails && queuedCache[trail.id]
-                            ? 'red'
-                            : 'rgb(7,254,213)',
-                      },
-                    ]}>
-                    -
-                  </Text>
-                </Pressable>
-              ) : (
-                <Pressable
-                  onPress={async () =>
-                    await trail.addToQueuedTrails({userId: user.id})
-                  }>
-                  <Text
-                    style={[
-                      styles.QueueButtons,
-                      {
-                        color:
-                          queuedTrails && !isQueued ? 'rgb(7,254,213)' : 'red',
-                      },
-                    ]}>
-                    +
-                  </Text>
-                </Pressable>
-              )
-            ) : (
-              <></>
-            )}
-          </Text>
           <Pressable
             style={{
               backgroundColor:
-                user.trailId == trail.id
+                user.trailId === trail.id
                   ? 'grey'
-                  :  isFreeTrail
+                  : isFreeTrail || isPurchased
                   ? 'rgb(7,254,213)'
                   : isActiveSubscription
-                  ? 'rgb(7,254,213)'
-                  : 'grey',
-
+                  ? 'rgb(7,254,13)'
+                  : isSubscribersOnly
+                  ? 'grey'
+                  : 'rgb(7,254,13)',
               width: '50%',
               borderRadius: 10,
               paddingVertical: 5,
               marginTop: 10,
             }}
-            onPress={async () => {
-              try {
-                if (user.trailId) {
-                  setShowReplaceTrailModal(true);
-                  setReplacementTrailId(trail.id);
-                } else {
-                  user.updateCurrentTrailId({
-                    trailId: trail.trailId,
-                    formatDateTime: formatDateTime(new Date()),
-                  });
-                }
-              } catch (err) {
-                console.log('error Setting new trail for user', err);
-              }
+            onPress={() => {
+              handleTrailActionButton();
             }}
-            disabled={
-              user.trailId == trail.id ||
-              (userSubscription &&
-                !userSubscription.isActive &&
-                basicSubscriptionTrails &&
-                !basicSubscriptionTrails[trail.id])
-            }>
+            disabled={user.trailId == trail.id}>
             <Text
               style={{
                 color: 'rgb(31,33,35)',
@@ -213,15 +278,7 @@ const TrailCard = ({
                 fontSize: 16,
                 textAlign: 'center',
               }}>
-              {user.trailId == trail.id
-                ? 'In Progress'
-                : isFreeTrail
-                ? 'Start Now'
-                : isActiveSubscription && isPurchasedTrail
-                ? 'Start Now'
-                : isActiveSubscription && !isPurchasedTrail
-                ? 'Buy Now'
-                : 'Unlock with Pro'}
+              {buttonText}
             </Text>
           </Pressable>
         </View>
@@ -234,21 +291,18 @@ const TrailCard = ({
 
 const enhance = withObservables(
   ['user', 'trail', 'queuedTrails', 'userSubscription'],
-  ({user, trail, userSubscription}) => ({
+  ({user, trail}) => ({
     user: user.observe(),
     completedHikes: user.completedHikes.observe(),
-    queuedTrails: user.queuedTrails.observe(),
     trail: trail.observe(),
     park: trail.park.observe(),
-    userSubscription,
-    // userTrails: user.usersTrails
 
     // Shortcut syntax for `post.comments.observe()`
   })
 );
 
-const EnhancedTrailCard = enhance(TrailCard);
-export default EnhancedTrailCard;
+const EnhancedAllTrailsCard = enhance(AllTrailsCard);
+export default EnhancedAllTrailsCard;
 
 //export default TrailCard;
 
