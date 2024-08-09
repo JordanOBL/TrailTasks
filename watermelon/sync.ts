@@ -10,7 +10,10 @@ const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
 //singleton
 let isRunning = false;
-const IP = '10.0.2.2';
+//android sim device IP
+//const IP = '10.0.2.2';
+//const IP = '192.168.1.42';
+const railwayServer = 'expressjs-postgres-production-54e4.up.railway.app'
 
 export async function sync(database: Database, userId: string = '0') {
   try {
@@ -36,7 +39,7 @@ export async function sync(database: Database, userId: string = '0') {
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
             const response = await fetch(
-              `http://${IP}:5500/pull?${urlParams}`
+              `http://${railwayServer}/pull?${urlParams}`
             );
             if (!response.ok) {
               console.error('in pull in sync()');
@@ -60,7 +63,7 @@ export async function sync(database: Database, userId: string = '0') {
         pushChanges: async ({changes, lastPulledAt}) => {
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `http://${IP}:5500/push?last_pulled_at=${lastPulledAt}`,
+            `http://${railwayServer}/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),

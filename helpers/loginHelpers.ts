@@ -28,7 +28,7 @@ export const checkExistingGlobalUser = async (
   password: string,
 ): Promise<User | null> => {
   try {
-    const response = await fetch('http://10.0.2.2:5500/api/users', {
+    const response = await fetch('http://192.168.1.42:5500/api/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -286,7 +286,7 @@ export const handleLogin = async ({
 
         // Retrieve the newly created user from the database
         existingUser = await checkExistingUser(email, password, watermelonDatabase);
-        await sync(watermelonDatabase, existingUser.user.id);
+        await sync(watermelonDatabase, existingUser.id);
       }
     }
 

@@ -35,13 +35,15 @@ function App(): JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+
+  const railwayServer = 'expressjs-postgres-production-54e4.up.railway.app'
   //uncomment to insert postgres tables with initial trails, parks, parkstates
   const seedPgTables = async () => {
     try {
       console.debug(
         'seeding PostgresDB Tables with information from /backend/server.ts'
       );
-      const response = await fetch(`http://localhost:5500/api/seed`);
+      const response = await fetch(`http://${railwayServer}/api/seed`);
     } catch (error: any) {
       console.error(
         'Error in gettingPGTables function, app.tsx',
@@ -69,7 +71,7 @@ function App(): JSX.Element {
         }
 
         //*uncomment next line to request the /seedPGTable API Route
-        //await seedPgTables();
+        await seedPgTables();
 
         //This checks to see if the mobile ldevices SQLITE DB
         //has a userID saved in the localstorage and sets the user if it does

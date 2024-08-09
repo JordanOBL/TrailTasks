@@ -28,21 +28,30 @@ import sessionCategories from '../helpers/Session/sessionCategories.js';
 // import pkg from "pg";
 // const {Pool} = pkg;
 
-const PGUSER = 'jordan';
+//local pgDB
+//const PGUSER = 'jordan';
 //const PGHOST = "192.168.1.208";
-const PGHOST = 'localhost'
-const PGDBNAME = 'trailtasks';
-const PGPORT = 5433;
-const PGPASSWORD = '4046';
+//const PGHOST = 'localhost'
+//const PGDBNAME = 'trailtasks';
+//const PGPORT = 5433;
+//const PGPASSWORD = '4046';
 
 const newAchievements = achievementsWithIds(masterAchievementList);
-
+//AWS: stopped for expense
 //const PGUSER = 'hikeflowadmin';
 ////const PGHOST = "192.168.76.16";
 //const PGDBNAME = 'hikeFlowDB';
 //const PGPORT = 5432;
 //const PGPASSWORD = 'Sk8mafia116!';
 //
+
+//railway.app pgdatabase
+const PGUSER = 'postgres';
+const PGHOST = "postgres.railway.internal";
+const PGDBNAME = 'railway';
+const PGPORT = 5433;
+const PGPASSWORD = 'PXbbgpktNJuDVznaPJojirgTqBrLbleJ';
+
 export const sequelize = new Sequelize(PGDBNAME, PGUSER, PGPASSWORD, {
   host: PGHOST,
   port: PGPORT,
@@ -2369,8 +2378,8 @@ app.get('/pull', async (req, res) => {
     if (lastPulledAt === new Date(0).toISOString()) {
       const createdAchievements = await Achievement.findAll({});
       console.log('first Achievements Pull', createdAchievements);
-      const createdUsers = await User.findAll({});
-      console.log('first Users Pull', createdUsers);
+      //const createdUsers = await User.findAll({});
+      //console.log('first Users Pull', createdUsers);
       const createdParks = await Park.findAll({});
       console.log('first Parks Pull', createdParks);
       const createdTrails = await Trail.findAll({});
@@ -2391,11 +2400,11 @@ app.get('/pull', async (req, res) => {
             updated: [],
             deleted: [],
           },
-          users: {
-            created: createdUsers,
-            updated: [],
-            deleted: [],
-          },
+        //  users: {
+         //   created: createdUsers,
+          //  updated: [],
+           // deleted: [],
+         // },
           trails: {
             created: createdTrails,
             updated: [],
@@ -2431,6 +2440,7 @@ app.get('/pull', async (req, res) => {
           createdAt: {
             [Sequelize.Op.gt]: lastPulledAt,
           },
+          id:{[Sequelize.Op.eq]: userId},
         },
       });
       const createdSubscriptions = await Subscription.findAll({
@@ -2506,6 +2516,7 @@ app.get('/pull', async (req, res) => {
           updatedAt: {
             [Sequelize.Op.gt]: lastPulledAt,
           },
+          user_id: userId,
         },
       });
       // console.log({createdUserMiles});
@@ -2521,6 +2532,7 @@ app.get('/pull', async (req, res) => {
           updatedAt: {
             [Sequelize.Op.gt]: lastPulledAt,
           },
+          id:{[Sequelize.Op.eq]: userId},
         },
       });
       const updatedUserSessions = await User_Session.findAll({
@@ -2536,6 +2548,7 @@ app.get('/pull', async (req, res) => {
           updatedAt: {
             [Sequelize.Op.gt]: lastPulledAt,
           },
+          user_id: userId,
         },
         
       });
