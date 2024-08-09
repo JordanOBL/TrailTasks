@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "android": "react-native run-android",
-    "androidBundle": "cd android && ./gradlew bundleRelease",
+    "androidBundle": "cd android && ./gradlew updateVersion && ./gradlew bundleRelease",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
