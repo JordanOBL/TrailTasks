@@ -63,7 +63,7 @@ export async function sync(database: Database, userId: string = '0') {
         pushChanges: async ({changes, lastPulledAt}) => {
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `http://${railwayServer}/push?last_pulled_at=${lastPulledAt}`,
+            `https://${railwayServer}/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),

@@ -71,7 +71,7 @@ function App(): JSX.Element {
         }
 
         //*uncomment next line to request the /seedPGTable API Route
-        await seedPgTables();
+        //await seedPgTables();
 
         //This checks to see if the mobile ldevices SQLITE DB
         //has a userID saved in the localstorage and sets the user if it does
