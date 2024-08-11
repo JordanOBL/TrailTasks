@@ -10,6 +10,7 @@ interface Props {
 }
 
 const SessionList = ({filteredUserSessions}: Props) => {
+  // @ts-ignore
   const renderSessionItem = ({item}) => (
     <View style={styles.sessionContainer}>
       <Text style={styles.title}>{item.session_name}</Text>

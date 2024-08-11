@@ -1,5 +1,5 @@
-import {useState, useEffect} from 'react';
-import {Platform} from 'react-native';
+import { useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import Purchases, {
   CustomerInfo,
   PurchasesOffering,
@@ -17,25 +17,36 @@ const typesOfMemberships = {
 interface Props {
   userId: string;
 }
-const useRevenueCat = ({userId}: Props) => {
-  const [currentOffering, setCurrentOffering] =
-    useState<PurchasesOffering | null>(null);
+
+const useRevenueCat = ({ userId }: Props) => {
+  const [currentOffering, setCurrentOffering] = useState<PurchasesOffering | null>(null);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
-  //this tells us if user is pro or not
   const [isProMember, setIsProMember] = useState<boolean>(false);
+  const [isConfigured, setIsConfigured] = useState<boolean>(false);
+
+  useEffect(() => {
+    const configurePurchases = async () => {
+      try {
+        await Purchases.setDebugLogsEnabled(true);
+        await Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
+
+        const apiKey = Platform.OS === 'android' ? APIKeys.google : APIKeys.apple;
+        Purchases.configure({apiKey, appUserID: userId});
+
+        setIsConfigured(true); // Set configuration as complete
+      } catch (error) {
+        console.error('Error configuring Purchases:', error);
+      }
+    };
+
+    configurePurchases().catch(e => console.error('error in revcat se effect for config purchases', e));
+  }, [userId]);
 
   useEffect(() => {
     const fetchData = async () => {
-      //debug logs can be enabled or disabled by setting the Purchases.logLevel property before configuring Purchases.
-      //Debug logs will provide detailed log output in Xcode or LogCat for what is going on behind the scenes and should be the first //thing you check if your app is behaving unexpectedly, and also to confirm there aren't any unhandled warnings or errors
+      if (!isConfigured) return; // Ensure SDK is configured before proceeding
+
       try {
-        Purchases.setDebugLogsEnabled(true);
-        Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
-
-        const apiKey =
-          Platform.OS === 'android' ? APIKeys.google : APIKeys.apple;
-        Purchases.configure({apiKey, appUserID: userId});
-
         const offerings = await Purchases.getOfferings();
         setCurrentOffering(offerings.current);
 
@@ -43,28 +54,37 @@ const useRevenueCat = ({userId}: Props) => {
         setCustomerInfo(customerInfo);
 
         const proMember =
-          customerInfo?.activeSubscriptions.includes(
-            typesOfMemberships.monthly
-          ) ||
-          customerInfo?.activeSubscriptions.includes(
-            typesOfMemberships.annually
-          );
+          customerInfo?.activeSubscriptions.includes(typesOfMemberships.monthly) ||
+          customerInfo?.activeSubscriptions.includes(typesOfMemberships.annually);
         setIsProMember(proMember);
       } catch (error) {
-        console.error('Error fetching in useRevenueCat():', error);
+        console.error('Error fetching data in useRevenueCat:', error);
       }
     };
-    fetchData().catch(console.error);
-  }, [userId]);
+
+    fetchData().catch(e => console.error('Error in revcat use effect for fetchdata', e));
+  }, [isConfigured]);
 
   useEffect(() => {
     const customerInfoUpdated = async (purchaserInfo: CustomerInfo) => {
       setCustomerInfo(purchaserInfo);
+
+      const proMember =
+        purchaserInfo?.activeSubscriptions.includes(typesOfMemberships.monthly) ||
+        purchaserInfo?.activeSubscriptions.includes(typesOfMemberships.annually);
+      setIsProMember(proMember);
     };
-    Purchases.addCustomerInfoUpdateListener(customerInfoUpdated);
+
+    const removeListener = Purchases.addCustomerInfoUpdateListener(customerInfoUpdated);
+
+    return () => {
+      // @ts-ignore
+      removeListener();
+    };
   }, []);
 
-  return {currentOffering, customerInfo, isProMember};
+  return { currentOffering, customerInfo, isProMember };
 };
 
 export default useRevenueCat;
+

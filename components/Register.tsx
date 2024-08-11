@@ -11,7 +11,7 @@ import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import {handleRegister} from '../helpers/registerHelpers';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection.ts'
+import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection'
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
@@ -20,7 +20,7 @@ interface Props {
 }
 const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   const watermelonDatabase = useDatabase();
-  const [isConnectedToInternet, setIsConnectedToInternet] = useState();
+  const [isConnectedToInternet, setIsConnectedToInternet] = useState<boolean>();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,13 +34,14 @@ const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
 useEffect(() => {
   // Check internet connection when component mounts
   if(refreshing){
-  checkInternetConnection().then(({ connection }) => {
+  // @ts-ignore
+      checkInternetConnection().then(({ connection }) => {
     if (connection) {
       setIsConnectedToInternet(connection.isConnected);
       console.debug(connection.isConnected);
     }
-  }).catch(error => {
-    console.error('Error checking internet connection:', error);
+  }).catch((e: any) => {
+    console.error('Error checking internet connection:', e);
     setIsConnectedToInternet(false);
   });
 

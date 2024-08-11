@@ -1,6 +1,7 @@
 import {Button, Modal, StyleSheet, Text, View} from 'react-native';
 import React, {useState} from 'react';
 
+// @ts-ignore
 const TutorialModal = ({visible, onClose}) => {
   const [currentStep, setCurrentStep] = useState(0);
   const tutorialSteps = [

@@ -67,19 +67,13 @@ describe('setSubscriptionStatus', () => {
       return {user, sub};
     });
 
-    const subscriptionId = await helpers.setSubscriptionStatus(
-      both.user,
-      testDb
-    );
+    const subscriptionId = await helpers.setSubscriptionStatus(both.user, testDb);
 
     expect(subscriptionId).toEqual(both.sub.id);
   });
 
   test('should not set subscription status if no subscription exists', async () => {
-    await helpers.setSubscriptionStatus(
-      MockTestUsers.unfoundUserDetails,
-      testDb
-    );
+    await helpers.setSubscriptionStatus(MockTestUsers.unfoundUserDetails, testDb);
     const subscriptionId = await testDb.localStorage.get('subscription_id');
     expect(subscriptionId).toBeUndefined();
   });

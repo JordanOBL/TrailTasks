@@ -140,7 +140,7 @@
       trail_difficulty: 'moderate',
       park_id: '2',
       trail_image_url:
-        https://images.alltrails.com/eyJidWNrZXQiOiJhc3NldHMuYWxsdHJhaWxzLmNvbSIsImtleSI6InVwbG9hZHMvcGhvdG8vaW1hZ2UvNTYyMzI3MTcvY2ZkMzZhMDQ4Y2QzNmZiMjU4YWQzMzQ4ZmMyZWNkZmQuanBnIiwiZWRpdHMiOnsidG9Gb3JtYXQiOiJqcGVnIiwicmVzaXplIjp7IndpZHRoIjoyMDQ4LCJoZWlnaHQiOjIwNDgsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsImpwZWciOnsidHJlbGxpc1F1YW50aXNhdGlvbiI6dHJ1ZSwib3ZlcnNob290RGVyaW5naW5nIjp0cnVlLCJvcHRpbWlzZVNjYW5zIjp0cnVlLCJxdWFudGlzYXRpb25UYWJsZSI6M319fQ==',
+        'https://images.alltrails.com/eyJidWNrZXQiOiJhc3NldHMuYWxsdHJhaWxzLmNvbSIsImtleSI6InVwbG9hZHMvcGhvdG8vaW1hZ2UvNTYyMzI3MTcvY2ZkMzZhMDQ4Y2QzNmZiMjU4YWQzMzQ4ZmMyZWNkZmQuanBnIiwiZWRpdHMiOnsidG9Gb3JtYXQiOiJqcGVnIiwicmVzaXplIjp7IndpZHRoIjoyMDQ4LCJoZWlnaHQiOjIwNDgsImZpdCI6Imluc2lkZSJ9LCJyb3RhdGUiOm51bGwsImpwZWciOnsidHJlbGxpc1F1YW50aXNhdGlvbiI6dHJ1ZSwib3ZlcnNob290RGVyaW5naW5nIjp0cnVlLCJvcHRpbWlzZVNjYW5zIjp0cnVlLCJxdWFudGlzYXRpb25UYWJsZSI6M319fQ==',
       trail_elevation: '1735',
       all_trails_url:'https://www.alltrails.com/trail/american-samoa/tutuila/mount-alava-trail?u=i',
       nps_url: 'https://www.nps.gov/places/mount-alava.htm',
@@ -234,7 +234,7 @@
       trail_elevation: '111',
       all_trails_url:'https://www.alltrails.com/trail/us/south-dakota/medicine-root-and-castle-trail-loop',
       nps_url: 'https://www.nps.gov/places/medicine-root-trailhead.htm',
-      hiking_project_url: 'https://www.hikingproject.com/trail/7004774/medicine-root-loop
+      hiking_project_url: 'https://www.hikingproject.com/trail/7004774/medicine-root-loop'
     },
      {
       id: '12',
@@ -250,7 +250,7 @@
       trail_elevation: '305',
       all_trails_url:'https://www.alltrails.com/explore/trail/us/south-dakota/castle-trail--4?mobileMap=false&ref=sidebar-static-map',
       nps_url: 'https://www.nps.gov/places/castle-trailhead.htm',
-      hiking_project_url: 'https://www.hikingproject.com/trail/7004804/castle-trail
+      hiking_project_url: 'https://www.hikingproject.com/trail/7004804/castle-trail'
     },
     {
       id: '13',

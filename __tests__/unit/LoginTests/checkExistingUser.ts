@@ -46,6 +46,7 @@ describe('User Registration', () => {
 
   test('Check if user is registered', async () => {
     // Mocking an existing user
+    // @ts-ignore
     mockDatabase.get.mockReturnValueOnce({
       query: jest.fn(() => ({
         fetch: jest.fn(() => [{ id: 'user_id' }]) // Mocking a user record

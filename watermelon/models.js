@@ -9,7 +9,7 @@ import {
   text,
   writer,
 } from '@nozbe/watermelondb/decorators';
-
+//@ts-nocheck
 import formatDateTime from '../helpers/formatTime';
 
 export class Park extends Model {

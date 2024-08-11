@@ -13,8 +13,6 @@ import { AchievementManager } from '../../helpers/Achievements/AchievementManage
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 import SelectDropdown from 'react-native-select-dropdown';
 import {Session_Category} from '../../watermelon/models';
-import { achievements } from '../../assets/Achievements/masterAchievementList';
-import { achievementsWithIds } from '../../assets/Achievements/addAchievementIds';
 import formatDateTime from '../../helpers/formatDateTime';
 import timeOptions from '../../helpers/Session/timeOptions';
 import {useDatabase} from '@nozbe/watermelondb/hooks';

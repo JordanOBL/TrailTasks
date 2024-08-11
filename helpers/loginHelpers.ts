@@ -1,8 +1,7 @@
-import {Database, Q} from '@nozbe/watermelondb';
-import {User, Subscription, User_Miles,User_Purched_Trail, User_Session, User_Achievement} from '../watermelon/models';
+import {Database, Model, Q} from '@nozbe/watermelondb';
+import {User, Subscription, User_Miles,User_Purchased_Trail, User_Session, User_Achievement} from '../watermelon/models';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
-import sync from '../watermelon/sync';
-import {prepareCreate} from '@nozbe/watermelondb/QueryDescription';
+import React from "react";
 const railwayServer = 'expressjs-postgres-production-54e4.up.railway.app'
 
 //*this function checks for a user in the database matching users login input
@@ -55,8 +54,8 @@ export const checkExistingGlobalUser = async (
  
 
 export const setSubscriptionStatus = async (
-  user: User,
-  watermelonDatabase: Database
+    user: Model,
+    watermelonDatabase: Database
 ) => {
   try
   {
@@ -76,6 +75,7 @@ export const setSubscriptionStatus = async (
         return subscription[0].id
       }
     }
+    console.debug('returning undefined in setsubscription')
     return undefined
   } catch (err) {
     console.error('Error in setSubscriptionStatus()', {err});
@@ -87,7 +87,7 @@ export const setLocalStorageUserAndMiles = async (
   watermelonDatabase: Database
 ) => {
   try {
-    console.log('existingUser', existingUser);
+    console.log('existingUser in setLocalStoordageUserandMiles', existingUser);
     await watermelonDatabase.localStorage.set('user_id', existingUser.id);
     await watermelonDatabase.localStorage.set(
       'username',
@@ -125,9 +125,10 @@ export const checkForLoggedInUser = async (
 
       //@ts-ignore
       if (user.id) {
+          console.debug('userid found attempting to set subscription status', user.id)
         await setSubscriptionStatus(user, watermelonDatabase);
       }
-
+        console.debug('user before seeting in checked for logged in user:', user)
       setUser(user);
     }
   } catch (error) {
@@ -156,7 +157,8 @@ export const handleLogin = async ({
     }
 
     // Check for internet connection
-    const { connection } = await checkInternetConnection();
+    // @ts-ignore
+      const { connection } = await checkInternetConnection();
 
     let existingUser = await checkExistingUser(email, password, watermelonDatabase);
 
@@ -170,7 +172,8 @@ export const handleLogin = async ({
         await watermelonDatabase.write(async () => {
             // Create user
           
-           const newUser = watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
+           // @ts-ignore
+            const newUser = watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
               newUser._raw.id = existingUser.user.id;
               newUser.firstName = existingUser.user.first_name;
               newUser.lastName = existingUser.user.last_name;
@@ -186,39 +189,58 @@ export const handleLogin = async ({
               newUser.trailTokens = existingUser.user.trail_tokens;
             })
             // Create user miles
+            // @ts-ignore
             const userMiles = watermelonDatabase.collections.get('users_miles').prepareCreate((newUserMiles: User_Miles) => {
               newUserMiles._raw.id = existingUser.userMiles.id;
               newUserMiles.totalMiles = existingUser.userMiles.total_miles;
               newUserMiles.userId = existingUser.userMiles.user_id;
        })
 
-            // Create user sessions
+
             const userSessions = [...existingUser.userSessions].map((session: User_Session) =>
+                // @ts-ignore
               watermelonDatabase.collections.get('users_sessions').prepareCreate((newUserSession: User_Session) => {
                 newUserSession._raw.id = session.id;
-                newUserSession.userId = session.user_id;
+                // @ts-ignore
+                  newUserSession.userId = session.user_id;
+                  // @ts-ignore
                 newUserSession.sessionName = session.session_name;
+                  // @ts-ignore
                 newUserSession.sessionDescription = session.session_description;
+                  // @ts-ignore
                 newUserSession.totalDistanceHiked = session.total_distance_hiked;
+                  // @ts-ignore
                 newUserSession.totalSessionTime = session.total_session_time;
+                  // @ts-ignore
                 newUserSession.sessionCategoryId = session.session_category_id;
+                  // @ts-ignore
                 newUserSession.createdAt = session.created_at;
+                  // @ts-ignore
                 newUserSession.dateAdded = session.date_added;
+                  // @ts-ignore
                 newUserSession.sessionStartedAt = session.session_started_at;
+                  // @ts-ignore
                 newUserSession.sessionEndedAt = session.session_ended_at;
               })
             )
 //            // Create user purchased trail
+            // @ts-ignore
             const userPurchasedTrails = [...existingUser.userPurchasedTrails].map((trail: User_Purchased_Trail) =>
+                // @ts-ignore
               watermelonDatabase.collections.get('users_purchased_trails').prepareCreate((newUserPurchasedTrail: User_Purchased_Trail) => {
                 newUserPurchasedTrail._raw.id = trail.id;
+                  // @ts-ignore
                 newUserPurchasedTrail.userId = trail.user_id;
+                  // @ts-ignore
                 newUserPurchasedTrail.purchasedAt = trail.purchased_at;
+                  // @ts-ignore
                 newUserPurchasedTrail.trailId = trail.trail_id;
+                  // @ts-ignore
                 newUserPurchasedTrail.createdAt = trail.created_at;
               })
             )  
 //            // Create user subscription
+            // @ts-ignore
             const userSubscriptions =  watermelonDatabase.collections.get('users_subscriptions').prepareCreate((newUserSubscription: Subscription) => {
               newUserSubscription._raw.id = existingUser.userSubscription.id;
               newUserSubscription.userId = existingUser.userSubscription.user_id;
@@ -227,21 +249,30 @@ export const handleLogin = async ({
             })
 //            // Create user achievements
             const userAchievements = [...existingUser.userAchievements].map((achievement: User_Achievement) =>
+                // @ts-ignore
               watermelonDatabase.collections.get('users_achievements').prepareCreate((newUserAchievement: User_Achievement) => {
                 newUserAchievement._raw.id = achievement.id;
+                  // @ts-ignore
                 newUserAchievement.userId = achievement.user_id;
+                  // @ts-ignore
                 newUserAchievement.achievementId = achievement.achievement_id;
+                  // @ts-ignore
                 newUserAchievement.achievementDescription = achievement.achievement_description;
+                  // @ts-ignore
                 newUserAchievement.createdAt = achievement.created_at;
+                  // @ts-ignore
                 newUserAchievement.completedAt = achievement.completed_at;
               })
             )
+            console.debug('attempting to writebatch of new user from master DB')
             await watermelonDatabase.batch([newUser, userMiles, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements]);
-      
+            console.debug('batch write done...')
         });
 
         // Retrieve the newly created user from the database
+          console.debug('retrieving new user from DB')
         existingUser = await checkExistingUser(email, password, watermelonDatabase);
+          console.debug('Retrieved new user: ' + existingUser);
         //await sync(watermelonDatabase, existingUser.id);
       }
     }
@@ -251,13 +282,13 @@ export const handleLogin = async ({
       return;
     }
 
-    //@ts-ignore
+    console.debug('Setting user in subscription', existingUser);
     await setSubscriptionStatus(existingUser.user, watermelonDatabase);
     const response = await setLocalStorageUserAndMiles(existingUser, watermelonDatabase);
 
     if (response) {
       console.log('Setting user locally', existingUser);
-      setUser(existingUser);
+      setUser(existingUser.user);
       return;
     }
   } catch (err) {

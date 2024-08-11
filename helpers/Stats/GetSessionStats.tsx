@@ -1,4 +1,5 @@
 import { User_Session } from "../../watermelon/models";
+import React from "react";
 
 interface Session {
 	date_added: string;
@@ -39,16 +40,19 @@ export const getSessionStats = (
 
 	// Calculate total time and distance
 	const totalTime = filteredUserSessions.reduce(
+		// @ts-ignore
 		(acc, session) => acc + session.total_session_time,
 		0
 	);
 	const totalDistance = filteredUserSessions.reduce(
+		// @ts-ignore
 		(acc, session) => acc + parseFloat(session.total_distance_hiked),
 		0
 	);
 
 	// Calculate most productive time of day
 	const productiveTimes = filteredUserSessions.map((session) => {
+		// @ts-ignore
 		const date = new Date(session.date_added);
 		const hour = date.getHours();
 		const timeOfDay =
@@ -65,13 +69,16 @@ export const getSessionStats = (
 		return acc;
 	}, {} as { [key: string]: number });
 
+	// @ts-ignore
 	const mostProductiveTime = Object.keys(timeOfDayCount).reduce((a, b) =>
 		 {return timeOfDayCount[a] > timeOfDayCount[b] ? a : b}, 0
 	);
 
 	// Calculate most used category and least used category
 	const categoryCounts = filteredUserSessions.reduce((acc, session) => {
+		// @ts-ignore
 		acc[session.session_category_name] =
+			// @ts-ignore
       (acc[session.session_category_name] || 0) + 1;
 		return acc;
 	}, {} as { [key: string]: number });

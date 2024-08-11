@@ -3,7 +3,6 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 import EnhancedAchievementsList from '../components/Achievements/AchievementsList';
-import Purchases from 'react-native-purchases';
 import {Q} from '@nozbe/watermelondb';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
@@ -38,7 +37,7 @@ const AchievementsScreen = ({user}: Props) => {
   }
 
   useEffect(() => {
-    getAchievementsWithCompletion();
+    getAchievementsWithCompletion().catch(e => console.error(e));
   }, []);
 
   if (achievementsWithCompletion) {

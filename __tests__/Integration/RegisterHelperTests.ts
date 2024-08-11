@@ -23,10 +23,15 @@ beforeAll(async () => {
   await testDb.write(async () => {
     const usersCollection = testDb.collections.get('users');
     await usersCollection.create((newUser) => {
+      // @ts-ignore
       newUser.email = MockTestUsers.existingUserDetails.email;
+      // @ts-ignore
       newUser.password = MockTestUsers.existingUserDetails.password;
+      // @ts-ignore
       newUser.username = MockTestUsers.existingUserDetails.username;
+      // @ts-ignore
       newUser.firstName = MockTestUsers.existingUserDetails.firstName;
+      // @ts-ignore
       newUser.lastName = MockTestUsers.existingUserDetails.lastName;
     });
   });

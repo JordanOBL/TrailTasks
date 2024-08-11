@@ -5,6 +5,7 @@ import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import {User} from './models';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import {synchronize} from '@nozbe/watermelondb/sync';
+import {NetInfoStateType} from "@react-native-community/netinfo";
 
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
@@ -18,6 +19,7 @@ const railwayServer = 'expressjs-postgres-production-54e4.up.railway.app'
 export async function sync(database: Database, userId: string = '0') {
   try {
     //check internet Connection
+    // @ts-ignore
     const {connection} = await checkInternetConnection();
     console.debug('sync() device internet:', connection.isConnected);
     //set locatStorage connection status

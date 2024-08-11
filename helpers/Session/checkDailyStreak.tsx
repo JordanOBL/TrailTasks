@@ -3,7 +3,7 @@ import {User} from '../../watermelon/models';
 import isToday from '../isToday';
 import isYesterday from '../isYesterday';
 
-async function checkDailyStreak(userPromise: Promise<User>, sessionDetails: SessionDetails) {
+async function checkDailyStreak(userPromise: User, sessionDetails: SessionDetails) {
   // Wait for the user object to be resolved
   const user = await userPromise;
 

@@ -1,6 +1,7 @@
+
 import 'react-native-gesture-handler';
 
-import {DarkTheme, NavigationContainer} from '@react-navigation/native';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import {
   PermissionsAndroid,
   Platform,
@@ -10,73 +11,47 @@ import {
   Text,
   useColorScheme,
 } from 'react-native';
-import React, {createContext, useEffect, useState} from 'react';
-
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import LoginScreen from './Screens/LoginScreen';
+import React, { useEffect, useState } from 'react';
 import RNFS from 'react-native-fs';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import SyncIndicator from './components/SyncIndicator';
 import TabNavigator from './components/Navigation/TabNavigator';
-import {checkForLoggedInUser} from './helpers/loginHelpers';
-import {hasUnsyncedChanges} from '@nozbe/watermelondb/sync';
-import {sync} from './watermelon/sync';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
+import { checkForLoggedInUser } from './helpers/loginHelpers';
+import { sync } from './watermelon/sync';
+import { useDatabase } from '@nozbe/watermelondb/hooks';
+import useRevenueCat from './helpers/RevenueCat/useRevenueCat'; // Import the hook
 
-
-function App(): JSX.Element {
+const App = () => {
   const watermelonDatabase = useDatabase();
-  const [isRegistering, setisRegistering] = React.useState<boolean>(true);
-
+  const [isRegistering, setisRegistering] = useState<boolean>(true);
   const [user, setUser] = useState<any>();
-
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  // @ts-ignore
+  //const { currentOffering, customerInfo, isProMember, loading } = useRevenueCat({ userId: user?.id || '' });
 
-  const railwayServer = 'expressjs-postgres-production-54e4.up.railway.app'
-  //uncomment to insert postgres tables with initial trails, parks, parkstates
-  const seedPgTables = async () => {
-    try {
-      console.debug(
-        'seeding PostgresDB Tables with information from /backend/server.ts'
-      );
-      const response = await fetch(`http://${railwayServer}/api/seed`);
-    } catch (error: any) {
-      console.error(
-        'Error in gettingPGTables function, app.tsx',
-        error.message
-      );
-    }
-  };
 
   useEffect(() => {
-    // Do something with the Watermelon database instance
     const onLoad = async () => {
       try {
-        //This finds and prints file path in the phones memory for the sqlite DB
+        // This finds and prints file path in the phones memory for the sqlite DB
         const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
         console.debug(`DATABASE LOCATION: ${dbFilePath}`);
         if (Platform.OS === 'android') {
-          PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
-          //PermissionsAndroid.request('android.permission.INTERNET');
-          PermissionsAndroid.request(
-            'android.permission.READ_EXTERNAL_STORAGE'
-          );
-          PermissionsAndroid.request(
-            'android.permission.WRITE_EXTERNAL_STORAGE'
-          );
+          await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
+          await PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
+          await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
         }
 
-        //*uncomment next line to request the /seedPGTable API Route
-        //await seedPgTables();
-
-        //This checks to see if the mobile ldevices SQLITE DB
-        //has a userID saved in the localstorage and sets the user if it does
+        // This checks to see if the mobile device's SQLITE DB
+        // has a userID saved in the local storage and sets the user if it does
         await checkForLoggedInUser(setUser, watermelonDatabase);
-        //SYNC call teh push and pull requests from mobile device to PG database
+        // SYNC call the push and pull requests from the mobile device to PG database
         console.debug('calling sync');
         if (user) {
           await sync(watermelonDatabase, user.id);
@@ -88,40 +63,49 @@ function App(): JSX.Element {
       }
     };
 
-    onLoad();
-  }, []);
+
+    onLoad().catch(e => console.error('onload function', e));
+  }, [user]);
+
+  // if (loading) {
+  //   return (
+  //     <GestureHandlerRootView style={{ flex: 1 }}>
+  //       <SafeAreaView style={[backgroundStyle, styles.container]}>
+  //         <Text style={styles.title}>Loading...</Text>
+  //       </SafeAreaView>
+  //     </GestureHandlerRootView>
+  //   );
+  // }
 
   return (
-    
-      <GestureHandlerRootView style={{flex: 1}}>
-        <NavigationContainer theme={DarkTheme}>
-          <SafeAreaView style={[backgroundStyle, styles.container]}>
-            <StatusBar
-              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-              backgroundColor={backgroundStyle.backgroundColor}
-            />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer theme={DarkTheme}>
+        <SafeAreaView style={[backgroundStyle, styles.container]}>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor={backgroundStyle.backgroundColor}
+          />
 
-            {/* <SyncIndicator delay={3000} />  */}
-            <Text style={styles.title}>Trail Tasks</Text>
-            {user != null ? (
-              <TabNavigator user={user} setUser={setUser} />
-            ) : isRegistering ? (
-              <RegisterScreen
-                setUser={setUser}
-                setisRegistering={setisRegistering}
-                isRegistering={isRegistering}
-              />
-            ) : (
-              <LoginScreen
-                setUser={setUser}
-                setisRegistering={setisRegistering}
-                isRegistering={isRegistering}
-              />
-            )}
-          </SafeAreaView>
-        </NavigationContainer>
-      </GestureHandlerRootView>
- 
+          {/* <SyncIndicator delay={3000} />  */}
+          <Text style={styles.title}>Trail Tasks</Text>
+          {user != null ? (
+            <TabNavigator user={user} setUser={setUser}  />
+          ) : isRegistering ? (
+            <RegisterScreen
+              setUser={setUser}
+              setisRegistering={setisRegistering}
+              isRegistering={isRegistering}
+            />
+          ) : (
+            <LoginScreen
+              setUser={setUser}
+              setisRegistering={setisRegistering}
+              isRegistering={isRegistering}
+            />
+          )}
+        </SafeAreaView>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 
@@ -158,3 +142,4 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+

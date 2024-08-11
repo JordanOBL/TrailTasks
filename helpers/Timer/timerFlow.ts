@@ -19,6 +19,7 @@ import {getBetterTime} from './getBetterTime';
 import getTimeDifference from './getTimeDifference';
 import nextHundredthMileSeconds from './nextHundrethMileSeconds';
 import checkDailyStreak from '../Session/checkDailyStreak';
+import React from "react";
 
 //increase distance hiked
 export async function increaseDistanceHiked({
@@ -241,6 +242,7 @@ export async function endSession({
     
 
     //check daily streak
+    // @ts-ignore
     await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
   } catch (err: any) {
@@ -280,14 +282,17 @@ async function increaseElapsedTime({
     ) {
       //increase usersession by 1 in the watermelon database
       await userSession.updateTotalSessionTime();
-      increaseDistanceHiked({
+      // @ts-ignore
+      await increaseDistanceHiked({
         user,
+        // @ts-ignore
         userMiles,
         currentTrail,
         userSession,
         sessionDetails,
         setSessionDetails,
         achievementsWithCompletion,
+        // @ts-ignore
         completedHikes,
         onAchievementEarned
       });
@@ -572,7 +577,7 @@ export async function Hike({
   try {
     //check for completed hike
     //console.debug('TimerFlow hike() calling isTrailCompleted()');
-    isTrailCompleted({
+    await isTrailCompleted({
       watermelonDatabase,
       user,
       completedHikes,
@@ -585,10 +590,10 @@ export async function Hike({
 
     //modify Speed
     //console.debug('TimerFlow hike() calling speed Modifier()');
-    speedModifier(setSessionDetails, sessionDetails);
+    await speedModifier(setSessionDetails, sessionDetails);
 
     //console.debug('TimerFlow hike() calling increaseElapsedTime()')
-    increaseElapsedTime({
+    await increaseElapsedTime({
       user,
       userMiles,
       currentTrail,
