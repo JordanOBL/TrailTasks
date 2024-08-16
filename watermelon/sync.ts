@@ -5,28 +5,26 @@ import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import {User} from './models';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import {synchronize} from '@nozbe/watermelondb/sync';
-import {NetInfoStateType} from "@react-native-community/netinfo";
+
+
 
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
 //singleton
 let isRunning = false;
-//android sim device IP
-//const IP = '10.0.2.2';
-//const IP = '192.168.1.42';
-const railwayServer = 'expressjs-postgres-production-54e4.up.railway.app'
+
 
 export async function sync(database: Database, userId: string = '0') {
   try {
     //check internet Connection
     // @ts-ignore
-    const {connection} = await checkInternetConnection();
-    console.debug('sync() device internet:', connection.isConnected);
+    const { isConnected } = await checkInternetConnection();
+    console.debug('sync() device internet:', isConnected);
     //set locatStorage connection status
 
-    await database.localStorage.set('isConnected', connection.isConnected);
+    await database.localStorage.set('isConnected', isConnected);
 
-    if (!isRunning && connection.isConnected) {
+    if (!isRunning && isConnected) {
       //stop more than one instance
       isRunning = true;
       //console.debug('Running sync()');
@@ -40,8 +38,9 @@ export async function sync(database: Database, userId: string = '0') {
             const urlParams = userId
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
+            console.debug('url', process.env.SERVER_PORT_URL)
             const response = await fetch(
-              `http://${railwayServer}/pull?${urlParams}`
+              `${process.env.SERVER_PORT_URL}/pull?${urlParams}`
             );
             if (!response.ok) {
               console.error('in pull in sync()');
@@ -65,7 +64,7 @@ export async function sync(database: Database, userId: string = '0') {
         pushChanges: async ({changes, lastPulledAt}) => {
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `https://${railwayServer}/push?last_pulled_at=${lastPulledAt}`,
+            `${process.env.SERVER_PORT_URL}/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),
@@ -89,7 +88,7 @@ export async function sync(database: Database, userId: string = '0') {
       isRunning = false;
     } else if (isRunning === true) {
       console.debug('Sync() already running...');
-    } else if (!connection.isConnected) {
+    } else if (!isConnected) {
       console.debug('not connected to internet for sync()');
     }
   } catch (err) {

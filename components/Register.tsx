@@ -20,7 +20,7 @@ interface Props {
 }
 const Register = ({setUser, setisRegistering, isRegistering}: Props) => {
   const watermelonDatabase = useDatabase();
-  const [isConnectedToInternet, setIsConnectedToInternet] = useState<boolean>();
+  const [isConnectedToInternet, setIsConnectedToInternet] = useState<boolean | null>();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,7 +35,7 @@ useEffect(() => {
   // Check internet connection when component mounts
   if(refreshing){
   // @ts-ignore
-      checkInternetConnection().then(({ connection }) => {
+      checkInternetConnection().then((connection ) => {
     if (connection) {
       setIsConnectedToInternet(connection.isConnected);
       console.debug(connection.isConnected);

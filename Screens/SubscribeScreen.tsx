@@ -2,6 +2,7 @@ import {StyleSheet, Text, View, Pressable} from 'react-native';
 import React from 'react';
 import {Database} from '@nozbe/watermelondb';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
+import Purchases from 'react-native-purchases';
 //import useUserSubscription from '../helpers/useUserSubscription';
 import { Subscription, User } from '../watermelon/models';
 import withObservables from '@nozbe/with-observables';

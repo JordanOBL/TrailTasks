@@ -23,6 +23,7 @@ function getUserRank(ranks: Rank[], totalMiles: totalMiles): Rank | undefined {
       mid = Math.floor((lo + end) / 2);
     }
   }
+  console.debug('In get user rank, returning undefined')
   return undefined;
 }
 

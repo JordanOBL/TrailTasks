@@ -66,3 +66,7 @@ yarn-error.log
 coverage/
 tags
 tags
+
+#enviroment
+.env.local
+.env.release

@@ -24,10 +24,12 @@ import { sync } from './watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/hooks';
 import useRevenueCat from './helpers/RevenueCat/useRevenueCat'; // Import the hook
 
+
+
 const App = () => {
   const watermelonDatabase = useDatabase();
   const [isRegistering, setisRegistering] = useState<boolean>(true);
-  const [user, setUser] = useState<any>();
+  const [user, setUser] = useState<any>(null);
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -35,24 +37,42 @@ const App = () => {
   // @ts-ignore
   //const { currentOffering, customerInfo, isProMember, loading } = useRevenueCat({ userId: user?.id || '' });
 
+  //insert postgres tables
+  const seedPgTables = async () => {
+    try {
+      console.log('seedingPgTables');
+      const response = await fetch(`${process.env.SERVER_PORT_URL}/api/seed`);
+      const data = await response.json();
+    } catch (error: any) {
+      console.error(
+          'Error in gettingPGTables function, app.tsx',
+          error.message
+      );
+    }
+  };
 
   useEffect(() => {
     const onLoad = async () => {
       try {
-        // This finds and prints file path in the phones memory for the sqlite DB
-        const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
-        console.debug(`DATABASE LOCATION: ${dbFilePath}`);
-        if (Platform.OS === 'android') {
-          await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
-          await PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
-          await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
-        }
+        if(!user) {
+          // This finds and prints file path in the phones memory for the sqlite DB
+          const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
+          console.debug(`DATABASE LOCATION: ${dbFilePath}`);
+          if (Platform.OS === 'android') {
+            await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
+            await PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
+            await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
+          }
 
-        // This checks to see if the mobile device's SQLITE DB
-        // has a userID saved in the local storage and sets the user if it does
-        await checkForLoggedInUser(setUser, watermelonDatabase);
-        // SYNC call the push and pull requests from the mobile device to PG database
-        console.debug('calling sync');
+          //*uncomment next line to request the /seedPGTable API Route
+          //await seedPgTables();
+
+          // This checks to see if the mobile device's SQLITE DB
+          // has a userID saved in the local storage and sets the user if it does
+          await checkForLoggedInUser(setUser, watermelonDatabase);
+          // SYNC call the push and pull requests from the mobile device to PG database
+          console.debug('calling sync');
+        }
         if (user) {
           await sync(watermelonDatabase, user.id);
         } else {
@@ -65,7 +85,7 @@ const App = () => {
 
 
     onLoad().catch(e => console.error('onload function', e));
-  }, [user]);
+  }, []);
 
   // if (loading) {
   //   return (
