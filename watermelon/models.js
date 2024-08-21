@@ -393,11 +393,11 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
 
   //create completed_hike
-  @writer async hasTrailBeenCompleted() {
+  @writer async hasTrailBeenCompleted(userId, trailId) {
     const completedHike = await this.collections
       .get('completed_hikes')
       .query(
-        Q.and(Q.where('user_id', this.id), Q.where('trail_id', this.trailId))
+        Q.and(Q.where('user_id', userId), Q.where('trail_id', trailId))
       );
     return completedHike[0];
   }
