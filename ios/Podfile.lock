@@ -399,7 +399,8 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (3.20.0):
+  - RNScreens (3.34.0):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
     - React-RCTImage
   - RNVectorIcons (9.2.0):
@@ -603,7 +604,7 @@ SPEC CHECKSUMS:
   RNPermissions: 81d9f0634fb22aa83579b7ca09ccb67364b39aee
   RNPurchases: 4305de02b902d3c1e56a50295dc0a6e758b73095
   RNReanimated: 9976fbaaeb8a188c36026154c844bf374b3b7eeb
-  RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
+  RNScreens: 80369e822c4f123c3f076c9ea4141991c17770f9
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   simdjson: e6bfae9ce4bcdc80452d388d593816f1ca2106f3
   WatermelonDB: cd71a1085182aca9e5d2164b7af9ef2a3aaca571

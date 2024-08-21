@@ -35,10 +35,10 @@ useEffect(() => {
   // Check internet connection when component mounts
   if(refreshing){
   // @ts-ignore
-      checkInternetConnection().then((connection ) => {
-    if (connection) {
-      setIsConnectedToInternet(connection.isConnected);
-      console.debug(connection.isConnected);
+      checkInternetConnection().then(({isConnected} ) => {
+    if (isConnected) {
+      setIsConnectedToInternet(isConnected);
+      console.debug(isConnected);
     }
   }).catch((e: any) => {
     console.error('Error checking internet connection:', e);
@@ -82,7 +82,7 @@ useEffect(() => {
         style={styles.input}
       />
       <TextInput
-        value={email}
+        value={email.toLowerCase()}
         onChangeText={setEmail}
         placeholder="Email"
         placeholderTextColor={'rgba(255, 255, 255, .5)'}

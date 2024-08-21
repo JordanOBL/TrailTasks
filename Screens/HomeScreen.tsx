@@ -103,8 +103,8 @@ const HomeScreen: React.FC<Props> = ({
     React.useEffect(() => {
         async function isConnected() {
             // @ts-ignore
-            const {connection} = await checkInternetConnection();
-            setIsConnected(connection?.isConnected);
+            const {isConnected} = await checkInternetConnection();
+            setIsConnected(isConnected);
         }
         isConnected();
     }, []);

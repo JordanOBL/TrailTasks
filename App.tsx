@@ -43,6 +43,10 @@ const App = () => {
       console.log('seedingPgTables');
       const response = await fetch(`${process.env.SERVER_PORT_URL}/api/seed`);
       const data = await response.json();
+      console.log(data)
+      if(data.ok){
+        return
+      }
     } catch (error: any) {
       console.error(
           'Error in gettingPGTables function, app.tsx',
@@ -65,7 +69,7 @@ const App = () => {
           }
 
           //*uncomment next line to request the /seedPGTable API Route
-          //await seedPgTables();
+          await seedPgTables();
 
           // This checks to see if the mobile device's SQLITE DB
           // has a userID saved in the local storage and sets the user if it does
