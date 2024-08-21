@@ -152,17 +152,7 @@ const AllTrailsCard = ({
     buttonText = 'In Progress';
   } else if (isFreeTrail || isPurchased) {
     buttonText = 'Start Now';
-  } else if (isActiveSubscription && !isPurchased) {
-    if (trail.trailDistance < 5) {
-      buttonText = 'Buy 5';
-    } else if (trail.trailDistance < 10) {
-      buttonText = 'Buy 35';
-    } else if (trail.trailDistance < 20) {
-      buttonText = 'Buy 50';
-    } else {
-      buttonText = 'Buy 100';
-    }
-  } else if (isSubscribersOnly) {
+  } else if (isSubscribersOnly && !isActiveSubscription) {
     buttonText = 'Unlock With Subscription';
   } else {
     if (trail.trailDistance < 5) {
@@ -175,7 +165,6 @@ const AllTrailsCard = ({
       buttonText = 'Buy 100';
     }
   }
-
   return user && userSubscription ? (
     <View
       key={trail.id}

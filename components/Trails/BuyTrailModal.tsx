@@ -98,10 +98,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
+    color: 'black',
   },
   descriptionText: {
     marginBottom: 15,
     textAlign: 'center',
+    color: 'black',
   },
   errorText: {
     color: 'red',
@@ -110,7 +112,7 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     width: '100%',
     marginTop: 10,
   },

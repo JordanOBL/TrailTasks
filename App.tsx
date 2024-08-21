@@ -67,7 +67,7 @@ const App = () => {
           }
 
           //*uncomment next line to request the /seedPGTable API Route
-          await seedPgTables();
+          //await seedPgTables();
 
           // This checks to see if the mobile device's SQLITE DB
           // has a userID saved in the local storage and sets the user if it does
