@@ -10,7 +10,7 @@ import {
 //creating a new session
 import {Database, Q} from '@nozbe/watermelondb';
 import handleError from "../ErrorHandler";
-import { AchievementManager } from '../Achievements/AchievementManager';
+import { achievementManagerInstance } from '../Achievements/AchievementManager';
 import { AchievementsWithCompletion } from '../../types/achievements';
 import {SessionDetails} from '../../types/session';
 import {Vibration} from 'react-native';
@@ -67,7 +67,7 @@ export async function increaseDistanceHiked({
       //Check for any achievements that would unlock at the users current total miles hiked
       //return array of achievements {achievementId, achievementName}[]
       const achievementsEarned =
-        await AchievementManager.checkTotalMilesAchievements(
+        await achievementManagerInstance.checkTotalMilesAchievements(
           user,
           userMiles[0],
           achievementsWithCompletion
@@ -542,7 +542,7 @@ export async function isTrailCompleted({
         onCompletedTrail(currentTrail);
         const updatedCompletedHikes = await user.completedHikes;
         const achievementsEarned =
-          await AchievementManager.checkTrailCompletionAchievements(
+          await achievementManagerInstance.checkTrailCompletionAchievements(
             user,
             updatedCompletedHikes,
             achievementsWithCompletion

@@ -18,7 +18,7 @@ import {
 import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
-import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
+import {achievementManagerInstance} from '../../helpers/Achievements/AchievementManager';
 import {AchievementsWithCompletion} from '../../types/achievements';
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
 import {SessionDetails} from '../../types/session';
@@ -125,7 +125,7 @@ const SessionTimer = ({
   }, [sessionDetails]);
 
   const checkUserSessionAchievements = async () => {
-    const results = await AchievementManager.checkUserSessionAchievements(
+    const results = await achievementManagerInstance.checkUserSessionAchievements(
       user,
       sessionDetails,
       currentSessionCategory,

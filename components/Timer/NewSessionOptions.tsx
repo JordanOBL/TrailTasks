@@ -9,7 +9,7 @@ import {
 import React, {useState} from 'react';
 import {User, User_Session} from '../../watermelon/models';
 
-import { AchievementManager } from '../../helpers/Achievements/AchievementManager';
+import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 import SelectDropdown from 'react-native-select-dropdown';
 import {Session_Category} from '../../watermelon/models';

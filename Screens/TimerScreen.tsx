@@ -105,9 +105,7 @@ const TimerScreen = ({
       }
       throw new Error('Error getting session Categories, fetch empty');
     } catch (err) {
-      console.error(
-        'Failed to get session Categories from wdb, getSessionCategories()'
-      );
+      handleError( err, 'getSessionCategories() timerScreen',);
     }
   }
 

@@ -1,4 +1,4 @@
-import {AchievementManager} from '../../helpers/Achievements/AchievementManager';
+import {achievementManagerInstance} from '../../helpers/Achievements/AchievementManager';
 import {MockTestUsers} from '../mockTestUsers.js';
 import {Q} from '@nozbe/watermelondb';
 import {achievementsWithIds} from '../../assets/Achievements/addAchievementIds.js';
@@ -85,7 +85,7 @@ describe('unlockAchievements()', () => {
     const completedAchievements = [
       {achievementName: 'First Steps', achievementId: '93'},
     ];
-    const unlockedAchievements = await AchievementManager.unlockAchievement(
+    const unlockedAchievements = await achievementManagerInstance.unlockAchievement(
       user[0],
       completedAchievements
     );
@@ -118,7 +118,7 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
     const user = await testDb.collections.get('users').query().fetch();
 
     const userMiles = await user[0].usersMiles;
-    const results = await AchievementManager.checkTotalMilesAchievements(
+    const results = await achievementManagerInstance.checkTotalMilesAchievements(
       user[0],
       userMiles[0],
       achievementsWithCompletions
@@ -156,7 +156,7 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
     const user = await testDb.collections.get('users').query().fetch();
 
     const userMiles = await user[0].usersMiles;
-    const results = await AchievementManager.checkTotalMilesAchievements(
+    const results = await achievementManagerInstance.checkTotalMilesAchievements(
       user[0],
       userMiles[0],
       achievementsWithCompletions
@@ -194,7 +194,7 @@ describe('checkTrailCompletionAchievements()', () => {
 
     // const user = await testDb.collections.get('users').query().fetch();
 
-    const results = await AchievementManager.checkTrailCompletionAchievements(
+    const results = await achievementManagerInstance.checkTrailCompletionAchievements(
       user[0],
       completedHikes,
       achievementsWithCompletions
@@ -255,7 +255,7 @@ describe('User Session Achievements', () => {
     });
 
     //call check user session achievements on databse
-    let results = await AchievementManager.checkUserSessionAchievements(
+    let results = await achievementManagerInstance.checkUserSessionAchievements(
       user[0],
       sessionDetails,
       'Family',
