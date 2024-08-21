@@ -2,6 +2,7 @@ import React from 'react';
 
 import {Trail} from '../../watermelon/models';
 import {Database, Q} from '@nozbe/watermelondb';
+import handleError from "../ErrorHandler";
 
 const getJoinedUserTrail = (watermelonDatabase: Database, userId: string ) => {
   const [joinedUserTrail, setJoinedUserTrail] = React.useState<any>()
@@ -30,7 +31,7 @@ const getJoinedUserTrail = (watermelonDatabase: Database, userId: string ) => {
         }
         //}
       } catch (err) {
-        console.error(err);
+        handleError(err, "userTrailResponse")
       }
     };
     userTrailResponse();

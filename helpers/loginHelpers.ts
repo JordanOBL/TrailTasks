@@ -10,6 +10,7 @@ import {
 } from '../watermelon/models';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import React from "react";
+import handleError from "./ErrorHandler";
 
 
 
@@ -29,7 +30,7 @@ export const checkExistingUser = async (
 
     return existingUser[0];
   } catch (err) {
-    console.error('Error in checkExistingUser()', err);
+    handleError(err, "checkExistingUser");
   }
 };
 
@@ -58,7 +59,7 @@ export const checkExistingGlobalUser = async (
     console.log('user from checkExistingGlobalUser', responseJson);
     return responseJson || null;
   } catch (err) {
-    console.error('Error in checkExistingGlobalUser()', err);
+    handleError(err, "checkExistingGlobalUser");
     return null;
   }
 };
@@ -89,7 +90,7 @@ export const setSubscriptionStatus = async (
     console.debug('returning undefined in setsubscription')
     return;
   } catch (err) {
-    console.error('Error in setSubscriptionStatus()', {err});
+    handleError(err, "setSubscriptionStatus");
   }
 };
 
@@ -118,7 +119,7 @@ export const setLocalStorageUserAndMiles = async (
     }
     return true;
   } catch (err) {
-    console.error('Error setting localStorageUserMilesId', err);
+    handleError(err, "setLocalStorageUserAndMiles");
   }
 };
 
@@ -143,8 +144,8 @@ export const checkForLoggedInUser = async (
       setUser((prevUser: User | null) => user);
     }
     return;
-  } catch (error) {
-    console.error('Error in checkForUser(), app.tsx', error);
+  } catch (err) {
+    handleError(err, "checkForLoggedInUser");
   }
 };
 
@@ -326,7 +327,7 @@ export const handleLogin = async ({
       return;
     }
   } catch (err) {
-    console.error('Error in handling Login', err);
+    handleError(err, "handleLogin")
   }
 };
 

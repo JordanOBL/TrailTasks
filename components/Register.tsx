@@ -12,6 +12,7 @@ import {handleRegister} from '../helpers/registerHelpers';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection'
+import handleError from "../helpers/ErrorHandler";
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 interface Props {
   setUser: React.Dispatch<React.SetStateAction<any>>;
@@ -40,8 +41,8 @@ useEffect(() => {
       setIsConnectedToInternet(isConnected);
       console.debug(isConnected);
     }
-  }).catch((e: any) => {
-    console.error('Error checking internet connection:', e);
+  }).catch((err: any) => {
+    handleError(err, "Register Component UseEffect");
     setIsConnectedToInternet(false);
   });
 

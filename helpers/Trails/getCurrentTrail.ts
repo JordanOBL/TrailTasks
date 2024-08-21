@@ -2,6 +2,7 @@ import React from 'react';
 
 import {Trail} from '../../watermelon/models';
 import {Database, Q} from '@nozbe/watermelondb';
+import handleError from "../ErrorHandler";
 
 const getCurrentTrail = (user: any, watermelonDatabase: Database) => {
   const [currentTrail, setCurrentTrail] = React.useState<Trail | null>(null);
@@ -21,7 +22,7 @@ const getCurrentTrail = (user: any, watermelonDatabase: Database) => {
         }
 
       } catch (err) {
-        console.error('Error in getCurrentTrail()', err);
+        handleError(err, "getCurrentTrail");
       }
     };
     currentTrailFromDB();

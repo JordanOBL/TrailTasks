@@ -1,5 +1,6 @@
 
 import NetInfo from '@react-native-community/netinfo';
+import handleError from "../ErrorHandler";
 
 const checkInternetConnection = async () => {
   try {
@@ -8,8 +9,8 @@ const checkInternetConnection = async () => {
     return {
       isConnected: connection.isConnected,
     };
-  } catch (error) {
-    console.error('Error checking internet connection:', error);
+  } catch (err) {
+    handleError(err, "checkInternetConnection");
     return {
       isConnected: false,
     };

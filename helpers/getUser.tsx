@@ -4,6 +4,7 @@ import React from 'react';
 
 import {User} from '../watermelon/models';
 import {Database, Q} from '@nozbe/watermelondb';
+import handleError from "./ErrorHandler";
 
 const getUser = (watermelonDatabase: Database) => {
   const [user, setUser] = React.useState<User | null>(null);
@@ -30,7 +31,7 @@ const getUser = (watermelonDatabase: Database) => {
           setUser(null)
         }
       } catch (err) {
-        console.error('error in getUser helper funtion', err);
+        handleError(err, "getUser")
       }
     };
     userFromDB();

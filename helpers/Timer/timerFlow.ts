@@ -9,7 +9,7 @@ import {
 } from '../../watermelon/models';
 //creating a new session
 import {Database, Q} from '@nozbe/watermelondb';
-
+import handleError from "../ErrorHandler";
 import { AchievementManager } from '../Achievements/AchievementManager';
 import { AchievementsWithCompletion } from '../../types/achievements';
 import {SessionDetails} from '../../types/session';
@@ -49,12 +49,13 @@ export async function increaseDistanceHiked({
 
   try
   {
-    const canIncreaseDistance =
-      sessionDetails.elapsedPomodoroTime > 0 &&
-      sessionDetails.elapsedPomodoroTime %
-        nextHundredthMileSeconds(sessionDetails.pace) ===
-        0 &&
-      Number(user.trailProgress) < Number(currentTrail.trailDistance);
+    const isTimeToIncreaseDistance =
+        sessionDetails.elapsedPomodoroTime > 0 &&
+        sessionDetails.elapsedPomodoroTime % nextHundredthMileSeconds(sessionDetails.pace) === 0;
+
+    const hasRemainingTrailDistance = Number(user.trailProgress) < Number(currentTrail.trailDistance);
+
+    const canIncreaseDistance = isTimeToIncreaseDistance && hasRemainingTrailDistance;
     if (canIncreaseDistance) {
       console.debug('updating in increaseDistanceHiked()');
       //update users distance on database
@@ -113,7 +114,7 @@ export async function increaseDistanceHiked({
       }
     }
   } catch (err) {
-    console.error('Error in timerflow increaseDistanceHiked()', err);
+    handleError(err, "increaseDistanceHiked");
   }
 }
 
@@ -164,10 +165,7 @@ export async function updateUsersTrailAndQueue({
       });
     }
   } catch (err) {
-    console.error(
-      'Error setting new trail in "updateUsersTrailQueue" helper func',
-      err
-    );
+    handleError(err, "updateUsersTrailAndQueue");
   }
 }
 //reset Session State
@@ -218,8 +216,8 @@ export async function pauseSession(
   try {
     setSessionDetails((prev) => ({...prev, isPaused: true}));
     return true;
-  } catch (error) {
-    console.error('Error in pauseSession:', error);
+  } catch (err) {
+    handleError(err, "pauseSession");
     return false;
   }
 }
@@ -246,7 +244,7 @@ export async function endSession({
     await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
   } catch (err: any) {
-    console.debug(`Error in EndSession()`, err);
+    handleError(err, "endSession");
     setSessionDetails((prev) => {
       return {...prev, isError: err.message};
     });
@@ -276,37 +274,42 @@ async function increaseElapsedTime({
     completedHikes: Completed_Hike[];
   onAchievementEarned: any
 }) {
-  if (sessionDetails.isPaused === false) {
-    if (
-      sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
-    ) {
-      //increase usersession by 1 in the watermelon database
-      await userSession.updateTotalSessionTime();
-      // @ts-ignore
-      await increaseDistanceHiked({
-        user,
-        // @ts-ignore
-        userMiles,
-        currentTrail,
-        userSession,
-        sessionDetails,
-        setSessionDetails,
-        achievementsWithCompletion,
-        // @ts-ignore
-        completedHikes,
-        onAchievementEarned
-      });
-      setSessionDetails((prev: any) => {
-        return {
+  try {
+    if (sessionDetails.isPaused === false) {
+      if (
+          sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
+      ) {
+        // Increase elapsed time in state first
+        setSessionDetails((prev: any) => ({
           ...prev,
           elapsedPomodoroTime: prev.elapsedPomodoroTime + 1,
-        };
-      });
-    } else if (sessionDetails.currentSet < sessionDetails.sets) {
-      await shortBreak({sessionDetails, setSessionDetails});
-    } else if (sessionDetails.currentSet >= sessionDetails.sets) {
-      await longBreak({sessionDetails, setSessionDetails});
+        }));
+
+        // Perform asynchronous operations after state update
+        await Promise.all([
+          userSession.updateTotalSessionTime(),
+          increaseDistanceHiked({
+            user,
+            //@ts-ignore
+            userMiles,
+            currentTrail,
+            userSession,
+            sessionDetails,
+            setSessionDetails,
+            achievementsWithCompletion,
+            //@ts-ignore
+            completedHikes,
+            onAchievementEarned
+          }),
+        ]);
+      } else if (sessionDetails.currentSet < sessionDetails.sets) {
+        await shortBreak({sessionDetails, setSessionDetails});
+      } else if (sessionDetails.currentSet >= sessionDetails.sets) {
+        await longBreak({sessionDetails, setSessionDetails});
+      }
     }
+  }catch(err){
+    handleError(err, "increaseElapsedTime");
   }
 }
 
@@ -365,21 +368,24 @@ export async function shortBreak({
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
 }) {
-  //increase session detailes elaposedPomodorotime every second
-  if (
-    sessionDetails.elapsedShortBreakTime >= sessionDetails.initialShortBreakTime
-  ) {
-    setSessionDetails((prev) => {
-      return {...prev, elapsedPomodoroTime: 0, currentSet: prev.currentSet + 1};
-    });
-  } else {
-    setSessionDetails((prev: any) => {
-      return {
-        ...prev,
-        elapsedShortBreakTime: prev.elapsedShortBreakTime + 1,
-      };
-    });
-    //increaseElapsedTime({setSessionDetails, userSession, sessionDetails, canHike});
+  try {//increase session detailes elaposedPomodorotime every second
+    if (
+        sessionDetails.elapsedShortBreakTime >= sessionDetails.initialShortBreakTime
+    ) {
+      setSessionDetails((prev) => {
+        return {...prev, elapsedPomodoroTime: 0, currentSet: prev.currentSet + 1};
+      });
+    } else {
+      setSessionDetails((prev: any) => {
+        return {
+          ...prev,
+          elapsedShortBreakTime: prev.elapsedShortBreakTime + 1,
+        };
+      });
+      //increaseElapsedTime({setSessionDetails, userSession, sessionDetails, canHike});
+    }
+  }catch(err) {
+    handleError(err, "shortBreak");
   }
 }
 
@@ -391,19 +397,23 @@ export async function longBreak({
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
 }) {
-  if (
-    sessionDetails.elapsedLongBreakTime >= sessionDetails.initialLongBreakTime
-  ) {
-    setSessionDetails((prev) => {
-      return {...prev, elapsedPomodoroTime: 0, currentSet: 1};
-    });
-  } else {
-    setSessionDetails((prev: any) => {
-      return {
-        ...prev,
-        elapsedLongBreakTime: prev.elapsedLongBreakTime + 1,
-      };
-    });
+  try {
+    if (
+        sessionDetails.elapsedLongBreakTime >= sessionDetails.initialLongBreakTime
+    ) {
+      setSessionDetails((prev) => {
+        return {...prev, elapsedPomodoroTime: 0, currentSet: 1};
+      });
+    } else {
+      setSessionDetails((prev: any) => {
+        return {
+          ...prev,
+          elapsedLongBreakTime: prev.elapsedLongBreakTime + 1,
+        };
+      });
+    }
+  }catch(err) {
+    handleError(err, "longBreak");
   }
 
 }
@@ -412,26 +422,30 @@ export function skipBreak(
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   sessionDetails: SessionDetails
 ) {
-  if (sessionDetails.currentSet < sessionDetails.sets) {
-    cb((prev) => {
-      return {
-        ...prev,
-        elapsedPomodoroTime: 0,
-        elapsedShortBreakTime: prev.initialShortBreakTime,
-        elapsedLongBreakTime: prev.initialLongBreakTime,
-        currentSet: prev.currentSet + 1,
-      };
-    });
-  } else {
-    cb((prev) => {
-      return {
-        ...prev,
-        elapsedPomodoroTime: 0,
-        elapsedShortBreakTime: prev.initialShortBreakTime,
-        elapsedLongBreakTime: prev.initialLongBreakTime,
-        currentSet: 1,
-      };
-    });
+  try {
+    if (sessionDetails.currentSet < sessionDetails.sets) {
+      cb((prev) => {
+        return {
+          ...prev,
+          elapsedPomodoroTime: 0,
+          elapsedShortBreakTime: prev.initialShortBreakTime,
+          elapsedLongBreakTime: prev.initialLongBreakTime,
+          currentSet: prev.currentSet + 1,
+        };
+      });
+    } else {
+      cb((prev) => {
+        return {
+          ...prev,
+          elapsedPomodoroTime: 0,
+          elapsedShortBreakTime: prev.initialShortBreakTime,
+          elapsedLongBreakTime: prev.initialLongBreakTime,
+          currentSet: 1,
+        };
+      });
+    }
+  }catch(err) {
+    handleError(err, "skipBreak");
   }
 }
 
@@ -541,7 +555,7 @@ export async function isTrailCompleted({
       return true;
     }
   } catch (err) {
-    console.error('Error completeedHike helper', err);
+    handleError(err, "isTraillCompleted")
   }
 }
 //hiking
@@ -607,6 +621,6 @@ export async function Hike({
     });
     //save the users current session details in the database
   } catch (err) {
-    console.log('Error in Hike helper func', err);
+      handleError(err, "Hike")
   }
 }

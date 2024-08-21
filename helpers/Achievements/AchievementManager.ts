@@ -7,6 +7,7 @@ import {
 
 import {AchievementsWithCompletion} from '../../types/achievements';
 import {SessionDetails} from '../../types/session';
+import handleError from "../ErrorHandler";
 
 interface AchievementNameId {
   achievementName: String;
@@ -31,7 +32,7 @@ export const AchievementManager = {
       }
       return null;
     } catch (err) {
-      console.error('Error in unlockAchievement() ', {err});
+      handleError(err, "unlockAchievement")
       return null;
     }
   },
@@ -79,7 +80,7 @@ try {
     return unlockedAchievements;
   }
 } catch (err) {
-  console.error('Error in checkTotalMilesAchievements', {err});
+  handleError(err, "checkTotalMilesAchievements")
 } finally {
   // Set the flag to false after try or catch block execution
   this.checkTotalMilesAchievementsInProgress = false;
@@ -168,10 +169,7 @@ try {
       }
       this.checkTrailCompletionAchievementsInProgress = false;
     } catch (err) {
-      console.error(
-        'Error in checkTrailCompletionAchievementsOnTrailCompletion',
-        err
-      );
+      handleError(err, "checkTrailCompletionAchievements");
     } finally {
       this.checkTrailCompletionAchievementsInProgress = false;
     }
@@ -239,7 +237,7 @@ try {
       this.checkUserSessionAchievementsInProgress = false;
       return null;
     } catch (err) {
-      console.error('Error in checkUsersSessionsAchievements', err);
+      handleError(err, "checkUserSessionAchievements");
     } finally {
       this.checkUserSessionAchievementsInProgress = false;
     }

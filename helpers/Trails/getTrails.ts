@@ -2,6 +2,7 @@ import React from 'react';
 
 import {Trail} from '../../watermelon/models';
 import {Database, Q} from '@nozbe/watermelondb';
+import handleError from "../ErrorHandler";
 
 const getTrails = (watermelonDatabase: Database) => {
   const [trails, setTrails] = React.useState<Trail[] | null>(null);
@@ -26,7 +27,7 @@ const getTrails = (watermelonDatabase: Database) => {
         }
         //}
       } catch (err) {
-        console.error(err);
+        handleError(err, "getTrails");
       }
     };
     trailsFromDB();
