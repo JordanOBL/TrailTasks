@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 0,
+    bottom: 150,
     alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: {

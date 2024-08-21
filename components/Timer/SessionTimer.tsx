@@ -15,7 +15,7 @@ import {
   shortBreak,
   skipBreak,
 } from '../../helpers/Timer/timerFlow';
-import {Pressable, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {achievementManagerInstance} from '../../helpers/Achievements/AchievementManager';
@@ -149,6 +149,7 @@ const SessionTimer = ({
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView style={{ paddingBottom: 80 }}>
       <View style={styles.timerContainer}>
         <Text
           style={[
@@ -219,6 +220,7 @@ const SessionTimer = ({
           )}
         </View>
       )}
+      </ScrollView>
       <View style={styles.buttonsContainer}>
         <Pressable
           onPress={() => endSession({user, setSessionDetails, sessionDetails})}
@@ -337,10 +339,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   buttonsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 10, // Add padding between buttons and screen bottom
+    justifyContent: 'space-around',
+    padding:0,
+    alignSelf: 'center',
   },
   button: {
     flex: 1, // Equal flex to ensure same size buttons
