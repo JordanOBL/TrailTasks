@@ -3,6 +3,7 @@ import {Subscription, User, User_Miles} from '../watermelon/models';
 //import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {Q} from '@nozbe/watermelondb';
 import formatDateTime from './formatDateTime';
+import handleError from "./ErrorHandler";
 
 export const checkExistingUser = async ({
   username,
@@ -21,7 +22,7 @@ export const checkExistingUser = async ({
 
     return ExistingUser[0];
   } catch (err) {
-    console.error('Error in checkExistingUser(), registerHelpers.tsx', err);
+    handleError(err, 'checkExistingUser(), registerHelpers.tsx');
   }
 };
 
@@ -115,7 +116,7 @@ export const createNewUser = async ({
       return newUser;
     }
   } catch (err) {
-    console.error('error creating new registered user', err);
+    handleError(err, "createNewUser");
   }
 };
 
@@ -196,6 +197,6 @@ export const handleRegister = async ({
       return;
     }
   } catch (err) {
-    console.error('Error in handle Register', err);
+    handleError(err, 'handleRegister()',);
   }
 };

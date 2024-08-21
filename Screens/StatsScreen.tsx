@@ -17,6 +17,7 @@ import SelectDropdown from 'react-native-select-dropdown';
 import SessionList from '../components/Stats/SessionList';
 import Stats from '../components/Stats/Stats';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
+import handleError from "../helpers/ErrorHandler";
 
 type TimeFrame = {
   label: string;
@@ -89,10 +90,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
         setFilteredUserSessions(userSessionsWithCategories);
       }
     } catch (err) {
-      console.error(
-        'Error getting userSessionsWithCategories in Stats Screen',
-        err
-      );
+      handleError(err, "Stats Screen getUserSessionsWithCategories");
     }
   }
 
@@ -106,7 +104,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
         setSessionCategories(sessionCategories);
       }
     } catch (err) {
-      console.error('Error getting session categories in Stats Screen', err);
+      handleError(err, "getSessionCategories() in Stats Screen");
     }
   }
 

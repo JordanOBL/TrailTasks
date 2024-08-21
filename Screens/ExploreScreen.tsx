@@ -16,6 +16,7 @@ import searchFilterFunction from '../helpers/searchFilter';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
+import handleError from "../helpers/ErrorHandler";
 
 interface Props {
   user: User;
@@ -71,7 +72,7 @@ const ExploreScreen = ({
       setSubscriptionTrails(subscriptionTrailsCollection)
       // setUsersPurchasedTrails(usersPurchasedTrailsCollection);
     } catch (err) {
-      console.error('Error in get trails exploreScreen', {err});
+      handleError(err, "getTrails(), ExploreScreen");
     }
   };
 

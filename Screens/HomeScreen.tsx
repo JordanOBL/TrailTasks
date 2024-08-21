@@ -34,6 +34,7 @@ import withObservables from '@nozbe/with-observables';
 import isYesterday from '../helpers/isYesterday';
 import isToday from '../helpers/isToday';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
+import handleError from "../helpers/ErrorHandler";
 
 interface Rank {
     level: string;
@@ -129,7 +130,7 @@ const HomeScreen: React.FC<Props> = ({
             setUserRank(rank);
             checkUnsyncedChanges().then(result => {
                 if (result == true) {
-                     sync(watermelonDatabase, user.id).catch(e => console.error('Error in onload in Homescreen useCallback synct', e));
+                     sync(watermelonDatabase, user.id).catch(err =>handleError(err, 'useCallback sync HomeScreen'));
                 }
             })
 

@@ -538,8 +538,8 @@ export async function isTrailCompleted({
             queuedTrails,
           });
         }
-        console.debug({currentTrail})
-        onCompletedTrail(currentTrail)
+        console.debug({currentTrail});
+        onCompletedTrail(currentTrail);
         const updatedCompletedHikes = await user.completedHikes;
         const achievementsEarned =
           await AchievementManager.checkTrailCompletionAchievements(

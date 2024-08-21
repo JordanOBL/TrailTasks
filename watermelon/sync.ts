@@ -5,6 +5,7 @@ import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import {User} from './models';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import {synchronize} from '@nozbe/watermelondb/sync';
+import handleError from "../helpers/ErrorHandler";
 
 
 
@@ -55,13 +56,14 @@ export async function sync(database: Database, userId: string = '0') {
             //           );
             return {changes, timestamp};
           } catch (err) {
-            console.error('error in PULLCHANGES sync()', err);
+            handleError(err, 'sync() in PULL CHANGES',);
             return {changes: [], timestamp: Date.now()};
           }
         },
 
         //sending server user watermelondb changes
         pushChanges: async ({changes, lastPulledAt}) => {
+          try{
           console.debug('in push on client side sync()');
           const response = await fetch(
             `${process.env.SERVER_PORT_URL}/push?last_pulled_at=${lastPulledAt}`,
@@ -82,7 +84,9 @@ export async function sync(database: Database, userId: string = '0') {
             console.error('in push in sync function');
             throw new Error(await response.text());
           }
-        },
+        }catch(err) {
+            handleError(err, 'sync() in PUSH CHANGES',);
+          }},
         sendCreatedAsUpdated: true,
       });
       isRunning = false;
@@ -93,6 +97,6 @@ export async function sync(database: Database, userId: string = '0') {
     }
   } catch (err) {
     isRunning = false;
-    console.error('Error in sync()', err);
+    handleError(err, 'sync()',);
   }
 }

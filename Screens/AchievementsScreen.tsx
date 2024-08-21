@@ -7,6 +7,7 @@ import Purchases from 'react-native-purchases';
 import {Q} from '@nozbe/watermelondb';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
+import handleError from "../helpers/ErrorHandler";
 
 interface Props {
   user: User;
@@ -33,7 +34,7 @@ const AchievementsScreen = ({user}: Props) => {
         setAchievementsWithCompletion(results);
       }
     } catch (err) {
-      console.error('Error in getAchievementsWithCompletion', err);
+      handleError(err, "setAchievementsWithCompletion");
     }
   }
 

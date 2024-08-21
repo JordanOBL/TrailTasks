@@ -22,7 +22,8 @@ import TabNavigator from './components/Navigation/TabNavigator';
 import { checkForLoggedInUser } from './helpers/loginHelpers';
 import { sync } from './watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/hooks';
-import useRevenueCat from './helpers/RevenueCat/useRevenueCat'; // Import the hook
+import useRevenueCat from './helpers/RevenueCat/useRevenueCat';
+import handleError from "./helpers/ErrorHandler"; // Import the hook
 
 
 
@@ -47,11 +48,8 @@ const App = () => {
       if(data.ok){
         return
       }
-    } catch (error: any) {
-      console.error(
-          'Error in gettingPGTables function, app.tsx',
-          error.message
-      );
+    } catch (err: any) {
+      handleError(err, "seedPgTables");
     }
   };
 
@@ -83,12 +81,12 @@ const App = () => {
           await sync(watermelonDatabase);
         }
       } catch (err) {
-        console.error('Error in onload in APP useEffect', err);
+        handleError(err, "onLoad");
       }
     };
 
 
-    onLoad().catch(e => console.error('onload function', e));
+    onLoad().catch(e => handleError(e, "useEffect onLoad"));
   }, []);
 
   // if (loading) {

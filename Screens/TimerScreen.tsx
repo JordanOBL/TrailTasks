@@ -19,6 +19,7 @@ import {SessionDetails} from '../types/session';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
 import withObservables from '@nozbe/with-observables';
+import handleError from "../helpers/ErrorHandler";
 
 interface Props {
   user: User;
@@ -86,7 +87,7 @@ const TimerScreen = ({
       }
       return;
     } catch (err) {
-      console.error('Error in joinUsersAchievements', err);
+      handleError( err, 'getAchievementsWithCompletion',);
       return null;
     }
   }

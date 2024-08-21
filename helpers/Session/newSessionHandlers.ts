@@ -2,6 +2,8 @@ import {Database} from '@nozbe/watermelondb';
 import formatDateTime from '../formatDateTime';
 import {SessionDetails} from '../../types/session';
 import { User } from '../../watermelon/models';
+import handleError from "../ErrorHandler";
+import React from "react";
 
 const NewSessionHandlers: any = {};
 
@@ -9,6 +11,7 @@ NewSessionHandlers.checkLocalStorageSessionSettings = async (
   sessionCategoryId: string,
   database: Database
 ) => {
+  try{
   const recentSettings = await database.localStorage.get(
     'category ' + sessionCategoryId + ' settings'
   );
@@ -18,6 +21,9 @@ NewSessionHandlers.checkLocalStorageSessionSettings = async (
     return JSON.parse(recentSettings);
   }
   return undefined;
+  } catch (err) {
+    handleError(err, "checkLocalStorageSessionSettings")
+  }
 };
 
 NewSessionHandlers.SelectSessionCategoryId = async (
@@ -25,19 +31,23 @@ NewSessionHandlers.SelectSessionCategoryId = async (
   sessionCategoryId: string,
   database: Database
 ) => {
-  const recentSettings =
-    await NewSessionHandlers.checkLocalStorageSessionSettings(
-      sessionCategoryId,
-      database
-    );
-  if (recentSettings) {
-    cb((prev: any) => {
-      return {...prev, ...recentSettings};
-    });
-  } else {
-    cb((prev: any) => {
-      return {...prev, sessionCategoryId: sessionCategoryId};
-    });
+  try {
+    const recentSettings =
+        await NewSessionHandlers.checkLocalStorageSessionSettings(
+            sessionCategoryId,
+            database
+        );
+    if (recentSettings) {
+      cb((prev: any) => {
+        return {...prev, ...recentSettings};
+      });
+    } else {
+      cb((prev: any) => {
+        return {...prev, sessionCategoryId: sessionCategoryId};
+      });
+    }
+  } catch (err) {
+    handleError(err, "selectSessionCategoryId")
   }
 };
 
@@ -45,6 +55,7 @@ NewSessionHandlers.SessionNameChange = (
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   value: string
 ) => {
+
   if (value.toLowerCase() === 'fastasfuqboi') {
     cb((prev: any) => {
       return {...prev, sessionName: value, pace: 26};
@@ -132,7 +143,7 @@ NewSessionHandlers.StartSessionClick = async (
       });
     }
   } catch (err) {
-    console.error('Error creating new Session in handleStartSessionClick', err);
+    handleError(err, "StartSessionClick");
   }
 };
 
