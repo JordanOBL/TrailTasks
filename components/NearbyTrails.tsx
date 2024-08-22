@@ -183,7 +183,7 @@ const NearbyTrails = ({
         />
 
         <View style={styles.trailsContainer}>
-          <Text style={styles.H2}> Trail of The Week</Text>
+          <Text style={styles.H2}>Trail of The Week <Text style={{fontWeight:'100', fontStyle:'italic', fontSize:16}}>({trailOfTheWeek.length})</Text></Text>
           <FlatList
               data={trailOfTheWeek}
               initialNumToRender={1}
@@ -195,7 +195,7 @@ const NearbyTrails = ({
         </View>
 
         <View style={styles.trailsContainer}>
-          <Text style={styles.H2}> Free Trails</Text>
+          <Text style={styles.H2}>Free Trails <Text style={{fontWeight:'100', fontStyle:'italic', fontSize:16}}>({freeTrails.length})</Text></Text>
           <FlatList
               data={freeTrails}
               horizontal
@@ -206,7 +206,7 @@ const NearbyTrails = ({
         </View>
 
         <View style={styles.trailsContainer}>
-          <Text style={styles.H2}>All Trails</Text>
+          <Text style={styles.H2}>All Trails <Text style={{fontWeight:'100', fontStyle:'italic', fontSize:16}}>({trailsCollection.length})</Text></Text>
           <FlatList
               data={trailsCollection}
               horizontal
@@ -238,13 +238,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'black', // Background color of the scrollable container
   },
   trailsContainer: {
-    marginBottom: 20, // Space between the trail sections
+    marginBottom: 20, // Space between the trail section
+    borderColor: 'rgba(255,255, 255, 0.4)',
+    borderBottomWidth: 1,
+
+
   },
   H2: {
     color: 'rgb(249, 253, 255)', // White color for the section headers
     fontSize: 22, // Larger font size for the section headers
     fontWeight: '800', // Bold text for the section headers
     marginVertical: 10, // Vertical margin around the section headers
+    letterSpacing: 2
   },
   modalBackground: {
     flex: 1,
