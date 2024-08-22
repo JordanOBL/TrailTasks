@@ -1,6 +1,6 @@
 
 import 'react-native-gesture-handler';
-
+import BootSplash from "react-native-bootsplash";
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import {
   PermissionsAndroid,
@@ -67,7 +67,7 @@ const App = () => {
           }
 
           //*uncomment next line to request the /seedPGTable API Route
-          await seedPgTables();
+          //await seedPgTables();
 
           // This checks to see if the mobile device's SQLITE DB
           // has a userID saved in the local storage and sets the user if it does
@@ -80,6 +80,8 @@ const App = () => {
         } else {
           await sync(watermelonDatabase);
         }
+
+        return;
       } catch (err) {
         handleError(err, "onLoad");
       }
@@ -89,19 +91,12 @@ const App = () => {
     onLoad().catch(e => handleError(e, "useEffect onLoad"));
   }, []);
 
-  // if (loading) {
-  //   return (
-  //     <GestureHandlerRootView style={{ flex: 1 }}>
-  //       <SafeAreaView style={[backgroundStyle, styles.container]}>
-  //         <Text style={styles.title}>Loading...</Text>
-  //       </SafeAreaView>
-  //     </GestureHandlerRootView>
-  //   );
-  // }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer theme={DarkTheme}>
+      <NavigationContainer theme={DarkTheme}  onReady={() => {
+        BootSplash.hide();
+      }}>
         <SafeAreaView style={[backgroundStyle, styles.container]}>
           <StatusBar
             barStyle={isDarkMode ? 'light-content' : 'dark-content'}

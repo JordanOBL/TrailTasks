@@ -15,7 +15,7 @@ import {
     User_Miles,
     User_Session,
 } from '../watermelon/models';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
@@ -29,7 +29,7 @@ import getUserRank from '../helpers/Ranks/getUserRank';
 import {handleLogOut} from '../helpers/logoutHelpers';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
-import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
+//import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 import withObservables from '@nozbe/with-observables';
 import isYesterday from '../helpers/isYesterday';
 import isToday from '../helpers/isToday';
@@ -70,9 +70,9 @@ const HomeScreen: React.FC<Props> = ({
     const data = [...new Array(2).keys()]; // Your data array
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
-    const {currentOffering, customerInfo, isProMember} = useRevenueCat({
-        userId: user.id,
-    });
+    // const {currentOffering, customerInfo, isProMember} = useRevenueCat({
+    //     userId: user.id,
+    // });
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -122,10 +122,6 @@ const HomeScreen: React.FC<Props> = ({
     //this useEffect gets the correct Rank based on  the users miles
     useFocusEffect(
         React.useCallback(() => {
-            // sync(watermelonDatabase, user.id)
-            //     .then(() => getUserRank(Ranks, totalMiles[0].totalMiles))
-            //     .then((rank) => setUserRank(rank))
-            //     .catch((e) => console.error("error caught in Homescreen UseFoceuseEffect for setting rank",e));
             const rank = getUserRank(Ranks, totalMiles[0]?.totalMiles);
             setUserRank(rank);
             checkUnsyncedChanges().then(result => {
