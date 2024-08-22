@@ -88,14 +88,16 @@ const App = () => {
     };
 
 
-    onLoad().catch(e => handleError(e, "useEffect onLoad"));
+    onLoad().finally(async ()=>{
+      await BootSplash.hide({ fade: true });
+    }).catch(e => handleError(e, "useEffect onLoad"));
   }, []);
 
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer theme={DarkTheme}  onReady={() => {
-        BootSplash.hide();
+        BootSplash.hide({ fade: true });
       }}>
         <SafeAreaView style={[backgroundStyle, styles.container]}>
           <StatusBar
@@ -104,7 +106,7 @@ const App = () => {
           />
 
           {/* <SyncIndicator delay={3000} />  */}
-          <Text style={styles.title}>Trail Tasks</Text>
+          {/*<Text style={styles.title}>Trail Tasks</Text>*/}
           {user != null ? (
             <TabNavigator user={user} setUser={setUser}  />
           ) : isRegistering ? (
@@ -130,6 +132,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'rgb(31,33,35)',
+
   },
   title: {
     fontWeight: 'bold',
