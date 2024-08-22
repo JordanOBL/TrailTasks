@@ -474,7 +474,7 @@ export async function isTrailCompleted({
   try {
     if (Number(user.trailProgress) >= Number(currentTrail.trailDistance)) {
       //checkif completed hike table has column with the current trail and username
-      const existingCompletedHike = await user.hasTrailBeenCompleted();
+      const existingCompletedHike = await user.hasTrailBeenCompleted(user.id, currentTrail.id);
       console.debug('TimerFlow inside isTrailCompleted()', {
         existingCompletedHike,
       });

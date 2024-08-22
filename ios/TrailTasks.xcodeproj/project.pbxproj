@@ -16,6 +16,8 @@
 		17BBE6D82A0D77AE00420634 /* wmelon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BBE6D62A0D77AE00420634 /* wmelon.swift */; };
 		7699B88040F8A987B510C191 /* libPods-TrailTasks-TrailTasksTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-TrailTasks-TrailTasksTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		F9E98964C0834FE58F162C82 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 572A2ED2EB1244B5B6E3ED9C /* BootSplash.storyboard */; };
+		9FA4EC211013442CAE8E8297 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 91F16BF226F94C90A21CD5E5 /* Colors.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +52,8 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TrailTasks/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-TrailTasks-TrailTasksTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks-TrailTasksTests.release.xcconfig"; path = "Target Support Files/Pods-TrailTasks-TrailTasksTests/Pods-TrailTasks-TrailTasksTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		572A2ED2EB1244B5B6E3ED9C /* BootSplash.storyboard */ = {isa = PBXFileReference; name = "BootSplash.storyboard"; path = "TrailTasks/BootSplash.storyboard"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		91F16BF226F94C90A21CD5E5 /* Colors.xcassets */ = {isa = PBXFileReference; name = "Colors.xcassets"; path = "TrailTasks/Colors.xcassets"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = folder.assetcatalog; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +103,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				572A2ED2EB1244B5B6E3ED9C /* BootSplash.storyboard */,
+				91F16BF226F94C90A21CD5E5 /* Colors.xcassets */,
 			);
 			name = TrailTasks;
 			sourceTree = "<group>";
@@ -264,6 +270,8 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				F9E98964C0834FE58F162C82 /* BootSplash.storyboard in Resources */,
+				9FA4EC211013442CAE8E8297 /* Colors.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

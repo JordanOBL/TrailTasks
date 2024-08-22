@@ -48,7 +48,7 @@ const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
         disabled={!email || !password}
         style={[
           styles.button,
-          {backgroundColor: !email || !password ? 'grey' : 'rgb(7,254,213)'},
+          {backgroundColor: !email || !password ? 'grey' : 'rgb(7,254,213)', marginVertical: 10},
         ]}>
         <Text style={styles.buttonText}>Login</Text>
       </Pressable>
@@ -69,13 +69,14 @@ const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: '100%', // Full width to match parent
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'black',
+    backgroundColor: 'black', // Match the background color
+    paddingHorizontal: 20, // Add some padding to the sides
   },
   input: {
-    width: '80%',
+    width: '100%', // Full width to match container
     padding: 15,
     fontSize: 18,
     color: 'white',
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
   button: {
     padding: 15,
     borderRadius: 10,
-    width: '80%',
+    width: '100%', // Full width to match container
     alignItems: 'center',
   },
   buttonText: {
