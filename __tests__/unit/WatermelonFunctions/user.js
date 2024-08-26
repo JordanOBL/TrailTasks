@@ -1,4 +1,4 @@
-import {MockTestUsers} from '../../mockTestUsers.js';
+import {MockTestData} from '../../mockTestData.js';
 import sessionCategories from '../../../helpers/Session/sessionCategories';
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import {testDb} from '../../../watermelon/testDB'; // Import the test database instance
@@ -12,17 +12,17 @@ jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => {});
 beforeEach(async () => {
   await testDb.write(async () => {
     await testDb.collections.get('users').create((user) => {
-      user.username = MockTestUsers.existingUserDetails.username;
-      user.firstName = MockTestUsers.existingUserDetails.firstName;
-      user.lastName = MockTestUsers.existingUserDetails.lastName;
-      user.email = MockTestUsers.existingUserDetails.email;
-      user.password = MockTestUsers.existingUserDetails.password;
+      user.username = MockTestData.existingUserDetails.username;
+      user.firstName = MockTestData.existingUserDetails.firstName;
+      user.lastName = MockTestData.existingUserDetails.lastName;
+      user.email = MockTestData.existingUserDetails.email;
+      user.password = MockTestData.existingUserDetails.password;
       user.pushNotificationsEnabled =
-        MockTestUsers.existingUserDetails.pushNotificationsEnabled;
-      user.themePreference = MockTestUsers.existingUserDetails.themePreference;
-      user.trailId = MockTestUsers.existingUserDetails.trailId;
-      user.trailProgress = MockTestUsers.existingUserDetails.trailProgress;
-      user.trailStartedAt = MockTestUsers.existingUserDetails.trailStartedAt;
+        MockTestData.existingUserDetails.pushNotificationsEnabled;
+      user.themePreference = MockTestData.existingUserDetails.themePreference;
+      user.trailId = MockTestData.existingUserDetails.trailId;
+      user.trailProgress = MockTestData.existingUserDetails.trailProgress;
+      user.trailStartedAt = MockTestData.existingUserDetails.trailStartedAt;
     });
   });
 });

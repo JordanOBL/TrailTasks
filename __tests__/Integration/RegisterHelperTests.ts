@@ -3,7 +3,7 @@ import * as helpers from '../../helpers/registerHelpers';
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import {v4 as uuidv4} from 'uuid';
 import formatDateTime from '../../helpers/formatDateTime';
-import {MockTestUsers} from '../mockTestUsers';
+import {MockTestData} from '../mockTestData';
 
 setGenerator(uuidv4);
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => {});
@@ -24,15 +24,15 @@ beforeAll(async () => {
     const usersCollection = testDb.collections.get('users');
     await usersCollection.create((newUser) => {
       // @ts-ignore
-      newUser.email = MockTestUsers.existingUserDetails.email;
+      newUser.email = MockTestData.existingUserDetails.email;
       // @ts-ignore
-      newUser.password = MockTestUsers.existingUserDetails.password;
+      newUser.password = MockTestData.existingUserDetails.password;
       // @ts-ignore
-      newUser.username = MockTestUsers.existingUserDetails.username;
+      newUser.username = MockTestData.existingUserDetails.username;
       // @ts-ignore
-      newUser.firstName = MockTestUsers.existingUserDetails.firstName;
+      newUser.firstName = MockTestData.existingUserDetails.firstName;
       // @ts-ignore
-      newUser.lastName = MockTestUsers.existingUserDetails.lastName;
+      newUser.lastName = MockTestData.existingUserDetails.lastName;
     });
   });
 });
@@ -46,8 +46,8 @@ afterAll(async () => {
 describe('checkExistingUser', () => {
   it('should return null if no user found', async () => {
     const existingUser = await helpers.checkExistingUser({
-      username: MockTestUsers.unfoundUserDetails.username,
-      email: MockTestUsers.unfoundUserDetails.email,
+      username: MockTestData.unfoundUserDetails.username,
+      email: MockTestData.unfoundUserDetails.email,
       watermelonDatabase: testDb,
     });
     expect(existingUser).toBeUndefined();
@@ -55,8 +55,8 @@ describe('checkExistingUser', () => {
 
   it('should return user if user found by username', async () => {
     const existingUser = await helpers.checkExistingUser({
-      username: MockTestUsers.existingUserDetails.username,
-      email: MockTestUsers.existingUserDetails.email,
+      username: MockTestData.existingUserDetails.username,
+      email: MockTestData.existingUserDetails.email,
       watermelonDatabase: testDb,
     });
     expect(existingUser).not.toBeUndefined();
@@ -65,8 +65,8 @@ describe('checkExistingUser', () => {
 
   it('should return user if user found by email', async () => {
     const existingUser = await helpers.checkExistingUser({
-      username: MockTestUsers.existingUserDetails.username,
-      email: MockTestUsers.existingUserDetails.email,
+      username: MockTestData.existingUserDetails.username,
+      email: MockTestData.existingUserDetails.email,
       watermelonDatabase: testDb,
     });
     expect(existingUser).not.toBeUndefined();
@@ -108,7 +108,7 @@ describe('handleRegister', () => {
     const setErrorMock = jest.fn();
 
     await helpers.handleRegister({
-      ...MockTestUsers.existingUserDetails,
+      ...MockTestData.existingUserDetails,
       watermelonDatabase: testDb,
       setUser: setUserMock,
       setError: setErrorMock,
@@ -126,7 +126,7 @@ describe('handleRegister', () => {
     const setErrorMock = jest.fn();
 
     await helpers.handleRegister({
-      ...MockTestUsers.existingUserDetails,
+      ...MockTestData.existingUserDetails,
       email: 'newemail@example.com', // Change email to avoid duplicate
       watermelonDatabase: testDb,
       setUser: setUserMock,

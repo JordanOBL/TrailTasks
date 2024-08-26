@@ -1,8 +1,8 @@
 import {Alert, StyleSheet, Text, View} from 'react-native'
 import React, {useEffect} from 'react'
-import SubscribeScreen from './SubscribeScreen'
-import EnhancedSubscribeScreen from './SubscribeScreen'
-import { Subscription, User } from '../watermelon/models';
+
+import {  User } from '../watermelon/models';
+import EnhancedSubscribeScreen from "./SubscribeScreen";
 
 interface Props
 {
@@ -14,10 +14,7 @@ interface Props
 const SettingsScreen = ({user}: Props) => {
   return (
     <View>
-      
       <EnhancedSubscribeScreen user={user} />
-
-      
     </View>
   )
 }

@@ -6,14 +6,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React, {useState} from 'react';
+import React from 'react';
 import {User, User_Session} from '../../watermelon/models';
 
 import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 import SelectDropdown from 'react-native-select-dropdown';
 import {Session_Category} from '../../watermelon/models';
-import formatDateTime from '../../helpers/formatDateTime';
+
 import timeOptions from '../../helpers/Session/timeOptions';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';

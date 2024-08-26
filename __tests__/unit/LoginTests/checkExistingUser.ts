@@ -15,6 +15,7 @@ describe('tests login functions', test('should return error "invalid email or pa
  */
 import { setGenerator } from '@nozbe/watermelondb/utils/common/randomId';
 import { v4 as uuidv4 } from 'uuid';
+import '@types/jest';
 
 setGenerator(uuidv4);
 

@@ -40,7 +40,7 @@ export const checkExistingGlobalUser = async (
   password: string,
 ): Promise<User | null> => {
   try {
-    const response = await fetch(`${process.env.SERVER_PORT_URL}/api/users`, {
+    const response = await fetch(`https://expressjs-postgres-production-54e4.up.railway.app/api/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

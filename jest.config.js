@@ -10,6 +10,6 @@ module.exports = {
   moduleDirectories: ['node_modules'],
   testPathIgnorePatterns: [
     '/node_modules/', // Ignore files in node_modules
-    '/__tests__/mockTestUsers.js',
+    '/__tests__/mockTestData.js',
   ],
 };

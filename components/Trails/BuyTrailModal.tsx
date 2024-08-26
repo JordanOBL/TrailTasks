@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 import {Modal, Pressable, StyleSheet, Text, View} from 'react-native';
-import {Trail} from '../../watermelon/models';
+import FullTrailDetails from "../../types/fullTrailDetails";
 
 interface Props {
   isVisible: boolean;
   onClose: () => void;
-  trail: Trail | null;
+  trail: FullTrailDetails ;
   trailTokens: number;
-  onBuyTrail: (trail: Trail, cost: number) => void;
+  onBuyTrail: (trail: FullTrailDetails, cost: number) => void;
 }
 
 const BuyTrailModal = ({
@@ -18,19 +18,20 @@ const BuyTrailModal = ({
   onBuyTrail,
 }: Props) => {
   const [error, setError] = useState('');
+  const trailDistance = parseInt(trail.trail_distance)
+  const unlockCost =
+      trailDistance < 5
+          ? 5
+          : trailDistance < 10
+              ? 10
+              : trailDistance < 20
+                  ? 25
+                  : 50;
 
   const handleBuyTrail = () => {
-    const unlockCost =
-      trail?.trailDistance < 5
-        ? 5
-        : trail?.trailDistance < 10
-        ? 35
-        : trail?.trailDistance < 20
-        ? 50
-        : 100;
     console.debug({trailTokens});
     if (trailTokens >= unlockCost) {
-      onBuyTrail(trail!, unlockCost);
+      onBuyTrail(trail, unlockCost);
       onClose();
     } else {
       setError('Not enough trail tokens to buy this trail.');
@@ -45,9 +46,12 @@ const BuyTrailModal = ({
       onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text style={styles.modalText}>Buy Trail</Text>
+          {/*<Text style={styles.modalText}>Buying Trail</Text>*/}
           <Text style={styles.descriptionText}>
-            Are you sure you want to buy the "{trail?.trailName}" trail?
+            Are you sure you want to buy the "{trail.trail_name}" trail
+          </Text>
+          <Text style={[styles.descriptionText, {fontWeight: 'bold', fontSize:18}]}>
+            Pay {unlockCost} Trail Tokens?
           </Text>
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <View style={styles.buttonsContainer}>
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     width: '100%',
     marginTop: 10,
   },

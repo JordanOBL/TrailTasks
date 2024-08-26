@@ -28,7 +28,7 @@ export async function sync(database: Database, userId: string = '0') {
     if (!isRunning && isConnected) {
       //stop more than one instance
       isRunning = true;
-      //console.debug('Running sync()');
+
 
       await synchronize({
         database,
@@ -41,7 +41,7 @@ export async function sync(database: Database, userId: string = '0') {
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
             console.debug('url', process.env.SERVER_PORT_URL)
             const response = await fetch(
-              `${process.env.SERVER_PORT_URL}/pull?${urlParams}`
+              `http://expressjs-postgres-production-54e4.up.railway.app/pull?${urlParams}`
             );
             if (!response.ok) {
               console.error('in pull in sync()');
@@ -66,7 +66,7 @@ export async function sync(database: Database, userId: string = '0') {
           try{
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `${process.env.SERVER_PORT_URL}/push?last_pulled_at=${lastPulledAt}`,
+            `https://expressjs-postgres-production-54e4.up.railway.app/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),

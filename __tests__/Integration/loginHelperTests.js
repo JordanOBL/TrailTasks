@@ -1,4 +1,4 @@
-import {MockTestUsers} from '../mockTestUsers';
+import {MockTestData} from '../mockTestData';
 import {testDb} from '../../watermelon/testDB'; // Import the test database instance
 import * as helpers from '../../helpers/loginHelpers';
 import {handleRegister} from '../../helpers/registerHelpers';
@@ -11,12 +11,12 @@ jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => {});
 
 beforeAll(async () => {
   await handleRegister({
-    firstName: MockTestUsers.existingUserDetails.firstName,
-    lastName: MockTestUsers.existingUserDetails.lastName,
-    email: MockTestUsers.existingUserDetails.email,
-    password: MockTestUsers.existingUserDetails.password,
-    confirmPassword: MockTestUsers.existingUserDetails.confirmPassword,
-    username: MockTestUsers.existingUserDetails.username,
+    firstName: MockTestData.existingUserDetails.firstName,
+    lastName: MockTestData.existingUserDetails.lastName,
+    email: MockTestData.existingUserDetails.email,
+    password: MockTestData.existingUserDetails.password,
+    confirmPassword: MockTestData.existingUserDetails.confirmPassword,
+    username: MockTestData.existingUserDetails.username,
     setUser: jest.fn(),
     setError: jest.fn(),
     watermelonDatabase: testDb,
@@ -36,13 +36,13 @@ describe('checkExistingUser', () => {
       'password',
       testDb
     );
-    expect(user.email).toEqual(MockTestUsers.existingUserDetails.email);
+    expect(user.email).toEqual(MockTestData.existingUserDetails.email);
   });
 
   test('should return null if no user found', async () => {
     const user = await helpers.checkExistingUser(
-      MockTestUsers.unfoundUserDetails.username,
-      MockTestUsers.unfoundUserDetails.password,
+      MockTestData.unfoundUserDetails.username,
+      MockTestData.unfoundUserDetails.password,
       testDb
     );
     expect(user).toBeUndefined();
@@ -73,7 +73,7 @@ describe('setSubscriptionStatus', () => {
   });
 
   test('should not set subscription status if no subscription exists', async () => {
-    await helpers.setSubscriptionStatus(MockTestUsers.unfoundUserDetails, testDb);
+    await helpers.setSubscriptionStatus(MockTestData.unfoundUserDetails, testDb);
     const subscriptionId = await testDb.localStorage.get('subscription_id');
     expect(subscriptionId).toBeUndefined();
   });

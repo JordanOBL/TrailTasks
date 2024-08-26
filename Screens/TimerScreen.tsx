@@ -1,5 +1,5 @@
 import * as React from 'react';
-
+import { useKeepAwake } from '@sayem314/react-native-keep-awake';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {
   Queued_Trail,
@@ -35,6 +35,8 @@ const TimerScreen = ({
 }: 
   Props) =>
 {
+
+  useKeepAwake();
   //@ts-ignore
   const navigation = useNavigation();
   const watermelonDatabase = useDatabase();

@@ -17,15 +17,11 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
-import SyncIndicator from './components/SyncIndicator';
 import TabNavigator from './components/Navigation/TabNavigator';
 import { checkForLoggedInUser } from './helpers/loginHelpers';
 import { sync } from './watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/hooks';
-import useRevenueCat from './helpers/RevenueCat/useRevenueCat';
 import handleError from "./helpers/ErrorHandler"; // Import the hook
-
-
 
 const App = () => {
   const watermelonDatabase = useDatabase();

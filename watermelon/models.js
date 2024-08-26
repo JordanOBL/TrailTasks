@@ -78,7 +78,13 @@ export class Trail extends Model {
     console.log('in queued Trails');
     await deleteThisHike[0].markAsDeleted();
   }
-}
+
+//   @writer async getFullTrailDetails({trailName}){
+//     try{
+//       const fullDetails = await this.collections.get('parks').query(Q.on())
+//     }
+//   }
+ }
 export class User extends Model {
   static table = 'users';
   static associations = {
@@ -89,7 +95,7 @@ export class User extends Model {
     completed_hikes: {type: 'has_many', foreignKey: 'user_id'},
     queued_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_miles: {type: 'has_many', foreignKey: 'user_id'},
-    users_subscriptions: {type: 'has_many', foreignKey: 'user_id'},
+    users_subscriptions: {type: 'has_one', foreignKey: 'user_id'},
     users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
   };
 
@@ -118,7 +124,7 @@ export class User extends Model {
   @children('users_miles') usersMiles;
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
-  @children('users_subscriptions') usersSubscriptions;
+  @relation('users_subscriptions', 'subscription_id') userSubscription;
   @children('users_purchased_trails') usersPurchasedTrails;
 
   @writer async purchaseTrail(trail, cost) {
@@ -187,9 +193,9 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
 
   @writer async increaseDailyStreak() {
-    const subscriptions = await this.usersSubscriptions;
+    const subscription = await this.userSubscription;
     //only subscribers get daily streak reward
-    if (subscriptions[0].isActive) {
+    if (subscription.isActive) {
       return await this.update(() => {
         this.dailyStreak += 1;
         this.lastDailyStreakDate = new Date();
