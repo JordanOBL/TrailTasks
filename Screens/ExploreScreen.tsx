@@ -1,28 +1,24 @@
 import {
   Completed_Hike,
   Queued_Trail,
-  Subscription,
-  Trail,
   User,
   User_Purchased_Trail,
 } from '../watermelon/models';
-import {Model, Q} from '@nozbe/watermelondb';
-import {SafeAreaView, ScrollView, StyleSheet, Text} from 'react-native';
-import {useCallback, useEffect, useState} from 'react';
+import {Q} from '@nozbe/watermelondb';
+import {SafeAreaView, StyleSheet, Text} from 'react-native';
+import React, {useCallback, useState} from 'react';
 
-import EnhancedNearbyTrails from '../components/NearbyTrails';
-import SearchBar from '../components/searchBar';
-import searchFilterFunction from '../helpers/searchFilter';
+import EnhancedTrailsList from '../components/TrailsList';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
 import handleError from "../helpers/ErrorHandler";
+import FullTrailDetails from "../types/fullTrailDetails";
 
 interface Props {
   user: User;
   completedHikes: Completed_Hike[];
   queuedTrails: Queued_Trail[];
-  userSubscription: Subscription[];
   userPurchasedTrails: User_Purchased_Trail[];
 }
 
@@ -30,78 +26,68 @@ const ExploreScreen = ({
   user,
   completedHikes,
   queuedTrails,
-  userSubscription,
   userPurchasedTrails,
 }: Props) => {
   const watermelonDatabase = useDatabase();
 
-  const [trailsCollection, setTrailsCollection] = useState<Trail[]>([]);
-  const [trailOfTheWeek, setTrailOfTheWeek] = useState<Trail[]>();
-  const [freeTrails, setFreeTrails] = useState<Trail[]>([]);
-  const [subscriptionTrails, setSubscriptionTrails] = useState<Trail[]>([])
-  // const [usersPurchasedTrails, setUsersPurchasedTrails] = useState<User_Purchased_Trail[]>();
+  const [trailsCollection, setTrailsCollection] = useState<FullTrailDetails[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>("")
 
-  const getTrails = async () => {
-    try {
-      const trailsCollection = (await watermelonDatabase
-        .get('trails')
-        .query()
-        .fetch()) as Trail[];
-      const trailOfTheWeekCollection = (await watermelonDatabase
-        .get('trails')
-        .query(Q.where('trail_of_the_week', true))
-        .fetch()) as Trail[];
-      const freeTrailsCollection = (await watermelonDatabase
-        .get('trails')
-        .query(Q.where('is_free', true))
-        .fetch()) as Trail[];
-      const subscriptionTrailsCollection = (await watermelonDatabase
-        .get('trails')
-        .query(Q.where('is_subscribers_only', true))
-        .fetch()) as Trail[];
+  const getTrails =  useCallback(async () => {
+        try {
+          const fullTrailRecords = await watermelonDatabase.get('trails').query(
+              Q.experimentalJoinTables(['parks']),
+              Q.experimentalNestedJoin('parks', 'parks_states'),
+                  Q.unsafeSqlQuery(
+                      'SELECT trails.*, ' +
+                        'parks.id AS park_id, parks.park_name, parks.park_type, parks.park_image_url, ' +
+                        'park_states.id AS park_state_id, park_states.state_code, park_states.state ' +
+                 'FROM trails ' +
+                 'LEFT JOIN parks ON trails.park_id = parks.id ' +
+                 'LEFT JOIN park_states ON parks.id = park_states.park_id ' +
+                 'GROUP BY trails.id', []
+                  ),
+          ).unsafeFetchRaw();
 
-      // const usersPurchasedTrailsCollection =
-      //   (await watermelonDatabase.collections
-      //     .get('users_purchased_trails')
-      //     .query()
-      //     .fetch()) as User_Purchased_Trail[]
+          if (fullTrailRecords.length === 0) {
+            setErrorMessage("Error Getting trails, try again later!");
+          } else {
+            setTrailsCollection(fullTrailRecords);
+          }
+        } catch (err) {
+          handleError(err, "getFullTrailInfo");
+        }
+      }, []);
 
-      setTrailsCollection(trailsCollection);
-      setTrailOfTheWeek(trailOfTheWeekCollection);
-      setFreeTrails(freeTrailsCollection);
-      setSubscriptionTrails(subscriptionTrailsCollection)
-      // setUsersPurchasedTrails(usersPurchasedTrailsCollection);
-    } catch (err) {
-      handleError(err, "getTrails(), ExploreScreen");
-    }
-  };
 
 useFocusEffect(
   useCallback(() => {
     getTrails();
-  }, [user, userPurchasedTrails, queuedTrails])
+  }, [user])
 );
 
   if (!trailsCollection) {
     return (
       <SafeAreaView>
-        <Text>Loading...</Text>
+        <Text style={{color: 'red'}}>Loading...</Text>
       </SafeAreaView>
     );
   }
+  if (errorMessage) {
+    return (
+        <Text style={{color: 'red'}}>{errorMessage}</Text>
+    )
+  }
+
 
   return (
-    <SafeAreaView>
-      <EnhancedNearbyTrails
+    <SafeAreaView style={{flex: 1}}>
+      <EnhancedTrailsList
         user={user}
         trailsCollection={trailsCollection}
         queuedTrails={queuedTrails}
         completedHikes={completedHikes}
-        userSubscription={userSubscription[0]}
         userPurchasedTrails={userPurchasedTrails}
-        freeTrails={freeTrails}
-        trailOfTheWeek={trailOfTheWeek}
-        subscriptionTrails={subscriptionTrails}
       />
     </SafeAreaView>
   );
@@ -111,11 +97,12 @@ const enhance = withObservables(['user'], ({user}) => ({
   user,
   completedHikes: user.completedHikes.observe(),
   queuedTrails: user.queuedTrails.observe(),
-  userSubscription: user.usersSubscriptions.observe(),
   userPurchasedTrails: user.usersPurchasedTrails.observe(),
 }));
 
 const EnhancedExploreScreen = enhance(ExploreScreen);
 export default EnhancedExploreScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+
+});

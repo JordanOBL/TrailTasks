@@ -2,16 +2,14 @@ import {createStackNavigator} from '@react-navigation/stack';
 import EnhancedAchievementsScreen from '../../Screens/AchievementsScreen';
 import EnhancedCompletedHikesScreen from '../../Screens/CompletedHikesScreen';
 import FriendsScreen from '../../Screens/FriendsScreen';
-
 import EnhancedHomeScreen from '../../Screens/HomeScreen';
-
 import EnhancedStatsScreen from '../../Screens/StatsScreen';
 import {User} from '../../watermelon/models';
 import EnhancedHikingQueueScreen from '../../Screens/HikingQueueScreen';
-
 import SettingsScreen from '../../Screens/SettingsScreen';
 import EnhancedLeaderboardsScreen from '../../Screens/LeaderboardsScreen';
 import EnhancedSubscribeScreen from '../../Screens/SubscribeScreen';
+import TrailDetailScreen from "../../Screens/TrailDetailScreen";
 const Stack = createStackNavigator();
 interface Props {
   user: User;
@@ -62,6 +60,9 @@ export function HomeStack({user, setUser}: Props) {
       <Stack.Screen name="Settings">
         {(props: any) => <SettingsScreen user={user} {...props} />}
       </Stack.Screen>
+        {/*<Stack.Screen name="TrailDetails" >*/}
+        {/*    {(props: any) => <TrailDetailScreen user={user} {...props} />}*/}
+        {/*</Stack.Screen>*/}
     </Stack.Navigator>
   );
 }

@@ -35,6 +35,8 @@ import isYesterday from '../helpers/isYesterday';
 import isToday from '../helpers/isToday';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import handleError from "../helpers/ErrorHandler";
+import {useEffect, useState} from "react";
+import {Q} from "@nozbe/watermelondb";
 
 interface Rank {
     level: string;
@@ -49,7 +51,7 @@ interface Props {
     currentTrail?: any;
     navigation: any;
     setUser: any;
-    userSubscription: Subscription[];
+    userSubscription: Subscription;
     totalMiles: User_Miles[];
     userSessions: User_Session[];
 }
@@ -70,9 +72,9 @@ const HomeScreen: React.FC<Props> = ({
     const data = [...new Array(2).keys()]; // Your data array
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
-    // const {currentOffering, customerInfo, isProMember} = useRevenueCat({
-    //     userId: user.id,
-    // });
+
+
+
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -214,7 +216,7 @@ const HomeScreen: React.FC<Props> = ({
                     user={user}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
-                        userSubscription[0] ? userSubscription[0].isActive : false
+                        true
                     }
                     navigation={navigation}
                     navTo={'Stats'}>
@@ -224,7 +226,7 @@ const HomeScreen: React.FC<Props> = ({
                     user={user}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                        userSubscription[0] ? userSubscription[0].isActive : false
+                       false
                     }
                     navigation={navigation}
                     navTo={'HikingQueue'}>
@@ -233,7 +235,7 @@ const HomeScreen: React.FC<Props> = ({
                 <ScreenLink
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                        userSubscription[0] ? userSubscription[0].isActive : false
+                        false
                     }
                     user={user}
                     navigation={navigation}
@@ -243,7 +245,7 @@ const HomeScreen: React.FC<Props> = ({
                 <ScreenLink
                     needsActiveSubscription={false}
                     hasActiveSubscription={
-                        userSubscription[0] ? userSubscription[0].isActive : false
+                        true
                     }
                     user={user}
                     navigation={navigation}
@@ -256,7 +258,7 @@ const HomeScreen: React.FC<Props> = ({
                     navTo={'Leaderboards'}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                        userSubscription[0] ? userSubscription[0].isActive : false
+                        true
                     }>
                     Leaderboards
                 </ScreenLink>
@@ -266,7 +268,7 @@ const HomeScreen: React.FC<Props> = ({
                     navTo={'CompletedHikes'}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                        userSubscription[0] ? userSubscription[0].isActive : false
+                       true
                     }>
                     Completed Trails
                 </ScreenLink>
@@ -276,7 +278,7 @@ const HomeScreen: React.FC<Props> = ({
                     navTo={'Settings'}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
-                        userSubscription[0] ? userSubscription[0].isActive : false
+                        false
                     }>
                     Settings
                 </ScreenLink>
@@ -295,7 +297,7 @@ const enhance = withObservables(['user'], ({user}) => ({
     user: user.observe(),
     totalMiles: user.usersMiles.observe(),
     currentTrail: user.trail.observe(),
-    userSubscription: user.usersSubscriptions.observe(),
+
     userSessions: user.usersSessions.observe(),
 }));
 

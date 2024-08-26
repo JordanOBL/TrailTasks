@@ -10,6 +10,7 @@ module.exports = function (api) {
       ['@babel/plugin-proposal-decorators', {legacy: true}],
       [
         'module:react-native-dotenv', {
+        envName: 'APP_ENV',
         moduleName: '@env',
         path: `.env.${appEnv}`, // Uses APP_ENV or NODE_ENV if APP_ENV is not set
       },
