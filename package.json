@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "android": "cross-env NODE_ENV=development APP_ENV=local react-native run-android",
-    "androidBundle": "cross-env NODE_ENV=production APP_ENV=release cd android && ./gradlew updateVersion && ./gradlew bundleRelease",
+    "androidBundle": "cross-env NODE_ENV=production APP_ENV=release && cd android && ./gradlew updateVersion && ./gradlew bundleRelease",
     "ios": "cross-env NODE_ENV=development APP_ENV=local react-native run-ios",
     "lint": "eslint .",
     "start": "cross-env NODE_ENV=development APP_ENV=local react-native start",
