@@ -475,28 +475,22 @@ export async function isTrailCompleted({
     if (Number(user.trailProgress) >= Number(currentTrail.trailDistance)) {
       //checkif completed hike table has column with the current trail and username
       const existingCompletedHike = await user.hasTrailBeenCompleted(user.id, currentTrail.id);
-      console.debug('TimerFlow inside isTrailCompleted()', {
-        existingCompletedHike,
-      });
+
 
       //set current date to now (YY-MM-DD H/H:mm:ss)
       const currentDateTime = formatDateTime(new Date());
-      console.debug('TimerFlow inside isTrailCompleted()', {currentDateTime});
       //get time difference in H:mm:ss from time trail started to now(finished)
       const timeToComplete = getTimeDifference(
         currentDateTime,
         user.trailStartedAt
       );
-      console.debug('TimerFlow inside isTrailCompleted()', {timeToComplete});
 
       //if completed trail existed keep first completed date else set to now
       const firstCompletedTime: string = existingCompletedHike
         ? //@ts-ignore
           existingCompletedHike.firstCompletedAt
         : currentDateTime;
-      console.debug('TimerFlow inside isTrailCompleted()', {
-        firstCompletedTime,
-      });
+
 
       //if already completed find best time between theat time vs this time
       //else set it to the time it just took to finish from start date / time
@@ -505,7 +499,6 @@ export async function isTrailCompleted({
           getBetterTime(timeToComplete, existingCompletedHike.bestCompletedTime)
         : timeToComplete;
 
-      console.debug('TimerFlow inside isTrailCompleted()', {betterTime});
 
       if (existingCompletedHike) {
         //@ts-ignore
@@ -529,7 +522,7 @@ export async function isTrailCompleted({
           firstCompletedAt: firstCompletedTime,
           lastCompletedAt: currentDateTime,
         });
-        console.debug('TimerFlow, inside isTrailCompleted()', {addedHike});
+
 
         if (addedHike) {
           await updateUsersTrailAndQueue({
@@ -538,7 +531,7 @@ export async function isTrailCompleted({
             queuedTrails,
           });
         }
-        console.debug({currentTrail});
+
         onCompletedTrail(currentTrail);
         const updatedCompletedHikes = await user.completedHikes;
         const achievementsEarned =

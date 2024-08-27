@@ -68,8 +68,7 @@ const App = () => {
           // This checks to see if the mobile device's SQLITE DB
           // has a userID saved in the local storage and sets the user if it does
           await checkForLoggedInUser(setUser, watermelonDatabase);
-          // SYNC call the push and pull requests from the mobile device to PG database
-          console.debug('calling sync');
+          // SYNC call the push and pull requests from the mobile device to PG databas
         }
         if (user) {
           await sync(watermelonDatabase, user.id);
