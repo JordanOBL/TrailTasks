@@ -14,8 +14,7 @@ async function checkDailyStreak(userPromise: User, sessionDetails: SessionDetail
   }
 
   const results = new Date(user.lastDailyStreakDate);
-  console.log(user.lastDailyStreakDate);
-  console.debug('isToday', isToday(user.lastDailyStreakDate));
+
 
   // Check if today's date matches the last daily streak date
   if (isToday(user.lastDailyStreakDate)) {
@@ -23,7 +22,7 @@ async function checkDailyStreak(userPromise: User, sessionDetails: SessionDetail
   }
 
   const dailyStreakCondition = 300;
-  console.debug({ sessionDetails });
+
 
   // Check if the session's total duration meets the daily streak condition
   if (sessionDetails.totalSessionTime >= dailyStreakCondition) {

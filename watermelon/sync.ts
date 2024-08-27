@@ -39,7 +39,6 @@ export async function sync(database: Database, userId: string = '0') {
             const urlParams = userId
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
-            console.debug('url', process.env.SERVER_PORT_URL)
             const response = await fetch(
               `http://expressjs-postgres-production-54e4.up.railway.app/pull?${urlParams}`
             );

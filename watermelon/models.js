@@ -193,21 +193,21 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
 
   @writer async increaseDailyStreak() {
-    const subscription = await this.userSubscription;
+    //const subscription = await this.userSubscription;
     //only subscribers get daily streak reward
-    if (subscription.isActive) {
+    // if (subscription.isActive) {
       return await this.update(() => {
         this.dailyStreak += 1;
         this.lastDailyStreakDate = new Date();
         this.trailTokens += 5;
       });
-    } else {
-      return await this.update(() => {
-        this.dailyStreak += 1;
-        this.lastDailyStreakDate = new Date();
-      });
+    // } else {
+    //   return await this.update(() => {
+    //     this.dailyStreak += 1;
+    //     this.lastDailyStreakDate = new Date();
+    //   });
     }
-  }
+
 
   @writer async resetDailyStreak() {
     return await this.update(() => {
