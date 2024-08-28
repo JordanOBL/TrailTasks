@@ -141,7 +141,7 @@ const TrailDetailScreen = ({ route, navigation }) => {
                             </Pressable>
                             <Pressable
                                 style={[styles.button, styles.buttonConfirm]}
-                                onPress={handleReplaceTrail}>
+                                onPress={() => handleReplaceTrail()}>
                                 <Text style={styles.buttonText}>Start New</Text>
                             </Pressable>
                         </View>

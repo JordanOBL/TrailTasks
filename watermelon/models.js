@@ -238,11 +238,12 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
   //update User Trail
   @writer async updateUserTrail({trailId, trailStartedAt}) {
-    return await this.update(() => {
+     await this.update(() => {
       this.trailId = trailId;
       this.trailProgress = '0.00';
       this.trailStartedAt = trailStartedAt;
     });
+     return;
   }
   //Add User`
   @writer async addUser(
