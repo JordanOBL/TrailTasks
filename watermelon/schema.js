@@ -62,6 +62,7 @@ const schema = appSchema({
         {name: 'trail_progress', type: 'string'},
         {name: 'trail_started_at', type: 'string'},
         {name: 'trail_tokens', type: 'number'},
+        {name: 'total_miles', type: 'string'},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],
@@ -120,15 +121,6 @@ const schema = appSchema({
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'trail_id', type: 'string'}, //ref
-        {name: 'created_at', type: 'number'},
-        {name: 'updated_at', type: 'number'},
-      ],
-    }),
-    tableSchema({
-      name: 'users_miles',
-      columns: [
-        {name: 'user_id', type: 'string'}, //reference user,
-        {name: 'total_miles', type: 'string'},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],

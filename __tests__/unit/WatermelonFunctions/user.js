@@ -26,16 +26,8 @@ beforeEach(async () => {
     });
   });
 });
-//create user_miles with existing user before each
-beforeEach(async () => {
-  await testDb.write(async () => {
-    const user = await testDb.collections.get('users').query().fetch();
-    await testDb.collections.get('users_miles').create((user_mile) => {
-      user_mile.userId = user[0].id;
-      user_mile.totalMiles = '0.0';
-    });
-  });
-});
+
+
 //add terst achievements into database before each
 beforeEach(async () => {
   await testDb.write(async () => {

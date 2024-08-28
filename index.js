@@ -11,7 +11,6 @@ import {
   User,
   User_Achievement,
   User_Badge,
-  User_Miles,
   User_Purchased_Trail,
   User_Session,
 } from './watermelon/models';
@@ -46,7 +45,6 @@ const WrappedApp = () => {
       User_Achievement,
       Completed_Hike,
       Queued_Trail,
-      User_Miles,
       User_Badge,
       Session_Category,
       User_Session,

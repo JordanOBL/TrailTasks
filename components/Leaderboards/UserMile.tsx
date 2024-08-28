@@ -4,41 +4,39 @@ import withObservables from '@nozbe/with-observables';
 import {User} from '../../watermelon/models';
 
 interface Props {
-  userMiles: any;
+  hiker?: any;
   index: number;
   user: User;
-  otherUser: User;
+  userRank?:any;
 }
 
-const UserMile = ({userMiles, index, user, otherUser}: Props) => {
+const UserMile = ({ index, user, hiker, userRank}: Props) => {
   const borderColor =
-    userMiles.userId === user.id ? 'rgb(7,254,213)' : 'rgb(61,63,65)';
+    !hiker || hiker?.username === user?.username ? 'rgb(7,254,213)' : 'rgb(61,63,65)';
   const textColor =
-    userMiles.userId === user.id ? 'rgb(7,254,213)' : 'rgb(161,163,165)';
+      !hiker || hiker?.username === user?.username  ? 'rgb(7,254,213)' : 'rgb(161,163,165)';
 
   return (
     <SafeAreaView style={[styles.container, {borderColor}]}>
       <View style={[styles.column, {width: '20%'}]}>
-        <Text style={[styles.text, {color: textColor}]}>{index + 1}</Text>
+        <Text style={[styles.text, {color: textColor}]}>{userRank?.rank || index + 1}</Text>
       </View>
       <View style={[styles.column, {width: '50%'}]}>
         <Text style={[styles.text, {color: textColor}]}>
-          {otherUser.username}
+          {hiker?.username || user.username}
         </Text>
       </View>
       <View style={[styles.column, {width: '30%'}]}>
         <Text style={[styles.text, {color: textColor}]}>
-          {userMiles.totalMiles} mi.
+          {(hiker?.total_miles || user.totalMiles) ? (hiker?.total_miles || user.totalMiles) : '0.00' } mi.
         </Text>
       </View>
     </SafeAreaView>
   );
 };
 
-const enhance = withObservables(['userMiles', 'user'], ({userMiles, user}) => ({
-  userMiles,
-  user,
-  otherUser: userMiles.user.observe(),
+const enhance = withObservables(['user'], ({ user}) => ({
+  user
 }));
 
 const EnhancedUserMile = enhance(UserMile);

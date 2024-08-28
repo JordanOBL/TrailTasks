@@ -36,7 +36,7 @@ const SyncIndicator = ({delay, database}: Props) => {
     }, delay);
 
     return () => { clearTimeout(timeoutId)};
-  });
+  }, []);
 
   if (!syncState) {
     return null;

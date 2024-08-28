@@ -94,7 +94,6 @@ export class User extends Model {
     trails: {type: 'belongs_to', key: 'trail_id'},
     completed_hikes: {type: 'has_many', foreignKey: 'user_id'},
     queued_trails: {type: 'has_many', foreignKey: 'user_id'},
-    users_miles: {type: 'has_many', foreignKey: 'user_id'},
     users_subscriptions: {type: 'has_one', foreignKey: 'user_id'},
     users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
   };
@@ -109,6 +108,7 @@ export class User extends Model {
   @field('push_notifications_enabled') pushNotificationsEnabled;
   @field('theme_preference') themePreference;
   @field('trail_id') trailId;
+  @field('total_miles') totalMiles;
   @field('trail_progress') trailProgress;
   @field('trail_started_at') trailStartedAt;
   @field('trail_tokens') trailTokens;
@@ -121,11 +121,12 @@ export class User extends Model {
   @children('users_sessions') usersSessions;
   @children('users_badges') usersBadges;
   @children('users_achievements') usersAchievements;
-  @children('users_miles') usersMiles;
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
-  @relation('users_subscriptions', 'subscription_id') userSubscription;
   @children('users_purchased_trails') usersPurchasedTrails;
+
+  @relation('users_subscriptions', 'subscription_id') userSubscription;
+
 
   @writer async purchaseTrail(trail, cost) {
     const results = await this.collections
@@ -146,10 +147,8 @@ export class User extends Model {
     return null;
   }
 
-  @lazy userMiles = this.usersMiles.extend(Q.where('user_id', this.id));
-  @lazy userTrails = this.usersPurchasedTrails.extend(
-    Q.where('user_id', this.id)
-  );
+  //@lazy userMiles = this.userMile.extend(Q.where('user_id', this.id));
+
   @writer async getTodaysTotalSessionTime() {
     const query = `SELECT SUM(total_session_time) AS total_time_today
 FROM users_sessions
@@ -215,14 +214,13 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     });
   }
 
-  @writer async increaseDistanceHikedWriter({user, userMiles, userSession}) {
+  @writer async increaseDistanceHikedWriter({user,userSession}) {
     await this.batch(
-      user.prepareUpdate((user) => {
-        user.trailProgress = (Number(user.trailProgress) + 0.01).toFixed(2);
+      user.prepareUpdate((updatedUser) => {
+        updatedUser.trailProgress = (Number(user.trailProgress) + 0.01).toFixed(2);
+        updatedUser.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2)
       }),
-      userMiles.prepareUpdate((userMiles) => {
-        userMiles.totalMiles = (Number(userMiles.totalMiles) + 0.01).toFixed(2);
-      }),
+
       userSession.prepareUpdate((userSession) => {
         userSession.totalDistanceHiked = (
           Number(userSession.totalDistanceHiked) + 0.01
@@ -266,22 +264,13 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       user.trailId = '1';
       user.dailyStreak = 0;
       user.lastDailyStreakDate = new Date();
-      user.trailProgress = '0.0';
+      user.trailProgress = '0.00';
       user.traiStartedAt = trailStartedAt;
       user.trailTokens = 20;
+      user.totalMiles = '0.00';
     });
     console.debug('Watermelon User Model', newUser[0]);
     return newUser[0];
-  }
-  //add user miles
-  @writer async addUserMile() {
-    const userMile = await this.collections
-      .get('users_miles')
-      .create((user_miles) => {
-        user_miles.userId = this.id;
-        user_miles.totalMiles = '0.00';
-      });
-    return userMile[0];
   }
 
   @writer async addUserSubscription() {
@@ -329,8 +318,8 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
 
   @writer async updateTotalUserMiles({miles}) {
-    return await this.usersMiles.update((userMile) => {
-      userMile.totalMiles = (Number(userMile.totalMiles) + miles).toFixed(2);
+    return await this.update((user) => {
+      user.totalMiles = (Number(this.totalMiles) + miles).toFixed(2);
     });
   }
   //add User Session
@@ -545,27 +534,7 @@ export class Queued_Trail extends Model {
     await this.markAsDeleted();
   }
 }
-export class User_Miles extends Model {
-  static table = 'users_miles';
-  static associations = {
-    users: {type: 'belongs_to', key: 'user_id'},
-  };
 
-  @field('user_id') userId;
-  @field('total_miles') totalMiles;
-  @date('created_at') createdAt;
-  @date('updated_at') updatedAt;
-
-  @immutableRelation('users', 'user_id') user;
-
-  @children('users') users;
-
-  @writer async updateTotalMiles({miles}) {
-    return await this.update(() => {
-      this.totalMiles = (Number(this.totalMiles) + miles).toFixed(2);
-    });
-  }
-}
 export class User_Badge extends Model {
   static table = 'users_badges';
   static associations = {

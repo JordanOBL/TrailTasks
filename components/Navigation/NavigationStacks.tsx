@@ -51,7 +51,7 @@ export function HomeStack({user, setUser}: Props) {
           />
         )}
       </Stack.Screen>
-      <Stack.Screen name="Leaderboards">
+      <Stack.Screen name="Leaderboards" options={{presentation: 'modal'}} >
         {(props: any) => <EnhancedLeaderboardsScreen user={user} {...props} />}
       </Stack.Screen>
       <Stack.Screen name="Subscribe" options={{presentation: 'modal'}}>

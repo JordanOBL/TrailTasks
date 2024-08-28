@@ -35,13 +35,13 @@ const TabNavigator = ({ user, setUser, isProMember }: Props) => {
                 tabBarActiveTintColor: 'orange',
                 tabBarInactiveTintColor: 'gray',
             })}>
-            <Tab.Screen name="Basecamp">
+            <Tab.Screen name="Basecamp" options={{headerShown: false}}>
                 {() => <HomeStack user={user} setUser={setUser} />}
             </Tab.Screen>
-            <Tab.Screen name="Explore">
+            <Tab.Screen name="Explore" options={{headerShown: false}}>
                 {() => <ExploreStackNavigator user={user} setUser={setUser} />}
             </Tab.Screen>
-            <Tab.Screen name="Timer" options={{ tabBarStyle: { display: 'none' } }}>
+            <Tab.Screen name="Timer" options={{ tabBarStyle: { display: 'none' }, headerShown: false }}>
                 {() => <EnhancedTimerScreen user={user} setUser={setUser} />}
             </Tab.Screen>
         </Tab.Navigator>

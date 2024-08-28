@@ -2,7 +2,6 @@ import {Database, Model, Q} from '@nozbe/watermelondb';
 import {
     User,
     Subscription,
-    User_Miles,
     User_Purchased_Trail,
     User_Session,
     User_Achievement,
@@ -40,7 +39,7 @@ export const checkExistingGlobalUser = async (
   password: string,
 ): Promise<User | null> => {
   try {
-    const response = await fetch(`https://expressjs-postgres-production-54e4.up.railway.app/api/users`, {
+    const response = await fetch(`http://192.168.1.42:5500/api/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -94,7 +93,7 @@ export const setSubscriptionStatus = async (
   }
 };
 
-export const setLocalStorageUserAndMiles = async (
+export const setLocalStorageUser = async (
   existingUser: any,
   watermelonDatabase: Database
 ) => {
@@ -106,20 +105,10 @@ export const setLocalStorageUserAndMiles = async (
       //@ts-ignore
       existingUser.username
     );
-    //get usersMilesId
-    const usersMiles = await watermelonDatabase
-      .get('users_miles')
-      .query(Q.where('user_id', existingUser.id))
 
-    if (usersMiles.length > 0) {
-      await watermelonDatabase.localStorage.set(
-        'user_miles_id',
-        usersMiles[0].id
-      );
-    }
     return true;
   } catch (err) {
-    handleError(err, "setLocalStorageUserAndMiles");
+    handleError(err, "setLocalStorageUser");
   }
 };
 
@@ -200,15 +189,8 @@ export const handleLogin = async ({
               newUser.dailyStreak = existingUser.user.daily_streak;
               newUser.trailStartedAt = existingUser.user.trail_started_at;
               newUser.trailTokens = existingUser.user.trail_tokens;
+              newUser.totalMiles = '0.00';
             })
-            // Create user miles
-            // @ts-ignore
-            const userMiles = watermelonDatabase.collections.get('users_miles').prepareCreate((newUserMiles: User_Miles) => {
-              newUserMiles._raw.id = existingUser.userMiles.id;
-              newUserMiles.totalMiles = existingUser.userMiles.total_miles;
-              newUserMiles.userId = existingUser.userMiles.user_id;
-       })
-
 
             const userSessions = [...existingUser.userSessions].map((session: User_Session) =>
                 // @ts-ignore
@@ -299,7 +281,7 @@ export const handleLogin = async ({
                 })
             )
             console.debug('attempting to writebatch of new user from master DB')
-            await watermelonDatabase.batch([newUser, userMiles, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...completedHikes]);
+            await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...completedHikes]);
             console.debug('batch write done...')
         });
 
@@ -318,7 +300,7 @@ export const handleLogin = async ({
 
     console.debug('Setting user in subscription', existingUser);
     await setSubscriptionStatus(existingUser, watermelonDatabase);
-    const response = await setLocalStorageUserAndMiles(existingUser, watermelonDatabase);
+    const response = await setLocalStorageUser(existingUser, watermelonDatabase);
 
     if (response) {
       console.log('Setting user locally', existingUser);

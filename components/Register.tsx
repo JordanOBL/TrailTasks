@@ -17,6 +17,7 @@ import { sync } from '../watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/hooks';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import handleError from '../helpers/ErrorHandler';
+import RefreshConnection from "./RefreshConnection";
 
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
@@ -171,39 +172,19 @@ const Register = ({ setUser, setisRegistering, isRegistering }: Props) => {
             </ScrollView>
         </KeyboardAvoidingView>
     ) : (
-        /* Render offline message if not connected */
-        <SafeAreaView
-            style={[styles.container, { justifyContent: 'center' }]}>
-            <Text
-                style={{
-                    color: 'white',
-                    fontSize: 18,
-                    padding: 8,
-                    margin: 12,
-                    textAlign: 'center',
-                }}>
-                You need an internet connection to register.
-            </Text>
-            <Pressable
-                onPress={() => setRefreshing((prev) => !refreshing)}
-                style={[
-                    styles.button,
-                    {
-                        backgroundColor: 'rgba(30, 139, 195, .7)',
-                        marginVertical: 12,
-                    },
-                ]}>
-                <Text style={styles.buttonText}>Refresh Connection</Text>
-            </Pressable>
-            <Pressable
-                onPress={() => setisRegistering((prev: boolean) => !prev)}
-                style={[
-                    styles.button,
-                    { backgroundColor: 'rgb(7,254,213)' },
-                ]}>
-                <Text style={styles.buttonText}>{'Login'}</Text>
-            </Pressable>
-        </SafeAreaView>
+       <View>
+           {/*@ts-ignore*/}
+       <RefreshConnection setRefreshing={setRefreshing} >
+           You neeed internet connection to register
+       </RefreshConnection>
+    <Pressable
+        onPress={() => setisRegistering((prev: boolean) => !prev)}
+        style={[
+            styles.button,
+            {backgroundColor: 'rgb(7,254,213)'},
+        ]}>
+        <Text style={styles.buttonText}>{'Login'}</Text>
+    </Pressable></View>
     );
 };
 
