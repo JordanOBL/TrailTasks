@@ -151,15 +151,15 @@ const TrailDetailScreen = ({ route, navigation }) => {
 
             <BuyTrailModal
                 isVisible={showBuyTrailModal}
-                onClose={() => setShowBuyTrailModal(false)}
+                onClose={() => {
+                    setShowBuyTrailModal(false)
+                    navigation.goBack()
+                }}
                 trail={trail}
                 trailTokens={user.trailTokens}
                 onBuyTrail={async (trail, cost) => {
                     const result = await user.purchaseTrail(trail, cost);
                     console.log('Buying trail:', trail);
-                    if(result) {
-                        navigation.goBack()
-                    }
                 }}
             />
             <View style={styles.imageContainer}>

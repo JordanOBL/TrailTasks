@@ -32,7 +32,7 @@ const TrailsList = ({
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-    }, 2000); // Delay in milliseconds
+    }, 800); // Delay in milliseconds
 
     return () => {
       clearTimeout(handler);

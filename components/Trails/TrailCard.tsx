@@ -42,12 +42,12 @@ const TrailCard = React.memo(({ trail,completedHikes, user,  userPurchasedTrails
                     : require('../../assets/LOGO.png')} style={styles.trailImage}/>
             </View>
             <View style={styles.trailInfo}>
-                <Text style={styles.trailName}>{trail?.trail_name}{completedHikes.some(completedTrail => completedTrail.trailId === trail.id  ) ? "Finished" : null}</Text>
+                <Text style={styles.trailName}>{trail?.trail_name}</Text>
                 <Text style={styles.parkName}>{trail?.park_name}</Text>
                 <View style={styles.trailStats}>
                     <Text style={styles.trailStatText}>🌟 {trail?.trail_difficulty}</Text>
                     <Text style={styles.trailStatText}>⛰ {trail?.trail_distance} mi</Text>
-                    <Text style={styles.trailStatText}>🕒{calculateEstimatedTime(trail?.trail_distance)}</Text>
+                    <Text style={styles.trailStatText}>🕒 {calculateEstimatedTime(trail?.trail_distance)}</Text>
                 </View>
             </View>
         </View>
