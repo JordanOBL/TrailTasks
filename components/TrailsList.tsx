@@ -22,6 +22,7 @@ const TrailsList = ({
                       trailsCollection,
                       user,
                       userPurchasedTrails,
+    completedHikes
                     }: Props) => {
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,6 +53,9 @@ const TrailsList = ({
     } else if (filter === 'Trail Of The Week') {
       //@ts-ignore
       filtered = trailsCollection.filter(trail => trail.trail_of_the_week === true || trail.trail_of_the_week == 1);
+    } else if (filter === 'Completed'){
+      trailsCollection.filter(trail =>
+          completedHikes.some(completedTrail => trail.id == completedTrail.trailId))
     }
 
     if (debouncedSearchQuery) {
@@ -88,7 +92,7 @@ const TrailsList = ({
             filter={filter}
             toggleDropdown={toggleDropdown}
             showDropdown={showDropdown}
-            filterParams={['All', 'User Purchased', 'Free', 'Trail Of The Week']}
+            filterParams={['All', 'User Purchased', 'Free', 'Trail Of The Week', 'Completed']}
         />
         <FlatList
             data={filteredTrails}
