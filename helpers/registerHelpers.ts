@@ -1,9 +1,10 @@
-import {Subscription, User, User_Miles} from '../watermelon/models';
+import {Subscription, User} from '../watermelon/models';
 
 //import watermelonDatabase from '../watermelon/getWatermelonDb';
 import {Q} from '@nozbe/watermelondb';
 import formatDateTime from './formatDateTime';
 import handleError from "./ErrorHandler";
+import React from "react";
 
 export const checkExistingUser = async ({
   username,
@@ -71,29 +72,22 @@ export const createNewUser = async ({
         //@ts-ignore
         user.trailId = '1';
         //@ts-ignore
-        user.trailProgress = '0.0';
+        user.trailProgress = 0.0;
         user.dailyStreak = 0;
         //@ts-ignore
         user.trailStartedAt = trailStartedAt;
         //@ts-ignore
         user.trailTokens = 20;
+        user.totalMiles = 0.0;
 
       })
    
     return newUser
      });
     if (newUser) {
-     
-      const userMiles = await newUser.addUserMile();
 
       const subscription = await newUser.addUserSubscription();
 
-      if (userMiles) {
-        await watermelonDatabase.localStorage.set(
-          'user_miles_id',
-          userMiles.id
-        );
-      }
       if (subscription) {
         await watermelonDatabase.localStorage.set(
           'subscription_id',

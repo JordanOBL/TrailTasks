@@ -38,7 +38,7 @@ const App = () => {
   const seedPgTables = async () => {
     try {
       console.log('seedingPgTables');
-      const response = await fetch(`${process.env.SERVER_PORT_URL}/api/seed`);
+      const response = await fetch(`http://expressjs-postgres-production-54e4.up.railway.app/api/seed`);
       const data = await response.json();
       console.log(data)
       if(data.ok){

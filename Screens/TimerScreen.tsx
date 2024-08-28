@@ -7,7 +7,7 @@ import {
   Trail,
   User,
   User_Achievement,
-  User_Miles,
+
 } from '../watermelon/models';
 
 import {AchievementsWithCompletion} from '../types/achievements';

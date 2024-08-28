@@ -2,7 +2,7 @@ import {Database} from '@nozbe/watermelondb';
 // your_local_machine_ip_address usually looks like 192.168.0.x
 // on *nix system, you would find it out by running the ifconfig command
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
-import {User} from './models';
+
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import {synchronize} from '@nozbe/watermelondb/sync';
 import handleError from "../helpers/ErrorHandler";

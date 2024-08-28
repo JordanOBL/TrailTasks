@@ -7,69 +7,44 @@ import {User} from '../../watermelon/models';
 import withObservables from '@nozbe/with-observables';
 
 interface Props {
-  usersMilesCollection: any;
-  userMiles: any;
+  leaderboard: any
   user: User;
+
 }
 
-const Leaderboard = ({usersMilesCollection, userMiles, user}: Props) => {
-  const sortUsersMiles = (usersMilesCollection: any) => {
-    return usersMilesCollection.sort((a: any, b: any) => {
-      const aMiles = parseFloat(a.totalMiles);
-      const bMiles = parseFloat(b.totalMiles);
-
-      if (aMiles < bMiles) {
-        return 1;
-      } else if (aMiles > bMiles) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
-  };
-
-  const sortedUsersMiles = sortUsersMiles(usersMilesCollection);
+const Leaderboard = ({leaderboard, user}: Props) => {
 
   return (
     <SafeAreaView style={styles.container}>
       <View>
         <Text style={styles.sectionTitle}>Your Rank:</Text>
-
-        {sortedUsersMiles.map((item: any, index: number) => {
-          if (item.userId === user.id) {
-            return (
-              <EnhancedUserMile
-                key={item.userId}
-                userMiles={userMiles}
-                index={index}
-                user={user}
-              />
-            );
-          }
-        })}
+          <EnhancedUserMile
+            key={user.id}
+            user={user}
+            userRank={leaderboard.userRank}
+          />
       </View>
 
       <Text style={styles.sectionTitle}>All Users: </Text>
 
       <FlatList
-        data={sortedUsersMiles}
+        data={leaderboard.top100Rankings}
         renderItem={({item, index}) => (
           <EnhancedUserMile
-            key={item.userId}
-            userMiles={item}
+            key={index}
             index={index}
+            hiker={item}
             user={user}
           />
         )}
-        keyExtractor={(item) => item.userId}
+        keyExtractor={(item) => item.username}
         contentContainerStyle={styles.listContainer}
       />
     </SafeAreaView>
   );
 };
 
-const enhance = withObservables(['userMiles', 'user'], ({userMiles, user}) => ({
-  userMiles,
+const enhance = withObservables(['user'], ({ user}) => ({
   user,
 }));
 
