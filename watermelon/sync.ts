@@ -2,7 +2,7 @@ import {Database} from '@nozbe/watermelondb';
 // your_local_machine_ip_address usually looks like 192.168.0.x
 // on *nix system, you would find it out by running the ifconfig command
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
-import {User} from './models';
+
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import {synchronize} from '@nozbe/watermelondb/sync';
 import handleError from "../helpers/ErrorHandler";
@@ -40,7 +40,7 @@ export async function sync(database: Database, userId: string = '0') {
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
             const response = await fetch(
-              `http://192.168.1.42:5500/pull?${urlParams}`
+              `http://expressjs-postgres-production-54e4.up.railway.app/pull?${urlParams}`
             );
             if (!response.ok) {
               console.error('in pull in sync()');
@@ -65,7 +65,7 @@ export async function sync(database: Database, userId: string = '0') {
           try{
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `http://192.168.1.42:5500/push?last_pulled_at=${lastPulledAt}`,
+            `https://expressjs-postgres-production-54e4.up.railway.app/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),
