@@ -14,24 +14,6 @@ interface Props {
 
 const Leaderboard = ({leaderboard, user}: Props) => {
 
-
-  // const sortUsersMiles = (usersMilesCollection: any) => {
-  //   return usersMilesCollection.sort((a: any, b: any) => {
-  //     const aMiles = parseFloat(a.totalMiles);
-  //     const bMiles = parseFloat(b.totalMiles);
-  //
-  //     if (aMiles < bMiles) {
-  //       return 1;
-  //     } else if (aMiles > bMiles) {
-  //       return -1;
-  //     } else {
-  //       return 0;
-  //     }
-  //   });
-  // };
-
- // const sortedUsersMiles = sortUsersMiles(usersMilesCollection);
-
   return (
     <SafeAreaView style={styles.container}>
       <View>
