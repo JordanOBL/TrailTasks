@@ -8,15 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* TrailTasksTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* TrailTasksTests.m */; };
+		0503C5772668DD1963BA3D0F /* libPods-TrailTasks.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 89CDDEFD23D435540B868D49 /* libPods-TrailTasks.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		17BBE6D72A0D77AE00420634 /* wmelon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BBE6D62A0D77AE00420634 /* wmelon.swift */; };
 		17BBE6D82A0D77AE00420634 /* wmelon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BBE6D62A0D77AE00420634 /* wmelon.swift */; };
-		44BA212EB1D2762DA3B83272 /* libPods-TrailTasks.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CF800B74CCD6521A359A938B /* libPods-TrailTasks.a */; };
-		67E1B0F7EBC33B29165AE5AD /* libPods-TrailTasksTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F9225547290F9B8324BC642 /* libPods-TrailTasksTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9FA4EC211013442CAE8E8297 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 91F16BF226F94C90A21CD5E5 /* Colors.xcassets */; };
+		F42EFED6D11778158CEB03AE /* libPods-TrailTasksTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A921D963B0DE67B3678CA8 /* libPods-TrailTasksTests.a */; };
 		F9E98964C0834FE58F162C82 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 572A2ED2EB1244B5B6E3ED9C /* BootSplash.storyboard */; };
 /* End PBXBuildFile section */
 
@@ -34,8 +34,6 @@
 		00E356EE1AD99517003FC87E /* TrailTasksTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrailTasksTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* TrailTasksTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TrailTasksTests.m; sourceTree = "<group>"; };
-		10DA63C90FEC3F466404DFC8 /* Pods-TrailTasks.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks.debug.xcconfig"; path = "Target Support Files/Pods-TrailTasks/Pods-TrailTasks.debug.xcconfig"; sourceTree = "<group>"; };
-		116764CD178D8C44469C8DBF /* Pods-TrailTasksTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasksTests.release.xcconfig"; path = "Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* TrailTasks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrailTasks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = TrailTasks/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = TrailTasks/AppDelegate.mm; sourceTree = "<group>"; };
@@ -46,15 +44,15 @@
 		17BBE6D42A0D77AE00420634 /* TrailTasks-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TrailTasks-Bridging-Header.h"; sourceTree = "<group>"; };
 		17BBE6D52A0D77AE00420634 /* TrailTasksTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TrailTasksTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		17BBE6D62A0D77AE00420634 /* wmelon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wmelon.swift; sourceTree = "<group>"; };
-		1B1F4F98E19F1B4B24269433 /* Pods-TrailTasks-TrailTasksTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks-TrailTasksTests.release.xcconfig"; path = "Target Support Files/Pods-TrailTasks-TrailTasksTests/Pods-TrailTasks-TrailTasksTests.release.xcconfig"; sourceTree = "<group>"; };
 		572A2ED2EB1244B5B6E3ED9C /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = TrailTasks/BootSplash.storyboard; sourceTree = "<group>"; };
-		6F9225547290F9B8324BC642 /* libPods-TrailTasksTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TrailTasksTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7349742BD403E6075663E0C5 /* Pods-TrailTasks.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks.release.xcconfig"; path = "Target Support Files/Pods-TrailTasks/Pods-TrailTasks.release.xcconfig"; sourceTree = "<group>"; };
+		63AD1D650869C82B675397DE /* Pods-TrailTasks.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks.debug.xcconfig"; path = "Target Support Files/Pods-TrailTasks/Pods-TrailTasks.debug.xcconfig"; sourceTree = "<group>"; };
+		69A921D963B0DE67B3678CA8 /* libPods-TrailTasksTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TrailTasksTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TrailTasks/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		89CDDEFD23D435540B868D49 /* libPods-TrailTasks.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TrailTasks.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		91F16BF226F94C90A21CD5E5 /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = TrailTasks/Colors.xcassets; sourceTree = "<group>"; };
-		A6889D0B5F65D2463E5D8EE7 /* Pods-TrailTasks-TrailTasksTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks-TrailTasksTests.debug.xcconfig"; path = "Target Support Files/Pods-TrailTasks-TrailTasksTests/Pods-TrailTasks-TrailTasksTests.debug.xcconfig"; sourceTree = "<group>"; };
-		B4CB399142E4B5C5E2B77C3E /* Pods-TrailTasksTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasksTests.debug.xcconfig"; path = "Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests.debug.xcconfig"; sourceTree = "<group>"; };
-		CF800B74CCD6521A359A938B /* libPods-TrailTasks.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TrailTasks.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A027C3EED87732212C0D3721 /* Pods-TrailTasks.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks.release.xcconfig"; path = "Target Support Files/Pods-TrailTasks/Pods-TrailTasks.release.xcconfig"; sourceTree = "<group>"; };
+		BD44EDBF8F1FD15006955AF0 /* Pods-TrailTasksTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasksTests.release.xcconfig"; path = "Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests.release.xcconfig"; sourceTree = "<group>"; };
+		DC625DEA45F3B7FA1B1E82A4 /* Pods-TrailTasksTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasksTests.debug.xcconfig"; path = "Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -63,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				67E1B0F7EBC33B29165AE5AD /* libPods-TrailTasksTests.a in Frameworks */,
+				F42EFED6D11778158CEB03AE /* libPods-TrailTasksTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,7 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				44BA212EB1D2762DA3B83272 /* libPods-TrailTasks.a in Frameworks */,
+				0503C5772668DD1963BA3D0F /* libPods-TrailTasks.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,8 +121,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				CF800B74CCD6521A359A938B /* libPods-TrailTasks.a */,
-				6F9225547290F9B8324BC642 /* libPods-TrailTasksTests.a */,
+				89CDDEFD23D435540B868D49 /* libPods-TrailTasks.a */,
+				69A921D963B0DE67B3678CA8 /* libPods-TrailTasksTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -166,12 +164,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				10DA63C90FEC3F466404DFC8 /* Pods-TrailTasks.debug.xcconfig */,
-				7349742BD403E6075663E0C5 /* Pods-TrailTasks.release.xcconfig */,
-				A6889D0B5F65D2463E5D8EE7 /* Pods-TrailTasks-TrailTasksTests.debug.xcconfig */,
-				1B1F4F98E19F1B4B24269433 /* Pods-TrailTasks-TrailTasksTests.release.xcconfig */,
-				B4CB399142E4B5C5E2B77C3E /* Pods-TrailTasksTests.debug.xcconfig */,
-				116764CD178D8C44469C8DBF /* Pods-TrailTasksTests.release.xcconfig */,
+				63AD1D650869C82B675397DE /* Pods-TrailTasks.debug.xcconfig */,
+				A027C3EED87732212C0D3721 /* Pods-TrailTasks.release.xcconfig */,
+				DC625DEA45F3B7FA1B1E82A4 /* Pods-TrailTasksTests.debug.xcconfig */,
+				BD44EDBF8F1FD15006955AF0 /* Pods-TrailTasksTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -183,12 +179,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "TrailTasksTests" */;
 			buildPhases = (
-				322DCEFF87D5348ACBADD1F9 /* [CP] Check Pods Manifest.lock */,
+				95D530F2805A0C519642830A /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				CF42B5B4DCC10A920DB58EFB /* [CP] Embed Pods Frameworks */,
-				F7A07185435781ED8EB90F88 /* [CP] Copy Pods Resources */,
+				42E5EF852C43EAEFBD8E9554 /* [CP] Embed Pods Frameworks */,
+				5CF1591D75892D8240958ABB /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -204,14 +200,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "TrailTasks" */;
 			buildPhases = (
-				605CB308432967C226D2339B /* [CP] Check Pods Manifest.lock */,
+				4A047071A59F267E0B210181 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				525693C23FEC0FCECBB5BECB /* [CP] Embed Pods Frameworks */,
-				0FCB2F39FC36ED3B048FDC1D /* [CP] Copy Pods Resources */,
+				AC49491FA311AEA0DD0E5C2F /* [CP] Embed Pods Frameworks */,
+				71B274D1F601DFE70C4D278D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -298,63 +294,24 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		0FCB2F39FC36ED3B048FDC1D /* [CP] Copy Pods Resources */ = {
+		42E5EF852C43EAEFBD8E9554 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		322DCEFF87D5348ACBADD1F9 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TrailTasksTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		525693C23FEC0FCECBB5BECB /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		605CB308432967C226D2339B /* [CP] Check Pods Manifest.lock */ = {
+		4A047071A59F267E0B210181 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -376,24 +333,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CF42B5B4DCC10A920DB58EFB /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F7A07185435781ED8EB90F88 /* [CP] Copy Pods Resources */ = {
+		5CF1591D75892D8240958ABB /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -408,6 +348,62 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TrailTasksTests/Pods-TrailTasksTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		71B274D1F601DFE70C4D278D /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		95D530F2805A0C519642830A /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TrailTasksTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AC49491FA311AEA0DD0E5C2F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -464,7 +460,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B4CB399142E4B5C5E2B77C3E /* Pods-TrailTasksTests.debug.xcconfig */;
+			baseConfigurationReference = DC625DEA45F3B7FA1B1E82A4 /* Pods-TrailTasksTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -496,7 +492,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 116764CD178D8C44469C8DBF /* Pods-TrailTasksTests.release.xcconfig */;
+			baseConfigurationReference = BD44EDBF8F1FD15006955AF0 /* Pods-TrailTasksTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -524,7 +520,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 10DA63C90FEC3F466404DFC8 /* Pods-TrailTasks.debug.xcconfig */;
+			baseConfigurationReference = 63AD1D650869C82B675397DE /* Pods-TrailTasks.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
@@ -563,7 +559,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7349742BD403E6075663E0C5 /* Pods-TrailTasks.release.xcconfig */;
+			baseConfigurationReference = A027C3EED87732212C0D3721 /* Pods-TrailTasks.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
