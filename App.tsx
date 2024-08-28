@@ -8,7 +8,6 @@ import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
-  Text,
   useColorScheme,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';

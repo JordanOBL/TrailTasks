@@ -63,7 +63,7 @@ const FetchGlobalLeaderboards = (userId: string) => {
                 }
 
                 const data = await response.json();
-    console.log(data)
+                console.log(data)
                 setLeaderboard(data);
             } catch (err: any) {
                 setError(err.message);

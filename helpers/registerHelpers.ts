@@ -178,7 +178,7 @@ export const handleRegister = async ({
       ExistingUser &&
       ExistingUser.email.toLowerCase() === email.toLowerCase()
     ) {
-      setError('User Already Exists With Provided Email, Please Login');
+      setError('User Already Exists Please Login');
       return; //@ts-ignore
     } else if (
       ExistingUser &&
