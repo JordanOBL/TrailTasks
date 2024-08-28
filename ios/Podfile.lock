@@ -423,6 +423,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
+  - PurchasesHybridCommon
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -622,6 +623,6 @@ SPEC CHECKSUMS:
   WatermelonDB: cd71a1085182aca9e5d2164b7af9ef2a3aaca571
   Yoga: 065f0b74dba4832d6e328238de46eb72c5de9556
 
-PODFILE CHECKSUM: 7d2342ef104ba2345779a9ae5d354f0e38a231eb
+PODFILE CHECKSUM: d5f220f823cc41a73012dfa57dae8fc4b9800b96
 
 COCOAPODS: 1.12.1
