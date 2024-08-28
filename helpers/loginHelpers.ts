@@ -189,7 +189,7 @@ export const handleLogin = async ({
               newUser.dailyStreak = existingUser.user.daily_streak;
               newUser.trailStartedAt = existingUser.user.trail_started_at;
               newUser.trailTokens = existingUser.user.trail_tokens;
-              newUser.totalMiles = '0.00';
+              newUser.totalMiles = existingUser.user.total_miles;
             })
 
             const userSessions = [...existingUser.userSessions].map((session: User_Session) =>
