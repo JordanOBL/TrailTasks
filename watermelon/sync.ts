@@ -40,7 +40,7 @@ export async function sync(database: Database, userId: string = '0') {
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
             const response = await fetch(
-              `http://expressjs-postgres-production-54e4.up.railway.app/pull?${urlParams}`
+              `http://192.168.1.42:5500/pull?${urlParams}`
             );
             if (!response.ok) {
               console.error('in pull in sync()');
@@ -65,7 +65,7 @@ export async function sync(database: Database, userId: string = '0') {
           try{
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `https://expressjs-postgres-production-54e4.up.railway.app/push?last_pulled_at=${lastPulledAt}`,
+            `http://192.168.1.42:5500/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),

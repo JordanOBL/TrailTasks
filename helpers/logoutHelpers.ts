@@ -11,7 +11,6 @@ export const handleLogOut = async (
   try {
     await watermelonDatabase.localStorage.remove('user_id');
     await watermelonDatabase.localStorage.remove('username');
-    await watermelonDatabase.localStorage.remove('user_miles_id');
     setUser(null);
     await sync(watermelonDatabase)
   } catch (err) {

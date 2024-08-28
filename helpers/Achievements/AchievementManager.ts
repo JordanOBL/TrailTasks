@@ -1,7 +1,6 @@
 import {
   Completed_Hike,
   User,
-  User_Miles,
   User_Session,
 } from '../../watermelon/models';
 
@@ -42,7 +41,6 @@ class AchievementManager {
 
   public async checkTotalMilesAchievements(
       user: User,
-      userMiles: User_Miles,
       achievementsWithCompletion: AchievementsWithCompletion[]
   ) {
     if (this.checkTotalMilesAchievementsInProgress) {
@@ -58,7 +56,7 @@ class AchievementManager {
         if (
             !achievement.completed &&
             achievement.achievement_type === 'Total Miles' &&
-            userMiles.totalMiles >= parseFloat(achievement.achievement_condition)
+            user.totalMiles >= parseFloat(achievement.achievement_condition)
         ) {
           unlockAchievements.push({
             achievementName: achievement.achievement_name,

@@ -12,7 +12,6 @@ import {
 import {
     Subscription,
     User,
-    User_Miles,
     User_Session,
 } from '../watermelon/models';
 import {useFocusEffect} from '@react-navigation/native';
@@ -35,8 +34,7 @@ import isYesterday from '../helpers/isYesterday';
 import isToday from '../helpers/isToday';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import handleError from "../helpers/ErrorHandler";
-import {useEffect, useState} from "react";
-import {Q} from "@nozbe/watermelondb";
+
 
 interface Rank {
     level: string;
@@ -52,7 +50,6 @@ interface Props {
     navigation: any;
     setUser: any;
     userSubscription: Subscription;
-    totalMiles: User_Miles[];
     userSessions: User_Session[];
 }
 
@@ -62,7 +59,6 @@ const HomeScreen: React.FC<Props> = ({
                                          setUser,
                                          currentTrail,
                                          userSubscription,
-                                         totalMiles,
                                          userSessions,
                                      }) => {
     const watermelonDatabase = useDatabase();
@@ -116,15 +112,15 @@ const HomeScreen: React.FC<Props> = ({
     //if not, show the tutorial Modal
     React.useEffect(() => {
         // Check if the user has any miles hiked
-        if (user && totalMiles && parseFloat(totalMiles[0]?.totalMiles) <= 0.0) {
+        if ( !user?.totalMiles) {
             setShowTutorial(true); // Show the tutorial if the user has no miles hiked
         }
-    }, []);
+    }, [user]);
 
     //this useEffect gets the correct Rank based on  the users miles
     useFocusEffect(
         React.useCallback(() => {
-            const rank = getUserRank(Ranks, totalMiles[0]?.totalMiles);
+            const rank = getUserRank(Ranks, user?.totalMiles);
             setUserRank(rank);
             checkUnsyncedChanges().then(result => {
                 if (result == true) {
@@ -138,10 +134,10 @@ const HomeScreen: React.FC<Props> = ({
             };
 
 
-        }, [watermelonDatabase, user, totalMiles])
+        }, [watermelonDatabase, user])
     );
 
-    return !user || !currentTrail ? (
+    return !user || !currentTrail  ? (
         <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading Your Data...</Text>
         </View>
@@ -180,13 +176,13 @@ const HomeScreen: React.FC<Props> = ({
                         {userRank && index === 0 ? (
                             <View style={styles.rankContainer}>
                                 <Image
-                                    source={userRank.image}
+                                    source={userRank?.image}
                                     style={styles.rankImage}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.rankLevel}>Rank {userRank.level}</Text>
+                                <Text style={styles.rankLevel}>Rank {userRank?.level}</Text>
                                 <Text style={styles.rankTitle}>
-                                    {userRank.group} {userRank.title}
+                                    {userRank?.group} {userRank?.title}
                                 </Text>
                                 <Text style={styles.username}>{user.username}</Text>
                             </View>
@@ -295,9 +291,7 @@ const HomeScreen: React.FC<Props> = ({
 
 const enhance = withObservables(['user'], ({user}) => ({
     user: user.observe(),
-    totalMiles: user.usersMiles.observe(),
     currentTrail: user.trail.observe(),
-
     userSessions: user.usersSessions.observe(),
 }));
 

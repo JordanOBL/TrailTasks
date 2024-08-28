@@ -31,16 +31,7 @@ beforeEach(async () => {
     });
   });
 });
-//create user_miles with existing user before each
-beforeEach(async () => {
-  await testDb.write(async () => {
-    const user = await testDb.collections.get('users').query().fetch();
-    await testDb.collections.get('users_miles').create((user_mile) => {
-      user_mile.userId = user[0].id;
-      user_mile.totalMiles = '0.0';
-    });
-  });
-});
+
 //add terst achievements into database before each
 beforeEach(async () => {
   await testDb.write(async () => {
@@ -102,12 +93,12 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
   test('it unlocks 007 achievement when userMiles >= 0.07', async () => {
     //change userrs miles to pass achievment 3
     await testDb.write(async () => {
-      const userMiles = await testDb.collections
-        .get('users_miles')
+      const user = await testDb.collections
+        .get('users')
         .query()
         .fetch();
-      await userMiles[0].update((user_mile) => {
-        user_mile.totalMiles = '0.07';
+      await user.update((user) => {
+        user.totalMiles = 0.07;
       });
     });
     const achievementsWithCompletions = newAchievements.map((achievement) => ({
@@ -117,10 +108,10 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
 
     const user = await testDb.collections.get('users').query().fetch();
 
-    const userMiles = await user[0].usersMiles;
+
     const results = await achievementManagerInstance.checkTotalMilesAchievements(
       user[0],
-      userMiles[0],
+
       achievementsWithCompletions
     );
     const testedAchievement = newAchievements.filter(
@@ -130,7 +121,7 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
     expect(results).toStrictEqual([
       {achievementName: '007', achievementId: '94'},
     ]);
-    expect(parseFloat(userMiles[0].totalMiles)).toBeGreaterThanOrEqual(
+    expect(parseFloat(user[0].totalMiles)).toBeGreaterThanOrEqual(
       parseFloat(testedAchievement[0].achievement_condition)
     );
   });
@@ -138,12 +129,12 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
   test('it unlocks National PieDay achievement when user miles >= 3.14', async () => {
     //change userrs miles to pass achievment 3
     await testDb.write(async () => {
-      const userMiles = await testDb.collections
-        .get('users_miles')
+      const user = await testDb.collections
+        .get('users')
         .query()
         .fetch();
-      await userMiles[0].update((user_mile) => {
-        user_mile.totalMiles = '3.14';
+      await user[0].update((user) => {
+        user.totalMiles = '3.14';
       });
     });
     const achievementsWithCompletions = newAchievements.map((achievement) => {
@@ -155,10 +146,9 @@ describe('checkTotalMilesAchievements() for each total miles achievement', () =>
 
     const user = await testDb.collections.get('users').query().fetch();
 
-    const userMiles = await user[0].usersMiles;
+
     const results = await achievementManagerInstance.checkTotalMilesAchievements(
       user[0],
-      userMiles[0],
       achievementsWithCompletions
     );
 

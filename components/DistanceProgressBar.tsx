@@ -57,7 +57,7 @@ const DistanceProgressBar = ({
           marginRight: 0,
           marginVertical: 5,
         }}>
-        {Number(user.trailProgress)} / {Number(currentTrail.trailDistance)} mi.
+        {Number(user.trailProgress).toFixed(2)} / {Number(currentTrail.trailDistance).toFixed(2)} mi.
         
       </Text>
     </View>

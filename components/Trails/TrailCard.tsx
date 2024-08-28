@@ -19,7 +19,7 @@ import {
 import calculateEstimatedTime from "../../helpers/calculateEstimatedTime";
 import FullTrailDetails from "../../types/fullTrailDetails";
 
-const TrailCard = React.memo(({ trail,completedHikes, user, park, userSubscription, userPurchasedTrails }: {trail: FullTrailDetails, userPurchasedTrails: User_Purchased_Trail[], user:User, park:Park, userSubscription: Subscription, completedHikes: Completed_Hike[] }) => {
+const TrailCard = React.memo(({ trail,completedHikes, user,  userPurchasedTrails }: {trail: FullTrailDetails, userPurchasedTrails: User_Purchased_Trail[], user:User, park:Park, userSubscription: Subscription, completedHikes: Completed_Hike[] }) => {
     const navigation = useNavigation();
     const handlePress = () => {
         // @ts-ignore
@@ -62,8 +62,6 @@ const enhance = withObservables(
         completedHikes: user.completedHikes.observe(),
         queuedTrails: user.queuedTrails.observe(),
         userPurchasedTrails: user.usersPurchasedTrails.observe(),
-
-
     })
 );
 
@@ -84,12 +82,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 1, // Slightly stronger shadow opacity
         shadowRadius: 5,
         zIndex: 0, // Ensure dropdown is above other elements
-        elevation: 0,
+        elevation: 5,
     },
     trailImage: {
         width: '100%',
         height: 200,
-        zIndex: 0, // Ensure dropdown is above other elements
+        zIndex: 999, // Ensure dropdown is above other elements
 
     },
     trailInfo: {
