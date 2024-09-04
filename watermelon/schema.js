@@ -176,6 +176,40 @@ const schema = appSchema({
         {name: 'updated_at', type: 'number'},
       ],
     }),
+        tableSchema({
+      name: 'addons',
+      columns: [
+        {name: 'name', type: 'string'}, //ref
+        {name: 'description', type: 'string'}, //ref
+        {name: 'level', type: 'number'}, //ref
+        {name: 'effect_type', type: 'string'}, //ref
+        {name: 'effect_value', type: 'number'},
+        {name:'required_total_miles', type: 'number'},
+        {name:'price', type: 'number'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
+      ],
+    }),
+    tableSchema({
+      name: 'users_addons',
+      columns: [
+        {name: 'user_id', type: 'string'}, //ref
+        {name: 'addon_id', type: 'string'}, //ref
+        {name:'quantity', type: 'number'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
+      ],
+    }),
+     tableSchema({
+      name: 'sessions_addons',
+      columns: [
+        {name: 'session_id', type: 'string'}, //ref
+        {name: 'addon_id', type: 'string'}, //ref
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
+      ],
+    }),
+
   ],
 });
 

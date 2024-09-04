@@ -13,6 +13,8 @@ import {
   User_Badge,
   User_Purchased_Trail,
   User_Session,
+  Addon,
+  User_Addon,
 } from './watermelon/models';
 
 import App from './App';
@@ -50,6 +52,8 @@ const WrappedApp = () => {
       User_Session,
       Subscription,
       User_Purchased_Trail,
+      Addon,
+      User_Addon,
     ],
   });
   return (

@@ -8,6 +8,7 @@ import {
   relation,
   text,
   writer,
+  readonly,
 } from '@nozbe/watermelondb/decorators';
 //@ts-nocheck
 import formatDateTime from '../helpers/formatTime';
@@ -79,12 +80,8 @@ export class Trail extends Model {
     await deleteThisHike[0].markAsDeleted();
   }
 
-//   @writer async getFullTrailDetails({trailName}){
-//     try{
-//       const fullDetails = await this.collections.get('parks').query(Q.on())
-//     }
-//   }
- }
+ 
+}
 export class User extends Model {
   static table = 'users';
   static associations = {
@@ -96,6 +93,7 @@ export class User extends Model {
     queued_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_subscriptions: {type: 'has_one', foreignKey: 'user_id'},
     users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
+    users_addons: {type:'has_many', foreignKey:'user_id'}
   };
 
   @field('username') username;
@@ -113,8 +111,8 @@ export class User extends Model {
   @field('trail_started_at') trailStartedAt;
   @field('trail_tokens') trailTokens;
   @field('is_subscribed') isSubscribed;
-  @date('created_at') createdAt;
-  @date('updated_at') updatedAt;
+  @readonly @date('created_at') createdAt;
+  @readonly @date('updated_at') updatedAt;
 
   @relation('trails', 'trail_id') trail;
 
@@ -124,6 +122,7 @@ export class User extends Model {
   @children('completed_hikes') completedHikes;
   @children('queued_trails') queuedTrails;
   @children('users_purchased_trails') usersPurchasedTrails;
+  @children('users_addons')usersAddons
 
   @relation('users_subscriptions', 'subscription_id') userSubscription;
 
@@ -147,7 +146,6 @@ export class User extends Model {
     return null;
   }
 
-  //@lazy userMiles = this.userMile.extend(Q.where('user_id', this.id));
 
   @writer async getTodaysTotalSessionTime() {
     const query = `SELECT SUM(total_session_time) AS total_time_today
@@ -195,17 +193,17 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     //const subscription = await this.userSubscription;
     //only subscribers get daily streak reward
     // if (subscription.isActive) {
-      return await this.update(() => {
-        this.dailyStreak += 1;
-        this.lastDailyStreakDate = new Date();
-        this.trailTokens += 5;
-      });
+    return await this.update(() => {
+      this.dailyStreak += 1;
+      this.lastDailyStreakDate = new Date();
+      this.trailTokens += 5;
+    });
     // } else {
     //   return await this.update(() => {
     //     this.dailyStreak += 1;
     //     this.lastDailyStreakDate = new Date();
     //   });
-    }
+  }
 
 
   @writer async resetDailyStreak() {
@@ -238,12 +236,12 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
   //update User Trail
   @writer async updateUserTrail({trailId, trailStartedAt}) {
-     await this.update(() => {
+    await this.update(() => {
       this.trailId = trailId;
       this.trailProgress = '0.00';
       this.trailStartedAt = trailStartedAt;
     });
-     return;
+    return;
   }
   //Add User`
   @writer async addUser(
@@ -288,18 +286,83 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return subscription[0];
   }
 
+  @writer async addUserAddonToBackpack(id){
+    try{
+      const userHasAddon = await this.usersAddons.extend(Q.where('addon_id', id));
+      console.debug('userHasAddon', userHasAddon);  
+      if(userHasAddon.length == 0){
+        const userAddon = await this.collections
+          .get('users_addons')
+          .create((user_addon) => {
+            user_addon.userId = this.id;
+            user_addon.addonId = id;
+            user_addon.quantity = 1;
+          });
+        return userAddon[0];
+      }else{
+        const userAddon = await userHasAddon[0].update(
+          (user_addon) => {
+            user_addon.quantity = userHasAddon[0].quantity + 1;
+          }
+        )
+        return userAddon[0];
+      }
+
+    }catch(err){
+      console.error('Error in addUserAddon:', err);
+      throw err; // Rethrow the error to handle it at the higher level
+    }
+  }
+  @writer async buyAddon(addon){
+    console.debug('buyAddon', addon.id);
+    try{
+      const userHasAddon = await this.usersAddons.extend(Q.where('addon_id', addon.id));
+      console.debug('userHasAddon', userHasAddon);  
+      if(userHasAddon.length == 0){
+        console.debug('user doenst have addon', userHasAddon);
+        const userAddon = await this.collections
+          .get('users_addons')
+          .create((user_addon) => {
+            console.debug('user id', this.id);
+            user_addon.userId = this.id;
+            user_addon.addonId = addon.id;
+            user_addon.quantity = 1;
+          });
+        console.debug('new userAddon', userAddon);
+      }else{
+        console.debug('user has addon', userHasAddon);
+        const userAddon = await userHasAddon[0].update(
+          (user_addon) => {
+            user_addon.quantity = userHasAddon[0].quantity + 1;
+          }
+        )
+      }
+      console.log('user tokens', this.trailTokens);
+      await this.update(
+        (user) => {
+          user.trailTokens = this.trailTokens - addon.price;
+        }
+      )
+    
+    }catch(err){
+      console.error('Error in buyAddon:', err);
+      throw err; // Rethrow the error to handle it at the higher level
+    }
+
+  }
+
   @writer async unlockAchievements(userId, completedAchievements) {
     try {
       const unlockedAchievements = await Promise.all(
         //create user_achievment of all newly unlocked achievements
         completedAchievements.map(async (achievement) => {
           const newUserAchievement = this.collections
-            .get('users_achievements')
-            .prepareCreate((user_achievement) => {
-              user_achievement.userId = userId;
-              user_achievement.achievementId = achievement.achievementId;
-              user_achievement.completedAt = formatDateTime(new Date());
-            });
+          .get('users_achievements')
+          .prepareCreate((user_achievement) => {
+            user_achievement.userId = userId;
+            user_achievement.achievementId = achievement.achievementId;
+            user_achievement.completedAt = formatDateTime(new Date());
+          });
           if (newUserAchievement) {
             return newUserAchievement;
           }
@@ -427,8 +490,8 @@ export class Badge extends Model {
 
   @lazy
   badgeEarners = this.collections
-    .get('users')
-    .query(Q.on('users_badges', 'badge_id', this.id));
+  .get('users')
+  .query(Q.on('users_badges', 'badge_id', this.id));
 }
 
 export class Achievement extends Model {
@@ -449,8 +512,8 @@ export class Achievement extends Model {
 
   @lazy
   achievementEarners = this.collections
-    .get('users')
-    .query(Q.on('users_achievements', 'achievement_id', this.id));
+  .get('users')
+  .query(Q.on('users_achievements', 'achievement_id', this.id));
 }
 export class User_Achievement extends Model {
   static table = 'users_achievements';
@@ -620,4 +683,54 @@ export class Subscription extends Model {
   @relation('users', 'user_id') user;
 
   @children('users') users;
+}
+
+export class Addon extends Model {
+  static table = 'addons';
+  static associations = {
+    users_addons: {type: 'has_many', foreignKey: 'addon_id'},
+  };
+
+  @field('name') name;
+  @field('description') description;
+  @field('level') level;
+  @field('price') price;
+  @field('required_total_miles') requiredTotalMiles;
+  @field('effect_type') effectType;
+  @field('effect_value') effectValue;
+  @readonly @date('created_at') createdAt;
+  @readonly @date('updated_at') updatedAt;
+  
+  
+}
+
+export class User_Addon extends Model {
+  static table = 'users_addons';
+  static associations = {
+    users:{type: 'belongs_to', key: 'user_id' },
+    addons:{type: 'belongs_to', key: 'addon_id' }
+  }
+
+  @field('user_id') userId;
+  @field('addon_id') addonId;
+  @field('quantity') quantity;
+  @readonly @date('created_at') createdAt;
+  @readonly @date('updated_at') updatedAt;
+
+  @relation('users', 'user_id') user;
+  @relation('addons', 'addon_id') addon; //relation('addons', 'addon_id') addon;
+
+}
+export class Session_Addon extends Model {
+  static table = 'sessions_addons';
+  static associations = {
+    users_sessions:{type: 'belongs_to', key: 'session_id' }
+  }
+
+  @field('session_id') sessionId;
+  @field('addon_id') addonId;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
+
+
 }

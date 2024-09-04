@@ -37,7 +37,7 @@ const App = () => {
   const seedPgTables = async () => {
     try {
       console.log('seedingPgTables');
-      const response = await fetch(`http://expressjs-postgres-production-54e4.up.railway.app/api/seed`);
+      const response = await fetch(`http://192.168.1.42:5500/api/seed`);
       const data = await response.json();
       console.log(data)
       if(data.ok){
@@ -62,7 +62,7 @@ const App = () => {
           }
 
           //*uncomment next line to request the /seedPGTable API Route
-          //await seedPgTables();
+        //await seedPgTables();
 
           // This checks to see if the mobile device's SQLITE DB
           // has a userID saved in the local storage and sets the user if it does
@@ -104,18 +104,18 @@ const App = () => {
           {user != null ? (
             <TabNavigator user={user} setUser={setUser}  />
           ) : isRegistering ? (
-            <RegisterScreen
-              setUser={setUser}
-              setisRegistering={setisRegistering}
-              isRegistering={isRegistering}
-            />
-          ) : (
-            <LoginScreen
-              setUser={setUser}
-              setisRegistering={setisRegistering}
-              isRegistering={isRegistering}
-            />
-          )}
+              <RegisterScreen
+                setUser={setUser}
+                setisRegistering={setisRegistering}
+                isRegistering={isRegistering}
+              />
+            ) : (
+                <LoginScreen
+                  setUser={setUser}
+                  setisRegistering={setisRegistering}
+                  isRegistering={isRegistering}
+                />
+              )}
         </SafeAreaView>
       </NavigationContainer>
     </GestureHandlerRootView>

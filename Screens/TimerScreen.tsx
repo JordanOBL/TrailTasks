@@ -12,7 +12,7 @@ import {
 
 import {AchievementsWithCompletion} from '../types/achievements';
 import EnhancedSessionTimer from '../components/Timer/SessionTimer';
-import NewSessionOptions from '../components/Timer/NewSessionOptions';
+import EnhancedNewSessionOptions from '../components/Timer/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
@@ -60,17 +60,67 @@ const TimerScreen = ({
     elapsedPomodoroTime: 0,
     elapsedShortBreakTime: 0,
     elapsedLongBreakTime: 0,
+    breakTimeReduction:0,
     sets: 3,
     currentSet: 1,
+    minimumPace: 2,
+    maximumPace: 5.5,
     pace: 2,
+    paceIncreaseValue: .25,
+    paceIncreaseInterval: 900, //15 minutes,
+    increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
     completedHike: false,
     strikes: 0,
+    penaltyValue: 1,
     endSessionModal: false,
     totalSessionTime: 0,
     totalDistanceHiked: 0.0,
+    trailTokenBonus: 0,
     isLoading: false,
     isError: false,
+    addOns: []
   });
+
+function applyAddons(sessionDetails) {
+  sessionDetails.addOns.forEach((addOn) => {
+    const effect = addOn.effect_type;
+    switch (effect) {
+      case "min_pace_increase":
+        sessionDetails.minimumPace = addOn.effect_value;
+        console.debug('Addon Applied:', addOn.name);
+        break;
+      case "max_pace_increase":
+        sessionDetails.maximumPace = addOn.effect_value;
+        console.debug('Addon Applied:', addOn.name);
+        break;
+      case "pace_increase_interval":
+        sessionDetails.paceIncreaseInterval = addOn.effect_value;
+        console.debug('Addon Applied:', addOn.name);
+        break;
+      case "pace_increase_value":
+        sessionDetails.pace += addOn.effect_value; // Accumulate pace increases
+        console.debug('Addon Applied:', addOn.name);
+        break;
+      case "penalty_reduction":
+        sessionDetails.penaltyValue -= addOn.effect_value; // Subtracting to reduce penalty
+        console.debug('Addon Applied', addOn.name);
+        break;
+      case "trail_token_bonus":
+        sessionDetails.extraTokens += addOn.effect_value; // Adding extra tokens
+        console.debug('Addon Applied', addOn.name);
+        break;
+      case "break_time_reduction":
+        sessionDetails.breakTimeReduction = addOn.effect_value;
+        console.debug('Addon Applied', addOn.name);
+        break;
+      default:
+        console.debug('Addon Not Applied', addOn.name);
+        break;
+    }
+      setSessionDetails((prev) => ({...prev,...sessionDetails}));
+  });
+
+}
 
   async function getAchievementsWithCompletion() {
     const query = `SELECT achievements.*, 
@@ -159,7 +209,7 @@ const TimerScreen = ({
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
       ) : sessionDetails.isSessionStarted === false || !userSession ? (
-        <NewSessionOptions
+        <EnhancedNewSessionOptions
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
           setUserSession={setUserSession}

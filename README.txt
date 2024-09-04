@@ -57,22 +57,25 @@ Hiking Poles:
 Enhanced Break Reward: Increases the pace boost after completing a Pomodoro session.
 Extended Pace Bonus Duration: The increased pace after a break lasts longer.
 Penalty Reduction: Reduces the penalty for phone interaction or pauses.
-Energy Bars:
 
+Energy Bars:
 Temporary Pace Boost: Grants a short-duration pace increase.
 Double Break Reward: Doubles the pace increase after a Pomodoro break.
-Trail Shoes:
 
+Trail Shoes:
 Pace Reset Buffer: Lessens the impact of pace reset when pausing or using the phone.
 Steady Pace: Helps maintain a consistent pace on longer trails.
+
 Bike:
 
 High-Speed Mode: Allows the user to start and maintain a 5 mph pace.
 Extended Use: Can be used for multiple sessions without recharging.
+
 Headlamp:
 
 Night Mode: Grants a pace boost during evening or nighttime sessions.
 Persistent Focus: Reduces penalty for phone interaction during night sessions.
+
 Water Bottle:
 
 Mid-Session Refill: Restores a portion of the user's lost pace.
@@ -104,4 +107,38 @@ Trail Tasks is poised to offer a premium subscription service, providing access 
 
 Trail Tasks isn’t just an app—it’s a revolution in how we approach productivity and wellness. By combining the best of nature with cutting-edge technology, Trail Tasks is set to redefine the way we work, play, and stay connected to the world around us.
 
+ADD ONS TODO:
+
+Default pace increase % of users chosen time
+- Hiking Poles I - pace boost every x min
+- Hiking Poles II - pace boost every x min
+- Hiking Poles III - pace boost every x min
+
+Default break time is equivalent to users chosen initial pomodoro time
+- Energy Bars I - chance to reduce break time by x
+- Energy Bars II - chance to reduce break time by x
+- Energy Bars III - Allow skip breaks
+
+- Default pace increase by value  = x, every pace increase interval (hard coded)
+
+- Trail Mix I - pace increase value increaed by/to x
+- Trail Mix II - pace increase value increased by/to x
+- Trail Mix III - pace increase value increased by/to x
+
+- Default pace decrease of x when screen refocuses (meaning user touched phone) or every time a user pauses
+
+- Water Bottle I - Reduces pace decrease damage by x
+- Water Bottle II - Reduces pace decrease damage by x
+- Water Bottle III - Reduces pace decrease damage by x
+
+- Default max Pace for every session = x (hard coded time)
+
+- Running shoes I - Increase max pace to x
+- Running shoes II - Increase max pace to x
+- Running shoes III - Increase max pace to x
+
+- Default trail tokens for trail completeion = 0 (hard coded)
+- Treasure Map I - increase default token to x 
+- Treasure Map II - increase default token to x 
+- Treasure Map III - increase default token to x 
 
