@@ -94,6 +94,8 @@ NewSessionHandlers.InitialLongBreakChange = (
   });
 };
 
+
+
 NewSessionHandlers.StartSessionClick = async (
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   sessionDetails: SessionDetails,
@@ -104,24 +106,9 @@ NewSessionHandlers.StartSessionClick = async (
     cb((prev: any) => {
       return {...prev, isLoading: true};
     });
-    let newSession = null;
-    //@ts-ignore
-    newSession = await database.write(async () => {
-      newSession = await database
-        .get('users_sessions')
-        //@ts-ignore
-        .create((userSession: User_Session) => {
-          userSession.userId = user.id;
-          userSession.sessionName = sessionDetails.sessionName;
-          userSession.sessionDescription = '';
-          userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
-          userSession.totalSessionTime = '0';
-          userSession.totalDistanceHiked = '0.00';
-          userSession.dateAdded = formatDateTime(new Date());
-        });
-      return newSession;
-    });
-    if (newSession) {
+  
+       const {newSession, status} = await user.startNewSession(sessionDetails)
+    if (newSession && status) {
       await database.localStorage.set('sessionId', newSession.id);
       await database.localStorage.set(
         'category ' + sessionDetails.sessionCategoryId + ' settings',
@@ -132,8 +119,9 @@ NewSessionHandlers.StartSessionClick = async (
           initialLongBreakTime: sessionDetails.initialLongBreakTime,
         })
       );
-        return newSession;
-    } else {
+      console.debug('returning in start session click newSession', newSession)
+       return newSession 
+      } else {
       cb((prev: any) => {
         return {
           ...prev,

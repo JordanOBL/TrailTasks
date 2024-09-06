@@ -11,7 +11,7 @@ interface Props {
 
 const Leaderboard = ({leaderboard, user}: Props) => {
     // Check if the user is in the top 100 list
-    const isUserInTop100 = leaderboard.top100Rankings.some((hiker: any) => hiker?.username === user?.username);
+    const isUserInTop100 = leaderboard?.top100Rankings?.some((hiker: any) => hiker?.username === user?.username) || [];
 
     // If the user is not in the top 100, add them to the list separately
     const topUsers = isUserInTop100 ? leaderboard.top100Rankings : [{...user, rank: leaderboard.userRank?.rank || 101}, ...leaderboard.top100Rankings];

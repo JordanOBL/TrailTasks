@@ -128,7 +128,7 @@ export async function updateUsersTrailAndQueue({
   try {
     const currentDate = formatDateTime(new Date());
     //!check if user is subscribed. If so make all trails random, else only make basic subscription trails random
-    const randomTrailId = Math.floor(Math.random() * 7 + 1).toString();
+    const randomTrailId = Math.floor(Math.random() * 50 + 1).toString();
     //if user has set their own trails to be up next
     if (queuedTrails.length)
     {
@@ -169,28 +169,36 @@ function resetSessionState(
 ) {
   cb((prev: SessionDetails) => {
     return {
-      ...prev,
-      isSessionStarted: false,
-      isPaused: false,
-      sessionName: '',
-      sessionDescription: '',
-      sessionCategoryId: null,
-      initialPomodoroTime: 1500,
-      initialShortBreakTime: 300,
-      initialLongBreakTime: 2700,
-      elapsedPomodoroTime: 0,
-      elapsedShortBreakTime: 0,
-      elapsedLongBreakTime: 0,
-      sets: 3,
-      currentSet: 1,
-      pace: 2,
-      completedHike: false,
-      strikes: 0,
-      endSessionModal: false,
-      totalSessionTime: 0,
-      totalDistanceHiked: 0,
-      isLoading: false,
-      isError: false,
+    isSessionStarted: false,
+    isPaused: false,
+    sessionName: '',
+    sessionDescription: '',
+    sessionCategoryId: null,
+    initialPomodoroTime: 1500,
+    initialShortBreakTime: 300,
+    initialLongBreakTime: 2700,
+    elapsedPomodoroTime: 0,
+    elapsedShortBreakTime: 0,
+    elapsedLongBreakTime: 0,
+    breakTimeReduction:0,
+    sets: 3,
+    currentSet: 1,
+    minimumPace: 2,
+    maximumPace: 5.5,
+    pace: 2,
+    paceIncreaseValue: .25,
+    paceIncreaseInterval: 900, //15 minutes,
+    increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
+    completedHike: false,
+    strikes: 0,
+    penaltyValue: 1,
+    endSessionModal: false,
+    totalSessionTime: 0,
+    totalDistanceHiked: 0.0,
+    trailTokenBonus: 0,
+    isLoading: false,
+    isError: false,
+    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:250.0}]
     };
   });
 }
@@ -313,13 +321,13 @@ async function speedModifier(
     cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
     sessionDetails: SessionDetails
   ) {
-    if (sessionDetails.pace > 2) {
+    if (sessionDetails.pace > sessionDetails.minimumPace) {
       cb((prev) => {
-        return {...prev, pace: prev.pace - 0.5, strikes: 0};
+        return {...prev, pace: prev.pace - prev.penaltyValue, strikes: 0};
       });
     } else {
       cb((prev) => {
-        return {...prev, pace: 2, strikes: 0};
+        return {...prev, pace: sessionDetails.minimumPace, strikes: 0};
       });
     }
   }
@@ -328,19 +336,19 @@ async function speedModifier(
     cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
     sessionDetails: SessionDetails
   ) {
-    if (sessionDetails.pace < 6) {
+    if (sessionDetails.pace < sessionDetails.maximumPace) {
       cb((prev) => {
-        return {...prev, pace: prev.pace + 0.5, strikes: 0};
+        return {...prev, pace: (prev.pace + prev.paceIncreaseValue), strikes: 0};
       });
     } else {
       cb((prev) => {
-        return {...prev, pace: 6, strikes: 0};
+        return {...prev, pace: sessionDetails.maximumPace, strikes: 0};
       });
     }
   }
   if (sessionDetails.sessionName.toLowerCase() === 'fastasfuqboi') return;
   if (
-    (sessionDetails.elapsedPomodoroTime % 600 === 0 ||
+    (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0 ||
       sessionDetails.elapsedPomodoroTime ===
         sessionDetails.initialPomodoroTime) &&
     sessionDetails.elapsedShortBreakTime === 0 &&
@@ -573,6 +581,7 @@ export async function Hike({
 }) {
   try {
     //check for completed hike
+    console.debug('TimerFlow hike() sessionDetails', sessionDetails);
     await isTrailCompleted({
       watermelonDatabase,
       user,

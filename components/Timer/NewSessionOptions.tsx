@@ -204,12 +204,54 @@ const NewSessionOptions = ({
               sessionDetails,
               user,
               watermelonDatabase
-            ).then((newSession: User_Session) => {
+            ).then((newSession: any) => {
                 if (newSession) {
+                  console.debug('New session created', newSession);
+                    const sessionDetailsWithAddons = {...sessionDetails};
+                  console.debug('sessionDetailsWithAddons', sessionDetailsWithAddons);
+                    sessionDetailsWithAddons.backpack.forEach((slot) => {
+                    if(slot.addon){
+                      const effect = slot.addon.effectType;
+
+                      switch (effect) {
+                        case "min_pace_increase":
+                          sessionDetailsWithAddons.minimumPace = slot.addon.effectValue;
+                          sessionDetailsWithAddons.pace = slot.addon.effectValue;
+                          console.debug('Addon Applied:', slot.addon.name);
+                          break;
+                        case "max_pace_increase":
+                          sessionDetailsWithAddons.maximumPace = slot.addon.effectValue;
+                          console.debug('Addon Applied:', slot.addon.name);
+                          break;
+                        case "pace_increase_interval":
+                          sessionDetailsWithAddons.paceIncreaseInterval = slot.addon.effectValue;
+                          console.debug('Addon Applied:', slot.addon.name);
+                          break;
+                        case "pace_increase_value":
+                          sessionDetailsWithAddons.pace += slot.addon.effectValue; // Accumulate pace increases
+                          console.debug('Addon Applied:', slot.addon.name);
+                          break;
+                        case "penalty_reduction":
+                          sessionDetailsWithAddons.penaltyValue -= slot.addon.effectValue; // Subtracting to reduce penalty
+                          console.debug('Addon Applied', slot.addon.name);
+                          break;
+                        case "trail_token_bonus":
+                          sessionDetailsWithAddons.extraTokens += slot.addon.effectValue; // Adding extra tokens
+                          console.debug('Addon Applied', slot.addon.name);
+                          break;
+                        case "break_time_reduction":
+                          sessionDetailsWithAddons.breakTimeReduction = slot.addon.effectValue;
+                          console.debug('Addon Applied', slot.addon.name);
+                          break;
+                        default:
+                          console.debug('Addon Not Applied', slot.addon.name);
+                          break;
+                      }
+                    }
+                    });
                   setUserSession(newSession);
-                  setSessionDetails((prev: any) => {
-                    return {...prev, isSessionStarted: true, isLoading: false};
-                  });
+                  setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, isSessionStarted: true, isLoading: false}
+                  ));
                 } else {
                   setSessionDetails((prev: any) => {
                     return {
@@ -231,7 +273,7 @@ const NewSessionOptions = ({
               sessionDetails.sessionCategoryId == null
               ? 'grey'
               : 'rgb(7,254,213)',
-            bottom: 80,
+            bottom: 60,
           },
         ]}
         disabled={

@@ -16,7 +16,7 @@ export interface Leaderboard {
     userRank: UserRank
 }
 const FetchGlobalLeaderboards = (userId: string) => {
-    const [leaderboard, setLeaderboard] = useState<Leaderboard>();
+    const [leaderboard, setLeaderboard] = useState<Leaderboard>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -59,12 +59,12 @@ const FetchGlobalLeaderboards = (userId: string) => {
 
                 if (!response.ok) {
                     setError("Error fetching global leaderboard.")
-                    throw new Error("Error fetching global leaderboard.");
+                    //throw new Error("Error fetching global leaderboard.");
                 }
 
                 const data = await response.json();
                 console.log(data)
-                setLeaderboard(data);
+                setLeaderboard(data || []);
             } catch (err: any) {
                 setError(err.message);
                 handleError(err, 'FetchGlobalLeaderboards')

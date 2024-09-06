@@ -78,49 +78,9 @@ const TimerScreen = ({
     trailTokenBonus: 0,
     isLoading: false,
     isError: false,
-    addOns: []
+    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:250.0}]
   });
 
-function applyAddons(sessionDetails) {
-  sessionDetails.addOns.forEach((addOn) => {
-    const effect = addOn.effect_type;
-    switch (effect) {
-      case "min_pace_increase":
-        sessionDetails.minimumPace = addOn.effect_value;
-        console.debug('Addon Applied:', addOn.name);
-        break;
-      case "max_pace_increase":
-        sessionDetails.maximumPace = addOn.effect_value;
-        console.debug('Addon Applied:', addOn.name);
-        break;
-      case "pace_increase_interval":
-        sessionDetails.paceIncreaseInterval = addOn.effect_value;
-        console.debug('Addon Applied:', addOn.name);
-        break;
-      case "pace_increase_value":
-        sessionDetails.pace += addOn.effect_value; // Accumulate pace increases
-        console.debug('Addon Applied:', addOn.name);
-        break;
-      case "penalty_reduction":
-        sessionDetails.penaltyValue -= addOn.effect_value; // Subtracting to reduce penalty
-        console.debug('Addon Applied', addOn.name);
-        break;
-      case "trail_token_bonus":
-        sessionDetails.extraTokens += addOn.effect_value; // Adding extra tokens
-        console.debug('Addon Applied', addOn.name);
-        break;
-      case "break_time_reduction":
-        sessionDetails.breakTimeReduction = addOn.effect_value;
-        console.debug('Addon Applied', addOn.name);
-        break;
-      default:
-        console.debug('Addon Not Applied', addOn.name);
-        break;
-    }
-      setSessionDetails((prev) => ({...prev,...sessionDetails}));
-  });
-
-}
 
   async function getAchievementsWithCompletion() {
     const query = `SELECT achievements.*, 
@@ -176,6 +136,7 @@ function applyAddons(sessionDetails) {
       );
     }
   }
+
   // Hide the bottom tab bar when the session is active
   React.useEffect(() => {
     if (sessionDetails.isSessionStarted) {

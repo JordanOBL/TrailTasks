@@ -15,6 +15,7 @@ import {
   User_Session,
   Addon,
   User_Addon,
+  Session_Addon
 } from './watermelon/models';
 
 import App from './App';
@@ -54,6 +55,7 @@ const WrappedApp = () => {
       User_Purchased_Trail,
       Addon,
       User_Addon,
+      Session_Addon
     ],
   });
   return (

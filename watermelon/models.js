@@ -10,9 +10,10 @@ import {
   writer,
   readonly,
 } from '@nozbe/watermelondb/decorators';
+import {prepareCreate, prepareUpdate, markAsDeleted} from '@nozbe/watermelondb/Model';
 //@ts-nocheck
 import formatDateTime from '../helpers/formatTime';
-
+import handleError from '../helpers/ErrorHandler';
 export class Park extends Model {
   static table = 'parks';
   static associations = {
@@ -80,7 +81,7 @@ export class Trail extends Model {
     await deleteThisHike[0].markAsDeleted();
   }
 
- 
+
 }
 export class User extends Model {
   static table = 'users';
@@ -146,6 +147,71 @@ export class User extends Model {
     return null;
   }
 
+  //create new session
+   @writer async startNewSession(sessionDetails) {
+    try{
+      const sessionsAddons = await this.collections.get('sessions_addons')
+      console.debug('in models startNewSession, sessionsAddons', sessionsAddons)
+    //get user addons
+    const usersAddons = await this.usersAddons;
+    console.debug('in models startNewSession, usersAddons', usersAddons)
+    console.debug('in models startNewSession, sessionDetails', sessionDetails)
+ 
+
+    console.debug('in models startNewSession preparing to create new session')
+    //create a new session and get sessionID to add sessionaddons
+    const newSession = await this.collections.get('users_sessions')
+      //@ts-ignore
+      .prepareCreate((userSession: User_Session) => {
+        userSession.userId = this.id;
+        userSession.sessionName = sessionDetails.sessionName;
+        userSession.sessionDescription = '';
+        userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
+        userSession.totalSessionTime = '0';
+        userSession.totalDistanceHiked = '0.00';
+        userSession.dateAdded = formatDateTime(new Date());
+      })
+
+    await this.batch(
+      newSession,
+      //create session addons
+      ...sessionDetails.backpack.map((backpackAddon) =>{
+          if(backpackAddon.addon != null) {
+            console.debug('in models startNewSession, backpack batch', backpackAddon.addon)
+         return this.collections.get('sessions_addons').prepareCreate((sessionAddon) => {
+          sessionAddon.sessionId = newSession.id;
+          sessionAddon.addonId = backpackAddon.addon.id;
+        })
+          }
+      }),
+      //decrement users used addon
+      ...usersAddons.map((backpackAddon) =>{
+            console.debug('in models startNewSession, decrementing', backpackAddon)
+          return backpackAddon
+            .prepareUpdate((userAddon) => {
+              userAddon.quantity = backpackAddon.quantity - 1;    
+            })
+        })
+
+    )
+    usersAddons.forEach(async (backpackAddon) =>{
+      console.debug('in models startNewSession, deleting', backpackAddon)
+        if( backpackAddon != null && backpackAddon.quantity - 1 <= 0) {
+          console.debug('in models startNewSession, deleting', backpackAddon)
+          return await backpackAddon
+            .markAsDeleted()
+        }
+    })
+
+
+    console.debug('in models startNewSession, done')
+      return {newSession, status: true}
+  
+    } catch(e) {
+      handleError(e, 'Error user.startNewSession()');
+      return {data: null, status: false}
+    }
+  }
 
   @writer async getTodaysTotalSessionTime() {
     const query = `SELECT SUM(total_session_time) AS total_time_today
@@ -286,33 +352,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return subscription[0];
   }
 
-  @writer async addUserAddonToBackpack(id){
-    try{
-      const userHasAddon = await this.usersAddons.extend(Q.where('addon_id', id));
-      console.debug('userHasAddon', userHasAddon);  
-      if(userHasAddon.length == 0){
-        const userAddon = await this.collections
-          .get('users_addons')
-          .create((user_addon) => {
-            user_addon.userId = this.id;
-            user_addon.addonId = id;
-            user_addon.quantity = 1;
-          });
-        return userAddon[0];
-      }else{
-        const userAddon = await userHasAddon[0].update(
-          (user_addon) => {
-            user_addon.quantity = userHasAddon[0].quantity + 1;
-          }
-        )
-        return userAddon[0];
-      }
-
-    }catch(err){
-      console.error('Error in addUserAddon:', err);
-      throw err; // Rethrow the error to handle it at the higher level
-    }
-  }
   @writer async buyAddon(addon){
     console.debug('buyAddon', addon.id);
     try{
@@ -343,7 +382,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           user.trailTokens = this.trailTokens - addon.price;
         }
       )
-    
+
     }catch(err){
       console.error('Error in buyAddon:', err);
       throw err; // Rethrow the error to handle it at the higher level
@@ -689,6 +728,7 @@ export class Addon extends Model {
   static table = 'addons';
   static associations = {
     users_addons: {type: 'has_many', foreignKey: 'addon_id'},
+    sessions_addons: {type: 'has_many', foreignKey: 'addon_id'},
   };
 
   @field('name') name;
@@ -700,8 +740,8 @@ export class Addon extends Model {
   @field('effect_value') effectValue;
   @readonly @date('created_at') createdAt;
   @readonly @date('updated_at') updatedAt;
-  
-  
+
+
 }
 
 export class User_Addon extends Model {
@@ -724,13 +764,19 @@ export class User_Addon extends Model {
 export class Session_Addon extends Model {
   static table = 'sessions_addons';
   static associations = {
-    users_sessions:{type: 'belongs_to', key: 'session_id' }
+    users_sessions:{type: 'belongs_to', key: 'session_id' },
+    addons:{type: 'belongs_to', key: 'addon_id' }
   }
 
   @field('session_id') sessionId;
   @field('addon_id') addonId;
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;
+
+  @relation('users_sessions', 'session_id') userSession;
+  @relation('addons', 'addon_id') addon; //relation('addons', 'addon_id') addon;
+
+
 
 
 }
