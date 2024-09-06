@@ -217,7 +217,7 @@ export async function pauseSession(
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>
 ) {
   try {
-    setSessionDetails((prev) => ({...prev, isPaused: true}));
+    setSessionDetails((prev) => ({...prev,strikes: prev.strikes+1,pace: prev.pace - prev.penaltyValue < prev.minimumPace ? prev.minimumPace : prev.pace - prev.penaltyValue, isPaused: true}));
     return true;
   } catch (err) {
     handleError(err, "pauseSession");
@@ -317,6 +317,7 @@ async function speedModifier(
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   sessionDetails: SessionDetails
 ) {
+  //not being called
   function decreasePace(
     cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
     sessionDetails: SessionDetails
@@ -338,25 +339,25 @@ async function speedModifier(
   ) {
     if (sessionDetails.pace < sessionDetails.maximumPace) {
       cb((prev) => {
-        return {...prev, pace: (prev.pace + prev.paceIncreaseValue), strikes: 0};
+        return {...prev, pace: (prev.pace + prev.paceIncreaseValue)};
       });
     } else {
       cb((prev) => {
-        return {...prev, pace: sessionDetails.maximumPace, strikes: 0};
+        return {...prev, pace: sessionDetails.maximumPace};
       });
     }
   }
   if (sessionDetails.sessionName.toLowerCase() === 'fastasfuqboi') return;
   if (
-    (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0 ||
-      sessionDetails.elapsedPomodoroTime ===
-        sessionDetails.initialPomodoroTime) &&
+    (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0) &&
     sessionDetails.elapsedShortBreakTime === 0 &&
     sessionDetails.elapsedLongBreakTime === 0
   ) {
     Vibration.vibrate(1000);
-    if (sessionDetails.strikes === 0) increasePace(cb, sessionDetails);
-    else decreasePace(cb, sessionDetails);
+    //if (sessionDetails.strikes === 0) increasePace(cb, sessionDetails);
+    increasePace(cb, sessionDetails);
+
+    //else decreasePace(cb, sessionDetails);
   }
 }
 
