@@ -309,6 +309,18 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     });
     return;
   }
+
+  @writer async awardCompletedTrailTokens(reward){
+    try{
+      await this.update((user) => {
+        user.trailTokens += reward;
+      });
+      console.log('user Rewarded for completeing trail:', reward);
+    } catch(e){
+      console.error(e);
+    }
+
+  }
   //Add User`
   @writer async addUser(
     username,
@@ -735,6 +747,7 @@ export class Addon extends Model {
   @field('description') description;
   @field('level') level;
   @field('price') price;
+  @field('image_url') imageUrl;
   @field('required_total_miles') requiredTotalMiles;
   @field('effect_type') effectType;
   @field('effect_value') effectValue;

@@ -186,6 +186,7 @@ const schema = appSchema({
         {name: 'effect_value', type: 'number'},
         {name:'required_total_miles', type: 'number'},
         {name:'price', type: 'number'},
+        {name:'image_url', type: 'string', isOptional: true},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],

@@ -76,9 +76,10 @@ const TimerScreen = ({
     totalSessionTime: 0,
     totalDistanceHiked: 0.0,
     trailTokenBonus: 0,
+    trailTokensEarned:0,
     isLoading: false,
     isError: false,
-    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:250.0}]
+    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
   });
 
 
@@ -193,6 +194,7 @@ const TimerScreen = ({
           style={[styles.returnButton, {backgroundColor: 'green'}]}>
           <Text
             style={{
+              alignSelf: 'center',
               color: 'rgb(28,29,31)',
               fontSize: 18,
               fontWeight: '800',
@@ -223,11 +225,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 10,
     marginVertical: 10,
-    alignItems: 'center',
+    alignSelf: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 150,
-    alignSelf: 'center',
+    bottom: 50,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

@@ -36,7 +36,7 @@ const AddOnStoreScreen = ({user, userAddons}) => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Welcome to the Add-On Store</Text>
       <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
-        <Text style={styles.miles}>Trail Tokens: {user.trailTokens}</Text>
+        <Text style={styles.tokens}>Trail Tokens: {user.trailTokens}</Text>
         <Text style={styles.miles}>Total Miles: {user.totalMiles}</Text>
       </View>
       <EnhancedAddOnStore availableAddOns={addons} usersAddons={userAddons} user={user} onPurchase={handlePurchase} />   
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    //backgroundColor: '#f5f5f5',
     backgroundColor: 'rgb(18, 19, 21)',
+    marginBottom: 50
   },
   header: {
     fontSize: 24,
@@ -67,15 +67,11 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   miles: {
-    fontSize: 18,
-    marginBottom: 20,
+    fontSize: 16,
     color: 'white',
   },
-  purchasedAddOns: {
-    marginTop: 30,
-  },
-  addOnItem: {
-    fontSize: 18,
-    paddingVertical: 5,
-  },
+  tokens: {
+    fontSize: 16,
+    color: 'gold',
+  }
 });

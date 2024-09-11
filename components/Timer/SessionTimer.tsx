@@ -16,7 +16,7 @@ import {
 } from '../../helpers/Timer/timerFlow';
 import {Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-
+import TimerBackpack from './TimerBackpack';
 import {achievementManagerInstance} from '../../helpers/Achievements/AchievementManager';
 import {AchievementsWithCompletion} from '../../types/achievements';
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
@@ -62,11 +62,15 @@ const SessionTimer = ({
     ]);
   }, []);
 
-  const onCompletedTrail = useCallback((trail: Trail) => {
+  const onCompletedTrail = useCallback((trail: Trail, reward: number) => {
     setCompletedTrails((prevCompletedTrails) => [
       ...prevCompletedTrails,
       trail,
     ]);
+    setSessionDetails((prevSessionDetails) => ({
+      ...prevSessionDetails,
+      trailTokensEarned: prevSessionDetails.trailTokensEarned + reward,
+    }))
   }, []);
 
   const pomodoroCountdown = useMemo(
@@ -135,9 +139,9 @@ const SessionTimer = ({
   useEffect(() => {
     if (
       user &&
-      sessionDetails &&
-      currentSessionCategory &&
-      achievementsWithCompletion
+        sessionDetails &&
+        currentSessionCategory &&
+        achievementsWithCompletion
     ) {
       checkUserSessionAchievements();
     }
@@ -146,76 +150,71 @@ const SessionTimer = ({
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={{ paddingBottom: 80 }}>
-      <View style={styles.timerContainer}>
-        <Text
-          style={[
-            styles.timerText,
-            (sessionDetails.isPaused || !canHike) && styles.pausedText,
-          ]}>
-          {sessionDetails.isPaused
-            ? 'Paused'
-            : canHike
-            ? pomodoroCountdown
-            : shortBreakCountdown}
-        </Text>
-        <View style={styles.trailNameContainer}>
-          <Text style={styles.trailName}>{currentTrail.trailName}</Text>
-          <EnhancedDistanceProgressBar
-            sessionDetails={sessionDetails}
-            pace={sessionDetails.pace}
-            user={user}
-            trail={currentTrail}
-          />
-        </View>
-        <View style={styles.infoContainer}>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Sets</Text>
-            <Text style={styles.infoValue}>
-              {sessionDetails.currentSet} / {sessionDetails.sets}
-            </Text>
+        <View style={styles.timerContainer}>
+          <Text
+            style={[
+              styles.timerText,
+              (sessionDetails.isPaused || !canHike) && styles.pausedText,
+            ]}>
+            {sessionDetails.isPaused
+              ? 'Paused'
+              : canHike
+                ? pomodoroCountdown
+                : shortBreakCountdown}
+          </Text>
+          <View style={styles.trailNameContainer}>
+            <Text style={styles.trailName}>{currentTrail.trailName}</Text>
+            <EnhancedDistanceProgressBar
+              sessionDetails={sessionDetails}
+              pace={sessionDetails.pace}
+              user={user}
+              trail={currentTrail}
+            />
           </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Strikes</Text>
-            <Text style={[styles.infoValue, {color: 'rgb(217,49,7)'}]}>
-              {sessionDetails.strikes}
-            </Text>
-          </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Pace</Text>
-            <Text style={styles.infoValue}>{sessionDetails.pace} mph</Text>
-          </View>
-        </View>
-      </View>
+        <TimerBackpack sessionDetails={sessionDetails} />
+          {/* Unified background for the entire stats section */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statsGrid}>
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Sets</Text>
+                <Text style={styles.infoValue}>
+                  {sessionDetails.currentSet} / {sessionDetails.sets}
+                </Text>
+              </View>
 
-      {!sessionDetails.isPaused && (
-        <View style={styles.achievementsContainer}>
-          <Text style={styles.title}>Achievements Earned</Text>
-          {earnedAchievements.length > 0 ? (
-            earnedAchievements.map((achievement, index) => (
-              <Text key={index} style={styles.achievementItem}>
-                {achievement.achievementName}
-              </Text>
-            ))
-          ) : (
-            <></>
-          )}
-        </View>
-      )}
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Strikes</Text>
+                <Text style={[styles.infoValue]}>
+                  {sessionDetails.strikes}
+                </Text>
+              </View>
 
-      {!sessionDetails.isPaused && (
-        <View style={styles.completedTrailsContainer}>
-          <Text style={styles.title}>Completed Trails</Text>
-          {completedTrails.length > 0 ? (
-            completedTrails.map((trail, index) => (
-              <Text key={index} style={styles.achievementItem}>
-                {trail.trailName}
-              </Text>
-            ))
-          ) : (
-            <></>
-          )}
-        </View>
-      )}
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Pace</Text>
+                <Text style={styles.infoValue}>{sessionDetails.pace} mph</Text>
+              </View>
+
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Tokens</Text>
+                <Text style={styles.infoValue}>
+                  {sessionDetails.trailTokensEarned}
+                </Text>
+              </View>
+
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Achievements</Text>
+                <Text style={[styles.infoValue]}>
+                  {earnedAchievements.length}
+                </Text>
+              </View>
+
+              <View style={styles.infoBox}>
+                <Text style={styles.infoLabel}>Completed</Text>
+                <Text style={styles.infoValue}>{completedTrails.length}</Text>
+              </View>
+            </View>
+          </View>
+        </View> 
       </ScrollView>
       <View style={styles.buttonsContainer}>
         <Pressable
@@ -225,12 +224,12 @@ const SessionTimer = ({
         </Pressable>
         {sessionDetails.elapsedPomodoroTime >=
           sessionDetails.initialPomodoroTime && (
-          <Pressable
-            onPress={() => skipBreak(setSessionDetails, sessionDetails)}
-            style={[styles.button, styles.skipBreakButton]}>
-            <Text style={styles.buttonText}>Skip Break</Text>
-          </Pressable>
-        )}
+            <Pressable
+              onPress={() => skipBreak(setSessionDetails, sessionDetails)}
+              style={[styles.button, styles.skipBreakButton]}>
+              <Text style={styles.buttonText}>Skip Break</Text>
+            </Pressable>
+          )}
         <Pressable
           onPress={() =>
             sessionDetails.isPaused
@@ -271,7 +270,6 @@ const styles = StyleSheet.create({
   trailNameContainer: {
     marginBottom: 10,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
     padding: 10,
     borderRadius: 10,
   },
@@ -281,36 +279,36 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: 10,
   },
-  infoContainer: {
+  statsTitle: {
+    alignSelf: 'center',
+  },
+  statsContainer: {
+    backgroundColor: 'rgba(255,255,255,.1)', // Dark background for the whole stats section
+    padding: 15,
+    borderRadius: 15, // Rounded corners for a modern look
+    marginBottom: 20,
+  },
+  statsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 10,
+    alignItems: 'center',
   },
   infoBox: {
-    flex: 1,
+    width: '30%', // Adjust to fit 3 columns
+    marginBottom: 20,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
-    padding: 10,
-    borderRadius: 10,
-    margin: 10,
   },
   infoLabel: {
-    color: 'white',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '500',
+    color: '#aaa', // Light gray for label text
     marginBottom: 5,
   },
   infoValue: {
-    color: 'rgb(7,254,213)',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  achievementsContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 10,
+    color: '#ffffff', // White for value text
   },
   completedTrailsContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)', // Semi-transparent white background

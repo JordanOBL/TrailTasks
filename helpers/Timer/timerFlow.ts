@@ -196,9 +196,10 @@ function resetSessionState(
     totalSessionTime: 0,
     totalDistanceHiked: 0.0,
     trailTokenBonus: 0,
+    trailTokensEarned:0,
     isLoading: false,
     isError: false,
-    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:250.0}]
+    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
     };
   });
 }
@@ -339,7 +340,7 @@ async function speedModifier(
   ) {
     if (sessionDetails.pace < sessionDetails.maximumPace) {
       cb((prev) => {
-        return {...prev, pace: (prev.pace + prev.paceIncreaseValue)};
+        return {...prev, pace: prev.pace + prev.paceIncreaseValue};
       });
     } else {
       cb((prev) => {
@@ -475,6 +476,12 @@ export async function isTrailCompleted({
   try {
     if (user.trailProgress >= Number(currentTrail.trailDistance)) {
       //checkif completed hike table has column with the current trail and username
+      let calculatedReward = Math.ceil(Number(currentTrail.trailDistance));
+        const reward = currentTrail.trailOfTheWeek ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
+      
+
+        onCompletedTrail(currentTrail, reward);
+
       const existingCompletedHike = await user.hasTrailBeenCompleted(user.id, currentTrail.id);
 
 
@@ -532,9 +539,7 @@ export async function isTrailCompleted({
             queuedTrails,
           });
         }
-
-        onCompletedTrail(currentTrail);
-        const updatedCompletedHikes = await user.completedHikes;
+              const updatedCompletedHikes = await user.completedHikes;
         const achievementsEarned =
           await achievementManagerInstance.checkTrailCompletionAchievements(
             user,
@@ -545,6 +550,7 @@ export async function isTrailCompleted({
           onAchievementEarned(achievementsEarned);
         }
       }
+      await user.awardCompletedTrailTokens(reward);
 
       return true;
     }
@@ -582,7 +588,6 @@ export async function Hike({
 }) {
   try {
     //check for completed hike
-    console.debug('TimerFlow hike() sessionDetails', sessionDetails);
     await isTrailCompleted({
       watermelonDatabase,
       user,

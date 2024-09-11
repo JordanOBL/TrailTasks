@@ -58,7 +58,7 @@ const NewSessionOptions = ({
             NewSessionHandlers.SessionNameChange(setSessionDetails, value)
           }
           placeholder="New Session Name"
-          placeholderTextColor={'rgb(131,33,35)'}
+          placeholderTextColor={'rgba(211,211,211, .3)'}
         />
       </View>
       {/* SessionCategory */}
@@ -91,7 +91,7 @@ const NewSessionOptions = ({
             styles.dropdownButtonText,
             {
               color: !sessionDetails.sessionCategoryId
-                ? 'rgb(131,33,35)'
+                ? 'rgba(211,211,211, .3)'
                 : 'rgb(41,184,169)',
             },
           ]}
