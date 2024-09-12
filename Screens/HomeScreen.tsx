@@ -220,6 +220,17 @@ const HomeScreen: React.FC<Props> = ({
                 </ScreenLink>
                 <ScreenLink
                     user={user}
+                    needsActiveSubscription={false}
+                    hasActiveSubscription={
+                        true
+                    }
+                    navigation={navigation}
+                    navTo={'Shop'}>
+                    Shop
+                </ScreenLink>
+
+                <ScreenLink
+                    user={user}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
                        false

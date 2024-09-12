@@ -72,13 +72,13 @@ export const createNewUser = async ({
         //@ts-ignore
         user.trailId = '1';
         //@ts-ignore
-        user.trailProgress = 0.0;
+        user.trailProgress = '0.0';
         user.dailyStreak = 0;
         //@ts-ignore
         user.trailStartedAt = trailStartedAt;
         //@ts-ignore
-        user.trailTokens = 20;
-        user.totalMiles = 0.0;
+        user.trailTokens = 500;
+        user.totalMiles = '300.0';
 
       })
    
@@ -178,7 +178,7 @@ export const handleRegister = async ({
       ExistingUser &&
       ExistingUser.email.toLowerCase() === email.toLowerCase()
     ) {
-      setError('User Already Exists With Provided Email, Please Login');
+      setError('User Already Exists Please Login');
       return; //@ts-ignore
     } else if (
       ExistingUser &&

@@ -66,6 +66,7 @@ const Register = ({ setUser, setisRegistering, isRegistering }: Props) => {
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+            <Text style={styles.error}>{error || ''}</Text>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
                     <TextInput
@@ -167,7 +168,6 @@ const Register = ({ setUser, setisRegistering, isRegistering }: Props) => {
                             {isRegistering ? 'Login' : 'Create an Account'}
                         </Text>
                     </Pressable>
-                    <Text style={styles.error}>{error || ''}</Text>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>

@@ -54,7 +54,8 @@ const TrailsList = ({
       //@ts-ignore
       filtered = trailsCollection.filter(trail => trail.trail_of_the_week === true || trail.trail_of_the_week == 1);
     } else if (filter === 'Completed'){
-      trailsCollection.filter(trail =>
+      console.log(completedHikes)
+      filtered = trailsCollection.filter(trail =>
           completedHikes.some(completedTrail => trail.id == completedTrail.trailId))
     }
 

@@ -28,7 +28,7 @@ const UserMile = ({ index, user, hiker, userRank}: Props) => {
       </View>
       <View style={[styles.column, {width: '30%'}]}>
         <Text style={[styles.text, {color: textColor}]}>
-          {hiker?.username === user.username ?  user.totalMiles : hiker.total_miles || '0.00' } mi.
+          {!hiker?.total_miles ? '0.00' :  hiker?.total_miles } mi.
         </Text>
       </View>
     </SafeAreaView>
@@ -36,7 +36,7 @@ const UserMile = ({ index, user, hiker, userRank}: Props) => {
 };
 
 const enhance = withObservables(['user'], ({ user}) => ({
-  user
+  user,
 }));
 
 const EnhancedUserMile = enhance(UserMile);

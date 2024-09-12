@@ -1,4 +1,5 @@
 import {createStackNavigator} from '@react-navigation/stack';
+import AddOnStoreScreen from '../../Screens/AddOnStoreScreen';
 import EnhancedAchievementsScreen from '../../Screens/AchievementsScreen';
 import EnhancedCompletedHikesScreen from '../../Screens/CompletedHikesScreen';
 import FriendsScreen from '../../Screens/FriendsScreen';
@@ -60,9 +61,9 @@ export function HomeStack({user, setUser}: Props) {
       <Stack.Screen name="Settings">
         {(props: any) => <SettingsScreen user={user} {...props} />}
       </Stack.Screen>
-        {/*<Stack.Screen name="TrailDetails" >*/}
-        {/*    {(props: any) => <TrailDetailScreen user={user} {...props} />}*/}
-        {/*</Stack.Screen>*/}
+        <Stack.Screen name="Shop" >
+            {(props: any) => <AddOnStoreScreen user={user} {...props} />}
+        </Stack.Screen>
     </Stack.Navigator>
   );
 }

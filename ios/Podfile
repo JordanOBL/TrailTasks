@@ -69,7 +69,10 @@ if linkage != nil
 end
 
 target 'TrailTasks' do
-  config = use_native_modules!
+
+  pod 'PurchasesHybridCommon'
+end
+    config = use_native_modules!
 
   # Flags change depending on the env values.
   flags = get_default_flags()
@@ -106,6 +109,13 @@ target 'TrailTasks' do
       :mac_catalyst_enabled => false
     )
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
-    
+    installer.pods_project.targets.each do |target|
+          if target.name == "React-Core.common-AccessibilityResources"
+            target.remove_from_project
+          end
+        end
+
   end
-end
+
+
+
