@@ -77,8 +77,8 @@ export const createNewUser = async ({
         //@ts-ignore
         user.trailStartedAt = trailStartedAt;
         //@ts-ignore
-        user.trailTokens = 500;
-        user.totalMiles = '300.0';
+        user.trailTokens = 50;
+        user.totalMiles = '0.00';
 
       })
    
