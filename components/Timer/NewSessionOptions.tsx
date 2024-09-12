@@ -109,6 +109,7 @@ const NewSessionOptions = ({
               setSessionDetails,
               selectedItem.value
             );
+            console.log(sessionDetails);
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -199,6 +200,7 @@ const NewSessionOptions = ({
       <Pressable
         onPress={() => {
           if (sessionDetails.isSessionStarted === false) {
+            console.debug('Clikced start session, sessionDetails', sessionDetails);
             NewSessionHandlers.StartSessionClick(
               setSessionDetails,
               sessionDetails,

@@ -71,6 +71,7 @@ NewSessionHandlers.InitialPomodoroTimeChange = (
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   value: number
 ) => {
+  console.debug({value})
   cb((prev: any) => {
     return {...prev, initialPomodoroTime: value};
   });

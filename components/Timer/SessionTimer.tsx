@@ -171,7 +171,7 @@ const SessionTimer = ({
               trail={currentTrail}
             />
           </View>
-        <TimerBackpack sessionDetails={sessionDetails} />
+        <TimerBackpack sessionDetails={sessionDetails} user={user}/>
           {/* Unified background for the entire stats section */}
           <View style={styles.statsContainer}>
             <View style={styles.statsGrid}>

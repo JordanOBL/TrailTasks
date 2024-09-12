@@ -13,10 +13,8 @@ const AddOnStoreScreen = ({user, userAddons}) => {
     if (user.totalMiles >= addOn.requiredTotalMiles && user.trailTokens >= addOn.price) {
       //decrease user trail tokens
       //add addon to users_addons either full addon or update qty
-      console.debug("purchasing addon");
       await user.buyAddon(addOn);
-      console.debug("purchased addon");
-      alert(`You purchased ${addOn.name}!`);
+      alert(`You purchased ${addOn.name}`);
       return;
     }
     } catch (err) {
@@ -34,7 +32,7 @@ const AddOnStoreScreen = ({user, userAddons}) => {
   //console.log(addons);
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Welcome to the Add-On Store</Text>
+      <Text style={styles.header}>Trail Shop</Text>
       <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
         <Text style={styles.tokens}>Trail Tokens: {user.trailTokens}</Text>
         <Text style={styles.miles}>Total Miles: {user.totalMiles}</Text>

@@ -151,11 +151,8 @@ export class User extends Model {
    @writer async startNewSession(sessionDetails) {
     try{
       const sessionsAddons = await this.collections.get('sessions_addons')
-      console.debug('in models startNewSession, sessionsAddons', sessionsAddons)
     //get user addons
     const usersAddons = await this.usersAddons;
-    console.debug('in models startNewSession, usersAddons', usersAddons)
-    console.debug('in models startNewSession, sessionDetails', sessionDetails)
  
 
     console.debug('in models startNewSession preparing to create new session')
@@ -177,7 +174,6 @@ export class User extends Model {
       //create session addons
       ...sessionDetails.backpack.map((backpackAddon) =>{
           if(backpackAddon.addon != null) {
-            console.debug('in models startNewSession, backpack batch', backpackAddon.addon)
          return this.collections.get('sessions_addons').prepareCreate((sessionAddon) => {
           sessionAddon.sessionId = newSession.id;
           sessionAddon.addonId = backpackAddon.addon.id;
@@ -186,7 +182,6 @@ export class User extends Model {
       }),
       //decrement users used addon
       ...usersAddons.map((backpackAddon) =>{
-            console.debug('in models startNewSession, decrementing', backpackAddon)
           return backpackAddon
             .prepareUpdate((userAddon) => {
               userAddon.quantity = backpackAddon.quantity - 1;    
@@ -195,16 +190,13 @@ export class User extends Model {
 
     )
     usersAddons.forEach(async (backpackAddon) =>{
-      console.debug('in models startNewSession, deleting', backpackAddon)
         if( backpackAddon != null && backpackAddon.quantity - 1 <= 0) {
-          console.debug('in models startNewSession, deleting', backpackAddon)
           return await backpackAddon
             .markAsDeleted()
         }
     })
 
 
-    console.debug('in models startNewSession, done')
       return {newSession, status: true}
   
     } catch(e) {
