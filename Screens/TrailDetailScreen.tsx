@@ -53,19 +53,20 @@ const TrailDetailScreen = ({ route, navigation }) => {
         return 'Short';
     })();
 
-    const reward = (() => {
-        let calculatedReward = trailDistance;
-        if (true) { //SUBSCRIPTION
-            if (calculatedReward >= 5 && calculatedReward < 10) {
-                calculatedReward = Math.ceil(calculatedReward * 1.5);
-            } else if (calculatedReward >= 10) {
-                calculatedReward = Math.ceil(calculatedReward * 2);
-            }
-        }
-        return Math.ceil(calculatedReward)
-    })();
+//    const reward = (() => {
+//        let calculatedReward = trailDistance;
+//        if (true) { //SUBSCRIPTION
+//            if (calculatedReward >= 5 && calculatedReward < 10) {
+//                calculatedReward = Math.ceil(calculatedReward * 1.5);
+//            } else if (calculatedReward >= 10) {
+//                calculatedReward = Math.ceil(calculatedReward * 2);
+//            }
+//        }
+//        return Math.ceil(calculatedReward)
+//    })();
+//
 
-
+         const reward = trailDistance * 3 < 5 ? 5 : Math.ceil(trailDistance * 3)
 
     const getButtonText = () => {
         if (user.trailId === trail?.id) {

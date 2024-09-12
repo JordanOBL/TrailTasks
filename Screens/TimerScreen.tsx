@@ -12,7 +12,7 @@ import {
 
 import {AchievementsWithCompletion} from '../types/achievements';
 import EnhancedSessionTimer from '../components/Timer/SessionTimer';
-import NewSessionOptions from '../components/Timer/NewSessionOptions';
+import EnhancedNewSessionOptions from '../components/Timer/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
@@ -60,17 +60,28 @@ const TimerScreen = ({
     elapsedPomodoroTime: 0,
     elapsedShortBreakTime: 0,
     elapsedLongBreakTime: 0,
+    breakTimeReduction:0,
     sets: 3,
     currentSet: 1,
+    minimumPace: 2,
+    maximumPace: 5.5,
     pace: 2,
+    paceIncreaseValue: .25,
+    paceIncreaseInterval: 900, //15 minutes,
+    increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
     completedHike: false,
     strikes: 0,
+    penaltyValue: 1,
     endSessionModal: false,
     totalSessionTime: 0,
     totalDistanceHiked: 0.0,
+    trailTokenBonus: 0,
+    trailTokensEarned:0,
     isLoading: false,
     isError: false,
+    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
   });
+
 
   async function getAchievementsWithCompletion() {
     const query = `SELECT achievements.*, 
@@ -126,6 +137,7 @@ const TimerScreen = ({
       );
     }
   }
+
   // Hide the bottom tab bar when the session is active
   React.useEffect(() => {
     if (sessionDetails.isSessionStarted) {
@@ -159,7 +171,7 @@ const TimerScreen = ({
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
       ) : sessionDetails.isSessionStarted === false || !userSession ? (
-        <NewSessionOptions
+        <EnhancedNewSessionOptions
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
           setUserSession={setUserSession}
@@ -182,6 +194,7 @@ const TimerScreen = ({
           style={[styles.returnButton, {backgroundColor: 'green'}]}>
           <Text
             style={{
+              alignSelf: 'center',
               color: 'rgb(28,29,31)',
               fontSize: 18,
               fontWeight: '800',
@@ -212,11 +225,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 10,
     marginVertical: 10,
-    alignItems: 'center',
+    alignSelf: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 150,
-    alignSelf: 'center',
+    bottom: 50,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

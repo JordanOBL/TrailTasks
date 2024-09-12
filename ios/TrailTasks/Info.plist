@@ -39,10 +39,14 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSCalendarsUsageDescription</key>
+    <string>This app requires access to your calendar to provide reminders.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app requires access to your photo library to allow you to upload and share trail photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSRemindersFullAccessUsageDescription</key>
-	<string>YOUR TEXT</string>
+	<string>This app requires access to your reminders to provide reminders.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>IonIcons.ttf</string>
