@@ -160,7 +160,7 @@ const SessionTimer = ({
               ? 'Paused'
               : canHike
                 ? pomodoroCountdown
-                : shortBreakCountdown}
+                : sessionDetails.currentSet < sessionDetails.sets ? shortBreakCountdown: longBreakCountdown}
           </Text>
           <View style={styles.trailNameContainer}>
             <Text style={styles.trailName}>{currentTrail.trailName}</Text>
@@ -234,7 +234,7 @@ const SessionTimer = ({
           onPress={() =>
             sessionDetails.isPaused
               ? resumeSession(setSessionDetails)
-              : pauseSession(setSessionDetails)
+              : pauseSession(sessionDetails, setSessionDetails)
           }
           style={[styles.button, styles.pauseResumeButton]}>
           <Text style={styles.buttonText}>

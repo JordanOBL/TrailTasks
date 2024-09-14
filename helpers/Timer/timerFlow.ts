@@ -215,10 +215,18 @@ export function resumeSession(
 
 //pause session
 export async function pauseSession(
+  sessionDetails: SessionDetails,
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>
 ) {
+  const isActive = sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
   try {
-    setSessionDetails((prev) => ({...prev,strikes: prev.strikes+1,pace: prev.pace - prev.penaltyValue < prev.minimumPace ? prev.minimumPace : prev.pace - prev.penaltyValue, isPaused: true}));
+    if(isActive){
+      setSessionDetails((prev) => ({...prev,strikes: prev.strikes+1,pace: prev.pace - prev.penaltyValue < prev.minimumPace ? prev.minimumPace : prev.pace - prev.penaltyValue, isPaused: true}))
+    }
+    else{
+      setSessionDetails((prev) => ({...prev, isPaused: true}))
+
+    }
     return true;
   } catch (err) {
     handleError(err, "pauseSession");
@@ -318,6 +326,11 @@ async function speedModifier(
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   sessionDetails: SessionDetails
 ) {
+
+  const notShortBreak = sessionDetails.elapsedShortBreakTime == 0;
+  const notLongBreak = sessionDetails.elapsedLongBreakTime == 0;
+  const notJustStarted = sessionDetails.elapsedPomodoroTime > 0
+  const timeToModifyPace = (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0) 
   //not being called
   function decreasePace(
     cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
@@ -325,11 +338,11 @@ async function speedModifier(
   ) {
     if (sessionDetails.pace > sessionDetails.minimumPace) {
       cb((prev) => {
-        return {...prev, pace: prev.pace - prev.penaltyValue, strikes: 0};
+        return {...prev, pace: prev.pace - prev.penaltyValue};
       });
     } else {
       cb((prev) => {
-        return {...prev, pace: sessionDetails.minimumPace, strikes: 0};
+        return {...prev, pace: sessionDetails.minimumPace};
       });
     }
   }
@@ -339,21 +352,13 @@ async function speedModifier(
     sessionDetails: SessionDetails
   ) {
     if (sessionDetails.pace < sessionDetails.maximumPace) {
-      cb((prev) => {
-        return {...prev, pace: prev.pace + prev.paceIncreaseValue};
-      });
+      cb((prev) => ({...prev, pace: prev.pace + prev.paceIncreaseValue})      );
     } else {
-      cb((prev) => {
-        return {...prev, pace: sessionDetails.maximumPace};
-      });
+      cb((prev) => ({...prev, pace: sessionDetails.maximumPace}));
     }
   }
   if (sessionDetails.sessionName.toLowerCase() === 'fastasfuqboi') return;
-  if (
-    (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0) &&
-    sessionDetails.elapsedShortBreakTime === 0 &&
-    sessionDetails.elapsedLongBreakTime === 0
-  ) {
+  if ( notShortBreak && notLongBreak && notJustStarted && timeToModifyPace) {
     Vibration.vibrate(1000);
     //if (sessionDetails.strikes === 0) increasePace(cb, sessionDetails);
     increasePace(cb, sessionDetails);
@@ -375,7 +380,7 @@ export async function shortBreak({
         sessionDetails.elapsedShortBreakTime >= sessionDetails.initialShortBreakTime
     ) {
       setSessionDetails((prev) => {
-        return {...prev, elapsedPomodoroTime: 0, currentSet: prev.currentSet + 1};
+        return {...prev, elapsedPomodoroTime: 0, currentSet: prev.currentSet + 1, elapsedShortBreakTime: 0};
       });
     } else {
       setSessionDetails((prev: any) => {
@@ -404,7 +409,7 @@ export async function longBreak({
         sessionDetails.elapsedLongBreakTime >= sessionDetails.initialLongBreakTime
     ) {
       setSessionDetails((prev) => {
-        return {...prev, elapsedPomodoroTime: 0, currentSet: 1};
+        return {...prev, elapsedPomodoroTime: 0, currentSet: 1, elapsedLongBreakTime: 0};
       });
     } else {
       setSessionDetails((prev: any) => {
@@ -615,7 +620,6 @@ export async function Hike({
       completedHikes,
       onAchievementEarned,
     });
-    //save the users current session details in the database
   } catch (err) {
       handleError(err, "Hike")
   }
