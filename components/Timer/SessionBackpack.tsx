@@ -98,9 +98,9 @@ const SessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddons,
                     <Text style={styles.addonName}>Remove</Text>
                 </View>
               </TouchableOpacity> : null}
-              {usersAddons ? (usersAddons.map((userAddon, index) => (
+              {usersAddons && usersAddons.length > 0 ? (usersAddons.map((userAddon, index) => (
                 <EnhancedAddonListItem key={index} userAddon={userAddon} selectAddon={selectAddon} />
-              ))): <Text style={styles.addonText}>No Addons Available</Text>}
+              ))): <Text style={styles.addonText}>{`Inventory empty\n Visit the 'Shop' to buy Addons!`}</Text>}
             </ScrollView>
           </Animated.View>
         </TouchableOpacity>
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     alignSelf: 'center',
+    color: 'black',
   },
   addonItem: {
     padding: 10,
@@ -167,6 +168,7 @@ const styles = StyleSheet.create({
   addonText: {
     fontSize: 16,
     color: 'black',
+    textAlign: 'center',
   },
   RemoveButtonContainer: {
     padding: 15,

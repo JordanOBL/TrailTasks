@@ -22,6 +22,7 @@ const TimerBackpack = ({ sessionDetails, user }) => {
           else if(slot.addon === null && user.totalMiles >= slot.minimumTotalMiles ) {
             return (
               <View
+                key={idx}
                 style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: 50, height: 50, marginHorizontal: 5, borderWidth: 1, borderRadius: 10, borderColor: 'rgba(211,211,211, .3)' }}
               >
                 <Text style={{ textAlign: 'center', color: 'rgba(211,211,211, .3)' }}>

@@ -4,7 +4,7 @@ import {Database} from '@nozbe/watermelondb';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
-import {synchronize} from '@nozbe/watermelondb/sync';
+import {synchronize} from '@nozbe/watermelondb/sync';``
 import handleError from "../helpers/ErrorHandler";
 
 
@@ -35,6 +35,7 @@ export async function sync(database: Database, userId: string = '0') {
         pullChanges: async ({lastPulledAt, schemaVersion, migration}) => {
           try {
             console.debug('user from pull changes', userId);
+            console.debug("pullChnages lastPulledAt", lastPulledAt);
             //get new changees in the watermelon database
             const urlParams = userId
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
@@ -47,6 +48,7 @@ export async function sync(database: Database, userId: string = '0') {
               throw new Error(await response.text());
             }
             const {changes, timestamp} = await response.json();
+            console.debug('finished pulling changes, timestamp: ', timestamp);
 
             //UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THES LINES UNCOMMENTED!!!
             //           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
@@ -84,7 +86,7 @@ export async function sync(database: Database, userId: string = '0') {
             throw new Error(await response.text());
           }
         }catch(err) {
-            handleError(err, 'sync() in PUSH CHANGES',);
+            handleError(err, 'sync() in PUSH CHANGES');
           }},
         sendCreatedAsUpdated: true,
       });

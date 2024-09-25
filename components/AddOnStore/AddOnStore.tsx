@@ -21,7 +21,7 @@ const AddOnStore = ({ availableAddOns, user, onPurchase, usersAddons }) => {
             </View>
             <Text style={styles.addonDescription}>{item.description.slice(0, item.description.length - 1)} by {item.effectValue}</Text>
             <Button
-              title={user.totalMiles >= item.requiredTotalMiles && user.trailTokens >= item.price ? 'Buy Now' : user.totalMiles < item.requiredTotalMiles ? `You need ${item.requiredTotalMiles - user.totalMiles} more miles` : `You need ${item.price - user.trailTokens} more tokens` }
+              title={user.totalMiles >= item.requiredTotalMiles && user.trailTokens >= item.price ? 'Buy Now' : user.totalMiles < item.requiredTotalMiles ? `You need ${(item.requiredTotalMiles - user.totalMiles).toFixed(2)} more miles` : `You need ${item.price - user.trailTokens} more tokens` }
               onPress={() => onPurchase(item)}
               disabled={user.totalMiles < item.requiredTotalMiles || user.trailTokens < item.price}
             />

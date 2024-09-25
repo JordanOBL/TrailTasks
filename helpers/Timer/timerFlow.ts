@@ -7,7 +7,7 @@ import {
   User_Session,
 } from '../../watermelon/models';
 //creating a new session
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import handleError from "../ErrorHandler";
 import { achievementManagerInstance } from '../Achievements/AchievementManager';
 import { AchievementsWithCompletion } from '../../types/achievements';
@@ -352,7 +352,7 @@ async function speedModifier(
     sessionDetails: SessionDetails
   ) {
     if (sessionDetails.pace < sessionDetails.maximumPace) {
-      cb((prev) => ({...prev, pace: prev.pace + prev.paceIncreaseValue})      );
+      cb((prev) => ({...prev, pace: prev.pace + sessionDetails.paceIncreaseValue})      );
     } else {
       cb((prev) => ({...prev, pace: sessionDetails.maximumPace}));
     }
