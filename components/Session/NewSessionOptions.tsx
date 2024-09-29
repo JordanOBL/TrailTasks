@@ -13,12 +13,15 @@ import { achievementManagerInstance } from '../../helpers/Achievements/Achieveme
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 import SelectDropdown from 'react-native-select-dropdown';
 import {Session_Category} from '../../watermelon/models';
-import EnhancedSessionBackpack from './SessionBackpack';
+import EnhancedNewSessionBackpack from './NewSessionBackpack';
 import timeOptions from '../../helpers/Session/timeOptions';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
+import TimerDetails from '../../types/TimerDetails';
 
 interface Props {
+  timerDetails: TimerDetails,
+  setTimerDetails: React.Dispatch<React.SetStateAction<TimerDetails>>,
   sessionDetails: any;
   setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
   setUserSession: React.Dispatch<React.SetStateAction<any>>;
@@ -30,6 +33,8 @@ interface Props {
 const NewSessionOptions = ({
   sessionDetails,
   setSessionDetails,
+  timerDetails,
+  setTimerDetails,
   setUserSession,
   sessionCategories,
   user,
@@ -138,7 +143,7 @@ const NewSessionOptions = ({
         <SelectDropdown
           data={timeOptions}
           onSelect={(selectedItem, index) => {
-            NewSessionHandlers.InitailShortBreakChange(
+            NewSessionHandlers.InitialShortBreakChange(
               setSessionDetails,
               selectedItem.value
             );
@@ -196,10 +201,10 @@ const NewSessionOptions = ({
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
         />
       </View>
-      <EnhancedSessionBackpack sessionDetails={sessionDetails} setSessionDetails={setSessionDetails} user={user} usersAddons={usersAddons}/>
+      <EnhancedNewSessionBackpack sessionDetails={sessionDetails} setSessionDetails={setSessionDetails} user={user} usersAddons={usersAddons}/>
       <Pressable
         onPress={() => {
-          if (sessionDetails.isSessionStarted === false) {
+          if (!sessionDetails.startTime) {
             console.debug('Clikced start session, sessionDetails', sessionDetails);
             NewSessionHandlers.StartSessionClick(
               setSessionDetails,
@@ -252,8 +257,10 @@ const NewSessionOptions = ({
                     }
                     });
                   setUserSession(newSession);
-                  setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, isSessionStarted: true, isLoading: false}
-                  ));
+                  setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, startTime: new Date(), isLoading: false}));
+                  setTimerDetails((prev: any) => ({
+                    ...prev, isRunning: true, startTime: new Date(), time: sessionDetails.initialPomodoroTime
+                  }))
                 } else {
                   setSessionDetails((prev: any) => {
                     return {

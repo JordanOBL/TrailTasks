@@ -11,7 +11,7 @@ import {
 } from '../watermelon/models';
 
 import {AchievementsWithCompletion} from '../types/achievements';
-import EnhancedSessionInfo from '../components/Session/SessionInfo';
+import EnhancedActiveSession from '../components/Session/ActiveSession';
 import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -49,17 +49,13 @@ const SessionScreen = ({
     Session_Category[] | []
   >([]);
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
-    isSessionStarted: false,
-    isPaused: false,
+    startTime: '',
     sessionName: '',
     sessionDescription: '',
     sessionCategoryId: null,
     initialPomodoroTime: 1500,
     initialShortBreakTime: 300,
     initialLongBreakTime: 2700,
-    elapsedPomodoroTime: 0,
-    elapsedShortBreakTime: 0,
-    elapsedLongBreakTime: 0,
     breakTimeReduction:0,
     sets: 3,
     currentSet: 1,
@@ -81,7 +77,12 @@ const SessionScreen = ({
     isError: false,
     backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
   });
-
+  const [timerDetails, setTimerDetails] = React.useState<TimerDetails>({
+    time: 0,
+    isRunning: false,
+    isPaused: false,
+    isBreak: false,
+  })
 
   async function getAchievementsWithCompletion() {
     const query = `SELECT achievements.*, 
@@ -140,7 +141,7 @@ const SessionScreen = ({
 
   // Hide the bottom tab bar when the session is active
   React.useEffect(() => {
-    if (sessionDetails.isSessionStarted) {
+    if (sessionDetails.startTime) {
       navigation.setOptions({
         tabBarVisible: false,
       });
@@ -170,25 +171,29 @@ const SessionScreen = ({
     <SafeAreaView style={styles.container}>
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
-      ) : sessionDetails.isSessionStarted === false || !userSession ? (
+      ) : !sessionDetails.startTime && !userSession ? (
         <EnhancedNewSessionOptions
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
+          timerDetails={timerDetails}
+          setTimerDetails={setTimerDetails}
           setUserSession={setUserSession}
           sessionCategories={sessionCategories}
           user={user}
         />
       ) : (
-        <EnhancedSessionInfo
+        <EnhancedActiveSession
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
+          timerDetails={timerDetails}
+          setTimerDetails={setTimerDetails}
           achievementsWithCompletion={achievementsWithCompletion}
           userSession={userSession}
           currentSessionCategory={currentSessionCategory}
           user={user}
         />
       )}
-      {userSession && sessionDetails.isPaused == true ? (
+      {userSession && timerDetails.isPaused ? (
         <Pressable
           onPress={() => navigation.goBack()}
           style={[styles.returnButton, {backgroundColor: 'green'}]}>

@@ -1,6 +1,5 @@
 export interface SessionDetails {
-  isSessionStarted: boolean;
-  isPaused: boolean;
+  startTime: string;
   sessionName: string;
   sessionDescription: string;
   sessionCategoryId: null;

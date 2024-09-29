@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image } from 'react-native';
 import addonImages from '../../helpers/Addons/addonImages';
 
-const TimerBackpack = ({ sessionDetails, user }) => {
+const ActiveSessionBackpack = ({ sessionDetails, user }) => {
   // Ensure that backpack exists and is an array
   const backpack = sessionDetails?.backpack || [];
   return (
@@ -39,4 +39,4 @@ const TimerBackpack = ({ sessionDetails, user }) => {
   );
 };
 
-export default TimerBackpack;
+export default ActiveSessionBackpack;

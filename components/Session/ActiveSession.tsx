@@ -16,19 +16,20 @@ import {
 } from '../../helpers/Timer/timerFlow';
 import {Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import TimerBackpack from './TimerBackpack';
+import ActiveSessionBackpack from './ActiveSessionBackpack';
 import {achievementManagerInstance} from '../../helpers/Achievements/AchievementManager';
 import {AchievementsWithCompletion} from '../../types/achievements';
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
 import {SessionDetails} from '../../types/session';
-import formatCountdown from '../../helpers/Timer/formatCountdown';
 import formatTime from '../../helpers/formatTime';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
-
+import Timer from "../Timer/Timer";
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
+  timerDetails: TimerDetails;
+  setTimerDetails: React.Dispatch<React.SetStateAction<TimerDetails>>;
   userSession: User_Session;
   user: User;
   currentTrail: Trail;
@@ -37,9 +38,11 @@ interface Props {
   achievementsWithCompletion: AchievementsWithCompletion[];
   currentSessionCategory: string;
 }
-const SessionInfo = ({
+const ActiveSession = ({
   setSessionDetails,
   sessionDetails,
+  timerDetails, 
+  setTimerDetails,
   userSession,
   user,
   currentTrail,
@@ -49,7 +52,7 @@ const SessionInfo = ({
   currentSessionCategory,
 }: Props) => {
   const watermelonDatabase = useDatabase();
-
+  
   const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>(
     []
   );
@@ -73,37 +76,9 @@ const SessionInfo = ({
     }))
   }, []);
 
-  const pomodoroCountdown = useMemo(
-    () =>
-      formatCountdown(
-        sessionDetails.initialPomodoroTime,
-        sessionDetails.elapsedPomodoroTime
-      ),
-    [sessionDetails.initialPomodoroTime, sessionDetails.elapsedPomodoroTime]
-  );
-  const shortBreakCountdown = useMemo(
-    () =>
-      formatCountdown(
-        sessionDetails.initialShortBreakTime,
-        sessionDetails.elapsedShortBreakTime
-      ),
-    [sessionDetails.initialShortBreakTime, sessionDetails.elapsedShortBreakTime]
-  );
-  const longBreakCountdown = useMemo(
-    () =>
-      formatCountdown(
-        sessionDetails.initialLongBreakTime,
-        sessionDetails.elapsedLongBreakTime
-      ),
-    [sessionDetails.initialLongBreakTime, sessionDetails.elapsedLongBreakTime]
-  );
-
-  const canHike =
-    sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime;
-
   useEffect(() => {
     let intervalId: any;
-    if (!sessionDetails.isPaused) {
+    if (sessionDetails.startTime && !timerDetails.isPaused) {
       intervalId = setInterval(() => {
         Hike({
           watermelonDatabase,
@@ -114,7 +89,8 @@ const SessionInfo = ({
           currentTrail,
           setSessionDetails,
           sessionDetails,
-          canHike,
+          timerDetails,
+          setTimerDetails,
           achievementsWithCompletion,
           onAchievementEarned,
           onCompletedTrail,
@@ -122,7 +98,7 @@ const SessionInfo = ({
       }, 1000);
     }
     return () => clearInterval(intervalId);
-  }, [sessionDetails]);
+  }, [sessionDetails.startTime, timerDetails.isPaused]);
 
   const checkUserSessionAchievements = async () => {
     const results = await achievementManagerInstance.checkUserSessionAchievements(
@@ -150,18 +126,10 @@ const SessionInfo = ({
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={{ paddingBottom: 80 }}>
-        <View style={styles.timerContainer}>
-          <Text
-            style={[
-              styles.timerText,
-              (sessionDetails.isPaused || !canHike) && styles.pausedText,
-            ]}>
-            {sessionDetails.isPaused
-              ? 'Paused'
-              : canHike
-                ? pomodoroCountdown
-                : sessionDetails.currentSet < sessionDetails.sets ? shortBreakCountdown: longBreakCountdown}
-          </Text>
+        <Timer
+          timerDetails={timerDetails}
+          setTimerDetails={setTimerDetails}
+        />
           <View style={styles.trailNameContainer}>
             <Text style={styles.trailName}>{currentTrail.trailName}</Text>
             <EnhancedDistanceProgressBar
@@ -171,7 +139,7 @@ const SessionInfo = ({
               trail={currentTrail}
             />
           </View>
-        <TimerBackpack sessionDetails={sessionDetails} user={user}/>
+        <ActiveSessionBackpack sessionDetails={sessionDetails} user={user}/>
           {/* Unified background for the entire stats section */}
           <View style={styles.statsContainer}>
             <View style={styles.statsGrid}>
@@ -214,7 +182,6 @@ const SessionInfo = ({
               </View>
             </View>
           </View>
-        </View> 
       </ScrollView>
       <View style={styles.buttonsContainer}>
         <Pressable
@@ -252,21 +219,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     padding: 20,
   },
-  timerContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  timerText: {
-    fontSize: 60,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 10,
-    color: 'rgb(7,254,213)',
-  },
-  pausedText: {
-    color: 'rgb(217,49,7)',
-  },
+
   trailNameContainer: {
     marginBottom: 10,
     alignItems: 'center',
@@ -386,5 +339,5 @@ const enhance = withObservables(
   })
 );
 
-const EnhancedSessionInfo = enhance(SessionInfo);
-export default EnhancedSessionInfo;
+const EnhancedActiveSession = enhance(ActiveSession);
+export default EnhancedActiveSession;
