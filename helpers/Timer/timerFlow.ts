@@ -326,11 +326,10 @@ async function speedModifier(
   cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
   sessionDetails: SessionDetails
 ) {
-
-  const notShortBreak = sessionDetails.elapsedShortBreakTime == 0;
-  const notLongBreak = sessionDetails.elapsedLongBreakTime == 0;
-  const notJustStarted = sessionDetails.elapsedPomodoroTime > 0
-  const timeToModifyPace = (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0) 
+  const isShortBreak = sessionDetails.elapsedShortBreakTime > 0
+  const isLongBreak = sessionDetails.elapsedLongBreakTime > 0
+  const isFocusTime = sessionDetails.elapsedPomodoroTime > 0 
+  const timeToModifyPace = (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0 ) && sessionDetails.elapsedPomodoroTime != 0 
   //not being called
   function decreasePace(
     cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
@@ -352,13 +351,13 @@ async function speedModifier(
     sessionDetails: SessionDetails
   ) {
     if (sessionDetails.pace < sessionDetails.maximumPace) {
-      cb((prev) => ({...prev, pace: prev.pace + sessionDetails.paceIncreaseValue})      );
+      cb((prev) => ({...prev, pace: prev.pace + prev.paceIncreaseValue}));
     } else {
-      cb((prev) => ({...prev, pace: sessionDetails.maximumPace}));
+      cb((prev) => ({...prev, pace: prev.maximumPace}));
     }
   }
   if (sessionDetails.sessionName.toLowerCase() === 'fastasfuqboi') return;
-  if ( notShortBreak && notLongBreak && notJustStarted && timeToModifyPace) {
+  if ( isFocusTime && !isShortBreak && !isLongBreak && timeToModifyPace) {
     Vibration.vibrate(1000);
     //if (sessionDetails.strikes === 0) increasePace(cb, sessionDetails);
     increasePace(cb, sessionDetails);
@@ -375,7 +374,7 @@ export async function shortBreak({
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   sessionDetails: SessionDetails;
 }) {
-  try {//increase session detailes elaposedPomodorotime every second
+  try {
     if (
         sessionDetails.elapsedShortBreakTime >= sessionDetails.initialShortBreakTime
     ) {
@@ -434,7 +433,7 @@ export function skipBreak(
       cb((prev) => {
         return {
           ...prev,
-          elapsedPomodoroTime: 0,
+          elapsedPomodoroTime: 1,
           elapsedShortBreakTime: prev.initialShortBreakTime,
           elapsedLongBreakTime: prev.initialLongBreakTime,
           currentSet: prev.currentSet + 1,
@@ -444,7 +443,7 @@ export function skipBreak(
       cb((prev) => {
         return {
           ...prev,
-          elapsedPomodoroTime: 0,
+          elapsedPomodoroTime: 1,
           elapsedShortBreakTime: prev.initialShortBreakTime,
           elapsedLongBreakTime: prev.initialLongBreakTime,
           currentSet: 1,
