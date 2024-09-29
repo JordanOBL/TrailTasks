@@ -37,7 +37,7 @@ interface Props {
   achievementsWithCompletion: AchievementsWithCompletion[];
   currentSessionCategory: string;
 }
-const SessionTimer = ({
+const SessionInfo = ({
   setSessionDetails,
   sessionDetails,
   userSession,
@@ -386,5 +386,5 @@ const enhance = withObservables(
   })
 );
 
-const EnhancedSessionTimer = enhance(SessionTimer);
-export default EnhancedSessionTimer;
+const EnhancedSessionInfo = enhance(SessionInfo);
+export default EnhancedSessionInfo;

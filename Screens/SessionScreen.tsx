@@ -11,8 +11,8 @@ import {
 } from '../watermelon/models';
 
 import {AchievementsWithCompletion} from '../types/achievements';
-import EnhancedSessionTimer from '../components/Timer/SessionTimer';
-import EnhancedNewSessionOptions from '../components/Timer/NewSessionOptions';
+import EnhancedSessionInfo from '../components/Session/SessionInfo';
+import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
@@ -27,7 +27,7 @@ interface Props {
   currentTrail: Trail;
   userAchievements: User_Achievement[];
 }
-const TimerScreen = ({
+const SessionScreen = ({
   user,
   setUser,
   currentTrail,
@@ -179,7 +179,7 @@ const TimerScreen = ({
           user={user}
         />
       ) : (
-        <EnhancedSessionTimer
+        <EnhancedSessionInfo
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
           achievementsWithCompletion={achievementsWithCompletion}
@@ -214,8 +214,8 @@ const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
   userAchievements: user.usersAchievements.observe(),
 }));
 
-const EnhancedTimerScreen = enhance(TimerScreen);
-export default EnhancedTimerScreen;
+const EnhancedSessionScreen = enhance(SessionScreen);
+export default EnhancedSessionScreen;
 
 const styles = StyleSheet.create({
   container: {flex: 1},
