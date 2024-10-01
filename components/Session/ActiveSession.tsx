@@ -7,7 +7,7 @@ import {
   User_Session,
 } from '../../watermelon/models';
 import {
-  Hike,
+  updateSession,
   endSession,
   pauseSession,
   resumeSession,
@@ -24,12 +24,14 @@ import {SessionDetails} from '../../types/session';
 import formatTime from '../../helpers/formatTime';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import withObservables from '@nozbe/with-observables';
-import Timer from "../Timer/Timer";
+import SessionTimer from "../Timer/SessionTimer";
+import NextHundredthMileSeconds from '../../helpers/Timer/nextHundredthMileSeconds.ts';
+
 interface Props {
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  timerDetails: TimerDetails;
-  setTimerDetails: React.Dispatch<React.SetStateAction<TimerDetails>>;
+  timer: Timer;
+  setTimer: React.Dispatch<React.SetStateAction<Timer>>;
   userSession: User_Session;
   user: User;
   currentTrail: Trail;
@@ -41,8 +43,8 @@ interface Props {
 const ActiveSession = ({
   setSessionDetails,
   sessionDetails,
-  timerDetails, 
-  setTimerDetails,
+  timer, 
+  setTimer,
   userSession,
   user,
   currentTrail,
@@ -51,6 +53,7 @@ const ActiveSession = ({
   achievementsWithCompletion,
   currentSessionCategory,
 }: Props) => {
+
   const watermelonDatabase = useDatabase();
   
   const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>(
@@ -76,30 +79,55 @@ const ActiveSession = ({
     }))
   }, []);
 
-  useEffect(() => {
-    let intervalId: any;
-    if (sessionDetails.startTime && !timerDetails.isPaused) {
-      intervalId = setInterval(() => {
-        Hike({
-          watermelonDatabase,
-          user,
-          userSession,
-          completedHikes,
-          queuedTrails,
-          currentTrail,
-          setSessionDetails,
-          sessionDetails,
-          timerDetails,
-          setTimerDetails,
-          achievementsWithCompletion,
-          onAchievementEarned,
-          onCompletedTrail,
-        });
-      }, 1000);
-    }
-    return () => clearInterval(intervalId);
-  }, [sessionDetails.startTime, timerDetails.isPaused]);
 
+const sessionUpdateFrequency = useMemo(() => {
+  return NextHundredthMileSeconds(timer.pace);
+}, [timer.pace]);
+
+const notJustStarted = useMemo(() => {
+  return (
+    (timer.time < timer.initialPomodoroTime)
+    
+  );
+}, [timer.time, timer.isBreak, timer.initialPomodoroTime, timer.initialShortBreakTime, timer.initialLongBreakTime]);
+
+const canIncreaseDistance = useMemo(() => {
+  return notJustStarted && timer.startTime !== null && !timer.isPaused && !timer.isBreak;
+}, [notJustStarted, timer.startTime, timer.isPaused, timer.isBreak]);
+
+useEffect(() => {
+  let intervalId: NodeJS.Timeout | null = null;
+
+  if (canIncreaseDistance) {
+    intervalId = setInterval(() => {
+      updateSession({
+        watermelonDatabase,
+        user,
+        userSession,
+        completedHikes,
+        queuedTrails,
+        currentTrail,
+        setSessionDetails,
+        sessionDetails,
+        timer,
+        setTimer,
+        achievementsWithCompletion,
+        onAchievementEarned,
+        onCompletedTrail,
+      });
+    }, sessionUpdateFrequency * 1000);
+  }
+
+  // Cleanup on component unmount or dependencies change
+  return () => {
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+    }
+  };
+}, [
+  canIncreaseDistance,
+  sessionUpdateFrequency,
+]);
   const checkUserSessionAchievements = async () => {
     const results = await achievementManagerInstance.checkUserSessionAchievements(
       user,
@@ -126,13 +154,18 @@ const ActiveSession = ({
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={{ paddingBottom: 80 }}>
-        <Timer
-          timerDetails={timerDetails}
-          setTimerDetails={setTimerDetails}
-        />
+        <SessionTimer
+          timer={timer}
+          setTimer={setTimer}
+          minimumPace={sessionDetails.minimumPace}
+          maximumPace={sessionDetails.maximumPace}
+          paceIncreaseInterval={sessionDetails.paceIncreaseInterval}
+          paceIncreaseValue={sessionDetails.paceIncreaseValue}
+        /> 
           <View style={styles.trailNameContainer}>
             <Text style={styles.trailName}>{currentTrail.trailName}</Text>
             <EnhancedDistanceProgressBar
+            timer={timer}
               sessionDetails={sessionDetails}
               pace={sessionDetails.pace}
               user={user}
@@ -146,7 +179,7 @@ const ActiveSession = ({
               <View style={styles.infoBox}>
                 <Text style={styles.infoLabel}>Sets</Text>
                 <Text style={styles.infoValue}>
-                  {sessionDetails.currentSet} / {sessionDetails.sets}
+                  {timer.currentSet} / {timer.sets}
                 </Text>
               </View>
 
@@ -159,7 +192,7 @@ const ActiveSession = ({
 
               <View style={styles.infoBox}>
                 <Text style={styles.infoLabel}>Pace</Text>
-                <Text style={styles.infoValue}>{sessionDetails.pace} mph</Text>
+                <Text style={styles.infoValue}>{timer.pace} mph</Text>
               </View>
 
               <View style={styles.infoBox}>
@@ -185,27 +218,26 @@ const ActiveSession = ({
       </ScrollView>
       <View style={styles.buttonsContainer}>
         <Pressable
-          onPress={() => endSession({user, setSessionDetails, sessionDetails})}
+          onPress={() => endSession({user,timer, setTimer, setSessionDetails, sessionDetails})}
           style={[styles.button, styles.endSessionButton]}>
           <Text style={styles.buttonText}>End Session</Text>
         </Pressable>
-        {sessionDetails.elapsedPomodoroTime >=
-          sessionDetails.initialPomodoroTime && (
+        {timer.isBreak && (
             <Pressable
-              onPress={() => skipBreak(setSessionDetails, sessionDetails)}
+              onPress={() => skipBreak({ timer, setTimer })}
               style={[styles.button, styles.skipBreakButton]}>
               <Text style={styles.buttonText}>Skip Break</Text>
             </Pressable>
           )}
         <Pressable
           onPress={() =>
-            sessionDetails.isPaused
-              ? resumeSession(setSessionDetails)
-              : pauseSession(sessionDetails, setSessionDetails)
+            timer.isPaused
+              ? resumeSession(setTimer)
+              : pauseSession(timer,setTimer, sessionDetails, setSessionDetails)
           }
           style={[styles.button, styles.pauseResumeButton]}>
           <Text style={styles.buttonText}>
-            {sessionDetails.isPaused ? 'Resume' : 'Pause'}
+            {timer.isPaused ? 'Resume' : 'Pause'}
           </Text>
         </Pressable>
       </View>

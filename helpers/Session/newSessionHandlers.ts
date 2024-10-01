@@ -1,6 +1,7 @@
 import {Database} from '@nozbe/watermelondb';
 import formatDateTime from '../formatDateTime';
 import {SessionDetails} from '../../types/session';
+import {Timer} from '../../types/timer';
 import { User } from '../../watermelon/models';
 import handleError from "../ErrorHandler";
 import React from "react";
@@ -8,89 +9,84 @@ import React from "react";
 const NewSessionHandlers: any = {};
 
 NewSessionHandlers.checkLocalStorageSessionSettings = async (
-  sessionCategoryId: string,
-  database: Database
+  {sessionCategoryId, database}:{ sessionCategoryId: string,
+    database: Database }
 ) => {
   try{
-  const recentSettings = await database.localStorage.get(
-    'category ' + sessionCategoryId + ' settings'
-  );
+    const recentSettings = await database.localStorage.get(
+      'category ' + sessionCategoryId + ' settings'
+    );
 
-  if (recentSettings) {
-    //@ts-ignore
-    return JSON.parse(recentSettings);
-  }
-  return undefined;
+    if (recentSettings) {
+      //@ts-ignore
+      return JSON.parse(recentSettings);
+    }
+    return undefined;
   } catch (err) {
     handleError(err, "checkLocalStorageSessionSettings")
   }
 };
 
-NewSessionHandlers.SelectSessionCategoryId = async (
-  cb: React.Dispatch<React.SetStateAction<any>>,
-  sessionCategoryId: string,
-  database: Database
+NewSessionHandlers.SelectSessionCategoryId = async ({setTimer, setSessionDetails, sessionCategoryId, database}:
+  {  setTimer: React.Dispatch<React.SetStateAction<Timer>>,
+    setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+    sessionCategoryId: string,
+    database: Database }
 ) => {
   try {
     const recentSettings =
-        await NewSessionHandlers.checkLocalStorageSessionSettings(
-            sessionCategoryId,
-            database
-        );
+      await NewSessionHandlers.checkLocalStorageSessionSettings(
+        { sessionCategoryId,
+          database }
+      );
     if (recentSettings) {
-      cb((prev: any) => {
-        return {...prev, ...recentSettings};
+      setTimer((prev: any) => {
+        return {...prev, initialPomodoroTime:recentSettings.initialPomodoroTime, initialShortBreakTime: recentSettings.initialShortBreakTime, initialLongBreakTime: recentSettings.initialLongBreakTime, time: recentSettings.initialPomodoroTime};
       });
-    } else {
-      cb((prev: any) => {
-        return {...prev, sessionCategoryId: sessionCategoryId};
-      });
-    }
+    } 
+    setSessionDetails((prev: any) => {
+      return {...prev, sessionCategoryId: sessionCategoryId};
+    });
+
   } catch (err) {
     handleError(err, "selectSessionCategoryId")
   }
 };
 
-NewSessionHandlers.SessionNameChange = (
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  value: string
-) => {
-
-  if (value.toLowerCase() === 'fastasfuqboi') {
-    cb((prev: any) => {
-      return {...prev, sessionName: value, pace: 26};
-    });
-  } else {
-    cb((prev: any) => {
-      return {...prev, sessionName: value};
-    });
-  }
-};
-
-NewSessionHandlers.InitialPomodoroTimeChange = (
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  value: number
-) => {
-  console.debug({value})
-  cb((prev: any) => {
-    return {...prev, initialPomodoroTime: value};
+NewSessionHandlers.SessionNameChange = ({
+  setSessionDetails,
+  value}:
+  { setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+    value: string }
+) => { 
+  setSessionDetails((prev: any) => {
+    return {...prev, sessionName: value};
   });
 };
 
-NewSessionHandlers.InitailShortBreakChange = (
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  value: number
+NewSessionHandlers.InitialPomodoroTimeChange = ({setTimer, value}:{ 
+  setTimer: React.Dispatch<React.SetStateAction<Timer>>,
+  value: number }
 ) => {
-  cb((prev: any) => {
+  setTimer((prev: any) => {
+    return {...prev, initialPomodoroTime: value, time: value};
+  });
+};
+
+NewSessionHandlers.InitialShortBreakChange = (
+  {setTimer, value}: {  setTimer: React.Dispatch<React.SetStateAction<Timer>>,
+    value: number }
+) => {
+  setTimer((prev: any) => {
     return {...prev, initialShortBreakTime: value};
   });
 };
 
 NewSessionHandlers.InitialLongBreakChange = (
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  value: number
+  {setTimer, value}: { setTimer: React.Dispatch<React.SetStateAction<Timer>>,
+    value: number }
 ) => {
-  cb((prev: any) => {
+  setTimer((prev: any) => {
     return {...prev, initialLongBreakTime: value};
   });
 };
@@ -98,32 +94,34 @@ NewSessionHandlers.InitialLongBreakChange = (
 
 
 NewSessionHandlers.StartSessionClick = async (
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  sessionDetails: SessionDetails,
-  user: User,
-  database: Database
+  {setTimer, timer, setSessionDetails, sessionDetails, user, database}: { setTimer: React.Dispatch<React.SetStateAction<Timer>>,
+    timer: Timer,
+    setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>,
+    sessionDetails: SessionDetails,
+    user: User,
+    database: Database }
 ) => {
   try {
-    cb((prev: any) => {
+    setSessionDetails((prev: any) => {
       return {...prev, isLoading: true};
     });
-  
-       const {newSession, status} = await user.startNewSession(sessionDetails)
+
+    const {newSession, status} = await user.startNewSession(sessionDetails)
     if (newSession && status) {
       await database.localStorage.set('sessionId', newSession.id);
       await database.localStorage.set(
         'category ' + sessionDetails.sessionCategoryId + ' settings',
         JSON.stringify({
           sessionCategoryId: sessionDetails.sessionCategoryId,
-          initialPomodoroTime: sessionDetails.initialPomodoroTime,
-          initialShortBreakTime: sessionDetails.initialShortBreakTime,
-          initialLongBreakTime: sessionDetails.initialLongBreakTime,
+          initialPomodoroTime: timer.initialPomodoroTime,
+          initialShortBreakTime: timer.initialShortBreakTime,
+          initialLongBreakTime: timer.initialLongBreakTime,
         })
       );
       console.debug('returning in start session click newSession', newSession)
-       return newSession 
-      } else {
-      cb((prev: any) => {
+      return newSession 
+    } else {
+      setSessionDetails((prev: any) => {
         return {
           ...prev,
           isLoading: false,

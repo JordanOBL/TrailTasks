@@ -1,24 +1,27 @@
+import {AddOn} from "../../../watermelon/models";
 export interface SessionDetails {
-  startTime: string;
+  startTime: string | null;
   sessionName: string;
   sessionDescription: string;
   sessionCategoryId: null;
-  initialPomodoroTime: number;
-  initialShortBreakTime: number;
-  initialLongBreakTime: number;
-  elapsedPomodoroTime: number;
-  elapsedShortBreakTime: number;
-  elapsedLongBreakTime: number;
-  sets: number;
-  currentSet: number;
-  pace: number;
   completedHike: boolean;
+  breakTimeReduction: number;
+  minimumPace: number;
+  maximumPace: number;
+  paceIncreaseValue: number;
+  paceIncreaseInterval: number;
+  penaltyValue: number;
+  increasePaceOnBreakValue: number;
   strikes: number;
   endSessionModal: boolean;
   totalSessionTime: number;
   totalDistanceHiked: number;
   isLoading: boolean;
   isError: boolean;
+  backpack: {
+    addon: null|AddOn;
+    minimumTotalMiles: number;
+  }[];
 }
 
 export interface JoinedUserTrail {

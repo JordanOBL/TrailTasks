@@ -17,11 +17,11 @@ import EnhancedNewSessionBackpack from './NewSessionBackpack';
 import timeOptions from '../../helpers/Session/timeOptions';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
-import TimerDetails from '../../types/TimerDetails';
+import Timer from '../../types/TimerDetails';
 
 interface Props {
-  timerDetails: TimerDetails,
-  setTimerDetails: React.Dispatch<React.SetStateAction<TimerDetails>>,
+  timer: Timer,
+  setTimer: React.Dispatch<React.SetStateAction<TimerDetails>>,
   sessionDetails: any;
   setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
   setUserSession: React.Dispatch<React.SetStateAction<any>>;
@@ -33,8 +33,8 @@ interface Props {
 const NewSessionOptions = ({
   sessionDetails,
   setSessionDetails,
-  timerDetails,
-  setTimerDetails,
+  timer,
+  setTimer,
   setUserSession,
   sessionCategories,
   user,
@@ -60,7 +60,7 @@ const NewSessionOptions = ({
             padding: 5,
           }}
           onChangeText={(value) =>
-            NewSessionHandlers.SessionNameChange(setSessionDetails, value)
+            NewSessionHandlers.SessionNameChange({ setSessionDetails, value })
           }
           placeholder="New Session Name"
           placeholderTextColor={'rgba(211,211,211, .3)'}
@@ -74,9 +74,9 @@ const NewSessionOptions = ({
           onSelect={(selectedItem, index) =>
           {
               NewSessionHandlers.SelectSessionCategoryId(
-                setSessionDetails,
-                selectedItem.id,
-                watermelonDatabase
+                {setTimer, setSessionDetails,
+                  sessionCategoryId: selectedItem.id,
+                  database: watermelonDatabase }
               );
             }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -111,10 +111,9 @@ const NewSessionOptions = ({
           data={timeOptions}
           onSelect={(selectedItem, index) => {
             NewSessionHandlers.InitialPomodoroTimeChange(
-              setSessionDetails,
-              selectedItem.value
+              { setTimer,
+                value: selectedItem.value }
             );
-            console.log(sessionDetails);
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -123,13 +122,13 @@ const NewSessionOptions = ({
             return item.label;
           }}
           defaultButtonText={
-            sessionDetails.initialPomodoroTime
-              ? `${sessionDetails.initialPomodoroTime / 60} minutes`
+            timer.initialPomodoroTime
+              ? `${timer.initialPomodoroTime / 60} minutes`
               : '25 minutes'
           }
           defaultValue={
-            sessionDetails.initialPomodoroTime
-              ? sessionDetails.initialPomodoroTime
+            timer.initialPomodoroTime
+              ? timer.initialPomodoroTime
               : 1500
           }
           buttonStyle={styles.dropdownButtonStyle}
@@ -144,8 +143,8 @@ const NewSessionOptions = ({
           data={timeOptions}
           onSelect={(selectedItem, index) => {
             NewSessionHandlers.InitialShortBreakChange(
-              setSessionDetails,
-              selectedItem.value
+              { setTimer,
+                value: selectedItem.value }
             );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -155,13 +154,13 @@ const NewSessionOptions = ({
             return item.label;
           }}
           defaultButtonText={
-            sessionDetails.initialShortBreakTime
-              ? `${sessionDetails.initialShortBreakTime / 60} minutes`
+            timer.initialShortBreakTime
+              ? `${timer.initialShortBreakTime / 60} minutes`
               : '5 minutes'
           }
           defaultValue={
-            sessionDetails.initialShortBreakTime
-              ? sessionDetails.initialShortBreakTime
+            timer.initialShortBreakTime
+              ? timer.initialShortBreakTime
               : 300
           }
           buttonStyle={styles.dropdownButtonStyle}
@@ -176,8 +175,8 @@ const NewSessionOptions = ({
           data={timeOptions}
           onSelect={(selectedItem, index) => {
             NewSessionHandlers.InitialLongBreakChange(
-              setSessionDetails,
-              selectedItem.value
+              { setTimer,
+                value: selectedItem.value }
             );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -187,13 +186,13 @@ const NewSessionOptions = ({
             return item.label;
           }}
           defaultButtonText={
-            sessionDetails.initialLongBreakTime
-              ? `${sessionDetails.initialLongBreakTime / 60} minutes`
+            timer.initialLongBreakTime
+              ? `${timer.initialLongBreakTime / 60} minutes`
               : '45 minutes'
           }
           defaultValue={
-            sessionDetails.initialLongBreak
-              ? sessionDetails.initialLongBreakTime
+            timer.initialLongBreak
+              ? timer.initialLongBreakTime
               : 2700
           }
           buttonStyle={styles.dropdownButtonStyle}
@@ -207,10 +206,10 @@ const NewSessionOptions = ({
           if (!sessionDetails.startTime) {
             console.debug('Clikced start session, sessionDetails', sessionDetails);
             NewSessionHandlers.StartSessionClick(
-              setSessionDetails,
-              sessionDetails,
-              user,
-              watermelonDatabase
+              { timer, setTimer, setSessionDetails,
+                sessionDetails,
+                user,
+                database: watermelonDatabase }
             ).then((newSession: any) => {
                 if (newSession) {
                   console.debug('New session created', newSession);
@@ -258,8 +257,8 @@ const NewSessionOptions = ({
                     });
                   setUserSession(newSession);
                   setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, startTime: new Date(), isLoading: false}));
-                  setTimerDetails((prev: any) => ({
-                    ...prev, isRunning: true, startTime: new Date(), time: sessionDetails.initialPomodoroTime
+                  setTimer((prev: any) => ({
+                    ...prev, isRunning: true, startTime: new Date()
                   }))
                 } else {
                   setSessionDetails((prev: any) => {

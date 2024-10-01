@@ -16,6 +16,7 @@ import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
+import Timer from "../Timer/Timer";
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
 import withObservables from '@nozbe/with-observables';
@@ -49,19 +50,13 @@ const SessionScreen = ({
     Session_Category[] | []
   >([]);
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
-    startTime: '',
+    startTime: null,
     sessionName: '',
     sessionDescription: '',
     sessionCategoryId: null,
-    initialPomodoroTime: 1500,
-    initialShortBreakTime: 300,
-    initialLongBreakTime: 2700,
     breakTimeReduction:0,
-    sets: 3,
-    currentSet: 1,
     minimumPace: 2,
     maximumPace: 5.5,
-    pace: 2,
     paceIncreaseValue: .25,
     paceIncreaseInterval: 900, //15 minutes,
     increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
@@ -69,7 +64,6 @@ const SessionScreen = ({
     strikes: 0,
     penaltyValue: 1,
     endSessionModal: false,
-    totalSessionTime: 0,
     totalDistanceHiked: 0.0,
     trailTokenBonus: 0,
     trailTokensEarned:0,
@@ -77,11 +71,19 @@ const SessionScreen = ({
     isError: false,
     backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
   });
-  const [timerDetails, setTimerDetails] = React.useState<TimerDetails>({
-    time: 0,
+  const [timer, setTimer] = React.useState<Timer>({
+    startTime: null,
+    time: 1500,
     isRunning: false,
     isPaused: false,
     isBreak: false,
+    initialPomodoroTime: 1500,
+    initialShortBreakTime: 300,
+    initialLongBreakTime: 2700,
+    sets: 3,
+    currentSet: 1,
+    pace: 2,
+
   })
 
   async function getAchievementsWithCompletion() {
@@ -171,12 +173,12 @@ const SessionScreen = ({
     <SafeAreaView style={styles.container}>
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
-      ) : !sessionDetails.startTime && !userSession ? (
+      ) : !sessionDetails.startTime && !timer.isRunning ? (
         <EnhancedNewSessionOptions
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
-          timerDetails={timerDetails}
-          setTimerDetails={setTimerDetails}
+          timer={timer}
+          setTimer={setTimer}
           setUserSession={setUserSession}
           sessionCategories={sessionCategories}
           user={user}
@@ -185,15 +187,15 @@ const SessionScreen = ({
         <EnhancedActiveSession
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
-          timerDetails={timerDetails}
-          setTimerDetails={setTimerDetails}
+          timer={timer}
+          setTimer={setTimer}
           achievementsWithCompletion={achievementsWithCompletion}
           userSession={userSession}
           currentSessionCategory={currentSessionCategory}
           user={user}
         />
       )}
-      {userSession && timerDetails.isPaused ? (
+      {userSession && timer.isPaused ? (
         <Pressable
           onPress={() => navigation.goBack()}
           style={[styles.returnButton, {backgroundColor: 'green'}]}>
