@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, Animated, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import withObservables from '@nozbe/with-observables';
 import EnhancedAddonListItem from '../AddOnStore/AddonListItem';
-const SessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddons, addons }) => {
+const NewSessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddons, addons }) => {
   const [isDrawerVisible, setDrawerVisible] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [drawerAnimation] = useState(new Animated.Value(0));
@@ -115,8 +115,8 @@ const enhance = withObservables(['user', 'usersAddons'], ({ user, usersAddons })
 
 }));
 
-const EnhancedSessionBackpack = enhance(SessionBackpack);
-export default EnhancedSessionBackpack;
+const EnhancedNewSessionBackpack = enhance(NewSessionBackpack);
+export default EnhancedNewSessionBackpack;
 
 const styles = StyleSheet.create({
   container: {

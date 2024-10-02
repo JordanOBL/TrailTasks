@@ -4,17 +4,20 @@ import {Dimensions, StyleSheet, Text, View} from 'react-native';
 
 import React from 'react';
 import { SessionDetails } from '../types/session';
+import  Timer  from '../types/timer';
 import withObservables from '@nozbe/with-observables';
 
 interface Props {
   user: any;
   pace?: number;
   sessionDetails?: SessionDetails;
+  timer: Timer;
   currentTrail: any
 }
 const DistanceProgressBar = ({
   user,
   pace,
+  timer,
   currentTrail,
   sessionDetails,
  
@@ -40,12 +43,10 @@ const DistanceProgressBar = ({
         animationType="timing"
         useNativeDriver={true}
         color={
-          (sessionDetails && sessionDetails.isSessionStarted === false) ||
-          (sessionDetails && sessionDetails.isPaused === true) ||
-          (sessionDetails &&
-            sessionDetails.elapsedPomodoroTime ===
-              sessionDetails.initialPomodoroTime)
-            ? 'rgb(217,49,7)'
+          (sessionDetails && timer && !sessionDetails.startTime) ||
+          (sessionDetails && timer && timer.isPaused) ||
+          (timer && timer.isBreak)
+            ? '#E2DFDE'
             : 'rgb(7,254,213)'
         }
       /><Text

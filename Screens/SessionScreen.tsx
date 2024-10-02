@@ -11,11 +11,12 @@ import {
 } from '../watermelon/models';
 
 import {AchievementsWithCompletion} from '../types/achievements';
-import EnhancedSessionTimer from '../components/Timer/SessionTimer';
-import EnhancedNewSessionOptions from '../components/Timer/NewSessionOptions';
+import EnhancedActiveSession from '../components/Session/ActiveSession';
+import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
+import Timer from "../Timer/Timer";
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
 import withObservables from '@nozbe/with-observables';
@@ -27,7 +28,7 @@ interface Props {
   currentTrail: Trail;
   userAchievements: User_Achievement[];
 }
-const TimerScreen = ({
+const SessionScreen = ({
   user,
   setUser,
   currentTrail,
@@ -49,23 +50,13 @@ const TimerScreen = ({
     Session_Category[] | []
   >([]);
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
-    isSessionStarted: false,
-    isPaused: false,
+    startTime: null,
     sessionName: '',
     sessionDescription: '',
     sessionCategoryId: null,
-    initialPomodoroTime: 1500,
-    initialShortBreakTime: 300,
-    initialLongBreakTime: 2700,
-    elapsedPomodoroTime: 0,
-    elapsedShortBreakTime: 0,
-    elapsedLongBreakTime: 0,
     breakTimeReduction:0,
-    sets: 3,
-    currentSet: 1,
     minimumPace: 2,
     maximumPace: 5.5,
-    pace: 2,
     paceIncreaseValue: .25,
     paceIncreaseInterval: 900, //15 minutes,
     increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
@@ -73,15 +64,31 @@ const TimerScreen = ({
     strikes: 0,
     penaltyValue: 1,
     endSessionModal: false,
-    totalSessionTime: 0,
     totalDistanceHiked: 0.0,
-    trailTokenBonus: 0,
+    totalTokenBonus: 0,
     trailTokensEarned:0,
+    sessionTokensEarned:0,
     isLoading: false,
     isError: false,
     backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
   });
 
+  const [timer, setTimer] = React.useState<Timer>({
+    startTime: null,
+    isCompleted: false,
+    time: 1500,
+    isRunning: false,
+    isPaused: false,
+    isBreak: false,
+    initialPomodoroTime: 1500,
+    initialShortBreakTime: 300,
+    initialLongBreakTime: 2700,
+    sets: 3,
+    completedSets: 0,
+    pace: 2,
+    autoContinue: false
+
+  })
 
   async function getAchievementsWithCompletion() {
     const query = `SELECT achievements.*, 
@@ -140,7 +147,7 @@ const TimerScreen = ({
 
   // Hide the bottom tab bar when the session is active
   React.useEffect(() => {
-    if (sessionDetails.isSessionStarted) {
+    if (sessionDetails.startTime) {
       navigation.setOptions({
         tabBarVisible: false,
       });
@@ -170,28 +177,32 @@ const TimerScreen = ({
     <SafeAreaView style={styles.container}>
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
-      ) : sessionDetails.isSessionStarted === false || !userSession ? (
+      ) : !sessionDetails.startTime && !timer.isRunning ? (
         <EnhancedNewSessionOptions
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
+          timer={timer}
+          setTimer={setTimer}
           setUserSession={setUserSession}
           sessionCategories={sessionCategories}
           user={user}
         />
       ) : (
-        <EnhancedSessionTimer
+        <EnhancedActiveSession
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
+          timer={timer}
+          setTimer={setTimer}
           achievementsWithCompletion={achievementsWithCompletion}
           userSession={userSession}
           currentSessionCategory={currentSessionCategory}
           user={user}
         />
       )}
-      {userSession && sessionDetails.isPaused == true ? (
+      {userSession && timer.isPaused ? (
         <Pressable
           onPress={() => navigation.goBack()}
-          style={[styles.returnButton, {backgroundColor: 'green'}]}>
+          style={[styles.returnButton, {backgroundColor: '#13B3AC'}]}>
           <Text
             style={{
               alignSelf: 'center',
@@ -214,8 +225,8 @@ const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
   userAchievements: user.usersAchievements.observe(),
 }));
 
-const EnhancedTimerScreen = enhance(TimerScreen);
-export default EnhancedTimerScreen;
+const EnhancedSessionScreen = enhance(SessionScreen);
+export default EnhancedSessionScreen;
 
 const styles = StyleSheet.create({
   container: {flex: 1},
@@ -228,7 +239,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 50,
+    bottom: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -239,7 +250,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   returnButtonText: {
-    color: 'rgb(28,29,31)',
+    color: '#13B3AC',
     fontSize: 18,
     fontWeight: '800',
   },

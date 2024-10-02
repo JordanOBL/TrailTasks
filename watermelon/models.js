@@ -12,7 +12,7 @@ import {
 } from '@nozbe/watermelondb/decorators';
 import {prepareCreate, prepareUpdate, markAsDeleted} from '@nozbe/watermelondb/Model';
 //@ts-nocheck
-import formatDateTime from '../helpers/formatTime';
+import formatDateTime from '../helpers/formatDateTime';
 import handleError from '../helpers/ErrorHandler';
 export class Park extends Model {
   static table = 'parks';
@@ -270,7 +270,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     });
   }
 
-  @writer async increaseDistanceHikedWriter({user,userSession}) {
+  @writer async increaseDistanceHikedWriter({user,userSession, sessionDetails, timer}) {
     await this.batch(
       user.prepareUpdate((updatedUser) => {
         updatedUser.trailProgress = (Number(user.trailProgress) + 0.01).toFixed(2);
@@ -281,7 +281,11 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         userSession.totalDistanceHiked = (
           Number(userSession.totalDistanceHiked) + 0.01
         ).toFixed(2);
-      })
+        //new totalsessiontime = current time minus start time
+        userSession.totalSessionTime = Math.floor(
+          (new Date().getTime() - new Date(sessionDetails.startTime).getTime()) / 1000
+        );    })
+      //userSession.totalFocusTime = userSession.initialPomodoroTime * (( userSession.currentSet - 1  ) + timer.time)
     );
   }
 
@@ -302,12 +306,12 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return;
   }
 
-  @writer async awardCompletedTrailTokens(reward){
+  @writer async awardFinalSessionTokens(reward){
     try{
       await this.update((user) => {
         user.trailTokens += reward;
       });
-      console.log('user Rewarded for completeing trail:', reward);
+      console.log('user Rewarded for session:', reward);
     } catch(e){
       console.error(e);
     }

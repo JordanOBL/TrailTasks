@@ -5,22 +5,28 @@ import {
   Text,
   TextInput,
   View,
+  Switch,
 } from 'react-native';
 import React from 'react';
-import {User, User_Session} from '../../watermelon/models';
+import {User, User_Session, User_Addon} from '../../watermelon/models';
 import withObservables from '@nozbe/with-observables';
 import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 import SelectDropdown from 'react-native-select-dropdown';
 import {Session_Category} from '../../watermelon/models';
-import EnhancedSessionBackpack from './SessionBackpack';
+import EnhancedNewSessionBackpack from './NewSessionBackpack';
 import timeOptions from '../../helpers/Session/timeOptions';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
+import Timer from '../../types/TimerDetails';
+import {TimerDetails} from '../../types/timer';
+import {SessionDetails} from '../../types/session';
 
 interface Props {
-  sessionDetails: any;
-  setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
+  timer: Timer,
+  setTimer: React.Dispatch<React.SetStateAction<TimerDetails>>,
+  sessionDetails: SessionDetails;
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   setUserSession: React.Dispatch<React.SetStateAction<any>>;
   sessionCategories: Session_Category[];
   user: User;
@@ -30,6 +36,8 @@ interface Props {
 const NewSessionOptions = ({
   sessionDetails,
   setSessionDetails,
+  timer,
+  setTimer,
   setUserSession,
   sessionCategories,
   user,
@@ -38,6 +46,7 @@ const NewSessionOptions = ({
   //@ts-ignore
   const watermelonDatabase = useDatabase();
   const navigation = useNavigation();
+  const toggleAutoContinue = () => setTimer(previousState => ({...previousState, autoContinue: !previousState.autoContinue}));
 
 
   return (
@@ -55,7 +64,7 @@ const NewSessionOptions = ({
             padding: 5,
           }}
           onChangeText={(value) =>
-            NewSessionHandlers.SessionNameChange(setSessionDetails, value)
+            NewSessionHandlers.SessionNameChange({ setSessionDetails, value })
           }
           placeholder="New Session Name"
           placeholderTextColor={'rgba(211,211,211, .3)'}
@@ -69,9 +78,9 @@ const NewSessionOptions = ({
           onSelect={(selectedItem, index) =>
           {
               NewSessionHandlers.SelectSessionCategoryId(
-                setSessionDetails,
-                selectedItem.id,
-                watermelonDatabase
+                {setTimer, setSessionDetails,
+                  sessionCategoryId: selectedItem.id,
+                  database: watermelonDatabase }
               );
             }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -106,10 +115,9 @@ const NewSessionOptions = ({
           data={timeOptions}
           onSelect={(selectedItem, index) => {
             NewSessionHandlers.InitialPomodoroTimeChange(
-              setSessionDetails,
-              selectedItem.value
+              { setTimer,
+                value: selectedItem.value }
             );
-            console.log(sessionDetails);
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
             return selectedItem.label;
@@ -118,13 +126,13 @@ const NewSessionOptions = ({
             return item.label;
           }}
           defaultButtonText={
-            sessionDetails.initialPomodoroTime
-              ? `${sessionDetails.initialPomodoroTime / 60} minutes`
+            timer.initialPomodoroTime
+              ? `${timer.initialPomodoroTime / 60} minutes`
               : '25 minutes'
           }
           defaultValue={
-            sessionDetails.initialPomodoroTime
-              ? sessionDetails.initialPomodoroTime
+            timer.initialPomodoroTime
+              ? timer.initialPomodoroTime
               : 1500
           }
           buttonStyle={styles.dropdownButtonStyle}
@@ -138,9 +146,9 @@ const NewSessionOptions = ({
         <SelectDropdown
           data={timeOptions}
           onSelect={(selectedItem, index) => {
-            NewSessionHandlers.InitailShortBreakChange(
-              setSessionDetails,
-              selectedItem.value
+            NewSessionHandlers.InitialShortBreakChange(
+              { setTimer,
+                value: selectedItem.value }
             );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -150,13 +158,13 @@ const NewSessionOptions = ({
             return item.label;
           }}
           defaultButtonText={
-            sessionDetails.initialShortBreakTime
-              ? `${sessionDetails.initialShortBreakTime / 60} minutes`
+            timer.initialShortBreakTime
+              ? `${timer.initialShortBreakTime / 60} minutes`
               : '5 minutes'
           }
           defaultValue={
-            sessionDetails.initialShortBreakTime
-              ? sessionDetails.initialShortBreakTime
+            timer.initialShortBreakTime
+              ? timer.initialShortBreakTime
               : 300
           }
           buttonStyle={styles.dropdownButtonStyle}
@@ -171,8 +179,8 @@ const NewSessionOptions = ({
           data={timeOptions}
           onSelect={(selectedItem, index) => {
             NewSessionHandlers.InitialLongBreakChange(
-              setSessionDetails,
-              selectedItem.value
+              { setTimer,
+                value: selectedItem.value }
             );
           }}
           buttonTextAfterSelection={(selectedItem, index) => {
@@ -182,13 +190,13 @@ const NewSessionOptions = ({
             return item.label;
           }}
           defaultButtonText={
-            sessionDetails.initialLongBreakTime
-              ? `${sessionDetails.initialLongBreakTime / 60} minutes`
+            timer.initialLongBreakTime
+              ? `${timer.initialLongBreakTime / 60} minutes`
               : '45 minutes'
           }
           defaultValue={
-            sessionDetails.initialLongBreak
-              ? sessionDetails.initialLongBreakTime
+            timer.initialLongBreak
+              ? timer.initialLongBreakTime
               : 2700
           }
           buttonStyle={styles.dropdownButtonStyle}
@@ -196,20 +204,33 @@ const NewSessionOptions = ({
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
         />
       </View>
-      <EnhancedSessionBackpack sessionDetails={sessionDetails} setSessionDetails={setSessionDetails} user={user} usersAddons={usersAddons}/>
+      <View style={[ styles.dropdownContainer ]}>
+        <Text style={styles.label}>Auto Continue:</Text>
+        <View style={{flexDirection: 'row', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Switch
+            trackColor={{false: '#767577', true: '#81b0ff'}}
+            thumbColor={timer?.autoContinue ? '#f5dd4b' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleAutoContinue}
+            value={timer.autoContinue}
+          />
+        </View>
+      </View>
+      <EnhancedNewSessionBackpack sessionDetails={sessionDetails} setSessionDetails={setSessionDetails} user={user} usersAddons={usersAddons}/>
       <Pressable
         onPress={() => {
-          if (sessionDetails.isSessionStarted === false) {
+          if (!sessionDetails.startTime) {
             console.debug('Clikced start session, sessionDetails', sessionDetails);
             NewSessionHandlers.StartSessionClick(
-              setSessionDetails,
-              sessionDetails,
-              user,
-              watermelonDatabase
+              { timer, setTimer, setSessionDetails,
+                sessionDetails,
+                user,
+                database: watermelonDatabase }
             ).then((newSession: any) => {
                 if (newSession) {
                   console.debug('New session created', newSession);
                     const sessionDetailsWithAddons = {...sessionDetails};
+                    const timerWithAddons = {...timer};
                   console.debug('sessionDetailsWithAddons', sessionDetailsWithAddons);
                     sessionDetailsWithAddons.backpack.forEach((slot) => {
                     if(slot.addon){
@@ -218,7 +239,7 @@ const NewSessionOptions = ({
                       switch (effect) {
                         case "min_pace_increase":
                           sessionDetailsWithAddons.minimumPace = slot.addon.effectValue;
-                          sessionDetailsWithAddons.pace = slot.addon.effectValue;
+                          timerWithAddons.pace = slot.addon.effectValue;
                           console.debug('Addon Applied:', slot.addon.name);
                           break;
                         case "max_pace_increase":
@@ -230,7 +251,7 @@ const NewSessionOptions = ({
                           console.debug('Addon Applied:', slot.addon.name);
                           break;
                         case "pace_increase_value":
-                          sessionDetailsWithAddons.pace += slot.addon.effectValue; // Accumulate pace increases
+                          timerWithAddons.pace += slot.addon.effectValue; // Accumulate pace increases
                           console.debug('Addon Applied:', slot.addon.name);
                           break;
                         case "penalty_reduction":
@@ -252,8 +273,10 @@ const NewSessionOptions = ({
                     }
                     });
                   setUserSession(newSession);
-                  setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, isSessionStarted: true, isLoading: false}
-                  ));
+                  setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, startTime: new Date(), isLoading: false}));
+                  setTimer((prev: any) => ({
+                    ...timerWithAddons, isRunning: true, startTime: new Date()
+                  }))
                 } else {
                   setSessionDetails((prev: any) => {
                     return {
@@ -293,7 +316,7 @@ const NewSessionOptions = ({
       </Pressable>
       <Pressable
         onPress={() => navigation.goBack()}
-        style={[styles.startBtn, {backgroundColor: 'green'}]}>
+        style={[styles.startBtn, {backgroundColor: '#017371'}]}>
         <Text
           style={{
             color: 'rgb(28,29,31)',
@@ -355,4 +378,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignSelf: 'center',
   },
-});
+  });

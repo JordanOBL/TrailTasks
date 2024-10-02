@@ -16,13 +16,16 @@ import {Vibration} from 'react-native';
 import formatDateTime from '../formatDateTime';
 import {getBetterTime} from './getBetterTime';
 import getTimeDifference from './getTimeDifference';
-import nextHundredthMileSeconds from './nextHundrethMileSeconds';
+import NextHundredthMileSeconds from './nextHundrethMileSeconds';
 import checkDailyStreak from '../Session/checkDailyStreak';
+import Rewards from '../Session/Rewards';
 import React from "react";
+
 
 //increase distance hiked
 export async function increaseDistanceHiked({
   user,
+  timer, 
   currentTrail,
   sessionDetails,
   userSession,
@@ -31,89 +34,114 @@ export async function increaseDistanceHiked({
   completedHikes,
   onAchievementEarned
 }: {
-  user: User;
-  currentTrail: Trail;
-  userSession: User_Session;
-  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  sessionDetails: SessionDetails;
-  achievementsWithCompletion: AchievementsWithCompletion[];
-  completedHikes: Completed_Hike;
-  onAchievementEarned: any
-}) {
+    user: User;
+    timer: Timer;
+    currentTrail: Trail;
+    userSession: User_Session;
+    setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
+    sessionDetails: SessionDetails;
+    achievementsWithCompletion: AchievementsWithCompletion[];
+    completedHikes: Completed_Hike;
+    onAchievementEarned: any
+  }) {
   //UPDATE CURRENT TRAILDISTANCE in session when user walks .01 miles
-
   //increase state current_trail_distance, user total miles by .01 every .01 miles (pace dependent)
-
   try
-  {
-    const isTimeToIncreaseDistance =
-        sessionDetails.elapsedPomodoroTime > 0 &&
-        sessionDetails.elapsedPomodoroTime % nextHundredthMileSeconds(sessionDetails.pace) === 0;
-
-    const hasRemainingTrailDistance = user.trailProgress < Number(currentTrail.trailDistance);
-
-    const canIncreaseDistance = isTimeToIncreaseDistance && hasRemainingTrailDistance;
-    if (canIncreaseDistance) {
-      console.debug('updating in increaseDistanceHiked()');
-      //update users distance on database
-      await user.increaseDistanceHikedWriter({
+{
+    //update users distance on database && usersession
+    await user.increaseDistanceHikedWriter({
+      user,
+      userSession,
+      timer, 
+      sessionDetails
+    });
+    console.log("updated user distance on database");
+    //Check for any achievements that would unlock at the users current total miles hiked
+    //return array of achievements {achievementId, achievementName}[]
+    const achievementsEarned =
+      await achievementManagerInstance.checkTotalMilesAchievements(
         user,
-        userSession,
+        achievementsWithCompletion
+      );
+
+    //check if any achievements earned
+    //if so, update the Current sessions achievements list to display on the screen for user
+    if (achievementsEarned && achievementsEarned.length > 0) {
+      console.debug('calling on achievements increase Distance Hiked', {
+        achievementsEarned,
       });
-      //Check for any achievements that would unlock at the users current total miles hiked
-      //return array of achievements {achievementId, achievementName}[]
-      const achievementsEarned =
-        await achievementManagerInstance.checkTotalMilesAchievements(
-          user,
-          achievementsWithCompletion
-        );
-      
-      //check if any achievements earned
-      //if so, update the Current sessions achievements list to display on the screen for user
-      if (achievementsEarned && achievementsEarned.length > 0) {
-        console.debug('calling on achievements increase Distance Hiked', {
-          achievementsEarned,
-        });
-        onAchievementEarned(achievementsEarned);
-      }
-    }
-    //Check if session is break time
-    const timeForBreak =
-      sessionDetails.elapsedPomodoroTime ===
-      sessionDetails.initialPomodoroTime - 1;
-    if (
-      timeForBreak
-    )
-    {
-      //if break time find out which break is due
-      //if user still has more sets left until long break
-      //set and begin short break time @ 0
-      const sessionHasRemaingShortBreaks =
-        sessionDetails.currentSet < sessionDetails.sets;
-      if (sessionHasRemaingShortBreaks) {
-        setSessionDetails((prev: any) => {
-          return {
-            ...prev,
-            elapsedShortBreakTime: 0,
-          };
-        });
-      } else {
-        //if user still has used all short breaks
-        //set and begin long break time @ 0
-        setSessionDetails((prev: any) => {
-          return {
-            ...prev,
-            elapsedLongBreakTime: 0,
-          };
-        });
-      }
+      onAchievementEarned(achievementsEarned);
     }
   } catch (err) {
     handleError(err, "increaseDistanceHiked");
   }
 }
 
-//update users_miles / user
+//handle timer is zero
+export const checkTimerIsZero = ({timer, setTimer}: {timer: Timer, setTimer: React.Dispatch<React.SetStateAction<Timer>> }) => {
+
+    //Check if session is break time
+    const completedAllSets = timer.completedSets + 1 > timer.sets;
+    const timeForBreak =  timer.isBreak === false;
+    const returnFromBreak = timer.isBreak === true;
+  
+
+    // if user has completed all sets
+    if (completedAllSets) {
+      Vibration.vibrate([0, 1000, 500, 1000]);
+      setTimer((prev: Timer) => {
+        return {
+          ...prev,
+        isCompleted: true
+        };
+      });
+      return
+      //TOD0: add modal to let user to do extra set or finish
+    }
+    Vibration.vibrate(1000);
+
+    //if user has sets remaining and time for a break
+    if (timeForBreak){
+      //Find out which break is due 
+      const sessionHasRemaingShortBreaks = timer.completedSets + 1 < timer.sets;
+
+      //if user still has more short breaks left until long break
+      if (sessionHasRemaingShortBreaks) {
+        //set and begin short break time
+        setTimer((prev: Timer) => {
+          return {
+            ...prev,
+            time: prev.initialShortBreakTime,
+            isBreak: true,
+            completedSets: prev.completedSets + 1
+          };
+        });
+      } else {
+        //if user still has used all short breaks
+        //set and begin long break time @ 0
+        setTimer((prev: Timer) => {
+          return {
+            ...prev,
+            time: prev.initialLongBreakTime, 
+            isBreak: true,
+            completedSets: prev.completedSets + 1
+          };
+        });
+      }
+    }
+    //if Timer is zero because break just ended
+    else if (returnFromBreak){
+      //set and begin next focus set
+      setTimer((prev: Timer) => {
+        return {
+          ...prev,
+          time: prev.initialPomodoroTime,
+          isBreak: false,
+        };
+      });
+    }
+}
+
 
 //update new trail
 export async function updateUsersTrailAndQueue({
@@ -121,17 +149,17 @@ export async function updateUsersTrailAndQueue({
   user,
   queuedTrails,
 }: {
-  watermelonDatabase: Database;
-  user: User;
-  queuedTrails: Queued_Trail[];
-}) {
+    watermelonDatabase: Database;
+    user: User;
+    queuedTrails: Queued_Trail[];
+  }) {
   try {
     const currentDate = formatDateTime(new Date());
     //!check if user is subscribed. If so make all trails random, else only make basic subscription trails random
     const randomTrailId = Math.floor(Math.random() * 50 + 1).toString();
     //if user has set their own trails to be up next
     if (queuedTrails.length)
-    {
+  {
       //@writer
       //update user in database
       //user.current trail = users next trail in their queue
@@ -149,7 +177,7 @@ export async function updateUsersTrailAndQueue({
       }
       //if user doesnt have a trail next in their queue use a random trail
     } else
-    {
+  {
       //@writer
       //update users in database
       //user current trail is randomId from above
@@ -163,98 +191,113 @@ export async function updateUsersTrailAndQueue({
     handleError(err, "updateUsersTrailAndQueue");
   }
 }
+function resetTimerState(setTimer: React.Dispatch<React.SetStateAction<Timer>>) {
+  setTimer((prev: Timer) => {
+    return {
+      ...prev,
+      time: 0,
+      isRunning: false,
+      isBreak: false,
+      isPaused: false,
+      completedSets: 0,
+      sets: 3,
+      pace: 2,
+      autoContinue: false,
+      startTime: null,
+      isCompleted: false
+    };
+  });
+  
+}
 //reset Session State
 function resetSessionState(
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>
 ) {
-  cb((prev: SessionDetails) => {
+  setSessionDetails((prev: SessionDetails) => {
     return {
-    isSessionStarted: false,
-    isPaused: false,
-    sessionName: '',
-    sessionDescription: '',
-    sessionCategoryId: null,
-    initialPomodoroTime: 1500,
-    initialShortBreakTime: 300,
-    initialLongBreakTime: 2700,
-    elapsedPomodoroTime: 0,
-    elapsedShortBreakTime: 0,
-    elapsedLongBreakTime: 0,
-    breakTimeReduction:0,
-    sets: 3,
-    currentSet: 1,
-    minimumPace: 2,
-    maximumPace: 5.5,
-    pace: 2,
-    paceIncreaseValue: .25,
-    paceIncreaseInterval: 900, //15 minutes,
-    increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
-    completedHike: false,
-    strikes: 0,
-    penaltyValue: 1,
-    endSessionModal: false,
-    totalSessionTime: 0,
-    totalDistanceHiked: 0.0,
-    trailTokenBonus: 0,
-    trailTokensEarned:0,
-    isLoading: false,
-    isError: false,
-    backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
+      startTime: null,
+      sessionName: '',
+      sessionDescription: '',
+      sessionCategoryId: null,
+      breakTimeReduction:0,
+      minimumPace: 2,
+      maximumPace: 5.5,
+      paceIncreaseValue: .25,
+      paceIncreaseInterval: 900, //15 minutes,
+      increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
+      completedHike: false,
+      strikes: 0,
+      penaltyValue: 1,
+      endSessionModal: false,
+      totalDistanceHiked: 0.0,
+      totalTokenBonus: 0,
+      trailTokensEarned:0,
+      sessionTokensEarned:0,
+      isLoading: false,
+      isError: false,
+      backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
     };
   });
 }
 
 //resume paused session
 export function resumeSession(
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>
+  setTimer: React.Dispatch<React.SetStateAction<SetTimer>>
 ) {
-  cb((prev) => {
+  setTimer((prev) => {
     return {...prev, isPaused: false};
   });
 }
 
 //pause session
 export async function pauseSession(
+  timer: Timer,
+  setTimer: React.Dispatch<React.SetStateAction<Timer>>,
   sessionDetails: SessionDetails,
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>
 ) {
-  const isActive = sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
+  const isActive = !timer.isPaused && !timer.isBreak
+  const minimumPace = sessionDetails.minimumPace
+  const penaltyValue = sessionDetails.penaltyValue
+  const newPace = timer.pace - penaltyValue < minimumPace ? minimumPace : timer.pace - penaltyValue
+
   try {
     if(isActive){
-      setSessionDetails((prev) => ({...prev,strikes: prev.strikes+1,pace: prev.pace - prev.penaltyValue < prev.minimumPace ? prev.minimumPace : prev.pace - prev.penaltyValue, isPaused: true}))
+      setSessionDetails((prev) => ({...prev,strikes: prev.strikes+1}))
+      setTimer((prev) => ({...prev,pace: newPace, isPaused: true}))
     }
     else{
-      setSessionDetails((prev) => ({...prev, isPaused: true}))
+      setTimer((prev) => ({...prev, isPaused: true}))
 
     }
-    return true;
   } catch (err) {
     handleError(err, "pauseSession");
-    return false;
   }
 }
-
 
 //end a session by caling reset session state
 export async function endSession({
   user,
+  timer, 
+  setTimer,
   sessionDetails,
   setSessionDetails,
 }: 
-{
+  {
     user: User;
+    timer: Timer;
+    setTimer: React.Dispatch<React.SetStateAction<SetTimer>>;
     sessionDetails: SessionDetails;
-  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  
- 
-}) {
+    setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
+  }) {
   try {
-    
-
     //check daily streak
     // @ts-ignore
+    const sessionTokensReward = Rewards.calculateSessionTokens({setSessionDetails,sessionDetails, timer})
+    await Rewards.rewardFinalTokens({sessionDetails, sessionTokensReward, user})
     await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
+    resetTimerState(setTimer)
   } catch (err: any) {
     handleError(err, "endSession");
     setSessionDetails((prev) => {
@@ -263,190 +306,68 @@ export async function endSession({
   }
 }
 
-async function increaseElapsedTime({
-  setSessionDetails,
-  sessionDetails,
-  canHike,
-  userSession,
-  user,
-  currentTrail,
-  achievementsWithCompletion,
-  completedHikes,
-  onAchievementEarned
-}: {
-  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  sessionDetails: SessionDetails;
-  canHike?: boolean;
-  userSession: User_Session;
-  user: User;
-  currentTrail: Trail;
-  achievementsWithCompletion: AchievementsWithCompletion[];
-    completedHikes: Completed_Hike[];
-  onAchievementEarned: any
-}) {
-  try {
-    if (sessionDetails.isPaused === false) {
-      if (
-          sessionDetails.elapsedPomodoroTime < sessionDetails.initialPomodoroTime
-      ) {
-        // Increase elapsed time in state first
-        setSessionDetails((prev: any) => ({
-          ...prev,
-          elapsedPomodoroTime: prev.elapsedPomodoroTime + 1,
-        }));
 
-        // Perform asynchronous operations after state update
-        await Promise.all([
-          userSession.updateTotalSessionTime(),
-          increaseDistanceHiked({
-            user,
-            //@ts-ignore
-            currentTrail,
-            userSession,
-            sessionDetails,
-            setSessionDetails,
-            achievementsWithCompletion,
-            //@ts-ignore
-            completedHikes,
-            onAchievementEarned
-          }),
-        ]);
-      } else if (sessionDetails.currentSet < sessionDetails.sets) {
-        await shortBreak({sessionDetails, setSessionDetails});
-      } else if (sessionDetails.currentSet >= sessionDetails.sets) {
-        await longBreak({sessionDetails, setSessionDetails});
-      }
-    }
-  }catch(err){
-    handleError(err, "increaseElapsedTime");
-  }
-}
-
-async function speedModifier(
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  sessionDetails: SessionDetails
+export async function checkPaceIncrease({timer, setTimer, paceIncreaseInterval, paceIncreaseValue, maximumPace, minimumPace}:
+  {  timer: Timer, 
+    setTimer: React.Dispatch<React.SetStateAction<SetTimer>>, 
+    paceIncreaseInterval: number,
+    paceIncreaseValue: number,
+    maximumPace: number,
+    minimumPace: number } 
 ) {
-  const isShortBreak = sessionDetails.elapsedShortBreakTime > 0
-  const isLongBreak = sessionDetails.elapsedLongBreakTime > 0
-  const isFocusTime = sessionDetails.elapsedPomodoroTime > 0 
-  const timeToModifyPace = (sessionDetails.elapsedPomodoroTime % sessionDetails.paceIncreaseInterval === 0 ) && sessionDetails.elapsedPomodoroTime != 0 
-  //not being called
-  function decreasePace(
-    cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-    sessionDetails: SessionDetails
-  ) {
-    if (sessionDetails.pace > sessionDetails.minimumPace) {
-      cb((prev) => {
-        return {...prev, pace: prev.pace - prev.penaltyValue};
-      });
-    } else {
-      cb((prev) => {
-        return {...prev, pace: sessionDetails.minimumPace};
-      });
-    }
-  }
 
-  function increasePace(
-    cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-    sessionDetails: SessionDetails
-  ) {
-    if (sessionDetails.pace < sessionDetails.maximumPace) {
-      cb((prev) => ({...prev, pace: prev.pace + prev.paceIncreaseValue}));
-    } else {
-      cb((prev) => ({...prev, pace: prev.maximumPace}));
-    }
-  }
-  if (sessionDetails.sessionName.toLowerCase() === 'fastasfuqboi') return;
-  if ( isFocusTime && !isShortBreak && !isLongBreak && timeToModifyPace) {
-    Vibration.vibrate(1000);
-    //if (sessionDetails.strikes === 0) increasePace(cb, sessionDetails);
-    increasePace(cb, sessionDetails);
+  const paceIncreaseTimeReached =  ( timer.time > 0  ) && ( timer.time % paceIncreaseInterval === 0 ) 
 
-    //else decreasePace(cb, sessionDetails);
+  //if time is less than initial pomodoro time and not a break
+  const canModifyPace = paceIncreaseTimeReached && (timer.time < timer.initialPomodoroTime)&& !timer.isBreak
+
+  //if can modify pace
+  if(canModifyPace){
+
+    //New pace
+    const newPace = timer.pace + paceIncreaseValue
+
+    //check max pace is reached or if pace increase will exceed max pace
+    const maxPaceReached = timer.pace >= maximumPace
+
+    //check if new pace will exceed max pace
+    const willExceedMaxPace = newPace > maximumPace
+
+    //if max pace reached or will exceed max pace
+    if (maxPaceReached || willExceedMaxPace) {
+      //set pace equal to max pace
+      setTimer((prev) => ({...prev, pace: maximumPace}));
+    } else {
+      //vibrate
+      Vibration.vibrate([0, 500, 200, 500]);
+      //increase pace
+      setTimer((prev) => ({...prev, pace: newPace}));
+    }
   }
 }
 
-//shortBreak
-export async function shortBreak({
-  setSessionDetails,
-  sessionDetails,
-}: {
-  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  sessionDetails: SessionDetails;
-}) {
-  try {
-    if (
-        sessionDetails.elapsedShortBreakTime >= sessionDetails.initialShortBreakTime
-    ) {
-      setSessionDetails((prev) => {
-        return {...prev, elapsedPomodoroTime: 0, currentSet: prev.currentSet + 1, elapsedShortBreakTime: 0};
-      });
-    } else {
-      setSessionDetails((prev: any) => {
-        return {
-          ...prev,
-          elapsedShortBreakTime: prev.elapsedShortBreakTime + 1,
-        };
-      });
-      //increaseElapsedTime({setSessionDetails, userSession, sessionDetails, canHike});
-    }
-  }catch(err) {
-    handleError(err, "shortBreak");
-  }
-}
 
-//Longbreak\
-export async function longBreak({
-  setSessionDetails,
-  sessionDetails,
-}: {
-  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  sessionDetails: SessionDetails;
-}) {
-  try {
-    if (
-        sessionDetails.elapsedLongBreakTime >= sessionDetails.initialLongBreakTime
-    ) {
-      setSessionDetails((prev) => {
-        return {...prev, elapsedPomodoroTime: 0, currentSet: 1, elapsedLongBreakTime: 0};
-      });
-    } else {
-      setSessionDetails((prev: any) => {
-        return {
-          ...prev,
-          elapsedLongBreakTime: prev.elapsedLongBreakTime + 1,
-        };
-      });
-    }
-  }catch(err) {
-    handleError(err, "longBreak");
-  }
-
-}
 //skip break
-export function skipBreak(
-  cb: React.Dispatch<React.SetStateAction<SessionDetails>>,
-  sessionDetails: SessionDetails
+export function skipBreak({timer, setTimer}:
+  { timer: Timer,
+    setTimer: React.Dispatch<React.SetStateAction<SetTimer>>
+  }
 ) {
   try {
-    if (sessionDetails.currentSet < sessionDetails.sets) {
-      cb((prev) => {
+    if (( timer.completedSets  ) < timer.sets) {
+      setTimer((prev) => {
         return {
           ...prev,
-          elapsedPomodoroTime: 1,
-          elapsedShortBreakTime: prev.initialShortBreakTime,
-          elapsedLongBreakTime: prev.initialLongBreakTime,
-          currentSet: prev.currentSet + 1,
+          isBreak: false,
+          time: prev.initialPomodoroTime,
         };
       });
     } else {
-      cb((prev) => {
+        setTimer((prev) => {
         return {
           ...prev,
-          elapsedPomodoroTime: 1,
-          elapsedShortBreakTime: prev.initialShortBreakTime,
-          elapsedLongBreakTime: prev.initialLongBreakTime,
-          currentSet: 1,
+          isBreak: false,
+          isCompleted: true,
         };
       });
     }
@@ -461,6 +382,7 @@ export function skipBreak(
 export async function isTrailCompleted({
   user,
   watermelonDatabase,
+  setSessionDetails,
   currentTrail,
   completedHikes,
   queuedTrails,
@@ -468,25 +390,28 @@ export async function isTrailCompleted({
   onAchievementEarned,
   onCompletedTrail,
 }: {
-  user: User;
-  watermelonDatabase: Database;
-  currentTrail: Trail;
-  completedHikes: Completed_Hike[];
-  queuedTrails: Queued_Trail[];
-  achievementsWithCompletion: AchievementsWithCompletion[];
-  onAchievementEarned: (achievements: Achievement[]) => void;
-  onCompletedTrail: (trail: Trail) => void;
-}) {
+    user: User;
+    watermelonDatabase: Database;
+    setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
+    currentTrail: Trail;
+    completedHikes: Completed_Hike[];
+    queuedTrails: Queued_Trail[];
+    achievementsWithCompletion: AchievementsWithCompletion[];
+    onAchievementEarned: (achievements: Achievement[]) => void;
+    onCompletedTrail: (trail: Trail) => void;
+  }) {
   try {
-    if (user.trailProgress >= Number(currentTrail.trailDistance)) {
+    if (user.trailProgress - .01 >= Number(currentTrail.trailDistance)) {
       //checkif completed hike table has column with the current trail and username
       let calculatedReward = Math.ceil(Number(currentTrail.trailDistance));
-        const reward = currentTrail.trailOfTheWeek ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
-      
+      const reward = currentTrail.trailOfTheWeek ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
 
-        onCompletedTrail(currentTrail, reward);
+      //add trail rewards to session reward bank
+      //add trail to sessions completed trail bank
+      onCompletedTrail({setSessionDetails, trail:currentTrail, reward });
 
-      const existingCompletedHike = await user.hasTrailBeenCompleted(user.id, currentTrail.id);
+      //check if trail has been completed by user before
+      const existingCompletedHike:Completed_Hike = await user.hasTrailBeenCompleted(user.id, currentTrail.id);
 
 
       //set current date to now (YY-MM-DD H/H:mm:ss)
@@ -500,7 +425,7 @@ export async function isTrailCompleted({
       //if completed trail existed keep first completed date else set to now
       const firstCompletedTime: string = existingCompletedHike
         ? //@ts-ignore
-          existingCompletedHike.firstCompletedAt
+        existingCompletedHike.firstCompletedAt
         : currentDateTime;
 
 
@@ -508,7 +433,7 @@ export async function isTrailCompleted({
       //else set it to the time it just took to finish from start date / time
       const betterTime: string = existingCompletedHike
         ? //@ts-ignore
-          getBetterTime(timeToComplete, existingCompletedHike.bestCompletedTime)
+        getBetterTime(timeToComplete, existingCompletedHike.bestCompletedTime)
         : timeToComplete;
 
 
@@ -543,7 +468,7 @@ export async function isTrailCompleted({
             queuedTrails,
           });
         }
-              const updatedCompletedHikes = await user.completedHikes;
+        const updatedCompletedHikes = await user.completedHikes;
         const achievementsEarned =
           await achievementManagerInstance.checkTrailCompletionAchievements(
             user,
@@ -554,72 +479,71 @@ export async function isTrailCompleted({
           onAchievementEarned(achievementsEarned);
         }
       }
-      await user.awardCompletedTrailTokens(reward);
-
       return true;
     }
   } catch (err) {
     handleError(err, "isTraillCompleted")
   }
 }
-//hiking
-export async function Hike({
+
+export async function updateSession({
   watermelonDatabase,
   user,
   userSession,
   setSessionDetails,
   sessionDetails,
+  timer,
+  setTimer,
   currentTrail,
   queuedTrails,
   completedHikes,
-  canHike,
   achievementsWithCompletion,
   onAchievementEarned,
   onCompletedTrail,
 }: {
-  user: User;
-  watermelonDatabase: Database;
-  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-  sessionDetails: SessionDetails;
-  canHike: boolean;
-  userSession: User_Session;
-  completedHikes: Completed_Hike[];
-  currentTrail: Trail;
-  queuedTrails: Queued_Trail[];
-  achievementsWithCompletion: AchievementsWithCompletion[];
-  onAchievementEarned: (achievements: Achievement[]) => void;
-  onCompletedTrail: (trail: Trail) => void;
-}) {
+    user: User;
+    watermelonDatabase: Database;
+    setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
+    sessionDetails: SessionDetails;
+    timer: Timer;
+    setTimer: React.Dispatch<React.SetStateAction<Timer>>;
+    userSession: User_Session;
+    completedHikes: Completed_Hike[];
+    currentTrail: Trail;
+    queuedTrails: Queued_Trail[];
+    achievementsWithCompletion: AchievementsWithCompletion[];
+    onAchievementEarned: (achievements: Achievement[]) => void;
+    onCompletedTrail: (trail: Trail) => void;
+  }) {
   try {
-    //check for completed hike
-    await isTrailCompleted({
-      watermelonDatabase,
-      user,
-      completedHikes,
-      currentTrail,
-      queuedTrails,
-      achievementsWithCompletion,
-      onAchievementEarned,
-      onCompletedTrail
-    });
-
-    //modify Speed
-    //console.debug('TimerFlow hike() calling speed Modifier()');
-    await speedModifier(setSessionDetails, sessionDetails);
-
-    //console.debug('TimerFlow hike() calling increaseElapsedTime()')
-    await increaseElapsedTime({
-      user,
-      currentTrail,
-      setSessionDetails,
-      sessionDetails,
-      canHike,
-      userSession,
-      achievementsWithCompletion,
-      completedHikes,
-      onAchievementEarned,
-    });
+    if(!timer.isBreak){
+      //check if trail is completed
+      await isTrailCompleted({
+        watermelonDatabase,
+        user,
+        setSessionDetails,
+        completedHikes,
+        currentTrail,
+        queuedTrails,
+        achievementsWithCompletion,
+        onAchievementEarned,
+        onCompletedTrail
+      });
+      //modify Distance  & Session Time
+      await increaseDistanceHiked({
+        user,
+        currentTrail,
+        setSessionDetails,
+        timer,
+        sessionDetails,
+        userSession,
+        achievementsWithCompletion,
+        completedHikes,
+        onAchievementEarned,
+      });
+      
+    }
   } catch (err) {
-      handleError(err, "Hike")
+    handleError(err, "Hike")
   }
 }

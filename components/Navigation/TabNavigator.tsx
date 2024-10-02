@@ -1,4 +1,4 @@
-import EnhancedTimerScreen from '../../Screens/TimerScreen';
+import EnhancedSessionScreen from '../../Screens/SessionScreen';
 import { HomeStack } from './NavigationStacks';
 import ExploreStackNavigator from './ExploreStackNavigator'; // Import the new stack navigator
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -42,7 +42,7 @@ const TabNavigator = ({ user, setUser, isProMember }: Props) => {
                 {() => <ExploreStackNavigator user={user} setUser={setUser} />}
             </Tab.Screen>
             <Tab.Screen name="Timer" options={{ tabBarStyle: { display: 'none' }, headerShown: false }}>
-                {() => <EnhancedTimerScreen user={user} setUser={setUser} />}
+                {() => <EnhancedSessionScreen user={user} setUser={setUser} />}
             </Tab.Screen>
         </Tab.Navigator>
     );
