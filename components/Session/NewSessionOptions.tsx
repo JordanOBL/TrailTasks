@@ -5,9 +5,10 @@ import {
   Text,
   TextInput,
   View,
+  Switch,
 } from 'react-native';
 import React from 'react';
-import {User, User_Session} from '../../watermelon/models';
+import {User, User_Session, User_Addon} from '../../watermelon/models';
 import withObservables from '@nozbe/with-observables';
 import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
@@ -18,12 +19,14 @@ import timeOptions from '../../helpers/Session/timeOptions';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
 import Timer from '../../types/TimerDetails';
+import {TimerDetails} from '../../types/timer';
+import {SessionDetails} from '../../types/session';
 
 interface Props {
   timer: Timer,
   setTimer: React.Dispatch<React.SetStateAction<TimerDetails>>,
-  sessionDetails: any;
-  setSessionDetails: React.Dispatch<React.SetStateAction<any>>;
+  sessionDetails: SessionDetails;
+  setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   setUserSession: React.Dispatch<React.SetStateAction<any>>;
   sessionCategories: Session_Category[];
   user: User;
@@ -43,6 +46,7 @@ const NewSessionOptions = ({
   //@ts-ignore
   const watermelonDatabase = useDatabase();
   const navigation = useNavigation();
+  const toggleAutoContinue = () => setTimer(previousState => ({...previousState, autoContinue: !previousState.autoContinue}));
 
 
   return (
@@ -200,6 +204,18 @@ const NewSessionOptions = ({
           rowStyle={{backgroundColor: 'rgba(255,255,255,0.1'}}
         />
       </View>
+      <View style={[ styles.dropdownContainer ]}>
+        <Text style={styles.label}>Auto Continue:</Text>
+        <View style={{flexDirection: 'row', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Switch
+            trackColor={{false: '#767577', true: '#81b0ff'}}
+            thumbColor={timer?.autoContinue ? '#f5dd4b' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleAutoContinue}
+            value={timer.autoContinue}
+          />
+        </View>
+      </View>
       <EnhancedNewSessionBackpack sessionDetails={sessionDetails} setSessionDetails={setSessionDetails} user={user} usersAddons={usersAddons}/>
       <Pressable
         onPress={() => {
@@ -214,6 +230,7 @@ const NewSessionOptions = ({
                 if (newSession) {
                   console.debug('New session created', newSession);
                     const sessionDetailsWithAddons = {...sessionDetails};
+                    const timerWithAddons = {...timer};
                   console.debug('sessionDetailsWithAddons', sessionDetailsWithAddons);
                     sessionDetailsWithAddons.backpack.forEach((slot) => {
                     if(slot.addon){
@@ -222,7 +239,7 @@ const NewSessionOptions = ({
                       switch (effect) {
                         case "min_pace_increase":
                           sessionDetailsWithAddons.minimumPace = slot.addon.effectValue;
-                          sessionDetailsWithAddons.pace = slot.addon.effectValue;
+                          timerWithAddons.pace = slot.addon.effectValue;
                           console.debug('Addon Applied:', slot.addon.name);
                           break;
                         case "max_pace_increase":
@@ -234,7 +251,7 @@ const NewSessionOptions = ({
                           console.debug('Addon Applied:', slot.addon.name);
                           break;
                         case "pace_increase_value":
-                          sessionDetailsWithAddons.pace += slot.addon.effectValue; // Accumulate pace increases
+                          timerWithAddons.pace += slot.addon.effectValue; // Accumulate pace increases
                           console.debug('Addon Applied:', slot.addon.name);
                           break;
                         case "penalty_reduction":
@@ -258,7 +275,7 @@ const NewSessionOptions = ({
                   setUserSession(newSession);
                   setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, startTime: new Date(), isLoading: false}));
                   setTimer((prev: any) => ({
-                    ...prev, isRunning: true, startTime: new Date()
+                    ...timerWithAddons, isRunning: true, startTime: new Date()
                   }))
                 } else {
                   setSessionDetails((prev: any) => {
@@ -299,7 +316,7 @@ const NewSessionOptions = ({
       </Pressable>
       <Pressable
         onPress={() => navigation.goBack()}
-        style={[styles.startBtn, {backgroundColor: 'green'}]}>
+        style={[styles.startBtn, {backgroundColor: '#017371'}]}>
         <Text
           style={{
             color: 'rgb(28,29,31)',
@@ -361,4 +378,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignSelf: 'center',
   },
-});
+  });

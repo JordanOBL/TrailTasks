@@ -66,7 +66,8 @@ const TrailDetailScreen = ({ route, navigation }) => {
 //    })();
 //
 
-         const reward = trailDistance * 3 < 5 ? 5 : Math.ceil(trailDistance * 3)
+         let calculatedReward = Math.ceil(Number(trailDistance));
+      const reward = trail.trail_of_the_week ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
 
     const getButtonText = () => {
         if (user.trailId === trail?.id) {

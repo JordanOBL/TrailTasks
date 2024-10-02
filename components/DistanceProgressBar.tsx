@@ -46,7 +46,7 @@ const DistanceProgressBar = ({
           (sessionDetails && timer && !sessionDetails.startTime) ||
           (sessionDetails && timer && timer.isPaused) ||
           (timer && timer.isBreak)
-            ? 'rgb(217,49,7)'
+            ? '#E2DFDE'
             : 'rgb(7,254,213)'
         }
       /><Text

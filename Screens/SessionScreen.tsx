@@ -65,14 +65,17 @@ const SessionScreen = ({
     penaltyValue: 1,
     endSessionModal: false,
     totalDistanceHiked: 0.0,
-    trailTokenBonus: 0,
+    totalTokenBonus: 0,
     trailTokensEarned:0,
+    sessionTokensEarned:0,
     isLoading: false,
     isError: false,
     backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
   });
+
   const [timer, setTimer] = React.useState<Timer>({
     startTime: null,
+    isCompleted: false,
     time: 1500,
     isRunning: false,
     isPaused: false,
@@ -81,8 +84,9 @@ const SessionScreen = ({
     initialShortBreakTime: 300,
     initialLongBreakTime: 2700,
     sets: 3,
-    currentSet: 1,
+    completedSets: 0,
     pace: 2,
+    autoContinue: false
 
   })
 
@@ -198,7 +202,7 @@ const SessionScreen = ({
       {userSession && timer.isPaused ? (
         <Pressable
           onPress={() => navigation.goBack()}
-          style={[styles.returnButton, {backgroundColor: 'green'}]}>
+          style={[styles.returnButton, {backgroundColor: '#13B3AC'}]}>
           <Text
             style={{
               alignSelf: 'center',
@@ -235,7 +239,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 50,
+    bottom: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -246,7 +250,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   returnButtonText: {
-    color: 'rgb(28,29,31)',
+    color: '#13B3AC',
     fontSize: 18,
     fontWeight: '800',
   },

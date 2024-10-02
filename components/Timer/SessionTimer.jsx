@@ -13,16 +13,17 @@ interface Props {
     paceIncreaseValue: number;
 }
 
-const SessionTimer = ({ timer, setTimer, minimumPace, maximumPace, paceIncreaseInterval, paceIncreaseValue }: Props) => {
+const SessionTimer = ({ timer, setTimer,  minimumPace, maximumPace, paceIncreaseInterval, paceIncreaseValue }: Props) => {
     const countdown = formatCountdown(timer.time);
 
     useEffect(() => {
         let timerInterval
-        if (timer?.isRunning && !timer?.isPaused) {
+        if (timer?.isRunning && !timer?.isPaused && !timer.isCompleted) {
             
             timerInterval = setInterval(() => {
                 if(timer.time <= 0){
-                    checkTimerIsZero({ timer, setTimer });
+                    checkTimerIsZero({ timer, setTimer  });
+                    
 
                 }
                 if(timer.time > 0 && !timer.isBreak) {
@@ -36,7 +37,7 @@ const SessionTimer = ({ timer, setTimer, minimumPace, maximumPace, paceIncreaseI
         // Clear the interval when the component unmounts or dependencies change
         return () => clearInterval(timerInterval);
 
-    }, [timer.time, timer.isRunning, timer.isPaused, minimumPace, maximumPace, paceIncreaseInterval, paceIncreaseValue]);
+    }, [timer.time,timer.isCompleted, timer.isRunning, timer.isPaused, minimumPace, maximumPace, paceIncreaseInterval, paceIncreaseValue]);
 
     console.log(timer.time);
     return (
@@ -46,7 +47,7 @@ const SessionTimer = ({ timer, setTimer, minimumPace, maximumPace, paceIncreaseI
                     styles.timerText,
                     ( timer.isPaused || timer.isBreak  )&& styles.pausedText,
                 ]}>
-                {timer.isPaused ? 'Paused' : countdown}
+                {timer.isPaused ? 'Paused' : timer.isCompleted ? 'Completed' : countdown}
             </Text>
         </View>
     );
@@ -68,6 +69,6 @@ const styles = StyleSheet.create({
         color: 'rgb(7,254,213)',
     },
     pausedText: {
-        color: 'rgb(217,49,7)',
+        color: '#D3E5EB'
     },
 });

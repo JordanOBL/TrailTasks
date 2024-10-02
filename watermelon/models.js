@@ -306,12 +306,12 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return;
   }
 
-  @writer async awardCompletedTrailTokens(reward){
+  @writer async awardFinalSessionTokens(reward){
     try{
       await this.update((user) => {
         user.trailTokens += reward;
       });
-      console.log('user Rewarded for completeing trail:', reward);
+      console.log('user Rewarded for session:', reward);
     } catch(e){
       console.error(e);
     }

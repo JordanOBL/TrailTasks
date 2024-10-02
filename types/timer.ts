@@ -1,6 +1,7 @@
 
 type Timer = {
   startTime: string | null;
+  isCompleted: boolean;
   time: number;
   isRunning: boolean;
   isBreak: boolean; 
@@ -9,8 +10,9 @@ type Timer = {
   initialShortBreakTime: number,
   initialLongBreakTime: number,
   sets: number,
-  currentSet: number,
+  completedSets: number,
   pace: number,
+  autoContinue: boolean
 
 }
 

@@ -19,7 +19,7 @@ const ActiveSessionBackpack = ({ sessionDetails, user }) => {
               </View>
             )
           } 
-          else if(slot.addon === null && user.totalMiles >= slot.minimumTotalMiles ) {
+        { /*else if(slot.addon === null && user.totalMiles >= slot.minimumTotalMiles ) {
             return (
               <View
                 key={idx}
@@ -31,7 +31,7 @@ const ActiveSessionBackpack = ({ sessionDetails, user }) => {
               </View>
 
             )
-          }
+          } */}
         })
       } 
 

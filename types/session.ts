@@ -14,7 +14,9 @@ export interface SessionDetails {
   increasePaceOnBreakValue: number;
   strikes: number;
   endSessionModal: boolean;
-  totalSessionTime: number;
+  totalTokenBonus: number
+  trailTokensEarned: number;
+  sessionTokensEarned: number;
   totalDistanceHiked: number;
   isLoading: boolean;
   isError: boolean;
