@@ -1,49 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import {Completed_Hike, User_Purchased_Trail} from "../watermelon/models";
 import {
-    View,
-    Text,
     Image,
+    Modal,
+    Pressable,
+    ScrollView,
     StyleSheet,
+    Text,
     TouchableOpacity,
-    ScrollView, Modal, Pressable,
+    View,
 } from 'react-native';
+import React, { useEffect, useState } from 'react';
+
+import BuyTrailModal from "../components/Trails/BuyTrailModal";
 import FullTrailDetails from "../types/fullTrailDetails";
 import calculateEstimatedTime from "../helpers/calculateEstimatedTime";
-import withObservables from "@nozbe/with-observables";
-import {Completed_Hike, User_Purchased_Trail} from "../watermelon/models";
 import formatDateTime from "../helpers/formatDateTime";
-import BuyTrailModal from "../components/Trails/BuyTrailModal";
-
+import withObservables from "@nozbe/with-observables";
 
 // @ts-ignore
 const TrailDetailScreen = ({ route, navigation }) => {
     const { trail, user, userPurchasedTrails, completedHikes } = route.params;
     const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
     const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
-
-
     const [errorMessage, setErrorMessage] = useState("");
-
-
     const [isFreeTrail, setIsFreeTrail] = useState(false);
     const [isPurchased, setIsPurchased] = useState(false);
     const [isSubscribersOnly, setIsSubscribersOnly] = useState(false);// Assuming this is fetched or calculated elsewhere
     const [isCompleted, setIsCompleted] = useState(false);
 
-
-
     useEffect(() => {
-
         if (trail && userPurchasedTrails && completedHikes) {
             setIsFreeTrail(trail.is_free);
             setIsPurchased(userPurchasedTrails?.some((purchasedTrail: User_Purchased_Trail) => purchasedTrail.trailId == trail.id));
             setIsSubscribersOnly(trail.is_subscribers_only);
             setIsCompleted(completedHikes.some((hike: Completed_Hike) => hike.trailId === trail.id));
         }
-
-
     }, [user, trail, userPurchasedTrails, completedHikes]);
-
 
     const trailDistance = parseInt(trail?.trail_distance)
     const trailDifficulty = (() => {
@@ -66,8 +58,8 @@ const TrailDetailScreen = ({ route, navigation }) => {
 //    })();
 //
 
-         let calculatedReward = Math.ceil(Number(trailDistance));
-      const reward = trail.trail_of_the_week ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
+    let calculatedReward = Math.ceil(Number(trailDistance));
+    const reward = trail.trail_of_the_week ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
 
     const getButtonText = () => {
         if (user.trailId === trail?.id) {
@@ -94,7 +86,6 @@ const TrailDetailScreen = ({ route, navigation }) => {
     };
 
     const buttonText = getButtonText();
-
 
     if (!trail) {
         return <Text>Loading...</Text>;
@@ -194,7 +185,8 @@ const TrailDetailScreen = ({ route, navigation }) => {
                 <Text style={styles.trailName}>{trail.trail_name}</Text>
                 <Text style={styles.parkName}>{trail.park_name} National Park, {trail?.state_code}</Text>
                 <Text style={{ color: isCompleted ? 'green' : 'grey', fontSize: 12, marginVertical: 8 }}>
-                  {isCompleted ? 'Completed' : 'Not Completed'}</Text>
+                    {isCompleted ? 'Completed' : 'Not Completed'}
+                </Text>
                 <View style={styles.statsGrid}>
                     <View style={styles.statBox}>
                         <Text style={styles.statValue}>{trail.trail_distance} mi</Text>
@@ -223,7 +215,6 @@ const TrailDetailScreen = ({ route, navigation }) => {
                                 : isFreeTrail || isPurchased
                                     ?  '#4CAF50'
                                         : 'grey'
-
                     }]}>
                         <Text style={styles.buttonText}>Add</Text>
                     </TouchableOpacity>

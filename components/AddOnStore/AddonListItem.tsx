@@ -1,8 +1,9 @@
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View, Image} from 'react-native';
+import addonImages from '../../helpers/Addons/addonImages';
 import withObservables from '@nozbe/with-observables';
 
-import addonImages from '../../helpers/Addons/addonImages';
 const AddonListItem = ({userAddon, selectAddon, addon}) => {
 
   return (
@@ -45,9 +46,9 @@ const styles = StyleSheet.create({
     display: 'flex',
     width: '100%',
     alignItems: 'flex-start',
-   },
+  },
   addonDescription: {
-   display: 'flex',
+  display: 'flex',
     flexDirection: 'row',
     width: '75%',
     flexWrap: 'wrap',

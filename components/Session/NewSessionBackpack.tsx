@@ -1,15 +1,17 @@
+import { Alert, Animated, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Modal, Animated, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import withObservables from '@nozbe/with-observables';
+
 import EnhancedAddonListItem from '../AddOnStore/AddonListItem';
-const NewSessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddons, addons }) => {
+import withObservables from '@nozbe/with-observables';
+
+const NewSessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddons }) => {
   const [isDrawerVisible, setDrawerVisible] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [drawerAnimation] = useState(new Animated.Value(0));
 
   // Split the backpackLevels array into rows
 
-  const openDrawer = (position) => {
+  const openDrawer = (position: React.SetStateAction<null>) => {
     setSelectedPosition(position);
     setDrawerVisible(true);
     Animated.timing(drawerAnimation, {
@@ -29,8 +31,8 @@ const NewSessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddo
       });
   };
 
-  const selectAddon = (addon) => {
-    if ( addon !== null && sessionDetails.backpack.some(slot => slot.addon?.id === addon.id)) {
+  const selectAddon = (addon: { id: any; } | null) => {
+    if ( addon !== null && sessionDetails.backpack.some((slot: { addon: { id: any; }; }) => slot.addon?.id === addon.id)) {
       closeDrawer();
       Alert.alert('Addon already in backpack,\n addons DO NOT stack');
       return;
@@ -38,7 +40,7 @@ const NewSessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddo
     else{
     //const updatedSessionDetails = [...sessionDetails];
     const updatedBackpack = [...sessionDetails.backpack];
-    updatedBackpack[selectedPosition].addon = addon;
+    updatedBackpack[selectedPosition!].addon = addon;
     setSessionDetails({ ...sessionDetails, backpack: updatedBackpack });
     closeDrawer();
     }
@@ -52,7 +54,7 @@ const NewSessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddo
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Backpack (Addons)</Text>
-      {sessionDetails.backpack.map((slot, index) => (
+      {sessionDetails.backpack.map((slot: { minimumTotalMiles: number; addon: { name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }; }, index: React.Key | null | undefined) => (
         <View 
           key={index} 
           style={{ 
@@ -93,12 +95,12 @@ const NewSessionBackpack = ({ sessionDetails, setSessionDetails, user, usersAddo
           <Animated.View style={[styles.drawer, { transform: [{ translateY: drawerTranslateY }] }]}>
             <Text style={styles.drawerTitle}>Choose an Addon</Text>
             <ScrollView style={styles.drawerContent}> 
-              {sessionDetails.backpack[selectedPosition]?.addon != null ? <TouchableOpacity onPress={() => selectAddon(null)}>
+              {sessionDetails.backpack[selectedPosition!]?.addon != null ? <TouchableOpacity onPress={() => selectAddon(null)}>
                 <View style={styles.RemoveButtonContainer}>
                     <Text style={styles.addonName}>Remove</Text>
                 </View>
               </TouchableOpacity> : null}
-              {usersAddons && usersAddons.length > 0 ? (usersAddons.map((userAddon, index) => (
+              {usersAddons && usersAddons.length > 0 ? (usersAddons.map((userAddon: any, index: any) => (
                 <EnhancedAddonListItem key={index} userAddon={userAddon} selectAddon={selectAddon} />
               ))): <Text style={styles.addonText}>{`Inventory empty\n Visit the 'Shop' to buy Addons!`}</Text>}
             </ScrollView>

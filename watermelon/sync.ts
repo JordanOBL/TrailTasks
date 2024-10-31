@@ -2,18 +2,14 @@ import {Database} from '@nozbe/watermelondb';
 // your_local_machine_ip_address usually looks like 192.168.0.x
 // on *nix system, you would find it out by running the ifconfig command
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
-
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
-import {synchronize} from '@nozbe/watermelondb/sync';``
 import handleError from "../helpers/ErrorHandler";
-
-
+import {synchronize} from '@nozbe/watermelondb/sync';
 
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
 //singleton
 let isRunning = false;
-
 
 export async function sync(database: Database, userId: string = '0') {
   try {
@@ -28,7 +24,6 @@ export async function sync(database: Database, userId: string = '0') {
     if (!isRunning && isConnected) {
       //stop more than one instance
       isRunning = true;
-
 
       await synchronize({
         database,

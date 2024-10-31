@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import {Achievement, User, User_Achievement} from '../../watermelon/models';
 import {FlatList, Pressable, StyleSheet, Text, View} from 'react-native';
+import { User, User_Achievement } from '../../watermelon/models';
 
 import {AchievementsWithCompletion} from '../../types/achievements';
 import Ionicons from 'react-native-vector-icons/Ionicons';

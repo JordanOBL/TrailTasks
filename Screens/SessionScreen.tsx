@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useKeepAwake } from '@sayem314/react-native-keep-awake';
+
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {
   Queued_Trail,
@@ -7,7 +7,6 @@ import {
   Trail,
   User,
   User_Achievement,
-
 } from '../watermelon/models';
 
 import {AchievementsWithCompletion} from '../types/achievements';
@@ -16,11 +15,12 @@ import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
-import Timer from "../Timer/Timer";
+import Timer from '../types/timer';
+import handleError from "../helpers/ErrorHandler";
 import {useDatabase} from '@nozbe/watermelondb/hooks';
+import { useKeepAwake } from '@sayem314/react-native-keep-awake';
 import {useNavigation} from '@react-navigation/native';
 import withObservables from '@nozbe/with-observables';
-import handleError from "../helpers/ErrorHandler";
 
 interface Props {
   user: User;
@@ -156,7 +156,7 @@ const SessionScreen = ({
         tabBarVisible: true,
       });
     }
-  }, [navigation, sessionDetails.isSessionStarted]);
+  }, [navigation, sessionDetails.startTime]);
 
   //Get usersAchievements table with completion joined on table
   React.useEffect(() => {

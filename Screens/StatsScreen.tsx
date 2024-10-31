@@ -16,8 +16,8 @@ import {Q} from '@nozbe/watermelondb';
 import SelectDropdown from 'react-native-select-dropdown';
 import SessionList from '../components/Stats/SessionList';
 import Stats from '../components/Stats/Stats';
-import {useDatabase} from '@nozbe/watermelondb/hooks';
 import handleError from "../helpers/ErrorHandler";
+import {useDatabase} from '@nozbe/watermelondb/hooks';
 
 type TimeFrame = {
   label: string;

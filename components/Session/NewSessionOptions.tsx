@@ -2,29 +2,29 @@ import {
   Pressable,
   SafeAreaView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
-  Switch,
 } from 'react-native';
-import React from 'react';
-import {User, User_Session, User_Addon} from '../../watermelon/models';
-import withObservables from '@nozbe/with-observables';
-import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
-import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
-import SelectDropdown from 'react-native-select-dropdown';
-import {Session_Category} from '../../watermelon/models';
+import {User, User_Addon} from '../../watermelon/models';
+
 import EnhancedNewSessionBackpack from './NewSessionBackpack';
+import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
+import React from 'react';
+import SelectDropdown from 'react-native-select-dropdown';
+import {SessionDetails} from '../../types/session';
+import {Session_Category} from '../../watermelon/models';
+import Timer from '../../types/timer';
+import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
 import timeOptions from '../../helpers/Session/timeOptions';
 import {useDatabase} from '@nozbe/watermelondb/hooks';
 import {useNavigation} from '@react-navigation/native';
-import Timer from '../../types/TimerDetails';
-import {TimerDetails} from '../../types/timer';
-import {SessionDetails} from '../../types/session';
+import withObservables from '@nozbe/with-observables';
 
 interface Props {
   timer: Timer,
-  setTimer: React.Dispatch<React.SetStateAction<TimerDetails>>,
+  setTimer: React.Dispatch<React.SetStateAction<Timer>>,
   sessionDetails: SessionDetails;
   setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   setUserSession: React.Dispatch<React.SetStateAction<any>>;
@@ -195,7 +195,7 @@ const NewSessionOptions = ({
               : '45 minutes'
           }
           defaultValue={
-            timer.initialLongBreak
+            timer.initialLongBreakTime
               ? timer.initialLongBreakTime
               : 2700
           }
@@ -216,6 +216,7 @@ const NewSessionOptions = ({
           />
         </View>
       </View>
+      
       <EnhancedNewSessionBackpack sessionDetails={sessionDetails} setSessionDetails={setSessionDetails} user={user} usersAddons={usersAddons}/>
       <Pressable
         onPress={() => {
@@ -259,7 +260,7 @@ const NewSessionOptions = ({
                           console.debug('Addon Applied', slot.addon.name);
                           break;
                         case "trail_token_bonus":
-                          sessionDetailsWithAddons.extraTokens += slot.addon.effectValue; // Adding extra tokens
+                          sessionDetailsWithAddons.totalTokenBonus += slot.addon.effectValue; // Adding extra tokens
                           console.debug('Addon Applied', slot.addon.name);
                           break;
                         case "break_time_reduction":
@@ -273,9 +274,9 @@ const NewSessionOptions = ({
                     }
                     });
                   setUserSession(newSession);
-                  setSessionDetails((prev: any) => ({...sessionDetailsWithAddons, startTime: new Date(), isLoading: false}));
-                  setTimer((prev: any) => ({
-                    ...timerWithAddons, isRunning: true, startTime: new Date()
+                  setSessionDetails((prev: SessionDetails) => ({...sessionDetailsWithAddons, startTime: new Date().toISOString(), isLoading: false}));
+                  setTimer((prev: Timer) => ({
+                    ...timerWithAddons, isRunning: true, startTime: new Date().toISOString()
                   }))
                 } else {
                   setSessionDetails((prev: any) => {
@@ -335,7 +336,9 @@ const enhance = withObservables(['usersAddons', 'user'], ({usersAddons, user}) =
   usersAddons: user.usersAddons
 }))
 
-export default NewSessionOptions;
+const EnhancedNewSessionOptions = enhance(NewSessionOptions);
+
+export default EnhancedNewSessionOptions;
 
 const styles = StyleSheet.create({
   container: {

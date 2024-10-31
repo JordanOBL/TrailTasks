@@ -1,4 +1,4 @@
-import {AddOn} from "../../../watermelon/models";
+import {Addon} from "../watermelon/models";
 export interface SessionDetails {
   startTime: string | null;
   sessionName: string;
@@ -21,7 +21,7 @@ export interface SessionDetails {
   isLoading: boolean;
   isError: boolean;
   backpack: {
-    addon: null|AddOn;
+    addon: null|Addon;
     minimumTotalMiles: number;
   }[];
 }

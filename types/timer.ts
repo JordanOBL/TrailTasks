@@ -1,4 +1,3 @@
-
 type Timer = {
   startTime: string | null;
   isCompleted: boolean;
@@ -13,7 +12,6 @@ type Timer = {
   completedSets: number,
   pace: number,
   autoContinue: boolean
-
 }
 
 export default Timer

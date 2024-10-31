@@ -1,17 +1,16 @@
-import { StyleSheet, Text, View, Pressable} from 'react-native'
-import React from 'react'
-import {sync} from '../watermelon/sync';
-import {  User } from '../watermelon/models';
-import { useDatabase } from '@nozbe/watermelondb/hooks';
+import { Pressable, StyleSheet, Text, View } from 'react-native'
+
 import EnhancedSubscribeScreen from "./SubscribeScreen";
+import React from 'react'
+import { User } from '../watermelon/models';
+import {sync} from '../watermelon/sync';
+import { useDatabase } from '@nozbe/watermelondb/hooks';
 
 interface Props
 {
   user: User;
+
 }
-
-
-
 const SettingsScreen = ({user}: Props) => {
   const database = useDatabase();
   return (

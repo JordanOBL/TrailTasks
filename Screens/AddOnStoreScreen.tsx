@@ -1,13 +1,15 @@
+import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, SafeAreaView} from 'react-native';
-import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore.tsx';
-import withObservables from '@nozbe/with-observables';
-import useAddons from '../helpers/Addons/useAddons';
+
+import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
 import handleError from "../helpers/ErrorHandler";
+import useAddons from '../helpers/Addons/useAddons';
+import withObservables from '@nozbe/with-observables';
+
 const AddOnStoreScreen = ({user, userAddons}) => {
   const {addons, loading, error} = useAddons();
 
-  const handlePurchase = async (addOn) => {
+  const handlePurchase = async (addOn: { requiredTotalMiles: number; price: number; name: any; }) => {
     try {
       
     if (user.totalMiles >= addOn.requiredTotalMiles && user.trailTokens >= addOn.price) {
@@ -26,7 +28,7 @@ const AddOnStoreScreen = ({user, userAddons}) => {
     return <Text>Loading Add-Ons...</Text>;
   }
   if (error) {
-    return <Text>Error loading Add-Ons: {error.message}</Text>;
+    return <Text>Error loading Add-Ons: {error}</Text>;
   }
 
   //console.log(addons);
