@@ -1,0 +1,135 @@
+[
+  {
+    "achievement_name": "Maine State Completion",
+    "achievement_description": "Hike all trails in Maine.",
+    "achievement_image_url": "https://example.com/maine_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "1,2,3"
+  },
+  {
+    "achievement_name": "American Samoa State Completion",
+    "achievement_description": "Hike all trails in American Samoa.",
+    "achievement_image_url": "https://example.com/american_samoa_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "4,5,6"
+  },
+  {
+    "achievement_name": "Utah State Completion",
+    "achievement_description": "Hike all trails in Utah.",
+    "achievement_image_url": "https://example.com/utah_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "7,8,9,10,11,12,13,14,15,16,17,18"
+  },
+  {
+    "achievement_name": "South Dakota State Completion",
+    "achievement_description": "Hike all trails in South Dakota.",
+    "achievement_image_url": "https://example.com/south_dakota_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "19,20,21"
+  },
+  {
+    "achievement_name": "Texas State Completion",
+    "achievement_description": "Hike all trails in Texas.",
+    "achievement_image_url": "https://example.com/texas_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "22,23,24"
+  },
+  {
+    "achievement_name": "Florida State Completion",
+    "achievement_description": "Hike all trails in Florida.",
+    "achievement_image_url": "https://example.com/florida_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "25,26,27"
+  },
+  {
+    "achievement_name": "Colorado State Completion",
+    "achievement_description": "Hike all trails in Colorado.",
+    "achievement_image_url": "https://example.com/colorado_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "28,29,30,31,32,33"
+  },
+  {
+    "achievement_name": "New Mexico State Completion",
+    "achievement_description": "Hike all trails in New Mexico.",
+    "achievement_image_url": "https://example.com/new_mexico_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "34,35,36"
+  },
+  {
+    "achievement_name": "California State Completion",
+    "achievement_description": "Hike all trails in California.",
+    "achievement_image_url": "https://example.com/california_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "37,38,39,40,41,42,43,44,45"
+  },
+  {
+    "achievement_name": "Oregon State Completion",
+    "achievement_description": "Hike all trails in Oregon.",
+    "achievement_image_url": "https://example.com/oregon_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "46,47,48"
+  },
+  {
+    "achievement_name": "Ohio State Completion",
+    "achievement_description": "Hike all trails in Ohio.",
+    "achievement_image_url": "https://example.com/ohio_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "49,50,51"
+  },
+  {
+    "achievement_name": "Nevada State Completion",
+    "achievement_description": "Hike all trails in Nevada.",
+    "achievement_image_url": "https://example.com/nevada_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "52,53,54,55,56,57"
+  },
+  {
+    "achievement_name": "Alaska State Completion",
+    "achievement_description": "Hike all trails in Alaska.",
+    "achievement_image_url": "https://example.com/alaska_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "58,59,60,61"
+  },
+  {
+    "achievement_name": "Missouri State Completion",
+    "achievement_description": "Hike all trails in Missouri.",
+    "achievement_image_url": "https://example.com/missouri_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "62"
+  },
+  {
+    "achievement_name": "Tennessee State Completion",
+    "achievement_description": "Hike all trails in Tennessee.",
+    "achievement_image_url": "https://example.com/tennessee_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "63,64"
+  },
+  {
+    "achievement_name": "Arkansas State Completion",
+    "achievement_description": "Hike all trails in Arkansas.",
+    "achievement_image_url": "https://example.com/arkansas_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "65,66,67"
+  },
+  {
+    "achievement_name": "Hawaii State Completion",
+    "achievement_description": "Hike all trails in Hawaii.",
+    "achievement_image_url": "https://example.com/hawaii_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "68,69,70,71"
+  },
+  {
+    "achievement_name": "Montana State Completion",
+    "achievement_description": "Hike all trails in Montana.",
+    "achievement_image_url": "https://example.com/montana_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "72,73,74"
+  },
+  {
+    "achievement_name": "Wyoming State Completion",
+    "achievement_description": "Hike all trails in Wyoming.",
+    "achievement_image_url": "https://example.com/wyoming_completion.jpg",
+    "achievement_type": "State Completion",
+    "achievement_condition": "75,76,77"
+  }
+]

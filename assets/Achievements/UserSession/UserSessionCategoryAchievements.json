@@ -1,0 +1,214 @@
+
+
+[
+  {
+    "achievement_name": "First Driving",
+    "achievement_description": "Embarked on your driving journey with the first session in the 'Driving' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Driving"
+  },
+  {
+    "achievement_name": "Road Warrior",
+    "achievement_description": "Logged 5 sessions in the 'Driving' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Driving"
+  },
+  {
+    "achievement_name": "First Errands",
+    "achievement_description": "Completed your first session categorized as 'Errands'.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Errands"
+  },
+  {
+    "achievement_name": "Errands Expert",
+    "achievement_description": "Managed your tasks efficiently with 5 sessions in the 'Errands' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Errands"
+  },
+  {
+    "achievement_name": "First Family Time",
+    "achievement_description": "Enjoyed precious moments with the first session in the 'Family' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Family"
+  },
+  {
+    "achievement_name": "Family Bonding",
+    "achievement_description": "Strengthened family ties with 5 sessions in the 'Family' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Family"
+  },
+  {
+    "achievement_name": "First Meditating",
+    "achievement_description": "Initiated your journey to mindfulness with the first session in the 'Meditating' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Meditating"
+  },
+  {
+    "achievement_name": "Zen Master",
+    "achievement_description": "Reached a state of tranquility with 5 sessions in the 'Meditating' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Meditating"
+  },
+  {
+    "achievement_name": "First Other",
+    "achievement_description": "Engaged in miscellaneous activities with the first session in the 'Other' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Other"
+  },
+  {
+    "achievement_name": "Jack of All Trades",
+    "achievement_description": "Explored diverse activities with 5 sessions in the 'Other' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Other"
+  },
+  {
+    "achievement_name": "First Outdoors",
+    "achievement_description": "Embraced the great outdoors with the first session in the 'Outdoors' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Outdoors"
+  },
+  {
+    "achievement_name": "Nature Enthusiast",
+    "achievement_description": "Immersed yourself in nature with 5 sessions in the 'Outdoors' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Outdoors"
+  },
+  {
+    "achievement_name": "First Pets",
+    "achievement_description": "Bonded with your furry friends with the first session in the 'Pets' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Pets"
+  },
+  {
+    "achievement_name": "Animal Lover",
+    "achievement_description": "Cared for your pets with 5 sessions in the 'Pets' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Pets"
+  },
+  {
+    "achievement_name": "First Reading",
+    "achievement_description": "Embarked on literary adventures with the first session in the 'Reading' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Reading"
+  },
+  {
+    "achievement_name": "Bookworm",
+    "achievement_description": "Indulged in reading escapades with 5 sessions in the 'Reading' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Reading"
+  },
+  {
+    "achievement_name": "First Socializing",
+    "achievement_description": "Initiated social interactions with the first session in the 'Social' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Social"
+  },
+  {
+    "achievement_name": "Social Butterfly",
+    "achievement_description": "Fostered connections with 5 sessions in the 'Social' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Social"
+  },
+  {
+    "achievement_name": "First Sports",
+    "achievement_description": "Embarked on sporting adventures with the first session in the 'Sports' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Sports"
+  },
+  {
+    "achievement_name": "Sports Enthusiast",
+    "achievement_description": "Pursued your athletic passions with 5 sessions in the 'Sports' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Sports"
+  },
+  {
+    "achievement_name": "First Study",
+    "achievement_description": "Embarked on the quest for knowledge with the first session in the 'Study' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Study"
+  },
+  {
+    "achievement_name": "Scholar",
+    "achievement_description": "Expanded your mind with 5 sessions in the 'Study' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Study"
+  },
+  {
+    "achievement_name": "First Work",
+    "achievement_description": "Took the first step towards professional success with the first session in the 'Work' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Work"
+  },
+  {
+    "achievement_name": "Workaholic",
+    "achievement_description": "Dedicated yourself to productivity with 5 sessions in the 'Work' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Work"
+  },
+  {
+    "achievement_name": "First Workout",
+    "achievement_description": "Embarked on your fitness journey with the first session in the 'Workout' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Workout"
+  },
+  {
+    "achievement_name": "Fitness Fanatic",
+    "achievement_description": "Embraced a healthy lifestyle with 5 sessions in the 'Workout' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Workout"
+  },
+  {
+    "achievement_name": "First Writing",
+    "achievement_description": "Embarked on a literary adventure with the first session in the 'Writing' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Writing"
+  },
+  {
+    "achievement_name": "Wordsmith",
+    "achievement_description": "Crafted your thoughts into words with 5 sessions in the 'Writing' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Writing"
+  },
+  {
+    "achievement_name": "First Yoga",
+    "achievement_description": "Embarked on your yoga journey with the first session in the 'Yoga' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "1:Yoga"
+  },
+  {
+    "achievement_name": "Yogi",
+    "achievement_description": "Found inner peace with 5 sessions in the 'Yoga' category.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Category",
+    "achievement_condition": "5:Yoga"
+  }
+]

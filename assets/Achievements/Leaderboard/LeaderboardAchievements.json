@@ -1,0 +1,44 @@
+[
+  {
+    "achievement_name": "Top of the Mountain",
+    "achievement_description": "Reach the number one spot on the leaderboard.",
+    "achievement_image_url": "",
+    "achievement_type": "Leaderboard",
+    "achievement_condition": "1"
+  },
+  {
+    "achievement_name": "Peak Performer",
+    "achievement_description": "Consistently rank in the top three on the leaderboard.",
+    "achievement_image_url": "",
+    "achievement_type": "Leaderboard",
+    "achievement_condition": "1:3"
+  },
+  {
+    "achievement_name": "High Achiever",
+    "achievement_description": "Maintain a position in the top ten on the leaderboard.",
+    "achievement_image_url": "",
+    "achievement_type": "Leaderboard",
+    "achievement_condition": "1:10"
+  },
+  {
+    "achievement_name": "On the Rise",
+    "achievement_description": "Make significant progress on the leaderboard, moving up at least 100 places.",
+    "achievement_image_url": "",
+    "achievement_type": "Leaderboard",
+    "achievement_condition": "100"
+  },
+  {
+    "achievement_name": "Steady Climber",
+    "achievement_description": "Gradually improve your ranking on the leaderboard, moving up at least 50 places.",
+    "achievement_image_url": "",
+    "achievement_type": "Leaderboard",
+    "achievement_condition": "50"
+  },
+  {
+    "achievement_name": "Consistent Contender",
+    "achievement_description": "Maintain a consistent ranking on the leaderboard for a month.",
+    "achievement_image_url": "",
+    "achievement_type": "Leaderboard",
+    "achievement_condition": "30 days"
+  }
+]

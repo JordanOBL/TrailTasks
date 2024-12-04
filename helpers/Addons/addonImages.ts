@@ -1,0 +1,25 @@
+const addonImages = {
+  HikingPolesI: require('../../assets/addons/HikingPoles1.png'),
+  HikingPolesII: require('../../assets/addons/HikingPoles2.png'),
+  HikingPolesIII: require('../../assets/addons/HikingPoles3.png'),
+  WaterBottleI: require('../../assets/addons/WaterBottle1.png'),
+  WaterBottleII: require('../../assets/addons/WaterBottle2.png'),
+  WaterBottleIII: require('../../assets/addons/WaterBottle3.png'),
+  TrailMixI: require('../../assets/addons/TrailMix1.png'),
+  TrailMixII: require('../../assets/addons/TrailMix2.png'),
+  TrailMixIII: require('../../assets/addons/TrailMix3.png'),
+  FirstAidI: require('../../assets/addons/FirstAid1.png'),
+  FirstAidII: require('../../assets/addons/FirstAid2.png'),
+  FirstAidIII: require('../../assets/addons/FirstAid3.png'),
+  RunningShoesI: require('../../assets/addons/RunningShoes1.png'),
+  RunningShoesII: require('../../assets/addons/RunningShoes2.png'),
+  RunningShoesIII: require('../../assets/addons/RunningShoes3.png'),
+  TreasureMapI: require('../../assets/addons/TreasureMap1.png'),
+  TreasureMapII: require('../../assets/addons/TreasureMap2.png'),
+  TreasureMapIII: require('../../assets/addons/TreasureMap3.png'),
+  UltralightI: require('../../assets/addons/Ultralight1.png'),
+  UltralightII: require('../../assets/addons/Ultralight2.png'),
+  UltralightIII: require('../../assets/addons/Ultralight3.png'),
+};
+
+export default addonImages;

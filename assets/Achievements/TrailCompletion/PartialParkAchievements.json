@@ -1,0 +1,240 @@
+[
+  {
+    "achievement_name": "Acadia Park Explorer",
+    "achievement_description": "Hike a trail in Acadia National Park.",
+    "achievement_image_url": "https://example.com/acadia_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:1,2,3"
+  },
+  {
+    "achievement_name": "American Samoa Park Explorer",
+    "achievement_description": "Hike a trail in American Samoa National Park.",
+    "achievement_image_url": "https://example.com/american_samoa_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:4,5,6"
+  },
+  {
+    "achievement_name": "Arches Park Explorer",
+    "achievement_description": "Hike a trail in Arches National Park.",
+    "achievement_image_url": "https://example.com/arches_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:7,8,9"
+  },
+  {
+    "achievement_name": "Badlands Park Explorer",
+    "achievement_description": "Hike a trail in Badlands National Park.",
+    "achievement_image_url": "https://example.com/badlands_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:10,11,12"
+  },
+  {
+    "achievement_name": "Big Bend Park Explorer",
+    "achievement_description": "Hike a trail in Big Bend National Park.",
+    "achievement_image_url": "https://example.com/big_bend_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:13,14,15"
+  },
+  {
+    "achievement_name": "Biscayne Park Explorer",
+    "achievement_description": "Hike a trail in Biscayne National Park.",
+    "achievement_image_url": "https://example.com/biscayne_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:16,17,18"
+  },
+  {
+    "achievement_name": "Black Canyon of the Gunnison Park Explorer",
+    "achievement_description": "Hike a trail in Black Canyon of the Gunnison National Park.",
+    "achievement_image_url": "https://example.com/black_canyon_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:19,20,21"
+  },
+  {
+    "achievement_name": "Bryce Canyon Park Explorer",
+    "achievement_description": "Hike a trail in Bryce Canyon National Park.",
+    "achievement_image_url": "https://example.com/bryce_canyon_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:22,23,24"
+  },
+  {
+    "achievement_name": "Canyonlands Park Explorer",
+    "achievement_description": "Hike a trail in Canyonlands National Park.",
+    "achievement_image_url": "https://example.com/canyonlands_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:25,26,27"
+  },
+  {
+    "achievement_name": "Capitol Reef Park Explorer",
+    "achievement_description": "Hike a trail in Capitol Reef National Park.",
+    "achievement_image_url": "https://example.com/capitol_reef_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:28,29,30"
+  },
+  {
+    "achievement_name": "Carlsbad Caverns Park Explorer",
+    "achievement_description": "Hike a trail in Carlsbad Caverns National Park.",
+    "achievement_image_url": "https://example.com/carlsbad_caverns_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:31,32,33"
+  },
+  {
+    "achievement_name": "Channel Islands Park Explorer",
+    "achievement_description": "Hike a trail in Channel Islands National Park.",
+    "achievement_image_url": "https://example.com/channel_islands_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:34,35,36"
+  },
+  {
+    "achievement_name": "Congaree Park Explorer",
+    "achievement_description": "Hike a trail in Congaree National Park.",
+    "achievement_image_url": "https://example.com/congaree_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:37,38,39"
+  },
+  {
+    "achievement_name": "Crater Lake Park Explorer",
+    "achievement_description": "Hike a trail in Crater Lake National Park.",
+    "achievement_image_url": "https://example.com/crater_lake_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:40,41,42"
+  },
+  {
+    "achievement_name": "Cuyahoga Vaey Par Explorer",
+    "achievement_description": "Hike a trail in Cuyahoga Vaey Natonal Park.",
+    "achievement_image_url": "https://example.com/cuyahoga_vaey_comletion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:43,44,45"
+  },
+  {
+    "achievement_name": "Death Vaey Par Explorer",
+    "achievement_description": "Hike a trail in Death Vaey Natonal Park.",
+    "achievement_image_url": "https://example.com/death_vaey_comletion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:46,47,48"
+  },
+  {
+    "achievement_name": "Denali Park Explorer",
+    "achievement_description": "Hike a trail in Denali National Park.",
+    "achievement_image_url": "https://example.com/denali_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:49,50,51"
+  },
+  {
+    "achievement_name": "Dry Tortugas Park Explorer",
+    "achievement_description": "Hike a trail in Dry Tortugas National Park.",
+    "achievement_image_url": "https://example.com/dry_tortugas_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:52,53"
+  },
+  {
+    "achievement_name": "Everglades Park Explorer",
+    "achievement_description": "Hike a trail in Everglades National Park.",
+    "achievement_image_url": "https://example.com/everglades_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:54,55,56"
+  },
+  {
+    "achievement_name": "Gates of the Arctic Park Explorer",
+    "achievement_description": "Hike a trail in Gates of the Arctic National Park.",
+    "achievement_image_url": "https://example.com/gates_of_the_arctic_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:57"
+  },
+  {
+    "achievement_name": "Gateway Arch Park Explorer",
+    "achievement_description": "Hike a trail in Gateway Arch National Park.",
+    "achievement_image_url": "https://example.com/gateway_arch_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:58"
+  },
+  {
+    "achievement_name": "Glacier Bay Park Explorer",
+    "achievement_description": "Hike a trail in Glacier Bay National Park.",
+    "achievement_image_url": "https://example.com/glacier_bay_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:59,60,61"
+  },
+  {
+    "achievement_name": "Glacier Park Explorer",
+    "achievement_description": "Hike a trail in Glacier National Park.",
+    "achievement_image_url": "https://example.com/glacier_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:62,63,64"
+  },
+  {
+    "achievement_name": "Grand Canyon Park Explorer",
+    "achievement_description": "Hike a trail in Grand Canyon National Park.",
+    "achievement_image_url": "https://example.com/grand_canyon_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:65,66,67"
+  },
+  {
+    "achievement_name": "Grand Teton Park Explorer",
+    "achievement_description": "Hike a trail in Grand Teton National Park.",
+    "achievement_image_url": "https://example.com/grand_teton_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:68,69,70"
+  },
+  {
+    "achievement_name": "Great Basin Park Explorer",
+    "achievement_description": "Hike a trail in Great Basin National Park.",
+    "achievement_image_url": "https://example.com/great_basin_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:71,72,73"
+  },
+  {
+    "achievement_name": "Great Sand Dunes Park Explorer",
+    "achievement_description": "Hike a trail in Great Sand Dunes National Park.",
+    "achievement_image_url": "https://example.com/great_sand_dunes_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:74,75,76"
+  },
+  {
+    "achievement_name": "Great Smoky Mountains Park Explorer",
+    "achievement_description": "Hike a trail in Great Smoky Mountains National Park.",
+    "achievement_image_url": "https://example.com/great_smoky_mountains_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:77,78"
+  },
+  {
+    "achievement_name": "Guadalupe Mountains Park Explorer",
+    "achievement_description": "Hike a trail in Guadalupe Mountains National Park.",
+    "achievement_image_url": "https://example.com/guadalupe_mountains_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:79,80,81"
+  },
+  {
+    "achievement_name": "Haleakala Park Explorer",
+    "achievement_description": "Hike a trail in Haleakala National Park.",
+    "achievement_image_url": "https://example.com/haleakala_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:82,83,84"
+  },
+  {
+    "achievement_name": "Hawaii Volcanoes Park Explorer",
+    "achievement_description": "Hike a trail in Hawaii Volcanoes National Park.",
+    "achievement_image_url": "https://example.com/hawaii_volcanoes_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:85,86,87"
+  },
+  {
+    "achievement_name": "Hot Springs Park Explorer",
+    "achievement_description": "Hike a trail in Hot Springs National Park.",
+    "achievement_image_url": "https://example.com/hot_springs_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:89,90,91"
+  },
+  {
+    "achievement_name": "Yellowstone Park Explorer",
+    "achievement_description": "Hike a trail in Yellowstone National Park.",
+    "achievement_image_url": "https://example.com/yellowstone_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:92,93,94"
+  },
+  {
+    "achievement_name": "Yosemite Park Explorer",
+    "achievement_description": "Hike a trail in Yosemite National Park.",
+    "achievement_image_url": "https://example.com/yosemite_completion.jpg",
+    "achievement_type": "Partial Park Completion",
+    "achievement_condition": "1:95,96,97"
+  }
+]

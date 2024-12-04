@@ -1,0 +1,149 @@
+[
+	{
+		"id": "1",
+		"trail_name": "Old Faithful trail",
+		"trail_distance": "2.2",
+		"trail_lat": "44.4601",
+		"trail_long": "-110.8281",
+		"trail_difficulty": "short",
+		"park_id": "61",
+		"trail_image_url": "https://www.nps.gov/articles/images/19255d.jpg?maxwidth=1300&maxheight=1300&autorotate=false",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "2",
+		"trail_name": "Mount Washburn trail",
+		"trail_distance": "6.2",
+		"trail_lat": "44.8938",
+		"trail_long": "-110.4037",
+		"trail_difficulty": "moderate",
+		"park_id": "61",
+		"trail_image_url": "https://www.nps.gov/common/uploads/place/import/f3f0cc30-0062-4229-af63-db99985d9ab2_image_350.jpg",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "3",
+		"trail_name": "Fairy Falls trail",
+		"trail_distance": "8.3",
+		"trail_lat": "44.6677",
+		"trail_long": "-110.8656",
+		"trail_difficulty": "moderate",
+		"park_id": "61",
+		"trail_image_url": "https://www.nps.gov/common/uploads/cropped_image/primary/6E135C3B-1DD8-B71B-0B48ABBCAE1A44D6.jpg?width=1300&quality=90&mode=crop",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "4",
+		"trail_name": "Yosemite Falls trail",
+		"trail_distance": "7.2",
+		"trail_lat": "37.7459",
+		"trail_long": "-119.5965",
+		"trail_difficulty": "moderate",
+		"park_id": "62",
+		"trail_image_url": "https://www.nps.gov/yose/planyourvisit/index.htm",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "5",
+		"trail_name": "Half Dome trail",
+		"trail_distance": "14.2",
+		"trail_lat": "37.746",
+		"trail_long": "-119.5336",
+		"trail_difficulty": "long",
+		"park_id": "62",
+		"trail_image_url": "https://www.myyosemitepark.com/wp-content/uploads/2021/12/YO-HalfDome-cables-trail_distance_Ordelheide_1500.jpg",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "6",
+		"trail_name": "Mist trail",
+		"trail_distance": "3",
+		"trail_lat": "37.7324",
+		"trail_long": "-119.5634",
+		"trail_difficulty": "short",
+		"park_id": "62",
+		"trail_image_url": "https://www.yosemite.com/wp-content/uploads/2016/05/Vernal-Fall-at-Yosemite-Mariposa.jpg",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "7",
+		"trail_name": "Jordan Pond Path",
+		"trail_distance": "3.3",
+		"trail_lat": "44.3276",
+		"trail_long": "-68.2978",
+		"trail_difficulty": "short",
+		"park_id": "1",
+		"trail_image_url": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.mainetrailfinder.com%2Ftrails%2Ftrail%2Facadia-national-park-jordan-pond-path&psig=AOvVaw1hLlupTifHsIknQM9uLGG4&ust=1682896155063000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCKCVhO6a0P4CFQAAAAAdAAAAABAJ",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "8",
+		"trail_name": "Lower Sauma Ridge Trail",
+		"trail_distance": "1.5",
+		"trail_lat": "-14.2462",
+		"trail_long": "-170.6858",
+		"trail_difficulty": "short",
+		"park_id": "2",
+		"trail_image_url": "https://s3-media0.fl.yelpcdn.com/bphoto/toIXdbXHxbeZ2bVLCS_-Zg/348s.jpg",
+		"trail_elevation": "0"
+	},
+	{
+		"id": "9",
+		"trail_name": "Park Avenue Trail",
+		"trail_distance": "2",
+		"trail_lat": "38.7343",
+		"trail_long": "-109.5943",
+		"trail_difficulty": "short",
+		"park_id": "3",
+		"trail_image_url": "https://www.encirclephotos.com/wp-content/uploads/Utah-Arches-National-Park-Park-Avenue-Viewpoint-1440x954.jpg",
+		"trail_elevation": "320"
+	},
+	{
+		"id": "10",
+		"trail_name": "Door Trail",
+		"trail_distance": "0.75",
+		"trail_lat": "43.7226",
+		"trail_long": "-102.4842",
+		"trail_difficulty": "short",
+		"park_id": "4",
+		"trail_image_url": "https://www.flashpackingamerica.com/wp-content/uploads/2021/09/best-hikes-in-badlands-door-trail-2-.jpeg",
+		"trail_elevation": "30"
+	},
+	{
+		"id": "11",
+		"trail_name": "Lost Mine Trail",
+		"trail_distance": "4.8",
+		"trail_lat": "29.2708",
+		"trail_long": "-103.3219",
+		"trail_difficulty": "short",
+		"park_id": "5",
+		"trail_image_url": "https://static1.squarespace.com/static/56bfc6c722482edc3dc304c8/5b4001b9562fa7b8dd8b2bf1/5b4108551ae6cf2d20d169b3/1607449693180/?format=1500w",
+		"trail_elevation": "1100"
+	},
+	{
+		"id": "12",
+		"trail_name": "Jones Lagoon Trail",
+		"trail_distance": "1.5",
+		"trail_lat": "25.5015",
+		"trail_long": "-80.2105",
+		"trail_difficulty": "short",
+		"park_id": "6",
+		"trail_image_url": "https://www.miamiandbeaches.com/getmedia/70a278ec-2691-4425-a5e6-4e2238ea2ae9/gmcvb21_biscayne_map_joneslagoon_1440x900.jpeg",
+		"trail_elevation": "0"
+	}
+]
+
+INSERT INTO trails (id, trail_name, trail_distance, trail_lat, trail_long, trail_difficulty, park_id, trail_image_url, trail_elevation)
+VALUES 
+("1", 'Old Faithful trail', '2.2', '44.4601', '-110.8281', 'short', '61', 'https://www.nps.gov/articles/images/19255d.jpg?maxwidth=1300&maxheight=1300&autorotate=false', '0'),
+("2", 'Mount Washburn trail', '6.2', '44.8938', '-110.4037', 'moderate', '61', 'https://www.nps.gov/common/uploads/place/import/f3f0cc30-0062-4229-af63-db99985d9ab2_image_350.jpg', '0'),
+("3", 'Fairy Falls trail', '8.3', '44.6677', '-110.8656', 'moderate', '61', 'https://www.nps.gov/common/uploads/cropped_image/primary/6E135C3B-1DD8-B71B-0B48ABBCAE1A44D6.jpg?width=1300&quality=90&mode=crop', '0'),
+("4", 'Yosemite Falls trail', '7.2', '37.7459', '-119.5965', 'moderate', '62', 'https://www.nps.gov/yose/planyourvisit/index.htm', '0'),
+("5", 'Half Dome trail', '14.2', '37.746', '-119.5336', 'long', '62', 'https://www.myyosemitepark.com/wp-content/uploads/2021/12/YO-HalfDome-cables-distance_Ordelheide_1500.jpg', '0'),
+("6", 'Mist trail', '3', '37.7324', '-119.5634', 'short', '62', 'https://www.yosemite.com/wp-content/uploads/2016/05/Vernal-Fall-at-Yosemite-Mariposa.jpg', '0'),
+("7", 'Jordan Pond Path', '3.3', '44.3276', '-68.2978', 'short', '1', 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.mainetrailfinder.com%2Ftrails%2Ftrail%2Facadia-national-park-jordan-pond-path&psig=AOvVaw1hLlupTifHsIknQM9uLGG4&ust=1682896155063000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCKCVhO6a0P4CFQAAAAAdAAAAABAJ', '0'),
+("8", 'Lower Sauma Ridge Trail', '1.5', '-14.2462', '-170.6858', 'short', '2', 'https://s3-media0.fl.yelpcdn.com/bphoto/toIXdbXHxbeZ2bVLCS_-Zg/348s.jpg', '0'),
+("9", 'Park Avenue Trail', '2', '38.7343', '-109.5943', 'short', '3', 'https://www.encirclephotos.com/wp-content/uploads/Utah-Arches-National-Park-Park-Avenue-Viewpoint-1440x954.jpg', '320'),
+("10", 'Door Trail', '0.75', '43.7226', '-102.4842', 'short', '4', 'https://www.flashpackingamerica.com/wp-content/uploads/2021/09/best-hikes-in-badlands-door-trail-2-.jpeg', '30'),
+("11", 'Lost Mine Trail', '4.8', '29.2708', '-103.3219', 'short', '5', 'https://static1.squarespace.com/static/56bfc6c722482edc3dc304c8/5b4001b9562fa7b8dd8b2bf1/5b4108551ae6cf2d20d169b3/1607449693180/?format=1500w', '1100'),
+("12", 'Jones Lagoon Trail', '1.5', '25.5015', '-80.2105', 'short', '6', 'https://www.miamiandbeaches.com/getmedia/70a278ec-2691-4425-a5e6-4e2238ea2ae9/gmcvb21_biscayne_map_joneslagoon_1440x900.jpeg', '0');

@@ -1,0 +1,129 @@
+
+[
+  {
+    "achievement_name": "Trailblazer Apprentice",
+    "achievement_description": "Embark on 1 trail spanning between 1 and 3 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "1:1,3"
+  },
+  {
+    "achievement_name": "Ranger Initiate",
+    "achievement_description": "Begin your journey with 3 trails, each between 1 and 3 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "3:1,3"
+  },
+  {
+    "achievement_name": "Discovery Novice",
+    "achievement_description": "Discover 5 new trails, each spanning between 1 and 3 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "5:1,3"
+  },
+  {
+    "achievement_name": "Explorer Apprentice",
+    "achievement_description": "Embark on 1 trail spanning between 3 and 5 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "1:3,5"
+  },
+  {
+    "achievement_name": "Ranger Novice",
+    "achievement_description": "Begin your journey with 3 trails, each between 3 and 5 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "3:3,5"
+  },
+  {
+    "achievement_name": "Pathfinder Initiate",
+    "achievement_description": "Discover 5 new trails, each spanning between 3 and 5 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "5:3,5"
+  },
+  {
+    "achievement_name": "Adventurer Apprentice",
+    "achievement_description": "Embark on 1 trail spanning between 5 and 7 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "1:5,7"
+  },
+  {
+    "achievement_name": "Pioneer Initiate",
+    "achievement_description": "Begin your journey with 3 trails, each between 5 and 7 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "3:5,7"
+  },
+  {
+    "achievement_name": "Explorer Novice",
+    "achievement_description": "Discover 5 new trails, each spanning between 5 and 7 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "5:5,7"
+  },
+  {
+    "achievement_name": "Voyager Apprentice",
+    "achievement_description": "Embark on 1 trail spanning between 7 and 10 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "1:7,10"
+  },
+  {
+    "achievement_name": "Pioneer Novice",
+    "achievement_description": "Begin your journey with 3 trails, each between 7 and 10 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "3:7,10"
+  },
+  {
+    "achievement_name": "Navigator Initiate",
+    "achievement_description": "Discover 5 new trails, each spanning between 7 and 10 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "5:7,10"
+  },
+  {
+    "achievement_name": "Explorer Journeyman",
+    "achievement_description": "Embark on 1 trail spanning between 10 and 13 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "1:10,13"
+  },
+  {
+    "achievement_name": "Pathfinder Novice",
+    "achievement_description": "Begin your journey with 3 trails, each between 10 and 13 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "3:10,13"
+  },
+  {
+    "achievement_name": "Adventurer Journeyman",
+    "achievement_description": "Discover 5 new trails, each spanning between 10 and 13 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "5:10,13"
+  },
+  {
+    "achievement_name": "Explorer Master",
+    "achievement_description": "Embark on 1 trail spanning between 13 and 16 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "1:13,16"
+  },
+  {
+    "achievement_name": "Voyager Novice",
+    "achievement_description": "Begin your journey with 3 trails, each between 13 and 16 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "3:13,16"
+  },
+  {
+    "achievement_name": "Pioneer Journeyman",
+    "achievement_description": "Discover 5 new trails, each spanning between 13 and 16 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "5:13,16"
+  },
+  {
+    "achievement_name": "Adventurer Master",
+    "achievement_description": "Embark on 1 trail spanning between 16 and 20 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "1:16,20"
+  },
+  {
+    "achievement_name": "Navigator Novice",
+    "achievement_description": "Begin your journey with 3 trails, each between 16 and 20 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "3:16,20"
+  },
+  {
+    "achievement_name": "Explorer Grandmaster",
+    "achievement_description": "Discover 5 new trails, each spanning between 16 and 20 miles.",
+    "achievement_type": "Trail Distance",
+    "achievement_condition": "5:16,20"
+  }
+]

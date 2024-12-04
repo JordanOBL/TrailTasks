@@ -1,0 +1,45 @@
+
+[
+  {
+    "achievement_name": "Trail Blazer",
+    "achievement_description": "Take your first steps on the path to greatness with a 15-minute session.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Duration",
+    "achievement_condition": "900"
+  },
+  {
+    "achievement_name": "Explorer",
+    "achievement_description": "Embark on a 30-minute journey to discover new horizons.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Duration",
+    "achievement_condition": "1800"
+  },
+  {
+    "achievement_name": "Adventurer",
+    "achievement_description": "Venture further into the wilderness with a 1-hour session.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Duration",
+    "achievement_condition": "3600"
+  },
+  {
+    "achievement_name": "Mountaineer",
+    "achievement_description": "Reach new heights of endurance and focus with a 90-minute session.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Duration",
+    "achievement_condition": "5400"
+  },
+  {
+    "achievement_name": "Trail Master",
+    "achievement_description": "Conquer the trails with a 2-hour session, showing true dedication and determination.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Duration",
+    "achievement_condition": "7200"
+  },
+  {
+    "achievement_name": "Ultimate Explorer",
+    "achievement_description": "Embark on an epic 3-hour journey, pushing the limits of endurance and adventure.",
+    "achievement_image_url": "",
+    "achievement_type": "User Session Duration",
+    "achievement_condition": "10800"
+  }
+]

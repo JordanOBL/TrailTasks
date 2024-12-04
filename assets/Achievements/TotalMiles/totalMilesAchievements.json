@@ -1,0 +1,151 @@
+[
+  {
+    "achievement_name": "First Steps",
+    "achievement_description": "Unlocked at 1.0 mile of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "1.0",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "007",
+    "achievement_description": "Earned after hiking 0.07 miles.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "0.07",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "420",
+    "achievement_description": "Unlocked at 4.20 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "4.20",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "Police",
+    "achievement_description": "Achieved after completing 12 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "12.0",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "Lucky Charms",
+    "achievement_description": "Earned at 7.77 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "7.77",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "National Pie Day",
+    "achievement_description": "Unlocked at 3.14 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "3.14",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "BooB",
+    "achievement_description": "Unlocked at 80.08 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "80.08",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "Threes a Crowd",
+    "achievement_description": "Earned at 33.3 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "33.3",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "Marathoner",
+    "achievement_description": "Just getting warmed up!",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "26.2",
+    "achievement_fact": ""
+  },
+  {
+    "achievement_name": "High Five",
+    "achievement_description": "Unlocked at 5.55 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "5.55"
+  },
+  {
+    "achievement_name": "Lucky 13",
+    "achievement_description": "Earned at 13.13 miles of hiking.",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "13.13"
+  },
+  {
+    "achievement_name": "First Park",
+    "achievement_description": "Earned after hiking the equivalent distance to the oldest National Park, Yellowstone, established in 1872 (18.72 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "18.72"
+  },
+  {
+    "achievement_name": "63 Club",
+    "achievement_description": "Unlocked after hiking the equivalent of the total number of National Parks in the United States (63 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "63.0"
+  },
+  {
+    "achievement_name": "Lone Star",
+    "achievement_description": "Unlocked after hiking the equivalent distance to the total area of Big Bend National Park in acres (801,163 acres = 801.163 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "80.163"
+  },
+  {
+    "achievement_name": "High Tide",
+    "achievement_description": "Earned after hiking the distance to the highest point in Death Valley National Park, Telescope Peak, which stands at 11,043 feet (11,043 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "110.43"
+  },
+  {
+    "achievement_name": "Golden Gate",
+    "achievement_description": "Unlocked at the distance equivalent to the length of the Golden Gate Bridge in San Francisco (8,981 feet = 8.981 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "8.981"
+  },
+  {
+    "achievement_name": "Grizzly",
+    "achievement_description": "Earned after hiking the distance equivalent to the average weight of a grizzly bear, 600 pounds (600 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "600"
+  },
+  {
+    "achievement_name": "Centennial",
+    "achievement_description": "Unlocked after hiking the equivalent distance to the age of Grand Canyon National Park in years (100 years = 100 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "100"
+  },
+  {
+    "achievement_name": "Evergreen",
+    "achievement_description": "Earned after hiking the distance equivalent to the height of the tallest tree in Redwood National Park, Hyperion, which stands at 379.7 feet (379.7 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "379.7"
+  },
+  {
+    "achievement_name": "Canyon Depths",
+    "achievement_description": "Unlocked at the distance equivalent to the depth of the Grand Canyon at its deepest point, 6,093 feet (6,093 miles).",
+    "achievement_image_url": "",
+    "achievement_type": "Total Miles",
+    "achievement_condition": "60.93"
+  }
+]

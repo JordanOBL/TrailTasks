@@ -1,0 +1,780 @@
+{
+	"trails": [
+		{
+			"trail_id": 1,
+			"trail_name": "Old Faithful trail",
+			"trail_distance": "2.2",
+			"trail_lat": "44.4601",
+			"trail_long": "-110.8281",
+			"trail_difficulty": "short",
+			"park_id": "61",
+			"trail_image_url": "https://www.nps.gov/articles/images/19255d.jpg?maxwtrail_idth=1300&maxheight=1300&autorotate=false",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 2,
+			"trail_name": "Mount Washburn trail",
+			"trail_distance": "6.2",
+			"trail_lat": "44.8938",
+			"trail_long": "-110.4037",
+			"trail_difficulty": "moderate",
+			"park_id": "61",
+			"trail_image_url": "https://www.nps.gov/common/uploads/place/import/f3f0cc30-0062-4229-af63-db99985d9ab2_image_350.jpg",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 3,
+			"trail_name": "Fairy Falls trail",
+			"trail_distance": "8.3",
+			"trail_lat": "44.6677",
+			"trail_long": "-110.8656",
+			"trail_difficulty": "moderate",
+			"park_id": "61",
+			"trail_image_url": "https://www.nps.gov/common/uploads/cropped_image/primary/6E135C3B-1DD8-B71B-0B48ABBCAE1A44D6.jpg?wtrail_idth=1300&quality=90&mode=crop",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 4,
+			"trail_name": "Yosemite Falls trail",
+			"trail_distance": "7.2",
+			"trail_lat": "37.7459",
+			"trail_long": "-119.5965",
+			"trail_difficulty": "moderate",
+			"park_id": "62",
+			"trail_image_url": "https://www.nps.gov/yose/planyourvisit/index.htm",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 5,
+			"trail_name": "Half Dome trail",
+			"trail_distance": "14.2",
+			"trail_lat": "37.746",
+			"trail_long": "-119.5336",
+			"trail_difficulty": "long",
+			"park_id": "62",
+			"trail_image_url": "https://www.myyosemitepark.com/wp-content/uploads/2021/12/YO-HalfDome-cables-trail_distance_Ordelhetrail_ide_1500.jpg",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 6,
+			"trail_name": "Mist trail",
+			"trail_distance": "3",
+			"trail_lat": "37.7324",
+			"trail_long": "-119.5634",
+			"trail_difficulty": "short",
+			"park_id": "62",
+			"trail_image_url": "https://www.yosemite.com/wp-content/uploads/2016/05/Vernal-Fall-at-Yosemite-Mariposa.jpg",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 7,
+			"trail_name": "Jordan Pond Path",
+			"trail_distance": "3.3",
+			"trail_lat": "44.3276",
+			"trail_long": "-68.2978",
+			"trail_difficulty": "short",
+			"park_id": "1",
+			"trail_image_url": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.mainetrailfinder.com%2Ftrails%2Ftrail%2Facadia-national-park-jordan-pond-path&psig=AOvVaw1hLlupTifHsIknQM9uLGG4&ust=1682896155063000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCKCVhO6a0P4CFQAAAAAdAAAAABAJ",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 8,
+			"trail_name": "Lower Sauma Rtrail_idge Trail",
+			"length": "1.5",
+			"trail_lat": "-14.2462",
+			"trail_long": "-170.6858",
+			"trail_difficulty": "short",
+			"park_id": "2",
+			"trail_image_url": "https://s3-media0.fl.yelpcdn.com/bphoto/toIXdbXHxbeZ2bVLCS_-Zg/348s.jpg",
+			"trail_elevation": "0"
+		},
+		{
+			"trail_id": 9,
+			"trail_name": "Park Avenue Trail",
+			"length": "2",
+			"trail_lat": "38.7343",
+			"trail_long": "-109.5943",
+			"trail_difficulty": "short",
+			"park_id": "3",
+			"trail_image_url": "https://www.encirclephotos.com/wp-content/uploads/Utah-Arches-National-Park-Park-Avenue-Viewpoint-1440x954.jpg",
+			"trail_elevation": "320"
+		},
+		{
+			"trail_id": 10,
+			"trail_name": "Door Trail",
+			"length": "0.75",
+			"trail_lat": "43.7226",
+			"trail_long": "-102.4842",
+			"trail_difficulty": "short",
+			"park_id": "4",
+			"trail_image_url": "https://www.flashpackingamerica.com/wp-content/uploads/2021/09/best-hikes-in-badlands-door-trail-2-.jpeg",
+			"trail_elevation": "30"
+		},
+		{
+			"trail_id": 11,
+			"trail_name": "Lost Mine Trail",
+			"length": "4.8",
+			"trail_lat": "29.2708",
+			"trail_long": "-103.3219",
+			"trail_difficulty": "short",
+			"park_id": "5",
+			"trail_image_url": "https://static1.squarespace.com/static/56bfc6c722482edc3dc304c8/5b4001b9562fa7b8dd8b2bf1/5b4108551ae6cf2d20d169b3/1607449693180/?format=1500w",
+			"trail_elevation": "1100"
+		},
+		{
+			"trail_id": 12,
+			"trail_name": "Jones Lagoon Trail",
+			"length": "1.5",
+			"trail_lat": "25.5015",
+			"trail_long": "-80.2105",
+			"trail_difficulty": "short",
+			"park_id": "6",
+			"trail_image_url": "https://www.miamiandbeaches.com/getmedia/70a278ec-2691-4425-a5e6-4e2238ea2ae9/gmcvb21_biscayne_map_joneslagoon_1440x900.jpeg",
+			"trail_elevation": "0"
+		}
+	],
+	"parks": [
+		{ "park_id": 1, "park_name": "Acadia", "park_type": "National" },
+		{
+			"park_id": 2,
+			"park_name": "American Samoa",
+			"park_type": "National"
+		},
+		{ "park_id": 3, "park_name": "Arches", "park_type": "National" },
+		{ "park_id": 4, "park_name": "Badlands", "park_type": "National" },
+		{ "park_id": 5, "park_name": "Big Bend", "park_type": "National" },
+		{ "park_id": 6, "park_name": "Biscayne", "park_type": "National" },
+		{
+			"park_id": 7,
+			"park_name": "Black Canyon of the Gunnison",
+			"park_type": "National"
+		},
+		{
+			"park_id": 8,
+			"park_name": "Bryce Canyon",
+			"park_type": "National"
+		},
+		{
+			"park_id": 9,
+			"park_name": "Canyonlands",
+			"park_type": "National"
+		},
+		{
+			"park_id": 10,
+			"park_name": "Capitol Reef",
+			"park_type": "National"
+		},
+		{
+			"park_id": 11,
+			"park_name": "Carlsbad Caverns",
+			"park_type": "National"
+		},
+		{
+			"park_id": 12,
+			"park_name": "Channel Islands",
+			"park_type": "National"
+		},
+		{ "park_id": 13, "park_name": "Congaree", "park_type": "National" },
+		{
+			"park_id": 14,
+			"park_name": "Crater Lake",
+			"park_type": "National"
+		},
+		{
+			"park_id": 15,
+			"park_name": "Cuyahoga Valley",
+			"park_type": "National"
+		},
+		{
+			"park_id": 16,
+			"park_name": "Death Valley",
+			"park_type": "National"
+		},
+		{ "park_id": 17, "park_name": "Denali", "park_type": "National" },
+		{
+			"park_id": 18,
+			"park_name": "Dry Tortugas",
+			"park_type": "National"
+		},
+		{
+			"park_id": 19,
+			"park_name": "Everglades",
+			"park_type": "National"
+		},
+		{
+			"park_id": 20,
+			"park_name": "Gates of the Arctic",
+			"park_type": "National"
+		},
+		{
+			"park_id": 21,
+			"park_name": "Gateway Arch",
+			"park_type": "National"
+		},
+		{
+			"park_id": 22,
+			"park_name": "Glacier Bay",
+			"park_type": "National"
+		},
+		{ "park_id": 23, "park_name": "Glacier", "park_type": "National" },
+		{
+			"park_id": 24,
+			"park_name": "Grand Canyon",
+			"park_type": "National"
+		},
+		{
+			"park_id": 25,
+			"park_name": "Grand Teton",
+			"park_type": "National"
+		},
+		{
+			"park_id": 26,
+			"park_name": "Great Basin",
+			"park_type": "National"
+		},
+		{
+			"park_id": 27,
+			"park_name": "Great Sand Dunes",
+			"park_type": "National"
+		},
+		{
+			"park_id": 28,
+			"park_name": "Great Smoky Mountains",
+			"park_type": "National"
+		},
+		{
+			"park_id": 29,
+			"park_name": "Guadalupe Mountains",
+			"park_type": "National"
+		},
+		{
+			"park_id": 30,
+			"park_name": "Haleakala",
+			"park_type": "National"
+		},
+		{
+			"park_id": 31,
+			"park_name": "Hawaii Volcanoes",
+			"park_type": "National"
+		},
+		{
+			"park_id": 32,
+			"park_name": "Hot Springs",
+			"park_type": "National"
+		},
+		{
+			"park_id": 33,
+			"park_name": "Indiana Dunes",
+			"park_type": "National"
+		},
+		{
+			"park_id": 34,
+			"park_name": "Isle Royale",
+			"park_type": "National"
+		},
+		{
+			"park_id": 35,
+			"park_name": "Joshua Tree",
+			"park_type": "National"
+		},
+		{ "park_id": 36, "park_name": "Katmai", "park_type": "National" },
+		{
+			"park_id": 37,
+			"park_name": "Kenai Fjords",
+			"park_type": "National"
+		},
+		{
+			"park_id": 38,
+			"park_name": "Kings Canyon",
+			"park_type": "National"
+		},
+		{
+			"park_id": 39,
+			"park_name": "Kobuk Valley",
+			"park_type": "National"
+		},
+		{
+			"park_id": 40,
+			"park_name": "Lake Clark",
+			"park_type": "National"
+		},
+		{
+			"park_id": 41,
+			"park_name": "Lassen Volcanic",
+			"park_type": "National"
+		},
+		{
+			"park_id": 42,
+			"park_name": "Mammoth Cave",
+			"park_type": "National"
+		},
+		{
+			"park_id": 43,
+			"park_name": "Mesa Verde",
+			"park_type": "National"
+		},
+		{
+			"park_id": 44,
+			"park_name": "Mount Rainier",
+			"park_type": "National"
+		},
+		{
+			"park_id": 45,
+			"park_name": "New River Gorge",
+			"park_type": "National"
+		},
+		{
+			"park_id": 46,
+			"park_name": "North Cascades",
+			"park_type": "National"
+		},
+		{ "park_id": 47, "park_name": "Olympic", "park_type": "National" },
+		{
+			"park_id": 48,
+			"park_name": "Petrified Forest",
+			"park_type": "National"
+		},
+		{
+			"park_id": 49,
+			"park_name": "Pinnacles",
+			"park_type": "National"
+		},
+		{ "park_id": 50, "park_name": "Redwood", "park_type": "National" },
+		{
+			"park_id": 51,
+			"park_name": "Rocky Mountain",
+			"park_type": "National"
+		},
+		{ "park_id": 52, "park_name": "Saguaro", "park_type": "National" },
+		{ "park_id": 53, "park_name": "Sequoia", "park_type": "National" },
+		{
+			"park_id": 54,
+			"park_name": "Shenandoah",
+			"park_type": "National"
+		},
+		{
+			"park_id": 55,
+			"park_name": "Theodore Roosevelt",
+			"park_type": "National"
+		},
+		{
+			"park_id": 56,
+			"park_name": "Virgin Islands",
+			"park_type": "National"
+		},
+		{
+			"park_id": 57,
+			"park_name": "Voyageurs",
+			"park_type": "National"
+		},
+		{
+			"park_id": 58,
+			"park_name": "White Sands",
+			"park_type": "National"
+		},
+		{
+			"park_id": 59,
+			"park_name": "Wind Cave",
+			"park_type": "National"
+		},
+		{
+			"park_id": 60,
+			"park_name": "Wrangell-St. Elias",
+			"park_type": "National"
+		},
+		{
+			"park_id": 61,
+			"park_name": "Yellowstone",
+			"park_type": "National"
+		},
+		{ "park_id": 62, "park_name": "Yosemite", "park_type": "National" },
+		{ "park_id": 63, "park_name": "Zion", "park_type": "National" }
+	],
+	"park_states": [
+		{
+			"park_id": 1,
+			"state_code": "ME",
+			"state_name": "Maine"
+		},
+		{
+			"park_id": 2,
+			"state_code": "AS",
+			"state_name": "American Samoa"
+		},
+		{
+			"park_id": 3,
+			"state_code": "UT",
+			"state_name": "Utah"
+		},
+		{
+			"park_id": 4,
+			"state_code": "SD",
+			"state_name": "South Dakota"
+		},
+		{
+			"park_id": 5,
+			"state_code": "TX",
+			"state_name": "Texas"
+		},
+		{
+			"park_id": 6,
+			"state_code": "FL",
+			"state_name": "Florida"
+		},
+		{
+			"park_id": 7,
+			"state_code": "CO",
+			"state_name": "Colorado"
+		},
+		{
+			"park_id": 8,
+			"state_code": "UT",
+			"state_name": "Utah"
+		},
+		{
+			"park_id": 9,
+			"state_code": "UT",
+			"state_name": "Utah"
+		},
+		{
+			"park_id": 10,
+			"state_code": "UT",
+			"state_name": "Utah"
+		},
+		{
+			"park_id": 11,
+			"state_code": "NM",
+			"state_name": "New Mexico"
+		},
+		{
+			"park_id": 12,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 13,
+			"state_code": "SC",
+			"state_name": "South Carolina"
+		},
+		{
+			"park_id": 13,
+			"state_code": "VA",
+			"state_name": "Virginia"
+		},
+		{
+			"park_id": 14,
+			"state_code": "OR",
+			"state_name": "Oregon"
+		},
+		{
+			"park_id": 15,
+			"state_code": "OH",
+			"state_name": "Ohio"
+		},
+		{
+			"park_id": 16,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 16,
+			"state_code": "NV",
+			"state_name": "Nevada"
+		},
+		{
+			"park_id": 17,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 18,
+			"state_code": "FL",
+			"state_name": "Florida"
+		},
+		{
+			"park_id": 19,
+			"state_code": "FL",
+			"state_name": "Florida"
+		},
+		{
+			"park_id": 20,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 21,
+			"state_code": "MO",
+			"state_name": "Missouri"
+		},
+		{
+			"park_id": 22,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 23,
+			"state_code": "MT",
+			"state_name": "Montana"
+		},
+		{
+			"park_id": 24,
+			"state_code": "AZ",
+			"state_name": "Arizona"
+		},
+		{
+			"park_id": 25,
+			"state_code": "WY",
+			"state_name": "Wyoming"
+		},
+		{
+			"park_id": 26,
+			"state_code": "NV",
+			"state_name": "Nevada"
+		},
+		{
+			"park_id": 27,
+			"state_code": "CO",
+			"state_name": "Colorado"
+		},
+		{
+			"park_id": 28,
+			"state_code": "TN",
+			"state_name": "Tennessee"
+		},
+		{
+			"park_id": 28,
+			"state_code": "NC",
+			"state_name": "North Carolina"
+		},
+		{
+			"park_id": 29,
+			"state_code": "TX",
+			"state_name": "Texas"
+		},
+		{
+			"park_id": 30,
+			"state_code": "HI",
+			"state_name": "Hawaii"
+		},
+		{
+			"park_id": 31,
+			"state_code": "HI",
+			"state_name": "Hawaii"
+		},
+		{
+			"park_id": 32,
+			"state_code": "AR",
+			"state_name": "Arkansas"
+		},
+		{
+			"park_id": 33,
+			"state_code": "IN",
+			"state_name": "Indiana"
+		},
+		{
+			"park_id": 34,
+			"state_code": "MI",
+			"state_name": "Michigan"
+		},
+		{
+			"park_id": 35,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 36,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 37,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 38,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 39,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 40,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 41,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 42,
+			"state_code": "KY",
+			"state_name": "Kentucky"
+		},
+		{
+			"park_id": 43,
+			"state_code": "CO",
+			"state_name": "Colorado"
+		},
+		{
+			"park_id": 44,
+			"state_code": "WA",
+			"state_name": "Washington"
+		},
+		{
+			"park_id": 45,
+			"state_code": "WV",
+			"state_name": "West Virginia"
+		},
+		{
+			"park_id": 46,
+			"state_code": "WA",
+			"state_name": "Washington"
+		},
+		{
+			"park_id": 46,
+			"state_code": "WA",
+			"state_name": "Washington"
+		},
+		{
+			"park_id": 47,
+			"state_code": "WA",
+			"state_name": "Washington"
+		},
+		{
+			"park_id": 48,
+			"state_code": "AZ",
+			"state_name": "Arizona"
+		},
+		{
+			"park_id": 49,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 50,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 51,
+			"state_code": "CO",
+			"state_name": "Colorado"
+		},
+		{
+			"park_id": 52,
+			"state_code": "AZ",
+			"state_name": "Arizona"
+		},
+		{
+			"park_id": 53,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 54,
+			"state_code": "VA",
+			"state_name": "Virginia"
+		},
+		{
+			"park_id": 55,
+			"state_code": "ND",
+			"state_name": "North Dakota"
+		},
+		{
+			"park_id": 56,
+			"state_code": "VI",
+			"state_name": "Virgin Islands"
+		},
+		{
+			"park_id": 57,
+			"state_code": "MN",
+			"state_name": "Minnesota"
+		},
+		{
+			"park_id": 58,
+			"state_code": "NM",
+			"state_name": "New Mexico"
+		},
+		{
+			"park_id": 59,
+			"state_code": "SD",
+			"state_name": "South Dakota"
+		},
+		{
+			"park_id": 60,
+			"state_code": "AK",
+			"state_name": "Alaska"
+		},
+		{
+			"park_id": 61,
+			"state_code": "WY",
+			"state_name": "Idaho"
+		},
+		{
+			"park_id": 61,
+			"state_code": "MO",
+			"state_name": "Montana"
+		},
+		{
+			"park_id": 61,
+			"state_code": "ID",
+			"state_name": "Idaho"
+		},
+		{
+			"park_id": 62,
+			"state_code": "CA",
+			"state_name": "California"
+		},
+		{
+			"park_id": 63,
+			"state_code": "UT",
+			"state_name": "Utah"
+		}
+	],
+	"achievements": [
+		{
+			"achievement_id": 1,
+			"achievement_name": "Hiker Extraordinaire",
+			"achievement_description": "Hiked 50 miles",
+			"achievement_image_url": "https://example.com/achievement1.png"
+		},
+		{
+			"achievement_id": 2,
+			"achievement_name": "Hiker Novice",
+			"achievement_description": "Hiked 20 miles",
+			"achievement_image_url": "https://example.com/achievement2.png"
+		},
+		{
+			"achievement_id": 3,
+			"achievement_name": "First of Many",
+			"achievement_description": "First 1.0 Miles",
+			"achievement_image_url": "https://example.com/achievement2.png"
+		}
+	],
+	"session_categories": [
+		{ "session_category_id": 1, "session_category_name": "Chores" },
+		{ "session_category_id": 2, "session_category_name": "Cooking" },
+		{ "session_category_id": 3, "session_category_name": "Drawing" },
+		{ "session_category_id": 4, "session_category_name": "Driving" },
+		{ "session_category_id": 5, "session_category_name": "Errands" },
+		{ "session_category_id": 6, "session_category_name": "Family" },
+		{ "session_category_id": 7, "session_category_name": "Meditating" },
+		{ "session_category_id": 8, "session_category_name": "Other" },
+		{ "session_category_id": 9, "session_category_name": "Outdoors" },
+		{ "session_category_id": 10, "session_category_name": "Pets" },
+		{ "session_category_id": 11, "session_category_name": "Reading" },
+		{ "session_category_id": 12, "session_category_name": "Social" },
+		{ "session_category_id": 13, "session_category_name": "Sports" },
+		{ "session_category_id": 14, "session_category_name": "Study" },
+		{ "session_category_id": 15, "session_category_name": "Work" },
+		{ "session_category_id": 16, "session_category_name": "Workout" },
+		{ "session_category_id": 17, "session_category_name": "Writing" },
+		{ "session_category_id": 18, "session_category_name": "Yoga" }
+	]
+}

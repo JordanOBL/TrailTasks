@@ -1,0 +1,22 @@
+[
+	{
+		"id": "1",
+		"achievement_name": "Hiker Extraordinaire",
+		"achievement_description": "Hiked 50 miles",
+		"achievement_image_url": "https://example.com/achievement1.png"
+	},
+	{
+		"id": "2",
+		"achievement_name": "Hiker Novice",
+		"achievement_description": "Hiked 20 miles",
+		"achievement_image_url": "https://example.com/achievement2.png"
+	},
+	{
+		"id": "3",
+		"achievement_name": "First of Many",
+		"achievement_description": "First 1.0 Miles",
+		"achievement_image_url": "https://example.com/achievement2.png"
+	}
+]
+
+//INSERT INTO achievements (id, achievement_name, achievement_description, achievement_image_url) VALUES (1, 'Hiker Extraordinaire', 'Hiked 50 miles', 'https://example.com/achievement1.png'),(2, 'Hiker Novice', 'Hiked 20 miles', 'https://example.com/achievement2.png'), (3, 'First of Many', 'First 1.0 Miles', 'https://example.com/achievement2.png');

@@ -1,0 +1,91 @@
+[
+  {"id": "1", "park_name": "Acadia", "park_type": "National"},
+  {"id": "2", "park_name": "American Samoa", "park_type": "National"},
+  {"id": "3", "park_name": "Arches", "park_type": "National"},
+  {"id": "4", "park_name": "Badlands", "park_type": "National"},
+  {"id": "5", "park_name": "Big Bend", "park_type": "National"},
+  {"id": "6", "park_name": "Biscayne", "park_type": "National"},
+  {
+    "id": "7",
+    "park_name": "Black Canyon of the Gunnison",
+    "park_type": "National"
+  },
+  {"id": "8", "park_name": "Bryce Canyon", "park_type": "National"},
+  {"id": "9", "park_name": "Canyonlands", "park_type": "National"},
+  {"id": "10", "park_name": "Capitol Reef", "park_type": "National"},
+  {"id": "11", "park_name": "Carlsbad Caverns", "park_type": "National"},
+  {"id": "12", "park_name": "Channel Islands", "park_type": "National"},
+  {"id": "13", "park_name": "Congaree", "park_type": "National"},
+  {"id": "14", "park_name": "Crater Lake", "park_type": "National"},
+  {"id": "15", "park_name": "Cuyahoga Valley", "park_type": "National"},
+  {"id": "16", "park_name": "Death Valley", "park_type": "National"},
+  {"id": "17", "park_name": "Denali", "park_type": "National"},
+  {"id": "18", "park_name": "Dry Tortugas", "park_type": "National"},
+  {"id": "19", "park_name": "Everglades", "park_type": "National"},
+  {
+    "id": "20",
+    "park_name": "Gates of the Arctic",
+    "park_type": "National"
+  },
+  {"id": "21", "park_name": "Gateway Arch", "park_type": "National"},
+  {"id": "22", "park_name": "Glacier Bay", "park_type": "National"},
+  {"id": "23", "park_name": "Glacier", "park_type": "National"},
+  {"id": "24", "park_name": "Grand Canyon", "park_type": "National"},
+  {"id": "25", "park_name": "Grand Teton", "park_type": "National"},
+  {"id": "26", "park_name": "Great Basin", "park_type": "National"},
+  {"id": "27", "park_name": "Great Sand Dunes", "park_type": "National"},
+  {
+    "id": "28",
+    "park_name": "Great Smoky Mountains",
+    "park_type": "National"
+  },
+  {
+    "id": "29",
+    "park_name": "Guadalupe Mountains",
+    "park_type": "National"
+  },
+  {"id": "30", "park_name": "Haleakala", "park_type": "National"},
+  {"id": "31", "park_name": "Hawaii Volcanoes", "park_type": "National"},
+  {"id": "32", "park_name": "Hot Springs", "park_type": "National"},
+  {"id": "33", "park_name": "Indiana Dunes", "park_type": "National"},
+  {"id": "34", "park_name": "Isle Royale", "park_type": "National"},
+  {"id": "35", "park_name": "Joshua Tree", "park_type": "National"},
+  {"id": "36", "park_name": "Katmai", "park_type": "National"},
+  {"id": "37", "park_name": "Kenai Fjords", "park_type": "National"},
+  {"id": "38", "park_name": "Kings Canyon", "park_type": "National"},
+  {"id": "39", "park_name": "Kobuk Valley", "park_type": "National"},
+  {"id": "40", "park_name": "Lake Clark", "park_type": "National"},
+  {"id": "41", "park_name": "Lassen Volcanic", "park_type": "National"},
+  {"id": "42", "park_name": "Mammoth Cave", "park_type": "National"},
+  {"id": "43", "park_name": "Mesa Verde", "park_type": "National"},
+  {"id": "44", "park_name": "Mount Rainier", "park_type": "National"},
+  {"id": "45", "park_name": "New River Gorge", "park_type": "National"},
+  {"id": "46", "park_name": "North Cascades", "park_type": "National"},
+  {"id": "47", "park_name": "Olympic", "park_type": "National"},
+  {"id": "48", "park_name": "Petrified Forest", "park_type": "National"},
+  {"id": "49", "park_name": "Pinnacles", "park_type": "National"},
+  {"id": "50", "park_name": "Redwood", "park_type": "National"},
+  {"id": "51", "park_name": "Rocky Mountain", "park_type": "National"},
+  {"id": "52", "park_name": "Saguaro", "park_type": "National"},
+  {"id": "53", "park_name": "Sequoia", "park_type": "National"},
+  {"id": "54", "park_name": "Shenandoah", "park_type": "National"},
+  {
+    "id": "55",
+    "park_name": "Theodore Roosevelt",
+    "park_type": "National"
+  },
+  {"id": "56", "park_name": "Virgin Islands", "park_type": "National"},
+  {"id": "57", "park_name": "Voyageurs", "park_type": "National"},
+  {"id": "58", "park_name": "White Sands", "park_type": "National"},
+  {"id": "59", "park_name": "Wind Cave", "park_type": "National"},
+  {
+    "id": "60",
+    "park_name": "Wrangell-St. Elias",
+    "park_type": "National"
+  },
+  {"id": "61", "park_name": "Yellowstone", "park_type": "National"},
+  {"id": "62", "park_name": "Yosemite", "park_type": "National"},
+  {"id": "63", "park_name": "Zion", "park_type": "National"}
+]
+
+INSERT INTO parks (id, _status, park_name, park_type) VALUES ("1", "created", 'Acadia', 'National'),("2", "created",'American Samoa', 'National'),("3","created", 'Arches', 'National'),("4","created", 'Badlands', 'National'),("5", "created",'Big Bend', 'National'),("6","created", 'Biscayne', 'National'),("7","created", 'Black Canyon of the Gunnison', 'National'),("8","created", 'Bryce Canyon', 'National'),("9","created", 'Canyonlands', 'National'),("10","created", 'Capitol Reef', 'National'),("11","created", 'Carlsbad Caverns', 'National'),("12","created", 'Channel Islands', 'National'),("13", "created",'Congaree', 'National'),("14","created",'Crater Lake', 'National'),("15","created", 'Cuyahoga Valley', 'National'),("16","created", 'Death Valley', 'National'),("17", "created",'Denali', 'National'),("18","created", 'Dry Tortugas', 'National'),("19", "created",'Everglades', 'National'),("20", "created",'Gates of the Arctic', 'National'),("21","created", 'Gateway Arch', 'National'),("22", "created",'Glacier Bay', 'National'),("23","created", 'Glacier', 'National'),("24","created", 'Grand Canyon', 'National'),("25", "created",'Grand Teton', 'National'),("26","created", 'Great Basin', 'National'),("27","created", 'Great Sand Dunes', 'National'),("28","created", 'Great Smoky Mountains', 'National'),("29","created", 'Guadalupe Mountains', 'National'),("30", "created",'Haleakala', 'National'),("31","created", 'Hawaii Volcanoes', 'National'),("32", "created",'Hot Springs', 'National'),("33","created", 'Indiana Dunes', 'National'),("34","created", 'Isle Royale', 'National'),("35", "created",'Joshua Tree', 'National'),("36","created", 'Katmai', 'National'),("37", "created",'Kenai Fjords', 'National'),("38","created", 'Kings Canyon', 'National'),("39","created", 'Kobuk Valley', 'National'),("40", "created",'Lake Clark', 'National'),("41","created", 'Lassen Volcanic', 'National'),("42", "created",'Mammoth Cave', 'National'),("43","created", 'Mesa Verde', 'National'),("44", "created",'Mount Rainier', 'National'),("45","created", 'New River Gorge', 'National'),("46","created", 'North Cascades', 'National'),("47", "created",'Olympic', 'National'),("48", "created",'Petrified Forest', 'National'),("49", "created",'Pinnacles', 'National'),("50","created", 'Redwood', 'National'),("51", "created",'Rocky Mountain', 'National'),("52","created", 'Saguaro', 'National'),("53","created", 'Sequoia', 'National'),("54","created", 'Shenandoah', 'National'),("55","created", 'Theodore Roosevelt', 'National'),("56", "created",'Virgin Islands', 'National'),("57","created", 'Voyageurs', 'National'),("58","created", 'White Sands', 'National'),("59", "created",'Wind Cave', 'National'),("60","created", 'Wrangell-St. Elias', 'National'),("61", "created",'Yellowstone', 'National'),("62","created", 'Yosemite', 'National'),("63", "created",'Zion', 'National');

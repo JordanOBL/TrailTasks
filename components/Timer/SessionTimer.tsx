@@ -1,0 +1,101 @@
+import React, {useEffect} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
+import {
+  checkPaceIncrease,
+  checkTimerIsZero,
+} from '../../helpers/Timer/timerFlow';
+
+import Timer from '../../types/timer';
+import formatCountdown from '../../helpers/Timer/formatCountdown';
+
+interface Props {
+  timer: Timer;
+  setTimer: React.Dispatch<React.SetStateAction<Timer>>;
+  minimumPace: number;
+  maximumPace: number;
+  paceIncreaseInterval: number;
+  paceIncreaseValue: number;
+}
+
+const SessionTimer = ({
+  timer,
+  setTimer,
+  minimumPace,
+  maximumPace,
+  paceIncreaseInterval,
+  paceIncreaseValue,
+}: Props) => {
+  const countdown = formatCountdown(timer.time);
+
+  useEffect(() => {
+    let timerInterval: string | number | NodeJS.Timeout | undefined;
+    if (timer?.isRunning && !timer?.isPaused && !timer.isCompleted) {
+      timerInterval = setInterval(() => {
+        if (timer.time <= 0) {
+          checkTimerIsZero({timer, setTimer});
+        }
+        if (timer.time > 0 && !timer.isBreak) {
+          checkPaceIncrease({
+            timer,
+            setTimer,
+            minimumPace,
+            maximumPace,
+            paceIncreaseInterval,
+            paceIncreaseValue,
+          });
+        }
+
+        setTimer((prev) => ({...prev, time: prev.time - 1}));
+      }, 1000);
+    }
+
+    // Clear the interval when the component unmounts or dependencies change
+    return () => clearInterval(timerInterval);
+  }, [
+    timer.time,
+    timer.isCompleted,
+    timer?.isRunning,
+    timer?.isPaused,
+    minimumPace,
+    maximumPace,
+    paceIncreaseInterval,
+    paceIncreaseValue,
+    timer,
+    setTimer,
+  ]);
+
+  return (
+    <View style={styles.timerContainer}>
+      <Text
+        style={[
+          styles.timerText,
+          (timer.isPaused || timer.isBreak) && styles.pausedText,
+        ]}>
+        {timer.isPaused
+          ? 'Paused'
+          : timer.isCompleted
+          ? 'Completed'
+          : countdown}
+      </Text>
+    </View>
+  );
+};
+
+export default SessionTimer;
+const styles = StyleSheet.create({
+  timerContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  timerText: {
+    fontSize: 60,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+    color: 'rgb(7,254,213)',
+  },
+  pausedText: {
+    color: '#D3E5EB',
+  },
+});

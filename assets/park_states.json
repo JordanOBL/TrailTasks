@@ -1,0 +1,418 @@
+[
+  {
+    "park_id": 1,
+    "state_code": "ME",
+    "state": "Maine"
+  },
+  {
+    "park_id": 2,
+    "state_code": "AS",
+    "state": "American Samoa"
+  },
+  {
+    "park_id": 3,
+    "state_code": "UT",
+    "state": "Utah"
+  },
+  {
+    "park_id": 4,
+    "state_code": "SD",
+    "state": "South Dakota"
+  },
+  {
+    "park_id": 5,
+    "state_code": "TX",
+    "state": "Texas"
+  },
+  {
+    "park_id": 6,
+    "state_code": "FL",
+    "state": "Florida"
+  },
+  {
+    "park_id": 7,
+    "state_code": "CO",
+    "state": "Colorado"
+  },
+  {
+    "park_id": 8,
+    "state_code": "UT",
+    "state": "Utah"
+  },
+  {
+    "park_id": 9,
+    "state_code": "UT",
+    "state": "Utah"
+  },
+  {
+    "park_id": 10,
+    "state_code": "UT",
+    "state": "Utah"
+  },
+  {
+    "park_id": 11,
+    "state_code": "NM",
+    "state": "New Mexico"
+  },
+  {
+    "park_id": 12,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 13,
+    "state_code": "SC",
+    "state": "South Carolina"
+  },
+  {
+    "park_id": 13,
+    "state_code": "VA",
+    "state": "Virginia"
+  },
+  {
+    "park_id": 14,
+    "state_code": "OR",
+    "state": "Oregon"
+  },
+  {
+    "park_id": 15,
+    "state_code": "OH",
+    "state": "Ohio"
+  },
+  {
+    "park_id": 16,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 16,
+    "state_code": "NV",
+    "state": "Nevada"
+  },
+  {
+    "park_id": 17,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 18,
+    "state_code": "FL",
+    "state": "Florida"
+  },
+  {
+    "park_id": 19,
+    "state_code": "FL",
+    "state": "Florida"
+  },
+  {
+    "park_id": 20,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 21,
+    "state_code": "MO",
+    "state": "Missouri"
+  },
+  {
+    "park_id": 22,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 23,
+    "state_code": "MT",
+    "state": "Montana"
+  },
+  {
+    "park_id": 24,
+    "state_code": "AZ",
+    "state": "Arizona"
+  },
+  {
+    "park_id": 25,
+    "state_code": "WY",
+    "state": "Wyoming"
+  },
+  {
+    "park_id": 26,
+    "state_code": "NV",
+    "state": "Nevada"
+  },
+  {
+    "park_id": 27,
+    "state_code": "CO",
+    "state": "Colorado"
+  },
+  {
+    "park_id": 28,
+    "state_code": "TN",
+    "state": "Tennessee"
+  },
+  {
+    "park_id": 28,
+    "state_code": "NC",
+    "state": "North Carolina"
+  },
+  {
+    "park_id": 29,
+    "state_code": "TX",
+    "state": "Texas"
+  },
+  {
+    "park_id": 30,
+    "state_code": "HI",
+    "state": "Hawaii"
+  },
+  {
+    "park_id": 31,
+    "state_code": "HI",
+    "state": "Hawaii"
+  },
+  {
+    "park_id": 32,
+    "state_code": "AR",
+    "state": "Arkansas"
+  },
+  {
+    "park_id": 33,
+    "state_code": "IN",
+    "state": "Indiana"
+  },
+  {
+    "park_id": 34,
+    "state_code": "MI",
+    "state": "Michigan"
+  },
+  {
+    "park_id": 35,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 36,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 37,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 38,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 39,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 40,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 41,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 42,
+    "state_code": "KY",
+    "state": "Kentucky"
+  },
+  {
+    "park_id": 43,
+    "state_code": "CO",
+    "state": "Colorado"
+  },
+  {
+    "park_id": 44,
+    "state_code": "WA",
+    "state": "Washington"
+  },
+  {
+    "park_id": 45,
+    "state_code": "WV",
+    "state": "West Virginia"
+  },
+  {
+    "park_id": 46,
+    "state_code": "WA",
+    "state": "Washington"
+  },
+  {
+    "park_id": 46,
+    "state_code": "WA",
+    "state": "Washington"
+  },
+  {
+    "park_id": 47,
+    "state_code": "WA",
+    "state": "Washington"
+  },
+  {
+    "park_id": 48,
+    "state_code": "AZ",
+    "state": "Arizona"
+  },
+  {
+    "park_id": 49,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 50,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 51,
+    "state_code": "CO",
+    "state": "Colorado"
+  },
+  {
+    "park_id": 52,
+    "state_code": "AZ",
+    "state": "Arizona"
+  },
+  {
+    "park_id": 53,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 54,
+    "state_code": "VA",
+    "state": "Virginia"
+  },
+  {
+    "park_id": 55,
+    "state_code": "ND",
+    "state": "North Dakota"
+  },
+  {
+    "park_id": 56,
+    "state_code": "VI",
+    "state": "Virgin Islands"
+  },
+  {
+    "park_id": 57,
+    "state_code": "MN",
+    "state": "Minnesota"
+  },
+  {
+    "park_id": 58,
+    "state_code": "NM",
+    "state": "New Mexico"
+  },
+  {
+    "park_id": 59,
+    "state_code": "SD",
+    "state": "South Dakota"
+  },
+  {
+    "park_id": 60,
+    "state_code": "AK",
+    "state": "Alaska"
+  },
+  {
+    "park_id": 61,
+    "state_code": "WY",
+    "state": "Idaho"
+  },
+  {
+    "park_id": 61,
+    "state_code": "MO",
+    "state": "Montana"
+  },
+  {
+    "park_id": 61,
+    "state_code": "ID",
+    "state": "Idaho"
+  },
+  {
+    "park_id": 62,
+    "state_code": "CA",
+    "state": "California"
+  },
+  {
+    "park_id": 63,
+    "state_code": "UT",
+    "state": "Utah"
+  }
+]
+
+INSERT INTO park_states(id, park_id, state_code, state) VALUES
+("1", "1", "ME", "Maine"),
+("2", "2", "AS", "American Samoa"),
+("3", "3", "UT", "Utah"),
+("4", "4", "SD", "South Dakota"),
+("5", "5", "TX", "Texas"),
+("6", "6", "FL", "Florida"),
+("7", "7", "CO", "Colorado"),
+("8", "8", "UT", "Utah"),
+("9", "9", "UT", "Utah"),
+("10", "10", "UT", "Utah"),
+("11", "11", "NM", "New Mexico"),
+("12", "12", "CA", "California"),
+("13", "13", "SC", "South Carolina"),
+("14", "13", "VA", "Virginia"),
+("15", "14", "OR", "Oregon"),
+("16", "15", "OH", "Ohio"),
+("17", "16", "CA", "California"),
+("18", "16", "NV", "Nevada"),
+("19", "17", "AK", "Alaska"),
+("20", "18", "FL", "Florida"),
+("21", "19", "FL", "Florida"),
+("22", "20", "AK", "Alaska"),
+("23", "21", "MO", "Missouri"),
+("24", "22", "AK", "Alaska"),
+("25", "23", "MT", "Montana"),
+("26", "24", "AZ", "Arizona"),
+("27", "25", "WY", "Wyoming"),
+("28", "26","NV","Nevada"),
+("29", "27","CO","Colorado"),
+("30", "28","TN","Tennessee"),
+("31", "28","NC","North Carolina"),
+("32", "29","TX","Texas"),
+("33", "30","HI","Hawaii"),
+("34", "31","HI","Hawaii"),
+("35", "32","AR","Arkansas"),
+("36", "33","IN","Indiana"),
+("37", "34","MI","Michigan"),
+("38", "35","CA","California"),
+("39", "36","AK","Alaska"),
+("40", "37","AK","Alaska"),
+("41", "38","CA","California"),
+("42", "39","AK","Alaska"),
+("43", "40","AK","Alaska"),
+("44", "41","CA","California"),
+("45", "42","KY","Kentucky"),
+("46", "43","CO","Colorado"),
+("47", "44","WA","Washington"),
+("48", "45","WV","West Virginia"),
+("49", "46","WA","Washington"),
+("50", "47","WA","Washington"),
+("51", "48","AZ","Arizona"),
+("52", "49","CA","California"),
+("53", "50","CA","California"),
+("54", "51","CO","Colorado"),
+("55", "52","AZ","Arizona"),
+("56", "53","CA","California"),
+("57", "54","VA","Virginia"),
+("58", "55","ND","North Dakota"),
+("59", "56","VI","Virgin Islands"),
+("60", "57","MN","Minnesota"),
+("61", "58","NM","New Mexico"),
+("62", "59","SD","South Dakota"),
+("63", "60","AK","Alaska"),
+("64", "61","WY","Idaho"),
+("65", "61","MO","Montana"),
+("66", "61","ID","Idaho"),
+("67", "62","CA","California"),
+("68", "63","UT","Utah")
+;
