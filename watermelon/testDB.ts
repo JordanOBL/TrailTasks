@@ -1,48 +1,54 @@
 import {Database} from '@nozbe/watermelondb';
-import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 
 import mySchema from './schema';
 import {
+  Achievement,
+  User_Completed_Trail,
   Park,
+  Park_State,
+  User_Queued_Trail,
+  Session_Category,
+  Subscription,
   Trail,
   User,
-  Park_State,
-  Badge,
-  Achievement,
   User_Achievement,
-  User_Completed_Trail,
-  User_Queued_Trail,
-  User_Badge,
-  Session_Category,
+  User_Purchased_Trail,
   User_Session,
-  Subscription,
+  Addon,
+  User_Addon,
+  Session_Addon,
+  User_Park
 } from './models';
 
-const adapter = new LokiJSAdapter({
-  dbName: 'TestDb',
+// Create the Node-based SQLite adapter
+const adapter = new SQLiteAdapter({
   schema: mySchema,
-  useWebWorker: false,
-  useIncrementalIndexedDB: true,
-  extraLokiOptions: {
-    autosave: false,
-  },
-});
+  // Watermelon checks if we’re on RN or Node. 
+  // Because we mocked index.native, it’ll use `better-sqlite3` in Node.
+  synchronous: true, 
+  jsi: false, // If your version of Watermelon complains about JSI, ensure it's off
+})
+
 
 export const testDb = new Database({
   adapter,
   modelClasses: [
-    Park,
-    Trail,
-    User,
-    Park_State,
-    Badge,
-    Achievement,
-    User_Achievement,
-    User_Completed_Trail,
-    User_Queued_Trail,
-    User_Badge,
-    Session_Category,
-    User_Session,
-    Subscription,
-  ],
+  Achievement,
+  User_Completed_Trail,
+  Park,
+  Park_State,
+  User_Queued_Trail,
+  Session_Category,
+  Subscription,
+  Trail,
+  User,
+  User_Achievement,
+  User_Purchased_Trail,
+  User_Session,
+  Addon,
+  User_Addon,
+  Session_Addon,
+  User_Park
+  ],actionsEnabled: true,
 });

@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 const schema = appSchema({
-  version: 4,
+  version: 1,
   tables: [
     tableSchema({
       name: 'parks',
@@ -62,7 +62,7 @@ const schema = appSchema({
         {name: 'trail_progress', type: 'string'},
         {name: 'trail_started_at', type: 'string'},
         {name: 'trail_tokens', type: 'number'},
-        {name: 'prestigeLevel', type: 'number'},
+        {name: 'prestige_level', type: 'number'},
         {name: 'total_miles', type: 'string'},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
@@ -108,7 +108,7 @@ const schema = appSchema({
       ],
     }),
     tableSchema({
-      name: 'users_compoleted_trails',
+      name: 'users_completed_trails',
       columns: [
         {name: 'user_id', type: 'string'}, //ref
         {name: 'trail_id', type: 'string'}, //ref
@@ -135,18 +135,6 @@ const schema = appSchema({
         {name: 'user_id', type: 'string'}, //reference user,
         {name: 'trail_id', type: 'string'},
         {name: 'purchased_at', type: 'string'},
-        {name: 'created_at', type: 'number'},
-        {name: 'updated_at', type: 'number'},
-      ],
-    }),
-    tableSchema({
-      name: 'users_badges',
-      columns: [
-        {name: 'user_id', type: 'string'}, //reference user,
-        {name: 'badge_id', type: 'string'},
-        {name: 'quantity', type: 'number'},
-        {name: 'last_redeemed', type: 'string'},
-        {name: 'is_completed', type: 'boolean'},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],
@@ -218,18 +206,16 @@ const schema = appSchema({
       ],
     }),
     tableSchema({
-      name: 'users_completed_parks',
+      name: 'users_parks',
       columns: [
         { name: 'user_id', type: 'string', isIndexed: true },
         { name: 'park_id', type: 'string', isIndexed: true },
         { name: 'park_level', type: 'number', isOptional: false }, // Lifetime completions
-        { name: 'is_rewards_redeemed', type: 'boolean', isOptional: false }, // Reward status
-        {name: 'completion_count', type: 'number', isOptional: false},
+        { name: 'is_reward_redeemed', type: 'boolean', isOptional: false }, // Reward status
         { name: 'last_completed', type: 'number', isOptional: true }, // Timestamp
-        { name: 'badge_id', type: 'string', isIndexed: true, isOptional: true }, // Linked badge
       ],
     }
-    )
+    ),
   ],
 });
 

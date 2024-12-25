@@ -1,4 +1,9 @@
- {
+{
   "name": "summitsessions",
-  "displayName": "summitsessions"
+  "displayName": "summitsessions",
+  "extra": {
+    "eas": {
+      "projectId": "65f44901-3750-4dcb-b632-2c854f260dbd"
+    }
+  }
 }

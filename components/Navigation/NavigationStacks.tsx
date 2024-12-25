@@ -1,6 +1,6 @@
 import AddOnStoreScreen from '../../Screens/AddOnStoreScreen';
 import EnhancedAchievementsScreen from '../../Screens/AchievementsScreen';
-import EnhancedCompletedHikesScreen from '../../Screens/CompletedHikesScreen';
+import EnhancedCompletedTrailsScreen from '../../Screens/CompletedTrailsScreen';
 import EnhancedHikingQueueScreen from '../../Screens/HikingQueueScreen';
 import EnhancedHomeScreen from '../../Screens/HomeScreen';
 import EnhancedLeaderboardsScreen from '../../Screens/LeaderboardsScreen';
@@ -8,7 +8,7 @@ import EnhancedSessionScreen from '../../Screens/SessionScreen';
 import EnhancedStatsScreen from '../../Screens/StatsScreen';
 import EnhancedSubscribeScreen from '../../Screens/SubscribeScreen';
 import FriendsScreen from '../../Screens/FriendsScreen';
-import EnhancedBadgesScreen from "../../Screens/BadgesScreen";
+import EnhancedParkPassScreen from "../../Screens/ParkPassScreen";
 import GroupSessionScreen from '../../Screens/GroupSessionScreen';
 import SessionTypeScreen from '../../Screens/SessionTypeScreen';
 import SettingsScreen from '../../Screens/SettingsScreen';
@@ -39,10 +39,10 @@ export function HomeStack({user, setUser}: Props) {
         )}
       </Stack.Screen>
         <Stack.Screen
-            name="Badges"
+            name="Park Passes"
             options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
             {(props: any) => (
-                <EnhancedBadgesScreen {...props} user={user} setUser={setUser} />
+                <EnhancedParkPassScreen {...props} user={user} setUser={setUser} />
             )}
         </Stack.Screen>
 
@@ -60,7 +60,7 @@ export function HomeStack({user, setUser}: Props) {
       <Stack.Screen name="Friends" component={FriendsScreen} />
       <Stack.Screen name="CompletedHikes" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
         {(props: any) => (
-          <EnhancedCompletedHikesScreen
+          <EnhancedCompletedTrailsScreen
             {...props}
             user={user}
             setUser={setUser}

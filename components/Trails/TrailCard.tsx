@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-
 import {
     View,
     Text,
@@ -8,19 +7,19 @@ import {
     Image,
     StyleSheet,
 } from 'react-native';
-import {withObservables} from "@nozbe/watermelondb/react";
-import {
-    User_Completed_Trail,
-    Park,
-    Subscription,
-    User,
-    User_Purchased_Trail
-} from "../../watermelon/models";
+import { withObservables } from "@nozbe/watermelondb/react";
 import calculateEstimatedTime from "../../helpers/calculateEstimatedTime";
 import FullTrailDetails from "../../types/fullTrailDetails";
 
-const TrailCard = React.memo(({ trail,completedTrails, user,  userPurchasedTrails }: {trail: FullTrailDetails, userPurchasedTrails: User_Purchased_Trail[], user:User, park:Park, userSubscription: Subscription, completedTrails: User_Completed_Trail[] }) => {
+const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrails }: {
+    trail: FullTrailDetails,
+    userPurchasedTrails: any[],
+    user: any,
+    park: any,
+    completedTrails: any[]
+}) => {
     const navigation = useNavigation();
+
     const handlePress = () => {
         // @ts-ignore
         navigation.navigate('TrailDetails', {
@@ -28,98 +27,140 @@ const TrailCard = React.memo(({ trail,completedTrails, user,  userPurchasedTrail
             user,
             userPurchasedTrails,
             completedTrails,
-
         });
     };
 
     return (
-        <TouchableOpacity style={[styles.trailCard, styles.container, {marginVertical: 20}]} onPress={handlePress}>
+        <TouchableOpacity style={styles.card} onPress={handlePress}>
+            {/* Trail Image */}
+            <Image
+                source={trail.trail_image_url
+                    ? { uri: trail.trail_image_url }
+                    : require('../../assets/LOGO.png')}
+                style={styles.image}
+            />
+            <View style={styles.infoContainer}>
+                <View style={styles.row}>
+                    <Text style={styles.trailName} numberOfLines={1}>{trail?.trail_name}</Text>
 
-        <View style={styles.trailCard}>
-            <View style={styles.trailCard}>
-                <Image source={trail.trail_image_url
-                    ? {uri: trail.trail_image_url}
-                    : require('../../assets/LOGO.png')} style={styles.trailImage}/>
-            </View>
-            <View style={styles.trailInfo}>
-                <Text style={styles.trailName}>{trail?.trail_name}</Text>
+                        <View style={[styles.completedBadge, {display: trail.completed_trails ? "flex": "none"}]}>
+                            <Text style={styles.completedBadgeText}>✓ Completed</Text>
+                        </View>
+
+                </View>
                 <Text style={styles.parkName}>{trail?.park_name}</Text>
-                <View style={styles.trailStats}>
-                    <Text style={styles.trailStatText}>🌟 {trail?.trail_difficulty}</Text>
-                    <Text style={styles.trailStatText}>⛰ {trail?.trail_distance} mi</Text>
-                    <Text style={styles.trailStatText}>🕒 {calculateEstimatedTime(trail?.trail_distance)}</Text>
+                <View style={styles.statsContainer}>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statIcon}>⛰</Text>
+                        <Text style={styles.statText}>{trail?.trail_distance} mi</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statIcon}>🕒</Text>
+                        <Text style={styles.statText}>{calculateEstimatedTime(trail?.trail_distance)}</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statIcon}>🌟</Text>
+                        <Text style={styles.statText}>{trail?.trail_difficulty}</Text>
+                    </View>
                 </View>
             </View>
-        </View>
+
         </TouchableOpacity>
-    )
+    );
 });
 
-const enhance = withObservables(
-    ['user', 'userPurchasedTrails'],
-    ({ user }) => ({
-        user,
-        completedTrails: user.completedHikes.observe(),
-        queuedTrails: user.queuedTrails.observe(),
-        userPurchasedTrails: user.usersPurchasedTrails.observe(),
-    })
-);
+const enhance = withObservables(['user', 'userPurchasedTrails', 'completedTrails'], ({ user }) => ({
+    user,
+    completedTrails: user.usersCompletedTrails.observe(),
+    userPurchasedTrails: user.usersPurchasedTrails.observe(),
+}));
 
 const EnhancedTrailCard = enhance(TrailCard);
 export default EnhancedTrailCard;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'rgb(18, 19, 21)', // Black background
-    },
-    trailCard: {
-        backgroundColor: 'rgb(18, 19, 21)',// Dark background for trail card
-       // Margin at the bottom to space out cards
-        overflow: 'hidden', // Adds shadow for Android
-        shadowColor: '#000', // Adds shadow for iOS
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1, // Slightly stronger shadow opacity
-        shadowRadius: 5,
-        zIndex: 0, // Ensure dropdown is above other elements
+    card: {
+        backgroundColor: 'rgb(25, 27, 31)', // Sleek dark theme
+        borderRadius: 15,
+        overflow: 'hidden',
+        marginVertical: 15,
+        marginHorizontal: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
         elevation: 5,
     },
-    trailImage: {
+    image: {
         width: '100%',
-        height: 200,
-        zIndex: 999, // Ensure dropdown is above other elements
-
+        height: 180,
     },
-    trailInfo: {
+    overlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Subtle black overlay
         padding: 10,
     },
-    trailName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#fff', // White text color for trail name
+        row: {
+            flexDirection: 'row',
+            alignItems: 'center', // Ensures vertical alignment
+            justifyContent: 'space-between', // Space between name and badge
+
+        },
+        trailName: {
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: '#fff',
+            flex: 1, // Allow text to occupy remaining space
+            marginRight: 10, // Add margin to avoid overlapping with the badge
+        },
+        completedBadge: {
+            backgroundColor: '#4caf50', // Green color for "Completed"
+            paddingVertical: 4,
+            paddingHorizontal: 8,
+            borderRadius: 15,
+        },
+        completedBadgeText: {
+            color: '#fff',
+            fontSize: 12,
+            fontWeight: 'bold',
+        },
+
+
+    trailDifficulty: {
+        fontSize: 14,
+        color: '#ffcc00', // Gold-like color for difficulty
+    },
+    infoContainer: {
+        padding: 15,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)', // Slight translucent background
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
     },
     parkName: {
-        color: '#aaa', // Lighter text color for park name
-        marginBottom: 5,
-    },
-    trailStats: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+        fontSize: 16,
+        color: '#aaa',
+        marginBottom: 8,
 
-        margin: 10,
     },
-    trailStatText: {
-        fontSize: 14,
-        color: '#ddd', // Lighter text color for trail stats
+
+    statsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        marginTop: 10,
     },
-    actionButton: {
-        padding: 10,
-        backgroundColor: 'rgba(100,1001,100,.5)',
+    statItem: {
         alignItems: 'center',
-        justifyContent: 'center',
     },
-    actionButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    }
+    statIcon: {
+        fontSize: 16,
+        color: '#ffcc00', // Accent color for icons
+    },
+    statText: {
+        fontSize: 14,
+        color: '#ddd',
+        marginTop: 2,
+    },
 });

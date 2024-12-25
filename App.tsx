@@ -33,21 +33,6 @@ const App = () => {
   // @ts-ignore
   //const { currentOffering, customerInfo, isProMember, loading } = useRevenueCat({ userId: user?.id || '' });
 
-  //insert postgres tables
-  const seedPgTables = async () => {
-    try {
-      console.log('seedingPgTables');
-      const response = await fetch(`http://expressjs-postgres-production-54e4.up.railway.app/api/seed`);
-      const data = await response.json();
-      console.log(data)
-      if(data.ok){
-        return
-      }
-    } catch (err: any) {
-      handleError(err, 'seedPgTables');
-    }
-  };
-
   useEffect(() => {
     const onLoad = async () => {
       try {
@@ -59,12 +44,7 @@ const App = () => {
             await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
             await PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
             await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
-            await PermissionsAndroid.request('android.permission.INTERNET');
-            await PermissionsAndroid.request('android.permission.VIBRATE');
           }
-
-          //*uncomment next line to request the /seedPGTable API Route
-    // await seedPgTables();
 
           // This checks to see if the mobile device's SQLITE DB
           // has a userID saved in the local storage and sets the user if it does

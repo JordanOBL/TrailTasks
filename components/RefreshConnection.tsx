@@ -1,6 +1,7 @@
 /* Render offline message if not connected */
 import {Pressable, SafeAreaView, StyleSheet, Text} from "react-native";
 import React, {SetStateAction} from "react";
+
 //@ts-ignore
 const RefreshConection = ({setRefreshing, children}:{setRefreshing: SetStateAction<boolean>, children: string}) => {
     // @ts-ignore

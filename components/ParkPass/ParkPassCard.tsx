@@ -1,21 +1,34 @@
 import * as React from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import {Card, Text, Button, Badge} from 'react-native-paper';
+import { Card, Text, Button, Badge } from 'react-native-paper';
 import * as Progress from 'react-native-progress';
+import {withObservables} from "@nozbe/watermelondb/react";
+import {useEffect} from "react";
 
-const ParkBadgeCard = ({ data, badge }) => {
-    const progress = data.trails.length > 0 ? data.completed / data.trails.length : 0;
+const ParkPassCard = ({ data, redeemParkPass, user }) => {
 
+    const progress = data.completedTrails / data.totalTrails
     return (
         <Card style={styles.cardContainer}>
-
             <View style={styles.content}>
-                {!data.badge?.quantity && <Badge style={styles.quantityBadge}>{3}</Badge>}
-                <Text style={styles.title}>{badge.badgeName}</Text>
+                {/* Show Park Level Badge */}
+                {data.pass && (
+                    <Badge style={styles.levelBadge}>{data.pass.parkLevel}</Badge>
+                )}
+
+                {/* Park Name */}
+                <Text style={styles.title}>{data.parkName}</Text>
+
+                {/* Park Image */}
                 <Image
-                    source={progress == 1 ? require('../../assets/redeemableBadge.png') : require('../../assets/incompleteBadge.png')}
+                    source={
+                         data.pass?.parkLevel > user.prestigeLevel
+                            ? require('../../assets/redeemableBadge.png')
+                            : require('../../assets/incompleteBadge.png')
+                    }
                     style={styles.badgeImage}
                 />
+                {/* Progress Bar */}
                 <Progress.Bar
                     progress={progress}
                     height={12}
@@ -25,26 +38,38 @@ const ParkBadgeCard = ({ data, badge }) => {
                     unfilledColor="rgba(0, 0, 0, 0.1)"
                     style={styles.progressBar}
                 />
-                <Text style={styles.progressText}>
-                    {data.completed}/{data.trails.length}
-                </Text>
-                {progress == 1 && (<Button
-                    mode="contained"
-                    buttonColor={progress > 1 ? "rgba(255,255,255,.4)" : "rgb(7,254,213)"}
-                    onPress={() => console.log('Redeem badge!')}
-                    style={styles.redeemButton}
-                    dark={false}
-                    disabled={progress > 1}
-                >
-                    Redeem
-                </Button>)}
 
+                {/* Progress Text */}
+                <Text style={styles.progressText}>
+                    {data.completedTrails}/{data.totalTrails}
+                </Text>
+
+                {/* Redeem Button */}
+                {progress === 1 && !data.pass?.isRewardRedeemed ? (
+                    <Button
+                        mode="contained"
+                        buttonColor="rgb(7,254,213)"
+                        onPress={() => {
+                            redeemParkPass(data.parkId);
+                            console.log('Redeem reward for park!')
+                        }}
+                        style={styles.redeemButton}
+                        dark={false}
+                    >
+                        Redeem
+                    </Button>
+                ) : <></>}
             </View>
         </Card>
     );
 };
 
-export default ParkBadgeCard;
+const enhance = withObservables(['user'], ({ user }) => ({
+    user: user.observe()
+}));
+
+export default enhance(ParkPassCard);
+
 
 // Styles
 const styles = StyleSheet.create({
@@ -60,7 +85,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
     },
-    quantityBadge:{
+    levelBadge: {
         position: 'absolute',
         top: -5,
         left: -10,
@@ -77,7 +102,6 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         margin: 10,
-
     },
     title: {
         fontSize: 16,
@@ -86,15 +110,8 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 4,
     },
-    description: {
-        fontSize: 12,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 8,
-    },
     progressBar: {
         width: '100%',
-
     },
     progressText: {
         fontSize: 12,

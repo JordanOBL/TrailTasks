@@ -21,7 +21,7 @@ export class Park extends Model {
   static associations = {
     trails: {type: 'has_many', foreignKey: 'park_id'},
     parks_states: {type: 'has_many', foreignKey: 'park_id'},
-    users_completed_parks: { type: 'has_many', foreignKey: 'park_id' }, // Link to users_parks for progress tracking
+    users_parks: { type: 'has_many', foreignKey: 'park_id' }, // Link to users_parks for progress tracking
   };
 
   @field('park_name') parkName;
@@ -29,7 +29,7 @@ export class Park extends Model {
   @field('park_image_url') parkImageUrl;
 
   @children('trails') trails;
-  @children('users_compoleted_parks') usersCompletedParks; // Track users' progress in this park
+  @children('users_parks') usersParks; // Track users' progress in this park
 }
 
 export class Trail extends Model {
@@ -38,7 +38,7 @@ export class Trail extends Model {
     parks: {type: 'belongs_to', key: 'park_id'},
     users: {type: 'has_many', foreignKey: 'trail_id'},
     users_completed_trails: {type: 'has_many', foreignKey: 'trail_id'},
-    queued_trails: {type: 'has_many', foreignKey: 'trail_id'},
+    users_queued_trails: {type: 'has_many', foreignKey: 'trail_id'},
     users_purchased_trails: {type: 'has_many', foreignKey: 'trail_id'},
   };
   //fields
@@ -69,7 +69,7 @@ export class Trail extends Model {
   //Add To Hiking Queue
   @writer async addToQueuedTrails({userId}) {
     const addedHike = await this.collections
-      .get('queued_trails')
+      .get('users_queued_trails')
       .create((hike) => {
         hike.trailId = this.id;
         hike.userId = userId;
@@ -79,7 +79,7 @@ export class Trail extends Model {
 
   @writer async deleteFromQueuedTrails({userId}) {
     const deleteThisHike = await this.collections
-      .get('queued_trails')
+      .get('users_queued_trails')
       .query(Q.and(Q.where('trail_id', this.id), Q.where('user_id', userId)));
     console.log('in queued Trails');
     await deleteThisHike[0].markAsDeleted();
@@ -88,7 +88,6 @@ export class Trail extends Model {
 export class User extends Model {
   static table = 'users';
   static associations = {
-    users_badges: {type: 'has_many', foreignKey: 'user_id'},
     users_achievements: {type: 'has_many', foreignKey: 'user_id'},
     users_sessions: {type: 'has_many', foreignKey: 'user_id'},
     trails: {type: 'belongs_to', key: 'trail_id'},
@@ -97,7 +96,7 @@ export class User extends Model {
     users_subscriptions: {type: 'has_one', foreignKey: 'user_id'},
     users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_addons: {type: 'has_many', foreignKey: 'user_id'},
-    users_completed_parks: { type: 'has_many', foreignKey: 'user_id' }, // Added for park-level tracking
+    users_parks: {type: 'has_many', foreignKey: 'user_id'}, // Added for park-level tracking
 
   };
 
@@ -123,7 +122,6 @@ export class User extends Model {
   @relation('trails', 'trail_id') trail;
 
   @children('users_sessions') usersSessions;
-  @children('users_badges') usersBadges;
   @children('users_achievements') usersAchievements;
   @children('users_completed_trails') usersCompletedTrails;
   @children('users_queued_trails') usersQueuedTrails;
@@ -134,14 +132,15 @@ export class User extends Model {
 
   @relation('users_subscriptions', 'subscription_id') userSubscription;
 
-  @writer async purchaseTrail(trail, cost) {
+  @writer
+  async purchaseTrail(trail, cost) {
     const results = await this.collections
-      .get('users_purchased_trails')
-      .create((purchased_trail) => {
-        purchased_trail.userId = this.id;
-        purchased_trail.trailId = trail.id;
-        purchased_trail.purchasedAt = Date.now();
-      });
+        .get('users_purchased_trails')
+        .create((purchased_trail) => {
+          purchased_trail.userId = this.id;
+          purchased_trail.trailId = trail.id;
+          purchased_trail.purchasedAt = Date.now();
+        });
     if (results) {
       await this.update(() => {
         this.trailTokens -= cost;
@@ -154,47 +153,48 @@ export class User extends Model {
   }
 
   //create new session
-  @writer async startNewSession(sessionDetails) {
+  @writer
+  async startNewSession(sessionDetails) {
     try {
       //get user addons
       const usersAddons = await this.usersAddons;
 
       console.debug(
-        'in models startNewSession preparing to create new session'
+          'in models startNewSession preparing to create new session'
       );
       //create a new session and get sessionID to add sessionaddons
       const newSession = this.collections
-        .get('users_sessions')
-        //@ts-ignore
-        .prepareCreate((userSession) => {
-          userSession.userId = this.id;
-          userSession.sessionName = sessionDetails.sessionName;
-          userSession.sessionDescription = '';
-          userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
-          userSession.totalSessionTime = '0';
-          userSession.totalDistanceHiked = '0.00';
-          userSession.dateAdded = formatDateTime(new Date());
-        });
+          .get('users_sessions')
+          //@ts-ignore
+          .prepareCreate((userSession) => {
+            userSession.userId = this.id;
+            userSession.sessionName = sessionDetails.sessionName;
+            userSession.sessionDescription = '';
+            userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
+            userSession.totalSessionTime = '0';
+            userSession.totalDistanceHiked = '0.00';
+            userSession.dateAdded = formatDateTime(new Date());
+          });
 
       await this.batch(
-        newSession,
-        //create session addons
-        ...sessionDetails.backpack.map((backpackAddon) => {
-          if (backpackAddon.addon != null) {
-            return this.collections
-              .get('sessions_addons')
-              .prepareCreate((sessionAddon) => {
-                sessionAddon.sessionId = newSession.id;
-                sessionAddon.addonId = backpackAddon.addon.id;
-              });
-          }
-        }),
-        //decrement users used addon
-        ...usersAddons.map((backpackAddon) => {
-          return backpackAddon.prepareUpdate((userAddon) => {
-            userAddon.quantity = backpackAddon.quantity - 1;
-          });
-        })
+          newSession,
+          //create session addons
+          ...sessionDetails.backpack.map((backpackAddon) => {
+            if (backpackAddon.addon != null) {
+              return this.collections
+                  .get('sessions_addons')
+                  .prepareCreate((sessionAddon) => {
+                    sessionAddon.sessionId = newSession.id;
+                    sessionAddon.addonId = backpackAddon.addon.id;
+                  });
+            }
+          }),
+          //decrement users used addon
+          ...usersAddons.map((backpackAddon) => {
+            return backpackAddon.prepareUpdate((userAddon) => {
+              userAddon.quantity = backpackAddon.quantity - 1;
+            });
+          })
       );
       usersAddons.forEach(async (backpackAddon) => {
         if (backpackAddon != null && backpackAddon.quantity - 1 <= 0) {
@@ -209,31 +209,35 @@ export class User extends Model {
     }
   }
 
-  @writer async getTodaysTotalSessionTime() {
+  @writer
+  async getTodaysTotalSessionTime() {
     const query = `SELECT SUM(total_session_time) AS total_time_today
 FROM users_sessions
 WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
 `;
     const totalTimeToday = await this.collections
-      .get('users_sessions')
-      .query(Q.unsafeSqlQuery(query, [this.id]))
-      .unsafeFetchRaw();
+        .get('users_sessions')
+        .query(Q.unsafeSqlQuery(query, [this.id]))
+        .unsafeFetchRaw();
 
     return totalTimeToday[0].total_time_today;
   }
 
   @lazy userSessionsWithCategory = this.usersSessions.extend(
-    Q.on('session_categories', 'id', 'session_category_id')
+      Q.on('session_categories', 'id', 'session_category_id')
   );
-  @writer async getUserSessionsByCategoryCount(categoryId) {
+
+  @writer
+  async getUserSessionsByCategoryCount(categoryId) {
     const userSessions = await this.collections
-      .get('users_sessions')
-      .query(Q.where('session_category_id', categoryId));
+        .get('users_sessions')
+        .query(Q.where('session_category_id', categoryId));
     return userSessions.length;
   }
 
   // getUser
-  @writer async getUser() {
+  @writer
+  async getUser() {
     return {
       firstName: this.firstName,
       lastName: this.lastName,
@@ -252,7 +256,8 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     };
   }
 
-  @writer async increaseDailyStreak() {
+  @writer
+  async increaseDailyStreak() {
     //const subscription = await this.userSubscription;
     //only subscribers get daily streak reward
     // if (subscription.isActive) {
@@ -268,49 +273,54 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     //   });
   }
 
-  @writer async resetDailyStreak() {
+  @writer
+  async resetDailyStreak() {
     return await this.update(() => {
       this.dailyStreak = 0;
     });
   }
 
-  @writer async increaseDistanceHikedWriter({
-    user,
-    userSession,
-    sessionDetails,
-  }) {
+  @writer
+  async increaseDistanceHikedWriter({
+                                      user,
+                                      userSession,
+                                      sessionDetails,
+                                    }) {
     await this.batch(
-      user.prepareUpdate((updatedUser) => {
-        updatedUser.trailProgress = (Number(user.trailProgress) + 0.01).toFixed(
-          2
-        );
-        updatedUser.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
-      }),
+        user.prepareUpdate((updatedUser) => {
+          updatedUser.trailProgress = (Number(user.trailProgress) + 0.01).toFixed(
+              2
+          );
+          updatedUser.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
+        }),
 
-      userSession.prepareUpdate((userSession) => {
-        userSession.totalDistanceHiked = (
-          Number(userSession.totalDistanceHiked) + 0.01
-        ).toFixed(2);
-        //new totalsessiontime = current time minus start time
-        userSession.totalSessionTime = Math.floor(
-          (new Date().getTime() -
-            new Date(sessionDetails.startTime).getTime()) /
-            1000
-        );
-      })
-      //userSession.totalFocusTime = userSession.initialPomodoroTime * (( userSession.currentSet - 1  ) + timer.time)
+        userSession.prepareUpdate((userSession) => {
+          userSession.totalDistanceHiked = (
+              Number(userSession.totalDistanceHiked) + 0.01
+          ).toFixed(2);
+          //new totalsessiontime = current time minus start time
+          userSession.totalSessionTime = Math.floor(
+              (new Date().getTime() -
+                  new Date(sessionDetails.startTime).getTime()) /
+              1000
+          );
+        })
+        //userSession.totalFocusTime = userSession.initialPomodoroTime * (( userSession.currentSet - 1  ) + timer.time)
     );
   }
 
   //update User Trail
   //miles: number
-  @writer async updateTrailProgress({miles}) {
+  @writer
+  async updateTrailProgress({miles}) {
     return await this.update(() => {
       this.trailProgress = (Number(this.trailProgress) + miles).toFixed(2);
     });
   }
+
   //update User Trail
-  @writer async updateUserTrail({trailId, trailStartedAt}) {
+  @writer
+  async updateUserTrail({trailId, trailStartedAt}) {
     await this.update(() => {
       this.trailId = trailId;
       this.trailProgress = '0.00';
@@ -319,7 +329,8 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return;
   }
 
-  @writer async awardFinalSessionTokens(reward) {
+  @writer
+  async awardFinalSessionTokens(reward) {
     try {
       await this.update((user) => {
         user.trailTokens += reward;
@@ -329,14 +340,16 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       console.error(e);
     }
   }
+
   //Add User`
-  @writer async addUser(
-    username,
-    firstName,
-    lastName,
-    email,
-    password,
-    trailStartedAt
+  @writer
+  async addUser(
+      username,
+      firstName,
+      lastName,
+      email,
+      password,
+      trailStartedAt
   ) {
     const newUser = await this.collections.get('users').create((user) => {
       user.username = username;
@@ -359,37 +372,39 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return newUser[0];
   }
 
-  @writer async addUserSubscription() {
+  @writer
+  async addUserSubscription() {
     const subscription = await this.collections
-      .get('users_subscriptions')
-      .create((user_subscription) => {
-        //@ts-ignore
-        user_subscription.userId = this.id;
-        //@ts-ignore
-        user_subscription.isActive = false;
-        user_subscription.expiresAt = formatDateTime(new Date());
-      });
+        .get('users_subscriptions')
+        .create((user_subscription) => {
+          //@ts-ignore
+          user_subscription.userId = this.id;
+          //@ts-ignore
+          user_subscription.isActive = false;
+          user_subscription.expiresAt = formatDateTime(new Date());
+        });
 
     return subscription[0];
   }
 
-  @writer async buyAddon(addon) {
+  @writer
+  async buyAddon(addon) {
     console.debug('buyAddon', addon.id);
     try {
       const userHasAddon = await this.usersAddons.extend(
-        Q.where('addon_id', addon.id)
+          Q.where('addon_id', addon.id)
       );
       console.debug('userHasAddon', userHasAddon);
       if (userHasAddon.length == 0) {
         console.debug('user doenst have addon', userHasAddon);
         const userAddon = await this.collections
-          .get('users_addons')
-          .create((user_addon) => {
-            console.debug('user id', this.id);
-            user_addon.userId = this.id;
-            user_addon.addonId = addon.id;
-            user_addon.quantity = 1;
-          });
+            .get('users_addons')
+            .create((user_addon) => {
+              console.debug('user id', this.id);
+              user_addon.userId = this.id;
+              user_addon.addonId = addon.id;
+              user_addon.quantity = 1;
+            });
         console.debug('new userAddon', userAddon);
       } else {
         console.debug('user has addon', userHasAddon);
@@ -404,25 +419,26 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     }
   }
 
-  @writer async unlockAchievements(userId, completedAchievements) {
+  @writer
+  async unlockAchievements(userId, completedAchievements) {
     try {
       const unlockedAchievements = await Promise.all(
-        //create user_achievment of all newly unlocked achievements
-        completedAchievements.map(async (achievement) => {
-          const newUserAchievement = this.collections
-            .get('users_achievements')
-            .prepareCreate((user_achievement) => {
-              user_achievement.userId = userId;
-              user_achievement.achievementId = achievement.achievementId;
-              user_achievement.completedAt = formatDateTime(new Date());
-            });
-          if (newUserAchievement) {
-            return newUserAchievement;
-          }
-          throw new Error(
-            'Failed to prepare create new user achievement in unlocckAchievements writer'
-          );
-        })
+          //create user_achievment of all newly unlocked achievements
+          completedAchievements.map(async (achievement) => {
+            const newUserAchievement = this.collections
+                .get('users_achievements')
+                .prepareCreate((user_achievement) => {
+                  user_achievement.userId = userId;
+                  user_achievement.achievementId = achievement.achievementId;
+                  user_achievement.completedAt = formatDateTime(new Date());
+                });
+            if (newUserAchievement) {
+              return newUserAchievement;
+            }
+            throw new Error(
+                'Failed to prepare create new user achievement in unlocckAchievements writer'
+            );
+          })
       );
 
       await this.database.batch(unlockedAchievements);
@@ -434,84 +450,131 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     }
   }
 
-  @writer async updateTotalUserMiles({miles}) {
+  @writer
+  async updateTotalUserMiles({miles}) {
     return await this.update((user) => {
       user.totalMiles = (Number(this.totalMiles) + miles).toFixed(2);
     });
   }
+
   //add User Session
-  @writer async addUserSession({
-    sessionName,
-    sessionDescription,
-    sessionCategoryId,
-  }) {
+  @writer
+  async addUserSession({
+                         sessionName,
+                         sessionDescription,
+                         sessionCategoryId,
+                       }) {
     return await this.collections
-      .get('users_sessions')
-      .create((user_session) => {
-        user_session.userId = this.id;
-        user_session.sessionName = sessionName;
-        user_session.sessionDescription = sessionDescription;
-        user_session.totalMilesHiked = '0.00';
-        user_session.totalSessionTime = 0;
-        user_session.sessionCategoryId = sessionCategoryId;
-      });
+        .get('users_sessions')
+        .create((user_session) => {
+          user_session.userId = this.id;
+          user_session.sessionName = sessionName;
+          user_session.sessionDescription = sessionDescription;
+          user_session.totalMilesHiked = '0.00';
+          user_session.totalSessionTime = 0;
+          user_session.sessionCategoryId = sessionCategoryId;
+        });
   }
+
   //return number o sessions with category Id, only return enough to achieve
   //achievement condition
-  @writer async getSessionsOfCategoryCount(categoryId, categoryCount) {
+  @writer
+  async getSessionsOfCategoryCount(categoryId, categoryCount) {
     const results = await this.collections
-      .get('users_sessions')
-      .query(
-        Q.and(
-          Q.where('user_id', this.id),
-          Q.where('session_category_id', Q.eq(categoryId))
-        ),
-        Q.take(categoryCount)
-      );
+        .get('users_sessions')
+        .query(
+            Q.and(
+                Q.where('user_id', this.id),
+                Q.where('session_category_id', Q.eq(categoryId))
+            ),
+            Q.take(categoryCount)
+        );
     console.debug('results of getSessionCategoryCount: ', results);
     return results.length;
   }
+
   //create completed_Trail
-  @writer async addCompletedTrail({
-    trailId,
-    bestCompletedTime,
-    firstCompletedAt,
-    lastCompletedAt,
-  }) {
+  @writer
+  async addCompletedTrail({
+                            trailId,
+                            bestCompletedTime,
+                            firstCompletedAt,
+                            lastCompletedAt,
+                          }) {
     return await this.collections
-      .get('users_completed_trails')
-      .create((completedTrail) => {
-        completedTrail.userId = this.id;
-        completedTrail.trailId = trailId;
-        completedTrail.bestCompletedTime = bestCompletedTime;
-        completedTrail.firstCompletedAt = firstCompletedAt;
-        completedTrail.lastCompletedAt = lastCompletedAt;
-        completedTrail.completionCount = 1;
-      });
+        .get('users_completed_trails')
+        .create((completedTrail) => {
+          completedTrail.userId = this.id;
+          completedTrail.trailId = trailId;
+          completedTrail.bestCompletedTime = bestCompletedTime;
+          completedTrail.firstCompletedAt = firstCompletedAt;
+          completedTrail.lastCompletedAt = lastCompletedAt;
+          completedTrail.completionCount = 1;
+        });
   }
+
   //update completed hike
-  @writer async updateCompletedTrail({
-    completedTrailId,
-    bestCompletedTime,
-    lastCompletedAt,
-  }) {
+  @writer
+  async updateCompletedTrail({
+                               completedTrailId,
+                               bestCompletedTime,
+                               lastCompletedAt,
+                             }) {
     const completedTrail = await this.collections
-      .get('users_completed_trails')
-      .find(completedTrailId);
+        .get('users_completed_trails')
+        .find(completedTrailId);
     // eslint-disable-next-line no-shadow
-    return await completedTrail.update((completedTrail) => {
-      completedTrail.bestCompletedTime = bestCompletedTime;
-      completedTrail.lastCompletedAt = lastCompletedAt;
-      completedTrail.completionCount += 1;
+    return await completedTrail.update((existingTrail) => {
+      existingTrail.bestCompletedTime = bestCompletedTime;
+      existingTrail.lastCompletedAt = lastCompletedAt;
+      existingTrail.completionCount += 1;
     });
   }
 
   //create completed_hike
-  @writer async hasTrailBeenCompleted(userId, trailId) {
+  @writer
+  async hasTrailBeenCompleted(userId, trailId) {
     const completedTrail = await this.collections
-      .get('users_completed_trails')
-      .query(Q.and(Q.where('user_id', userId), Q.where('trail_id', trailId)));
+        .get('users_completed_trails')
+        .query(Q.and(Q.where('user_id', userId), Q.where('trail_id', trailId)));
     return completedTrail[0];
+  }
+
+  @writer
+  async redeemParkPass(parkId) {
+    const reward = ( this.prestigeLevel * 100 ) + 200;
+    let newUserPark
+    const userParkPass = await this.collections
+        .get('users_parks')
+        .query(Q.and(Q.where('user_id', this.id), Q.where('park_id', parkId)))
+        .fetch();
+
+    // If park pass does not exist, create it
+    if (userParkPass.length === 0) {
+      newUserPark = this.collections.get('users_parks').prepareCreate((parkPass) => {
+        parkPass.userId = this.id;
+        parkPass.parkId = parkId;
+        parkPass.lastCompleted = new Date().toISOString();
+        parkPass.parkLevel = 1;
+        parkPass.isRewardRedeemed = true;
+      });
+
+    } else if (this.prestigeLevel === existingPass.parkLevel) {
+      const existingPass = userParkPass[0];
+      console.log('existingPass:', existingPass);
+       newUserPark = existingPass.prepareUpdate((pass) => {
+          pass.parkLevel += 1;
+          pass.lastCompleted = new Date().toISOString();
+          pass.isRewardRedeemed = true;
+        })
+    }
+  await this.batch(
+      this.prepareUpdate((user) => {
+        user.trailTokens += reward;
+      }),
+      newUserPark,
+    )
+
   }
 }
 
@@ -527,29 +590,7 @@ export class Park_State extends Model {
 
   @immutableRelation('parks', 'park_id') park;
 }
-export class Badge extends Model {
-  static table = 'badges';
-  static associations = {
-    users_badges: {type: 'has_many', foreignKey: 'badge_id'},
-    parks: {type: 'belongs_to', foreignKey: 'park_id'},
 
-  };
-  @field('badge_type') badgeType;
-  @field('badge_name') badgeName;
-  @field('park_id') parkId;
-  @field('badge_description') badgeDescription;
-  @field('badge_image_url') badgeImageUrl;
-
-  @immutableRelation('users_badges', 'badge_id') userBadge;
-  @immutableRelation('park', 'park_id') park;
-
-  @children('users_badges') users_badges;
-
-  @lazy
-  badgeEarners = this.collections
-    .get('users')
-    .query(Q.on('users_badges', 'badge_id', this.id));
-}
 
 export class Achievement extends Model {
   static table = 'achievements';
@@ -655,29 +696,6 @@ export class User_Queued_Trail extends Model {
   @writer async deleteTrailFromQueue() {
     await this.markAsDeleted();
   }
-}
-
-export class User_Badge extends Model {
-  static table = 'users_badges';
-  static associations = {
-    users: {type: 'belongs_to', key: 'user_id'},
-    badges: {type: 'belongs_to', key: 'badge_id'},
-  };
-  @field('user_id') userId;
-  @field('badge_id') badgeId;
-  @field('completion_count') completionCount;
-  @field('is_completed') isCompleted;
-  @field('last_redeemed') lastRedeemed;
-  @date('created_at') createdAt;
-  @date('updated_at') updatedAt;
-
-  @immutableRelation('users', 'user_id') user;
-  @immutableRelation('badges', 'badge_id') badge;
-
-
-  @children('users') users;
-  @children('badges') badges;
-
 }
 
 export class Session_Category extends Model {
@@ -804,22 +822,21 @@ export class Session_Addon extends Model {
   @relation('addons', 'addon_id') addon; //relation('addons', 'addon_id') addon;
 }
 
-export class User_Completed_Park extends Model {
-  static table = 'users_completed_parks';
+export class User_Park extends Model {
+  static table = 'users_parks';
   static associations = {
     parks: { type: 'belongs_to', foreignKey: 'park_id' }, // Links to specific parks
     users: { type: 'belongs_to', foreignKey: 'user_id' }, // Links to specific users
-    badges: { type: 'belongs_to', foreignKey: 'badge_id' }, // Links to badges earned
+    //badges: { type: 'belongs_to', foreignKey: 'badge_id' }, // Links to badges earned
   };
 
   @field('park_id') parkId;
   @field('user_id') userId;
   @field('park_level') parkLevel; // Tracks lifetime park completions
-  @field('is_rewards_redeemed') isRewardsRedeemed; // Tracks reward redemption status
-  @field('completion_count') completionCount; // Tracks park completions
+  @field('is_reward_redeemed') isRewardRedeemed; // Tracks reward redemption status
   @field('last_completed') lastCompleted; // Timestamp of the last park completion
 
   @immutableRelation('parks', 'park_id') park;
-  @immutableRelation('badges', 'badge_id') badge;
+  //@immutableRelation('badges', 'badge_id') badge;
 }
 

@@ -1,7 +1,7 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import EnhancedExploreScreen from '../../Screens/ExploreScreen';
 import React from 'react';
-import EnhancedTrailDetailScreen from "../../Screens/TrailDetailScreen";
+import EnhancedTrailDetailScreen from '../../Screens/TrailDetailScreen';
 
 const ExploreStack = createStackNavigator();
 

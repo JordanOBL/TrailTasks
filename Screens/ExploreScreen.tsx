@@ -17,14 +17,14 @@ import FullTrailDetails from "../types/fullTrailDetails";
 
 interface Props {
   user: User;
-  completedHikes: User_Completed_Trail[];
+  completedTrails: User_Completed_Trail[];
   queuedTrails: User_Queued_Trail[];
   userPurchasedTrails: User_Purchased_Trail[];
 }
 
 const ExploreScreen = ({
   user,
-  completedHikes,
+  completedTrails,
   queuedTrails,
   userPurchasedTrails,
 }: Props) => {
@@ -38,15 +38,20 @@ const ExploreScreen = ({
           const fullTrailRecords = await watermelonDatabase.get('trails').query(
               Q.experimentalJoinTables(['parks']),
               Q.experimentalNestedJoin('parks', 'parks_states'),
-                  Q.unsafeSqlQuery(
-                      'SELECT trails.*, ' +
-                        'parks.id AS park_id, parks.park_name, parks.park_type, parks.park_image_url, ' +
-                        'park_states.id AS park_state_id, park_states.state_code, park_states.state ' +
-                 'FROM trails ' +
-                 'LEFT JOIN parks ON trails.park_id = parks.id ' +
-                 'LEFT JOIN park_states ON parks.id = park_states.park_id ' +
-                 'GROUP BY trails.id', []
-                  ),
+              Q.unsafeSqlQuery(
+                  'SELECT trails.*, ' +
+                  'parks.id AS park_id, parks.park_name, parks.park_type, parks.park_image_url, ' +
+                  'park_states.id AS park_state_id, park_states.state_code, park_states.state, ' +
+                  'COUNT(DISTINCT users_completed_trails.trail_id) AS completed_trails, ' +
+                  'users_parks.park_level ' +
+                  'FROM trails ' +
+                  'LEFT JOIN parks ON trails.park_id = parks.id ' +
+                  'LEFT JOIN park_states ON parks.id = park_states.park_id ' +
+                  'LEFT JOIN users_completed_trails ON users_completed_trails.trail_id = trails.id AND users_completed_trails.user_id = ? ' +
+                  'LEFT JOIN users_parks ON users_parks.park_id = parks.id AND users_parks.user_id = ? ' +
+                  'GROUP BY trails.id',
+                  [user.id, user.id]
+              ),
           ).unsafeFetchRaw();
 
           if (fullTrailRecords.length === 0) {
@@ -57,7 +62,7 @@ const ExploreScreen = ({
         } catch (err) {
           handleError(err, "getFullTrailInfo");
         }
-      }, []);
+      }, [userPurchasedTrails, user, ]);
 
 
 useFocusEffect(
@@ -93,7 +98,7 @@ useFocusEffect(
   );
 };
 
-const enhance = withObservables(['user'], ({user}) => ({
+const enhance = withObservables(['user', 'completedTrails', 'userPurchasedTrails'], ({user}) => ({
   user,
   completedTrails: user.usersCompletedTrails.observe(),
   queuedTrails: user.usersQueuedTrails.observe(),

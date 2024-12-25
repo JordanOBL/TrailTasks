@@ -47,7 +47,7 @@ export const createNewUser = async ({
   watermelonDatabase: any;
 }) => {
   try {
-    const trailStartedAt = formatDateTime(new Date());
+    //const trailStartedAt = formatDateTime(new Date());
 
     //!BCYPT PASSWORD BEFORE ADDING TO DB
     const newUser = await watermelonDatabase.write(async () => {
@@ -75,7 +75,7 @@ export const createNewUser = async ({
         user.trailProgress = '0.0';
         user.dailyStreak = 0;
         //@ts-ignore
-        user.trailStartedAt = trailStartedAt;
+        user.trailStartedAt = formatDateTime(new Date());
         //@ts-ignore
         user.trailTokens = 50;
         user.totalMiles = '0.00';

@@ -256,8 +256,8 @@ const HomeScreen: React.FC<Props> = ({
                     }
                     user={user}
                     navigation={navigation}
-                    navTo={'Badges'}>
-                    Badges
+                    navTo={'Park Passes'}>
+                    Park Passes
                 </ScreenLink>
                 <ScreenLink
                     needsActiveSubscription={false}

@@ -5,7 +5,7 @@ import {
     User_Purchased_Trail,
     User_Session,
     User_Achievement,
-    User_Completed_Trail
+    User_Completed_Trail,
 } from '../watermelon/models';
 import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import React from "react";
@@ -62,7 +62,7 @@ export const checkExistingGlobalUser = async (
     return null;
   }
 };
- 
+
 
 export const setSubscriptionStatus = async (
     user: Model,
@@ -76,7 +76,7 @@ export const setSubscriptionStatus = async (
         await watermelonDatabase.collections
           .get('users_subscriptions')
           .query(Q.where('user_id', user.id))
-        
+
       if (subscription && subscription[0])
       {
         await watermelonDatabase.localStorage.set(
@@ -169,12 +169,18 @@ export const handleLogin = async ({
       existingUser = await checkExistingGlobalUser(email, password);
 
       if (existingUser) {
-       console.log('existingUser subscription', existingUser.userSubscription)
         // Save the user and related data to local database
+          console.debug('existing user', existingUser);
         await watermelonDatabase.write(async () => {
             // Create user
-          
-           // @ts-ignore
+            console.debug('Creating new user:', existingUser.user);
+            console.debug('Creating new session:', existingUser.userSessions);
+            console.debug('Creating purchased trails:', existingUser.userPurchasedTrails);
+            console.debug('Creating subscription:', existingUser.userSubscription);
+            console.debug('Creating achievements:', existingUser.userAchievements);
+            console.debug('Creating completed trails:', existingUser.usersCompletedTrails);
+
+            // @ts-ignore
             const newUser =  watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
               newUser._raw.id = existingUser.user.id;
               newUser.firstName = existingUser.user.first_name;
@@ -192,8 +198,9 @@ export const handleLogin = async ({
               newUser.totalMiles = existingUser.user.total_miles;
               newUser.prestigeLevel = existingUser.user.prestige_level;
             })
+            console.debug('newUser', newUser)
 
-            const userSessions = [...existingUser.usersSessions].map((session: User_Session) =>
+            const userSessions = [...existingUser.userSessions].map((session: User_Session) =>
                 // @ts-ignore
               watermelonDatabase.collections.get('users_sessions').prepareCreate((newUserSession: User_Session) => {
                 newUserSession._raw.id = session.id;
@@ -221,7 +228,7 @@ export const handleLogin = async ({
             )
 //            // Create user purchased trail
             // @ts-ignore
-            const userPurchasedTrails = [...existingUser.usersPurchasedTrails].map((existingPurchasedTrail: User_Purchased_Trail) =>
+            const userPurchasedTrails = [...existingUser.userPurchasedTrails].map((existingPurchasedTrail: User_Purchased_Trail) =>
                 // @ts-ignore
               watermelonDatabase.collections.get('users_purchased_trails').prepareCreate((newUserPurchasedTrail: User_Purchased_Trail) => {
                 newUserPurchasedTrail._raw.id = existingPurchasedTrail.id;
@@ -234,7 +241,7 @@ export const handleLogin = async ({
                   // @ts-ignore
                 newUserPurchasedTrail.createdAt = existingPurchasedTrail.created_at;
               })
-            )  
+            )
 //            // Create user subscription
             // @ts-ignore
             const userSubscriptions =  watermelonDatabase.collections.get('users_subscriptions').prepareCreate((newUserSubscription: Subscription) => {
@@ -262,8 +269,8 @@ export const handleLogin = async ({
 
             const completedTrails = [...existingUser.usersCompletedTrails].map((existingCompletedTrail: User_Completed_Trail) =>
                 // @ts-ignore
-                watermelonDatabase.collections.get('User_Completed_Trails').prepareCreate((newCompletedTrail: User_Completed_Trail) => {
-
+                watermelonDatabase.collections.get('users_completed_trails').prepareCreate((newCompletedTrail: User_Completed_Trail) => {
+                    newCompletedTrail._raw.id = existingCompletedTrail.id;
                     // @ts-ignore
                     newCompletedTrail.userId = existingCompletedTrail.user_id;
                     // @ts-ignore
@@ -274,6 +281,7 @@ export const handleLogin = async ({
                     newCompletedTrail.firstCompletedAt = existingCompletedTrail.first_completed_at;
                     // @ts-ignore
                     newCompletedTrail.lastCompletedAt = existingCompletedTrail.last_completed_at;
+                    newCompletedTrail.completionCount = existingCompletedTrail.completion_count;
                     // @ts-ignore
                     newCompletedTrail.createdAt = existingCompletedTrail.created_at;
                     // @ts-ignore

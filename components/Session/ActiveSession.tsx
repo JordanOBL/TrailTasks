@@ -69,7 +69,7 @@ const ActiveSession = ({
 }: Props) => {
   const watermelonDatabase = useDatabase();
   const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);
-  const [completedTrails, setCompletedTrails] = useState<Trail[]>([]);
+  const [sessionCompletedTrails, setSessionCompletedTrails] = useState<Trail[]>([]);
   const [appState, setAppState] = useState(AppState.currentState);
   const onAchievementEarned = useCallback(
     (achievements: Achievement[]) => {
@@ -82,7 +82,7 @@ const ActiveSession = ({
   );
 
   const addCompletedTrail = ({ trail }: { trail: Trail }) => {
-    setCompletedTrails((prevCompletedTrails) => [...prevCompletedTrails, trail]);
+    setSessionCompletedTrails((prevCompletedTrails) => [...prevCompletedTrails, trail]);
   };
 
   const onCompletedTrail = useCallback(
@@ -334,7 +334,7 @@ const ActiveSession = ({
             <StatBox label="Strikes" value={sessionDetails.strikes} />
             <StatBox label="Reward" value={sessionDetails.trailTokensEarned + sessionDetails.sessionTokensEarned} />
             <StatBox label="Achievements" value={earnedAchievements.length} />
-            <StatBox label="Trails" value={completedTrails.length} />
+            <StatBox label="Trails" value={sessionCompletedTrails.length} />
           </View>
         </View>
       </ScrollView>
@@ -347,12 +347,6 @@ const StatBox = ({ label, value }) => (
     <Text style={styles.infoLabel}>{label}</Text>
     <Text style={styles.infoValue}>{value}</Text>
   </View>
-);
-
-const ActionButton = ({ onPress, label, buttonStyle }) => (
-  <Pressable onPress={onPress} style={[styles.button, buttonStyle]}>
-    <Text style={styles.buttonText}>{label}</Text>
-  </Pressable>
 );
 
 const styles = StyleSheet.create({
@@ -431,8 +425,8 @@ const styles = StyleSheet.create({
 const enhance = withObservables(['user', 'currentTrail', 'completedTrails', 'queuedTrails', 'userSession', 'usersAchievements'], ({ user, userSession }) => ({
   user: user.observe(),
   currentTrail: user.trail.observe(),
-  completedTrails: user.completedTrails.observe(),
-  queuedTrails: user.queuedTrails.observe(),
+  completedTrails: user.usersCompletedTrails.observe(),
+  queuedTrails: user.usersQueuedTrails.observe(),
   userSession,
   userAchievements: user.usersAchievements.observe(),
 }));

@@ -2,7 +2,6 @@ import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import {
   Achievement,
-  Badge,
   User_Completed_Trail,
   Park,
   Park_State,
@@ -12,13 +11,12 @@ import {
   Trail,
   User,
   User_Achievement,
-  User_Badge,
   User_Purchased_Trail,
   User_Session,
   Addon,
   User_Addon,
   Session_Addon,
-  User_Completed_Park
+  User_Park
 } from './watermelon/models';
 
 import App from './App';
@@ -43,13 +41,11 @@ const watermelonDatabase = new Database({
     Trail,
     User,
     Park_State,
-    Badge,
     Achievement,
     User_Achievement,
     User_Completed_Trail,
-    User_Completed_Park,
+    User_Park,
     User_Queued_Trail,
-    User_Badge,
     Session_Category,
     User_Session,
     Subscription,

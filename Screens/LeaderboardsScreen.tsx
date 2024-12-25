@@ -94,7 +94,7 @@ const LeaderboardsScreen = ({ user }: Props) => {
     return (
         // @ts-ignore
         <RefreshConnection setRefreshing={setRefreshing}>
-          {`Internet Connection is Needed to view Global & Friends Leaderboard\nTry Refreshing Connection`}
+          {`Internet Connection is Needed to view Leaderboard\nTry Refreshing Connection`}
         </RefreshConnection>
     );
   }

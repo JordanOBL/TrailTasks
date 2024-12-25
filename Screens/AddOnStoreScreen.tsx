@@ -42,7 +42,7 @@ const AddOnStoreScreen = ({user, userAddons}) => {
     </SafeAreaView>
   );
 };
-const enhance = withObservables(['user', 'userAddons'], ({user, userAddons}) => ({
+const enhance = withObservables(['user', 'userAddons'], ({user}) => ({
   user,
   userAddons: user.usersAddons,
 }));
