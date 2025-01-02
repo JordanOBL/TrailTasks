@@ -7,7 +7,7 @@ import SyncIndicator from '../components/SyncIndicator';
 import { sync } from '../watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/react';
 import {withObservables} from '@nozbe/watermelondb/react'
-import checkInternetConnection from "../helpers/InternetConnection/checkInternetConnection";
+import { useInternetConnection } from "../hooks/useInternetConnection";
 import RefreshConnection from "../components/RefreshConnection";
 import handleError from "../helpers/ErrorHandler";
 
@@ -20,8 +20,7 @@ interface Props {
 
 const LeaderboardsScreen = ({ user }: Props) => {
   const watermelonDatabase = useDatabase();
-  const [isConnectedToInternet, setIsConnectedToInternet] = useState<boolean | null>(null);
-  const [refreshing, setRefreshing] = useState(true);
+  const {isConnected, refreshConnectionStatus} = useInternetConnection();
   const [filter, setFilter] = useState('Top 100');
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -37,7 +36,7 @@ const LeaderboardsScreen = ({ user }: Props) => {
 
   useEffect(() => {
     const interval = setInterval(async () => {
-      await sync(watermelonDatabase, user.id);
+      await sync(watermelonDatabase, isConnected, user.id);
     }, 300000); // Sync every ~5min
 
     return () => clearInterval(interval);
@@ -47,31 +46,6 @@ const LeaderboardsScreen = ({ user }: Props) => {
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
-
-  // Memoize the internet check function
-  const checkConnection = useCallback(() => {
-    if (isConnectedToInternet === null) { // Only check connection if it hasn't been checked yet
-      checkInternetConnection()
-          .then(({ isConnected }) => {
-            setIsConnectedToInternet(isConnected);
-          })
-          .catch((err) => {
-            handleError(err, 'LeaderboardsScreen UseEffect');
-            setIsConnectedToInternet(false);
-          });
-    }
-  }, [isConnectedToInternet]);
-
-  // If no internet connection, refresh
-  useEffect(() => {
-    if (refreshing) {
-      checkConnection();
-      setRefreshing(false);
-    }
-    return () => {
-      setRefreshing(false);
-    };
-  }, [refreshing, checkConnection]);
 
   // Filter the leaderboard based on filter and search query
   const filteredLeaderboard:any = useMemo(() => {
@@ -90,10 +64,10 @@ const LeaderboardsScreen = ({ user }: Props) => {
     return filtered;
   }, [filter, searchQuery, leaderboard]);
 
-  if (!isConnectedToInternet) {
+  if (!isConnected) {
     return (
         // @ts-ignore
-        <RefreshConnection setRefreshing={setRefreshing}>
+        <RefreshConnection>
           {`Internet Connection is Needed to view Leaderboard\nTry Refreshing Connection`}
         </RefreshConnection>
     );

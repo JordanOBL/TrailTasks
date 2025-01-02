@@ -56,7 +56,7 @@ const TutorialModal = ({visible, onClose}) => {
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true}>
+    <Modal testID="tutorial-modal" visible={visible} animationType="slide" transparent={true}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.stepText}>

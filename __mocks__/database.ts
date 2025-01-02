@@ -2,6 +2,7 @@ export function createMockDatabase(){
   return {
     write: jest.fn((cb) => cb()),
     batch: jest.fn(),
+    get: jest.fn().mockReturnThis(),
     localStorage: {
       set: jest.fn(),
       get: jest.fn(),

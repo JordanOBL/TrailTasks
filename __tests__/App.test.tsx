@@ -1,31 +1,23 @@
-// __tests__/App.test.tsx
-import React from 'react'
-import renderer from 'react-test-renderer'
-import App from '../App'
-import { DatabaseProvider } from '@nozbe/watermelondb/react'
-import { testDb } from '../watermelon/testDB'
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { WrappedApp } from '../index';
+import {testDb as watermelonDatabase} from '../watermelon/testDB';
 
-// (Optional) Clean DB after each test
-afterEach(async () => {
-  await testDb.write(async () => {
-    await testDb.unsafeResetDatabase()
+describe('App', () => {
+
+  test('loads initial bootsrap trails on first app load', async () => {
+    const { getByTestId } = render(<WrappedApp />)
+    // Wait up to 10 seconds for a condition
+    await waitFor(
+      async () => {
+	const trails = await watermelonDatabase.get('trails').query().fetch();
+	// Some assertion that ensures bootstrap is done
+	expect(trails.length).toBe(96);
+      },
+      { timeout: 3000 } // 10 seconds
+    );
+
   })
-})
 
-// A simple snapshot or integration test
-it('renders correctly with real SQLite DB', async () => {
-  // If the code inside <App /> calls WatermelonDB (including raw queries),
-  // it will do so via the Node-based adapter now.
-  const tree = renderer.create(
-    <DatabaseProvider database={testDb}>
-      <App />
-    </DatabaseProvider>
-  )
 
-  // You might have an async operation that updates DB & re-renders,
-  // so wrap in act if needed:
-  // await renderer.act(async () => { ...some DB writes... })
-
-  expect(tree.toJSON()).toMatchSnapshot()
-})
+  });
 

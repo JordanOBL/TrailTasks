@@ -1,9 +1,23 @@
 import 'whatwg-fetch'
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.test' });
 
 // Also polyfill clearImmediate
 global.clearImmediate = global.clearImmediate || ((timer) => clearTimeout(timer));
 global.setImmediate = global.setImmediate || ((fn, ...args) => setTimeout(fn, 0, ...args));
 
+jest.mock(
+  '@nozbe/watermelondb/adapters/sqlite/makeDispatcher/index.native.js',
+  () => {
+    return jest.requireActual(
+      '@nozbe/watermelondb/adapters/sqlite/makeDispatcher/index.js',
+    );
+  },
+);
+
+jest.mock('./components/NationalParksInfiniteScroll', () => {
+  return jest.fn(() => <></>); // Mock as an empty component
+});
 
 jest.mock(
   '@nozbe/watermelondb/adapters/sqlite/makeDispatcher/index.native.js',
@@ -22,13 +36,23 @@ jest.mock('react-native-gesture-handler', () => {
 });
 
 // RNNetInfo
-jest.mock('@react-native-community/netinfo', () => {
-  return {
-    addEventListener: jest.fn(),
-    fetch: jest.fn(() => Promise.resolve({ isConnected: true })),
-    // or any other methods you need
-  }
-})
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn((callback) => {
+    callback({
+      isConnected: true,
+      details: { ipAddress: '192.168.1.1' },
+    });
+    return jest.fn(); // Mock unsubscribe
+  }),
+  fetch: jest.fn(() =>
+    Promise.resolve({
+      isConnected: true,
+      details: { ipAddress: '192.168.1.1' },
+    })
+  ),
+}));
+
+
 
 // RNBootSplash
 jest.mock('react-native-bootsplash', () => {
@@ -43,6 +67,8 @@ jest.mock('react-native-bootsplash', () => {
 jest.mock('react-native-fs', () => {
   return {
     exists: jest.fn(() => Promise.resolve(true)),
+    DocumentDirectoryPath: '.', // or some folder you can write to
+    CachesDirectoryPath: '.',
     // or any other exports if needed
   }
 })
@@ -51,34 +77,83 @@ jest.mock('react-native-fs', () => {
 jest.mock('@sayem314/react-native-keep-awake', () => {
   return {
     activate: jest.fn(() => Promise.resolve(true)),
+    useKeepAwake: jest.fn(),
     // or any other exports if needed
   }
 })
 
 //RN stack
-
+// Mock @react-navigation/stack
 jest.mock('@react-navigation/stack', () => {
   return {
-    NavigationContainer: jest.fn((props) => props.children),
     createStackNavigator: () => ({
-      Navigator: jest.fn((navigatorProps) => navigatorProps.children),
-      Screen: jest.fn((screenProps) => screenProps.children),
-    }),
-  }
-})
-
-// jest-setup.js (or wherever you configure global mocks)
-jest.mock('@react-navigation/bottom-tabs', () => {
-  return {
-    createBottomTabNavigator: jest.fn(() => {
-      return {
-        // Commonly used in your code as <Tab.Navigator> ... </Tab.Navigator>
-        Navigator: jest.fn().mockImplementation(({ children }) => children),
-        // Commonly used in your code as <Tab.Screen> ... </Tab.Screen>
-        Screen: jest.fn().mockImplementation(({ children }) => children),
-      };
+      Navigator: ({ children }) => children,
+      Screen: ({ children }) => {
+        if (typeof children === 'function') {
+          return children(); // Invoke the render prop
+        }
+        return children;
+      },
     }),
   };
 });
 
+// Mock @react-navigation/bottom-tabs
+jest.mock('@react-navigation/bottom-tabs', () => {
+  return {
+    createBottomTabNavigator: () => ({
+      Navigator: ({ children }) => children,
+      Screen: ({ children }) => {
+        if (typeof children === 'function') {
+          return children(); // Invoke the render prop
+        }
+        return children;
+      },
+    }),
+  };
+});
 
+// **Mock react-native-vector-icons with loadFont**
+jest.mock('react-native-vector-icons', () => {
+  const React = require('react');
+  const { Text } = require('react-native');
+
+  // Create a mock component that displays the icon name as text
+  const createIconSet = () => {
+    const MockIcon = (props) => <Text>{props.name}</Text>;
+    MockIcon.loadFont = jest.fn(() => Promise.resolve()); // Mock loadFont
+    return MockIcon;
+  };
+
+  return {
+    Ionicons: createIconSet(),
+    MaterialIcons: createIconSet(),
+    FontAwesome: createIconSet(),
+    // Add other icon sets as needed
+  };
+});
+
+// **Mock react-native-reanimated-carousel**
+jest.mock('react-native-reanimated-carousel', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+
+  return {
+    __esModule: true,
+    default: ({ children, ...props }) => {
+      return <View {...props}>{children}</View>;
+    },
+  };
+});
+
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      setOptions: jest.fn(),
+      // Add other navigation methods if needed
+    }),
+  };
+});

@@ -7,44 +7,30 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 
-import {handleLogin} from '../helpers/loginHelpers';
-import {useDatabase} from '@nozbe/watermelondb/react';
-interface Props {
-  setUser: React.Dispatch<React.SetStateAction<any>>;
-  setisRegistering: React.Dispatch<React.SetStateAction<any>>;
-  isRegistering: boolean;
-}
-const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
-  const watermelonDatabase = useDatabase();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-
-  const handleLoginPress = () => {
-    handleLogin({email, password, setUser, setError, watermelonDatabase});
-  };
-
+const Login = ({email, password, onEmailChange, onPasswordChange, onFormChange, error, onLoginPress}) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView testID="login-form" style={styles.container}>
       <TextInput
+        testID="email-input"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={onEmailChange}
         placeholder="Email"
         keyboardType="email-address"
         textContentType="emailAddress"
         style={styles.input}
       />
       <TextInput
+        testID="password-input"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={onPasswordChange}
         placeholder="Password"
         secureTextEntry={true}
         textContentType="password"
         style={styles.input}
       />
       <Pressable
-        onPress={handleLoginPress}
+        testID="login-button"
+        onPress={onLoginPress}
         disabled={!email || !password}
         style={[
           styles.button,
@@ -53,16 +39,17 @@ const Login = ({setUser, setisRegistering, isRegistering}: Props) => {
         <Text style={styles.buttonText}>Login</Text>
       </Pressable>
       <Pressable
-        onPress={() => setisRegistering((prev:boolean) => !prev)}
+        testID="register-form-button"
+        onPress={onFormChange}
         style={[
           styles.button,
           {backgroundColor: 'rgb(61,63,65)', borderWidth: 0},
         ]}>
         <Text style={styles.buttonText}>
-          {isRegistering ? 'Login' : 'Create Account'}
+          Create Account
         </Text>
       </Pressable>
-      <Text style={styles.error}>{error || ''}</Text>
+      <Text testID="login-error" style={styles.error}>{error || ''}</Text>
     </SafeAreaView>
   );
 };

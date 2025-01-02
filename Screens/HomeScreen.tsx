@@ -14,7 +14,7 @@ import {
     User_Session,
 } from '../watermelon/models';
 import {useFocusEffect} from '@react-navigation/native';
-
+import {useAuthContext} from '../services/AuthContext';
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
 import {Pressable} from 'react-native';
@@ -22,11 +22,10 @@ import Ranks from '../helpers/Ranks/ranksData';
 import ScreenLink from '../components/HomeScreen/screenLink';
 import SyncIndicator from '../components/SyncIndicator';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
-import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import getUserRank from '../helpers/Ranks/getUserRank';
-import {handleLogOut} from '../helpers/logoutHelpers';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/react';
+import {useInternetConnection} from '../hooks/useInternetConnection';
 //import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 import {withObservables} from '@nozbe/watermelondb/react';
 import isYesterday from '../helpers/isYesterday';
@@ -53,23 +52,20 @@ interface Props {
 }
 
 const HomeScreen: React.FC<Props> = ({
-                                         navigation,
                                          user,
-                                         setUser,
+                                         navigation,
                                          currentTrail,
                                          userSubscription,
                                          userSessions,
                                      }) => {
     const watermelonDatabase = useDatabase();
     const [userRank, setUserRank] = React.useState<Rank | undefined>();
-    const [isConnected, setIsConnected] = React.useState<boolean | null>(false);
+    const {isConnected} = useInternetConnection();
     const [activeIndex, setActiveIndex] = React.useState(0);
     const data = [...new Array(2).keys()]; // Your data array
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
-
-
-
+    const {logout} = useAuthContext();
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -87,7 +83,6 @@ const HomeScreen: React.FC<Props> = ({
                 !isYesterday(user.lastDailyStreakDate) &&
                 !isToday(user.lastDailyStreakDate)
             ) {
-                console.debug('resetting dailyStreak', user.lastDailyStreakDate);
                 await user.resetDailyStreak();
             }
         }
@@ -97,21 +92,11 @@ const HomeScreen: React.FC<Props> = ({
     }, [user]);
 
 
-    //this useEffect checks if a phone is connected to the internet
-    React.useEffect(() => {
-        async function isConnected() {
-            // @ts-ignore
-            const {isConnected} = await checkInternetConnection();
-            setIsConnected(isConnected);
-        }
-        isConnected();
-    }, []);
-
     //Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
     React.useEffect(() => {
         // Check if the user has any miles hiked
-        if ( !user?.totalMiles) {
+        if (user?.totalMiles <= 0) {
             setShowTutorial(true); // Show the tutorial if the user has no miles hiked
         }
     }, [user]);
@@ -119,11 +104,14 @@ const HomeScreen: React.FC<Props> = ({
     //this useEffect gets the correct Rank based on  the users miles
     useFocusEffect(
         React.useCallback(() => {
+            if (!user) {
+                return;
+            }
             const rank = getUserRank(Ranks, user?.totalMiles);
             setUserRank(rank);
             checkUnsyncedChanges().then(result => {
                 if (result) {
-                     sync(watermelonDatabase, user.id).catch(err =>handleError(err, 'useCallback sync HomeScreen'));
+                     sync(watermelonDatabase,isConnected, user.id).catch(err =>handleError(err, 'useCallback sync HomeScreen'));
                 }
             })
 
@@ -135,15 +123,14 @@ const HomeScreen: React.FC<Props> = ({
 
         }, [watermelonDatabase, user])
     );
-
     return !user || !currentTrail  ? (
-        <View style={styles.loadingContainer}>
+        <View testID="homescreen-loading" style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading Your Data...</Text>
         </View>
     ) : (
-        <View style={styles.container}>
+        <View testID="homescreen" style={styles.container}>
             {/* <SyncIndicator delay={3000} /> */}
-            {<TutorialModal visible={showTutorial} onClose={handleTutorialClose} />}
+            {<TutorialModal  visible={showTutorial} onClose={handleTutorialClose} />}
 
             <View
                 style={{
@@ -151,12 +138,12 @@ const HomeScreen: React.FC<Props> = ({
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                 }}>
-                <Text style={styles.trailTokens}>Trail Tokens: {user.trailTokens}</Text>
+                <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
                 <Text style={styles.onlineStatus}>
                     {isConnected ? 'Online' : 'Offline'}
                 </Text>
                 <Text style={styles.dailyStreak}>
-                    Daily Streak: {user.dailyStreak}
+                    Daily Streak: {user?.dailyStreak}
                 </Text>
             </View>
 <View style={{height: 200}}>
@@ -209,7 +196,7 @@ const HomeScreen: React.FC<Props> = ({
             </View>
             <ScrollView style={styles.linkContainer}>
                 <ScreenLink
-                    user={user}
+                        user={user}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
                         true
@@ -219,7 +206,8 @@ const HomeScreen: React.FC<Props> = ({
                     Stats
                 </ScreenLink>
                 <ScreenLink
-                    user={user}
+
+                        user={user}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
                         true
@@ -230,7 +218,7 @@ const HomeScreen: React.FC<Props> = ({
                 </ScreenLink>
 
                 <ScreenLink
-                    user={user}
+                        user={user}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
                        false
@@ -240,37 +228,37 @@ const HomeScreen: React.FC<Props> = ({
                     Hiking Queue
                 </ScreenLink>
                 <ScreenLink
+                        user={user}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
                         false
                     }
-                    user={user}
                     navigation={navigation}
                     navTo={'Friends'}>
                     Friends
                 </ScreenLink>
                 <ScreenLink
+                        user={user}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
                         true
                     }
-                    user={user}
                     navigation={navigation}
                     navTo={'Park Passes'}>
                     Park Passes
                 </ScreenLink>
                 <ScreenLink
+                        user={user}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
                         true
                     }
-                    user={user}
                     navigation={navigation}
                     navTo={'Achievements'}>
                     Achievements
                 </ScreenLink>
                 <ScreenLink
-                    user={user}
+                        user={user}
                     navigation={navigation}
                     navTo={'Leaderboards'}
                     needsActiveSubscription={true}
@@ -290,7 +278,7 @@ const HomeScreen: React.FC<Props> = ({
                 {/*    Completed Trails*/}
                 {/*</ScreenLink>*/}
                 <ScreenLink
-                    user={user}
+                        user={user}
                     navigation={navigation}
                     navTo={'Settings'}
                     needsActiveSubscription={false}
@@ -301,7 +289,7 @@ const HomeScreen: React.FC<Props> = ({
                 </ScreenLink>
 
                 <Pressable
-                    onPress={async () => handleLogOut(setUser, watermelonDatabase)}
+                    onPress={async () => logout()}
                     style={styles.logoutButton}>
                     <Text style={styles.logoutButtonText}>Logout</Text>
                 </Pressable>

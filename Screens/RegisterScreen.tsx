@@ -1,17 +1,29 @@
 import { Image, StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import Register from '../components/Register';
-import React from 'react';
-
-
+import React, {useState, useEffect, setTimeout}from 'react';
+import {useAuthContext} from '../services/AuthContext';
+import {useInternetConnection} from '../hooks/useInternetConnection';
 interface Props {
-    setUser: React.Dispatch<React.SetStateAction<any>>;
-    setisRegistering: React.Dispatch<React.SetStateAction<any>>;
-    isRegistering: boolean;
+    onChangeForm: () => void;
 }
 
-const RegisterScreen = ({ setUser, setisRegistering, isRegistering }: Props) => {
+const RegisterScreen = ({handleFormChange}) => {
+    const {register, error} = useAuthContext();
+    const {isConnected, refreshConnectionStatus} = useInternetConnection();
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [username, setUsername] = useState('');
+
+    function handleRegister(){
+        register({ firstName, lastName, email, password, confirmPassword, username });
+    }
+
     return (
         <KeyboardAvoidingView
+            testID="register-screen"
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
@@ -22,9 +34,23 @@ const RegisterScreen = ({ setUser, setisRegistering, isRegistering }: Props) => 
                 </View>
                 <View style={styles.registerContainer}>
                     <Register
-                        setUser={setUser}
-                        setisRegistering={setisRegistering}
-                        isRegistering={isRegistering}
+                        firstName={firstName}
+                        lastName={lastName}
+                        email={email}
+                        password={password}
+                        confirmPassword={confirmPassword}
+                        username={username}
+                        onFirstNameChange={setFirstName}
+                        onLastNameChange={setLastName}
+                        onEmailChange={setEmail}
+                        onPasswordChange={setPassword}
+                        onConfirmPasswordChange={setConfirmPassword}
+                        onUsernameChange={setUsername}
+                        error={error}
+                        isConnected={isConnected}
+                        onRegisterPress={handleRegister}
+                        onRefreshPress={refreshConnectionStatus}
+                        onFormChange={handleFormChange}
                     />
                 </View>
             </ScrollView>

@@ -23,18 +23,20 @@ import App from './App';
 import {AppRegistry} from 'react-native';
 import {Database} from '@nozbe/watermelondb';
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
-
+import {AuthProvider} from './services/AuthContext';
+import {InternetConnectionProvider} from './contexts/InternetConnectionProvider';
 import React from 'react';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {name as appName} from './app.json';
 import schema from './watermelon/schema';
+import {testDb} from './watermelon/testDB';
 
 const adapter = new SQLiteAdapter({
   schema,
   dbName: 'TrailTasks',
 });
 
-const watermelonDatabase = new Database({
+export const watermelonDatabase = new Database({
   adapter,
   modelClasses: [
     Park,
@@ -56,11 +58,19 @@ const watermelonDatabase = new Database({
   ],
 });
 
+const database = process.env.NODE_ENV === 'test'
+  ? testDb
+  : watermelonDatabase;
+
 export const WrappedApp = () => {
   return (
-      <DatabaseProvider database={watermelonDatabase}>
-        <App />
-      </DatabaseProvider>
+    <DatabaseProvider database={database}>
+      <InternetConnectionProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </InternetConnectionProvider>
+    </DatabaseProvider>
   );
 };
 

@@ -2,17 +2,26 @@ import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import Login from '../components/Login';
 import React from 'react';
 import NationalParksInfiniteScroll from "../components/NationalParksInfiniteScroll";
-
-
+import {useDatabase} from '@nozbe/watermelondb/react';
+import {withObservables} from '@nozbe/watermelondb/react';
+import {useAuthContext} from '../services/AuthContext';
 interface Props {
-  setUser: React.Dispatch<React.SetStateAction<any>>;
-  setisRegistering: React.Dispatch<React.SetStateAction<any>>;
-  isRegistering: boolean;
+  onChangeForm: () => void;
 }
 
-const LoginScreen = ({ setUser, setisRegistering, isRegistering }: Props) => {
+const LoginScreen = ({ handleFormChange }: Props) => {
+  const watermelonDatabase = useDatabase();
+  const {login, error}  = useAuthContext();
+  //state
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
+  const handleLogin = async () => {
+    await login(email, password);
+  }
+
   return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView testID="login-screen" style={styles.container}>
         <View style={styles.imageContainer}>
           <Image source={require('../assets/LOGO.png')} style={styles.image} />
           <Text style={styles.title}>Trail Tasks</Text>
@@ -20,10 +29,14 @@ const LoginScreen = ({ setUser, setisRegistering, isRegistering }: Props) => {
         <NationalParksInfiniteScroll />
         <View style={styles.loginContainer}>
           <Login
-              setUser={setUser}
-              setisRegistering={setisRegistering}
-              isRegistering={isRegistering}
-          />
+          email={email}
+          password={password}
+          onEmailChange={setEmail}
+          onPasswordChange={setPassword}
+          onFormChange={handleFormChange}
+          error={error}
+          onLoginPress={handleLogin}          
+        />
         </View>
       </SafeAreaView>
   );

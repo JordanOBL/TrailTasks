@@ -1,5 +1,6 @@
 import {
     Pressable,
+    SafeAreaView,
     StyleSheet,
     Text,
     TextInput,
@@ -13,138 +14,90 @@ import React, { useState, useEffect, useCallback } from 'react';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import { handleRegister } from '../helpers/registerHelpers';
 import { sync } from '../watermelon/sync';
-import { useDatabase } from '@nozbe/watermelondb/react';
-import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
+
 import handleError from '../helpers/ErrorHandler';
-import RefreshConnection from './RefreshConnection';
+import RefreshConnection from "./RefreshConnection";
 
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
-
-interface Props {
-    setUser: React.Dispatch<React.SetStateAction<any>>;
-    setisRegistering: React.Dispatch<React.SetStateAction<any>>;
-    isRegistering: boolean;
-}
-
-const Register = ({ setUser, setisRegistering, isRegistering }: Props) => {
-    const watermelonDatabase = useDatabase();
-    const [isConnectedToInternet, setIsConnectedToInternet] = useState<boolean | null>(null);
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState(null);
-    const [username, setUsername] = useState('');
-
-    const [refreshing, setRefreshing] = useState(true); // State to manage refreshing
-
-    // Memoize the internet check function
-    const checkConnection = useCallback(() => {
-        if (isConnectedToInternet === null) { // Only check connection if it hasn't been checked yet
-            checkInternetConnection()
-                .then(({ isConnected }) => {
-                    setIsConnectedToInternet(isConnected);
-                })
-                .catch((err) => {
-                    handleError(err, 'Register Component UseEffect');
-                    setIsConnectedToInternet(false);
-                });
-        }
-    }, [isConnectedToInternet]);
-
-    useEffect(() => {
-        if (refreshing) {
-            checkConnection();
-            setRefreshing(false);
-        }
-    }, [refreshing, checkConnection]);
-
-    return isConnectedToInternet ? (
+const Register = ({firstName, lastName, email, password, confirmPassword, username, onFirstNameChange, onLastNameChange, onEmailChange, onPasswordChange, onConfirmPasswordChange, onUsernameChange, error, isConnected, onRegisterPress, onRefreshPress, onFormChange}) => {
+    return isConnected ? (
         <KeyboardAvoidingView
+            testID="register-form"
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <Text style={styles.error}>{error || ''}</Text>
+            <Text testID="register-error" style={styles.error}>{error || ''}</Text>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
                     <TextInput
+                        testID="first-name-input"
                         value={firstName}
-                        onChangeText={setFirstName}
+                        onChangeText={onFirstNameChange}
                         placeholder="First Name"
                         placeholderTextColor={'rgba(255, 255, 255, .5)'}
                         style={styles.input}
                     />
                     <TextInput
+                        testID="last-name-input"
                         value={lastName}
-                        onChangeText={setLastName}
+                        onChangeText={onLastNameChange}
                         placeholder="Last Name"
                         placeholderTextColor={'rgba(255, 255, 255, .5)'}
                         style={styles.input}
                     />
                     <TextInput
+                        testID="email-input"
                         value={email.toLowerCase()}
-                        onChangeText={setEmail}
+                        onChangeText={onEmailChange}
                         placeholder="Email"
                         placeholderTextColor={'rgba(255, 255, 255, .5)'}
                         keyboardType="email-address"
                         style={styles.input}
                     />
                     <TextInput
+                        testID="password-input"
                         value={password}
-                        onChangeText={setPassword}
+                        onChangeText={onPasswordChange}	
                         placeholder="Password"
                         placeholderTextColor={'rgba(255, 255, 255, .5)'}
                         secureTextEntry={true}
                         style={styles.input}
                     />
                     <TextInput
+                        testID="confirm-password-input"
                         value={confirmPassword}
-                        onChangeText={setConfirmPassword}
+                        onChangeText={onConfirmPasswordChange}
                         placeholder="Confirm Password"
                         placeholderTextColor={'rgba(255, 255, 255, .5)'}
                         secureTextEntry={true}
                         style={styles.input}
                     />
                     <TextInput
+                        testID="username-input"
                         value={username}
-                        onChangeText={setUsername}
+                        onChangeText={onUsernameChange}
                         placeholder="Username"
                         placeholderTextColor={'rgba(255, 255, 255, .5)'}
                         style={styles.input}
                     />
                     <Pressable
+                        testID="create-account-button"
                         disabled={
-                            !email ||
-                            !password ||
-                            !confirmPassword ||
-                            !firstName ||
-                            !lastName ||
-                            !username
+
+                            !email.trim() ||
+                                !password.trim() ||
+                                !confirmPassword.trim() ||
+                                !firstName.trim() ||
+                                !lastName.trim() ||
+                                !username.trim()
                         }
-                        onPress={() =>
-                            handleRegister({
-                                firstName,
-                                lastName,
-                                email,
-                                password,
-                                confirmPassword,
-                                username,
-                                setUser,
-                                setError,
-                                watermelonDatabase,
-                            }).then(() =>
-                                sync(watermelonDatabase)
-                                    .then((res) => console.log(res))
-                                    .catch((err) => console.error(err))
-                            )
-                        }
+                        onPress={onRegisterPress}
                         style={[
                             styles.button,
                             styles.createAccountButton,
                             {
                                 backgroundColor:
-                                    !email ||
+                                !email ||
                                     !password ||
                                     !confirmPassword ||
                                     !firstName ||
@@ -157,14 +110,15 @@ const Register = ({ setUser, setisRegistering, isRegistering }: Props) => {
                         <Text style={styles.buttonText}>Create Account</Text>
                     </Pressable>
                     <Pressable
-                        onPress={() => setisRegistering((prev: boolean) => !prev)}
+                        testID="login-form-button"
+                        onPress={onFormChange}
                         style={[
                             styles.button,
                             styles.loginButton,
                             { backgroundColor: 'rgb(61,63,65)' },
                         ]}>
                         <Text style={styles.buttonText}>
-                            {isRegistering ? 'Login' : 'Create an Account'}
+                            Login
                         </Text>
                     </Pressable>
                 </View>
@@ -173,16 +127,16 @@ const Register = ({ setUser, setisRegistering, isRegistering }: Props) => {
     ) : (
        <View>
            {/*@ts-ignore*/}
-       <RefreshConnection setRefreshing={setRefreshing} >
-           You neeed internet connection to register
+       <RefreshConnection  >
+           You're currently offline. Please connect to the internet to complete your registration.
        </RefreshConnection>
     <Pressable
-        onPress={() => setisRegistering((prev: boolean) => !prev)}
+        onPress={onFormChange}
         style={[
             styles.button,
             {backgroundColor: 'rgb(7,254,213)'},
         ]}>
-        <Text style={styles.buttonText}>{'Login'}</Text>
+        <Text style={styles.buttonText}>Login</Text>
     </Pressable></View>
     );
 };

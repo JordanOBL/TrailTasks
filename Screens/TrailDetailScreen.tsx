@@ -16,10 +16,11 @@ import FullTrailDetails from "../types/fullTrailDetails";
 import calculateEstimatedTime from "../helpers/calculateEstimatedTime";
 import formatDateTime from "../helpers/formatDateTime";
 import {withObservables} from "@nozbe/watermelondb/react";
+import {useAuthContext} from "../services/AuthContext";
 
 // @ts-ignore
-const TrailDetailScreen = ({ route, navigation }) => {
-    const { trail, user, userPurchasedTrails, completedTrails} = route.params;
+const TrailDetailScreen = ({ route, navigation, trail, userPurchasedTrails, completedTrails }) => {
+    const {user} = useAuthContext();
     const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
     const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -29,6 +30,7 @@ const TrailDetailScreen = ({ route, navigation }) => {
     const [isCompleted, setIsCompleted] = useState(false);
 
     useEffect(() => {
+        
         if (trail && userPurchasedTrails && completedTrails) {
             setIsFreeTrail(trail.is_free);
             setIsPurchased(userPurchasedTrails?.some((purchasedTrail: User_Purchased_Trail) => purchasedTrail.trailId == trail.id));
@@ -59,7 +61,7 @@ const TrailDetailScreen = ({ route, navigation }) => {
 //
 
     let calculatedReward = Math.ceil(Number(trailDistance));
-    const reward = trail.trail_of_the_week ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
+    const reward = trail?.trail_of_the_week ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
 
     const getButtonText = () => {
         if (user.trailId === trail?.id) {
@@ -167,17 +169,6 @@ const TrailDetailScreen = ({ route, navigation }) => {
                     >
                         <Text style={styles.backButtonText}>←</Text>
                     </TouchableOpacity>
-                    <View style={styles.rightButtons}>
-                        <TouchableOpacity style={styles.iconButton}>
-                            <Text style={styles.iconText}>⤴️</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconButton}>
-                            <Text style={styles.iconText}>⏰</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconButton}>
-                            <Text style={styles.iconText}>🔖</Text>
-                        </TouchableOpacity>
-                    </View>
                 </View>
             </View>
 

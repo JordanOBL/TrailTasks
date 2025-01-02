@@ -18,18 +18,22 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import LoginScreen from './Screens/LoginScreen';
 import RegisterScreen from './Screens/RegisterScreen';
 import TabNavigator from './components/Navigation/TabNavigator';
-import { checkForLoggedInUser } from './helpers/loginHelpers';
 import { sync } from './watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/react';
 import handleError from './helpers/ErrorHandler'; // Import the hook
+import {useAuthContext} from "./services/AuthContext";
+import {useInternetConnection} from "./hooks/useInternetConnection";
+
 const App = () => {
   const watermelonDatabase = useDatabase();
-  const [isRegistering, setisRegistering] = useState<boolean>(true);
-  const [user, setUser] = useState<any>(null);
+  const { user, initUser} = useAuthContext()
+  const {isConnected} = useInternetConnection()
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  const [form, setForm] = useState('login');
+  
   // @ts-ignore
   //const { currentOffering, customerInfo, isProMember, loading } = useRevenueCat({ userId: user?.id || '' });
 
@@ -46,15 +50,11 @@ const App = () => {
             await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
           }
 
-          // This checks to see if the mobile device's SQLITE DB
-          // has a userID saved in the local storage and sets the user if it does
-          await checkForLoggedInUser(setUser, watermelonDatabase);
-          // SYNC call the push and pull requests from the mobile device to PG databas
         }
         if (user) {
-          await sync(watermelonDatabase, user.id);
+          await sync(watermelonDatabase, isConnected,user.id);
         } else {
-          await sync(watermelonDatabase);
+          await sync(watermelonDatabase, isConnected);
         }
 
         return;
@@ -68,7 +68,6 @@ const App = () => {
       await BootSplash.hide({ fade: true });
     }).catch(e => handleError(e, 'useEffect onLoad'));
   }, [user, watermelonDatabase]);
-
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -84,18 +83,14 @@ const App = () => {
           {/* <SyncIndicator delay={3000} />  */}
           {/*<Text style={styles.title}>Trail Tasks</Text>*/}
           {user != null ? (
-            <TabNavigator user={user} setUser={setUser}  />
-          ) : isRegistering ? (
+            <TabNavigator  />
+          ) : form === 'register' ? (
               <RegisterScreen
-                setUser={setUser}
-                setisRegistering={setisRegistering}
-                isRegistering={isRegistering}
+                handleFormChange={(value: string) => setForm('login')}
               />
             ) : (
                 <LoginScreen
-                  setUser={setUser}
-                  setisRegistering={setisRegistering}
-                  isRegistering={isRegistering}
+                  handleFormChange={(value: string) => setForm('register')}
                 />
               )}
         </SafeAreaView>

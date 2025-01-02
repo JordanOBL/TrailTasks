@@ -1,6 +1,8 @@
 // jest.config.js
 module.exports = {
   preset: 'react-native',
+   testTimeout: 30000, // 30 seconds,
+  verbose: true,
   testEnvironment: 'jsdom', // or 'node', depending on your needs
    transform: {
     '^.+\\.(js|jsx)$': 'babel-jest',

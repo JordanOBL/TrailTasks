@@ -1,14 +1,16 @@
 /* Render offline message if not connected */
 import {Pressable, SafeAreaView, StyleSheet, Text} from "react-native";
 import React, {SetStateAction} from "react";
+import {useInternetConnection} from "../hooks/useInternetConnection";
 
 //@ts-ignore
-const RefreshConection = ({setRefreshing, children}:{setRefreshing: SetStateAction<boolean>, children: string}) => {
+const RefreshConection = ({ children}:{children: string}) => {
+    const {refreshConnectionStatus} = useInternetConnection();
     // @ts-ignore
     // @ts-ignore
     // @ts-ignore
     return(
-    <SafeAreaView
+    <SafeAreaView testID="refresh-connection-button"
         style={[styles.container, {justifyContent: 'center'}]}>
         <Text
             style={{
@@ -22,7 +24,7 @@ const RefreshConection = ({setRefreshing, children}:{setRefreshing: SetStateActi
         </Text>
         <Pressable
             //@ts-ignore
-            onPress={() => setRefreshing(true)}
+            onPress={refreshConnectionStatus}
             style={[
                 styles.button,
                 {

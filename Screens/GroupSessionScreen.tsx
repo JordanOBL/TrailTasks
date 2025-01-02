@@ -8,9 +8,9 @@ import {handleResponse} from '../helpers/Websockets/HandleResponse';
 import * as Progress from 'react-native-progress';
 import formatCountdown from '../helpers/Timer/formatCountdown';
 import Icon from 'react-native-vector-icons/Ionicons'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
-import checkInternetConnection from '../helpers/InternetConnection/checkInternetConnection';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import EndSessionModal from '../components/Session/EndSessionModal';
+import {useInternetConnection} from '../hooks/useInternetConnection';
 
 const StatBox = ({ label, value }) => (
   <View style={styles.infoBox}>
@@ -21,10 +21,10 @@ const StatBox = ({ label, value }) => (
 
 const GroupSessionComponent =  ({ user }) => {
   const [appState, setAppState] = useState(AppState.currentState);
+  const { isConnected, ipAddress } = useInternetConnection();
 
   //this will check is emulater or device
   ////!TODO:Remove fo or production
-  const connection = useRef(null);
   const [serverUrl, setServerUrl] = useState(null);
   const { sendJsonMessage, lastJsonMessage, isReady } = useWebSocket(serverUrl);
   const width = Dimensions.get('window').width;
@@ -62,13 +62,10 @@ const GroupSessionComponent =  ({ user }) => {
   let targetDistance = 0.5 * session.level;
 useEffect(() => {
     const setupConnection = async () => {
-      if (!connection.current) {
-        connection.current = await checkInternetConnection();
-        console.log('connection.current::', connection.current);
 
-        if (connection.current.isConnected) {
+        if (isConnected) {
           // Check if we're on the emulator or a physical device
-          const isEmulator = connection.current.ipAddress[1] == 0;  // Emulator IP
+          const isEmulator = ipAddress[1] == 0;  // Emulator IP
           if (isEmulator) {
             setServerUrl('ws://10.0.2.2:8080/groupsession'); // Use emulator IP
           } else if (Platform.OS === 'android') {
@@ -82,7 +79,6 @@ useEffect(() => {
         } else {
           setError('No internet connection');
         }
-      }
     };
 
     setupConnection();
@@ -313,7 +309,7 @@ useEffect(() => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {view === 'session' && connection.current ?  (
+      {view === 'session' && isConnected ?  (
         <View style={styles.initialContainer}>
           <Text style={styles.title}>Group Session</Text>
 

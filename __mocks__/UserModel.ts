@@ -4,7 +4,7 @@ export function createMockUserBase(overrides?: Partial<User>) {
   const baseUser = {
     id: '123',
     // Basic fields so your code can read them
-    username: 'mockUserName',
+    username: 'mockUsername',
     email: 'mockEmail@example.com',
     // ... any other fields used in your code
     firstName: 'mockFirstName',
@@ -19,7 +19,6 @@ export function createMockUserBase(overrides?: Partial<User>) {
     themePreference: 'light',
     trailTokens: 50,
     lastDailyStreakDate: new Date(),
-    isSubscribed: false,
     prestigeLevel: 0,
     
     // ... any other fields used in your code
