@@ -12,7 +12,7 @@ const mockUser = createMockUserBase();
 describe('AuthServices functions', () => {
 
   describe('checkLocalUserExists', () => {
-    beforeEach(async () => {
+    afterEach(async () => {
       // Optionally call database.unsafeResetDatabase() 
       // if you want to be sure there's no leftover data 
       // from previous tests in the same instance.
@@ -44,7 +44,7 @@ describe('AuthServices functions', () => {
       })
 
       // Act
-      const result = await checkLocalUserExists('mockEmail@example.com', 'mockPassword', watermelonDatabase);
+      const result = await checkLocalUserExists(mockUser.email, mockUser.password, watermelonDatabase);
 
       // Assert
       expect(result.email).toBe(mockUser.email);

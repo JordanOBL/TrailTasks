@@ -34,13 +34,11 @@ NewSessionHandlers.SelectSessionCategoryId = async ({setTimer, setSessionDetails
     database: Database }
 ) => {
   try {
-    console.debug('sessionCategoryId', sessionCategoryId);
     const recentSettings =
       await NewSessionHandlers.checkLocalStorageSessionSettings(
         { sessionCategoryId,
           database }
       );
-    console.log("recentSettings", recentSettings)
     if (recentSettings && Object.values(recentSettings).length > 1) {
       setTimer((prev: any) => ({...prev, focusTime: recentSettings.focusTime, shortBreakTime: recentSettings.shortBreakTime, longBreakTime: recentSettings.longBreakTime, time: recentSettings.focusTime}))
     }
@@ -65,7 +63,6 @@ NewSessionHandlers.FocusTimeChange = ({setTimer, value}:{
   setTimer: React.Dispatch<React.SetStateAction<Timer>>,
   value: number }
 ) => {
-  console.log("new timer.time", value)
   setTimer((prev: any) => {
     return {...prev, focusTime: value, time: value};
   });
@@ -116,7 +113,6 @@ NewSessionHandlers.StartSessionClick = async (
           longBreakTime: timer.longBreakTime,
         })
       );
-      console.debug('returning in start session click newSession', newSession)
       return newSession
     } else {
       setSessionDetails((prev: any) => {

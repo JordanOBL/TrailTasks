@@ -1,6 +1,11 @@
 import 'whatwg-fetch'
 import dotenv from 'dotenv';
+import { TextEncoder, TextDecoder } from 'util';
 dotenv.config({ path: '.env.test' });
+// Polyfill for TextEncoder and TextDecoder for pg
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 
 // Also polyfill clearImmediate
 global.clearImmediate = global.clearImmediate || ((timer) => clearTimeout(timer));

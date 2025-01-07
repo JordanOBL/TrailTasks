@@ -15,25 +15,30 @@ import React, { useEffect, useState } from 'react';
 import RNFS from 'react-native-fs';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import LoginScreen from './Screens/LoginScreen';
-import RegisterScreen from './Screens/RegisterScreen';
 import TabNavigator from './components/Navigation/TabNavigator';
 import { sync } from './watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/react';
 import handleError from './helpers/ErrorHandler'; // Import the hook
 import {useAuthContext} from "./services/AuthContext";
 import {useInternetConnection} from "./hooks/useInternetConnection";
+import AuthScreen from "./Screens/AuthScreen";
 
 const App = () => {
   const watermelonDatabase = useDatabase();
   const { user, initUser} = useAuthContext()
   const {isConnected} = useInternetConnection()
   const isDarkMode = useColorScheme() === 'dark';
+  const [form, setForm] = useState('login');
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  const [form, setForm] = useState('login');
-  
+   const handleFormChange = () => {
+    if (form === 'login') {
+      setForm('register');
+    } else {
+      setForm('login');
+    }
+  };
   // @ts-ignore
   //const { currentOffering, customerInfo, isProMember, loading } = useRevenueCat({ userId: user?.id || '' });
 
@@ -84,15 +89,7 @@ const App = () => {
           {/*<Text style={styles.title}>Trail Tasks</Text>*/}
           {user != null ? (
             <TabNavigator  />
-          ) : form === 'register' ? (
-              <RegisterScreen
-                handleFormChange={(value: string) => setForm('login')}
-              />
-            ) : (
-                <LoginScreen
-                  handleFormChange={(value: string) => setForm('register')}
-                />
-              )}
+          ) : <AuthScreen form={form} handleFormChange={handleFormChange}   />}
         </SafeAreaView>
       </NavigationContainer>
     </GestureHandlerRootView>

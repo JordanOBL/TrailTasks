@@ -25,7 +25,6 @@ const getJoinedUserTrail = (watermelonDatabase: Database, userId: string ) => {
           )
           .unsafeFetchRaw();
         if (userTrailResponse !== undefined) {
-          console.log(userTrailResponse[0]);
           //@ts-ignore
           setJoinedUserTrail(userTrailResponse[0]);
         }

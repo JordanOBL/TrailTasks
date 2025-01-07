@@ -5,12 +5,13 @@ function isToday(date: Date | null)
 console.debug({today: new Date()})
   if(!date) return false
   const today = new Date();
+  const checkDate = new Date(date);
 
   // Check if the given date is equal to today's date
   return (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
+    checkDate.getFullYear() == today.getFullYear() &&
+    checkDate.getMonth() === today.getMonth() &&
+    checkDate.getDate() === today.getDate()
   );
 }
 

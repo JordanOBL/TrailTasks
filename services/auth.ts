@@ -37,6 +37,7 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
+		console.log(`http://${DATABASE_URL}/api/users`, { email, password });
 		const response = await fetch(`http://${DATABASE_URL}/api/users`, {
 			method: 'POST',
 			headers: {
@@ -60,6 +61,31 @@ export const checkGlobalUserExists = async (
 		return null;
 	}
 };
+
+export async function registerValidation(email: string, username: string) {
+
+	if (!email || !username) {
+		
+		return 'Please enter email and username';
+	}
+	try {
+		const response = await fetch(`http://${DATABASE_URL}/api/registerValidation`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ email, username }),
+		});
+		if (!response.ok && response.status != 409) {
+			throw new Error('Network response was not ok');
+		}
+		const responseJson = await response.json();
+		return responseJson
+	} catch (err) {
+		handleError(err, "registerValidation");
+		return null;
+	}
+}
 
 
 //createNewUser creates a new user
@@ -87,11 +113,11 @@ export const createNewUser = async ({
 				.create((user: User) =>
 				{
 						//@ts-ignore
-						user.firstName = firstName;
+						user.firstName = firstName.trim().toLowerCase();
 						//@ts-ignore
-						user.lastName = lastName;
+						user.lastName = lastName.trim().toLowerCase();
 						//@ts-ignore
-						user.email = email;
+						user.email = email.trim().toLowerCase();
 						//@ts-ignore
 						user.password = password;
 						//@ts-ignore
@@ -200,7 +226,6 @@ export const checkForLoggedInUser = async (
 	watermelonDatabase: Database
 ) => {
 	try {
-		console.debug('checking for logged in user')
 		const userId: string | undefined | void =
 			await watermelonDatabase.localStorage.get('user_id'); // string or undefined if no value for this key
 
@@ -209,10 +234,8 @@ export const checkForLoggedInUser = async (
 
 			//@ts-ignore
 			if (user.id) {
-				console.debug('userid found attempting to set subscription status', user.id)
 				await setSubscriptionStatus(user, watermelonDatabase);
 			}
-			console.debug('user before seeting in checked for logged in user:', user)
 			setUser((prevUser: User | null) => user);
 		}
 	} catch (err) {
@@ -236,6 +259,8 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 				console.debug('Creating subscription:', remoteUser.userSubscription);
 				console.debug('Creating achievements:', remoteUser.userAchievements);
 				console.debug('Creating completed trails:', remoteUser.usersCompletedTrails);
+				console.debug('Creating user Parks:', remoteUser.userParks);
+				console.debug('Creating users addons:', remoteUser.userAddOns);
 
 				// @ts-ignore
 				const newUser =  watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
@@ -324,7 +349,7 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 						newUserAchievement.completedAt = achievement.completed_at;
 					}))
 
-				const completedTrails = [...remoteUser.usersCompletedTrails].map((existingCompletedTrail: User_Completed_Trail) =>
+				const userCompletedTrails = [...remoteUser.usersCompletedTrails].map((existingCompletedTrail: User_Completed_Trail) =>
 					// @ts-ignore
 					watermelonDatabase.collections.get('users_completed_trails').prepareCreate((newCompletedTrail: User_Completed_Trail) => {
 						newCompletedTrail._raw.id = existingCompletedTrail.id;
@@ -346,8 +371,43 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 
 					})
 				)
+				const userParks = [...remoteUser.usersParks].map((existingUserPark: User_Park) => {
+					// @ts-ignore
+					watermelonDatabase.collections.get('users_parks').prepareCreate((newUserPark: User_Park) => {
+						newUserPark._raw.id = existingUserPark.id;
+						// @ts-ignore
+						newUserPark.userId = existingUserPark.user_id;
+						// @ts-ignore
+						newUserPark.parkId = existingUserPark.park_id;
+						newUserPark.isRewardRedeemable = existingUserPark.is_reward_redeemable;
+						newUserPark.parkLevel = existingUserPark.park_level;
+						newUserPark.lastCompleted = existingUserPark.last_completed;
+						// @ts-ignore
+						newUserPark.createdAt = existingUserPark.created_at;
+						// @ts-ignore
+						newUserPark.updatedAt = existingUserPark.updated_at;
+					})
+				})
+
+				const userAddons = [...remoteUser.userAddons].map((addon: User_Addon) => {
+					// @ts-ignore
+					watermelonDatabase.collections.get('user_addons').prepareCreate((newUserAddon: User_Addon) => {
+						newUserAddon._raw.id = addon.id;
+						// @ts-ignore
+						newUserAddon.userId = addon.user_id;
+						// @ts-ignore
+						newUserAddon.addonId = addon.addon_id;
+						newUserAddon.quantity = addon.quantity;
+						// @ts-ignore
+						newUserAddon.createdAt = addon.created_at;
+						// @ts-ignore
+						newUserAddon.updatedAt = addon.updated_at;
+					})
+				})
+
+				
 				console.debug('attempting to writebatch of new user from master DB')
-				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...completedTrails]);
+				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...userCompletedTrails, ...usersParks, ...userAddons]);
 				console.debug('batch write done...')
 			});
 

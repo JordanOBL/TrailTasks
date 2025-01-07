@@ -5,7 +5,6 @@ export const FilterBy = (
 	setFilteredUserSessions: React.Dispatch<React.SetStateAction<any[]>>
 ) =>
 {
-  console.log({timeFilter, categoryFilter, userSessionsWithCategories, setFilteredUserSessions})
 	// Filter userSessions based on the selected time and category filters
 	let filteredSessions = userSessionsWithCategories
 		.filter((session) => {
@@ -59,7 +58,6 @@ export const FilterBy = (
 				session.session_category_name === categoryFilter
 			);
 		});
-    console.log({filteredSessions})
 	// Update state with the filtered sessions
 	setFilteredUserSessions(filteredSessions);
 };

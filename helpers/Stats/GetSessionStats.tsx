@@ -93,7 +93,6 @@ export const getSessionStats = (
 	// Calculate most productive times
 	const productiveTimesCount = productiveTimes.reduce((acc, timeOfDay) => {
 		acc[timeOfDay] = (acc[timeOfDay] || 0) + 1;
-		console.log(acc)
 		return acc;
 		
 	}, {} as { [key: string]: number });

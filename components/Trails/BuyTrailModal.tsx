@@ -29,7 +29,6 @@ const BuyTrailModal = ({
                   : 50;
 
   const handleBuyTrail = () => {
-    console.debug({trailTokens});
     if (trailTokens >= unlockCost) {
       onBuyTrail(trail, unlockCost);
       onClose();

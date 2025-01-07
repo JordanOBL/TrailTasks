@@ -11,7 +11,6 @@ const searchFilterFunction = <T>(
   // Function to execute the search logic
   const executeSearch = (searchText: string) => {
     // Filter the masterDataSource
-    console.log(masterDataSource);
     const newData = masterDataSource.filter(function (item) {
       const itemData = (item[keyToQuery] as string)?.toLowerCase(); // Use optional chaining here
       const textData = searchText.toLowerCase();

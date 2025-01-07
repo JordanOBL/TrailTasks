@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import Register from '../components/Register';
+import RegisterForm from '../components/Auth/RegisterForm';
 import React, {useState, useEffect, setTimeout}from 'react';
 import {useAuthContext} from '../services/AuthContext';
 import {useInternetConnection} from '../hooks/useInternetConnection';
@@ -33,7 +33,7 @@ const RegisterScreen = ({handleFormChange}) => {
                     <Text style={styles.title}>New Hiker</Text>
                 </View>
                 <View style={styles.registerContainer}>
-                    <Register
+                    <RegisterForm
                         firstName={firstName}
                         lastName={lastName}
                         email={email}

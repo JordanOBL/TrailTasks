@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import handleError from "../../helpers/ErrorHandler";
+import {DATABASE_LEADERBOARDS_URL} from "@env"
 //This code gets the top 100 rankings AND the user ranking
 export interface Top100Ranking {
     username: string;
@@ -29,9 +30,7 @@ const FetchGlobalLeaderboards = (userId: string) => {
             }
 
             try {
-
-
-                let response = await fetch('https://expressjs-postgres-production-54e4.up.railway.app/api/leaderboards', {
+                let response = await fetch(DATABASE_LEADERBOARDS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({userId})
@@ -63,7 +62,6 @@ const FetchGlobalLeaderboards = (userId: string) => {
                 }
 
                 const data = await response.json();
-                console.log(data)
                 setLeaderboard(data || []);
             } catch (err: any) {
                 setError(err.message);

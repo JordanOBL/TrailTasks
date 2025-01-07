@@ -48,13 +48,8 @@ const NewSessionOptions = ({
     const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
     const [isBackpackModalVisible, setIsBackpackModalVisible] = useState(false);
 
-    useEffect(() => {
-        console.log(sessionDetails);
-    }, [sessionDetails]);
-
     const startSession = () => {
         if (!sessionDetails.startTime) {
-            console.debug('Clicked start session, sessionDetails', sessionDetails);
             NewSessionHandlers.StartSessionClick({
                 timer,
                 setTimer,

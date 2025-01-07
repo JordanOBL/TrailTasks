@@ -26,12 +26,9 @@ import Timer from "../../types/timer";
 export async function increaseDistanceHiked({
   user,
   timer,
-
   sessionDetails,
   userSession,
-
   achievementsWithCompletion,
-
   onAchievementEarned
 }: {
     user: User;

@@ -12,14 +12,13 @@ import {
 import React, { useState, useEffect, useCallback } from 'react';
 
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
-import { handleRegister } from '../helpers/registerHelpers';
-import { sync } from '../watermelon/sync';
+import { handleRegister } from '../../helpers/registerHelpers';
+import { sync } from '../../watermelon/sync';
+import handleError from '../../helpers/ErrorHandler';
+import RefreshConnection from "../RefreshConnection";
 
-import handleError from '../helpers/ErrorHandler';
-import RefreshConnection from "./RefreshConnection";
-
-const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
-const Register = ({firstName, lastName, email, password, confirmPassword, username, onFirstNameChange, onLastNameChange, onEmailChange, onPasswordChange, onConfirmPasswordChange, onUsernameChange, error, isConnected, onRegisterPress, onRefreshPress, onFormChange}) => {
+//const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
+const RegisterForm = ({firstName = '', lastName = '', email = '', password = '', confirmPassword = '', username = '', onFirstNameChange, onLastNameChange, onEmailChange, onPasswordChange, onConfirmPasswordChange, onUsernameChange, error = '', isConnected = false, onRegisterPress, onRefreshPress, onFormChange}) => {
     return isConnected ? (
         <KeyboardAvoidingView
             testID="register-form"
@@ -193,4 +192,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Register;
+export default RegisterForm;

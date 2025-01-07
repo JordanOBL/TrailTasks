@@ -18,7 +18,7 @@ const Home = createStackNavigator();
 export function HomeStackNavigator() {
   const {user} = useAuthContext();
   return (
-    <Home.Navigator testID="homenavigator">
+    <Home.Navigator >
       <Home.Screen name="Home" options={{headerShown: false, headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
         {(props: any) => (
           <EnhancedHomeScreen  testId="homescreen" user={user} {...props}  />

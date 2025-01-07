@@ -1,5 +1,5 @@
 import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import Login from '../components/Login';
+import LoginForm from '../components/Auth/LoginForm';
 import React from 'react';
 import NationalParksInfiniteScroll from "../components/NationalParksInfiniteScroll";
 import {useDatabase} from '@nozbe/watermelondb/react';
@@ -28,7 +28,7 @@ const LoginScreen = ({ handleFormChange }: Props) => {
         </View>
         <NationalParksInfiniteScroll />
         <View style={styles.loginContainer}>
-          <Login
+          <LoginForm
           email={email}
           password={password}
           onEmailChange={setEmail}

@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Database } from '@nozbe/watermelondb';
-import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists, setSubscriptionStatus, setLocalStorageUser, createNewUser } from '../services/auth';
+import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists, setSubscriptionStatus, setLocalStorageUser, createNewUser , registerValidation} from '../services/auth';
 import {useInternetConnection} from './useInternetConnection';
 import handleError from '../helpers/ErrorHandler';
 import { User } from '../watermelon/models';
+import {sync} from '../watermelon/sync';
 
 type UseAuthParams = {
   watermelonDatabase: Database;
@@ -28,7 +29,6 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
   // Check if there's a user in local DB
   const initUser = useCallback(async () => {
-    console.debug('initUser in useAuth');
     try {
       if(watermelonDatabase) {
          await checkForLoggedInUser(setUser, watermelonDatabase);
@@ -89,41 +89,33 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
       username: string
     }) => {
 
-      console.debug('register in useAuth');
-      console.debug({firstName, lastName, email, password, confirmPassword, username});
       try {
         setError('');
 
         // Basic validation
-        if (!firstName || !lastName || !email || !password || !confirmPassword) {
-          console.log('All fields are required');
+        if (!firstName || !lastName || !email || !password || !confirmPassword || !username) {
           setError('All fields are required');
           return;
         }
         if (password !== confirmPassword) {
-          console.log('Passwords do not match');
           setError('Passwords do not match');
           return;
         }
-        const existing = await checkGlobalUserExists(username, email, watermelonDatabase);
-        if (existing) {
-          if (existing.email.toLowerCase() === email.toLowerCase()) {
-            setError('User Already Exists. Please Login');
-          } else if (existing.username.toLowerCase() === username.toLowerCase()) {
-            setError('Username is taken. Please choose a new username');
-          }
-          return;
+        const result = await registerValidation(email, username);
+console.log(result);
+        if (result.duplicateAttribute) {
+            setError(result.message);
+            return;
         }
 
         // Otherwise create user in local DB
         const newUser = await createNewUser(
-          { firstName, lastName, email, password, username ,
-          watermelonDatabase}
+          { firstName, lastName, email, password, username, watermelonDatabase}
         );
         if (newUser) {
           // Possibly set user in state after register
           setUser(newUser);
-          await sync(watermelonDatabase, isConnected, newUser);
+          await sync(watermelonDatabase, isConnected, newUser.id);
         }
       } catch (err) {
         handleError(err, 'register in useAuth');

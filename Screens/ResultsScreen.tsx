@@ -12,8 +12,6 @@ const ResultsScreen = ({ session,user,timer,  hikers, handleReturnToLobby }) => 
     
     return b.distance - a.distance
   });
- console.log("Session", session);
-  console.log("Timer", timer);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Session Results</Text>

@@ -291,14 +291,12 @@ useEffect(() => {
   useFocusEffect(
     React.useCallback(() => {
       // Screen is focused
-      console.log('Timer screen is focused.');
-      console.log('timer usefocuseffect', timer);
+      
       if(timer.isRunning){
         handleResume();
       }
       return () => {
         // Screen is unfocused
-        console.log('Timer screen is unfocused.');
         if(timer.isRunning){
             handlePause();
         }
@@ -562,7 +560,7 @@ useEffect(() => {
         hikers={hikers}
         user={user}
         handleReturnToLobby={handleReturnToLobby}
-          timer={timer}
+        timer={timer}
         />
       )}
     </SafeAreaView>

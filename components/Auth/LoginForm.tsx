@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 
-const Login = ({email, password, onEmailChange, onPasswordChange, onFormChange, error, onLoginPress}) => {
+const LoginForm = ({email, password, onEmailChange, onPasswordChange, onFormChange, error, onLoginPress}) => {
   return (
     <SafeAreaView testID="login-form" style={styles.container}>
       <TextInput
@@ -90,4 +90,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default LoginForm;

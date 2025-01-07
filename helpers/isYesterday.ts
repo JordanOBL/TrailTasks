@@ -4,12 +4,13 @@ function isYesterday(date: Date | null) {
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1); // Subtract 1 day from today's date
+  const checkDate = new Date(date);
 
   // Check if the given date is equal to yesterday's date
   return (
-    date.getFullYear() === yesterday.getFullYear() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getDate() === yesterday.getDate()
+    checkDate.getFullYear() === yesterday.getFullYear() &&
+    checkDate.getMonth() === yesterday.getMonth() &&
+    checkDate.getDate() === yesterday.getDate()
   );
 }
 
