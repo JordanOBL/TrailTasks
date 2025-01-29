@@ -389,30 +389,29 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
 
   @writer
   async buyAddon(addon) {
-    console.debug('buyAddon', addon.id);
     try {
-      const userHasAddon = await this.usersAddons.extend(
-          Q.where('addon_id', addon.id)
+      const [existingAddon] = await this.usersAddons.extend(
+        Q.where('addon_id', addon.id)
       );
-      console.debug('userHasAddon', userHasAddon);
-      if (userHasAddon.length == 0) {
-        console.debug('user doenst have addon', userHasAddon);
-        const userAddon = await this.collections
-            .get('users_addons')
-            .create((user_addon) => {
-              console.debug('user id', this.id);
-              user_addon.userId = this.id;
-              user_addon.addonId = addon.id;
-              user_addon.quantity = 1;
-            });
-        console.debug('new userAddon', userAddon);
+      let transaction; 
+      if (!existingAddon) {
+        transaction = this.collections
+          .get('users_addons')
+          .prepareCreate((user_addon) => {
+            user_addon.userId = this.id;
+            user_addon.addonId = addon.id;
+            user_addon.quantity = 1;
+          });
       } else {
-        console.debug('user has addon', userHasAddon);
+        transaction = existingAddon.prepareUpdate((user_addon) => {
+          user_addon.quantity += 1
+        })
       }
-      console.log('user tokens', this.trailTokens);
-      await this.update((user) => {
-        user.trailTokens = this.trailTokens - addon.price;
-      });
+      await this.database.batch(
+        transaction,
+        this.prepareUpdate((user) => {
+          user.trailTokens = this.trailTokens - addon.price;
+        }))
     } catch (err) {
       console.error('Error in buyAddon:', err);
       throw err; // Rethrow the error to handle it at the higher level
@@ -568,7 +567,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           pass.isRewardRedeemed = true;
         })
     }
-  await this.batch(
+  await this.database.batch(
       this.prepareUpdate((user) => {
         user.trailTokens += reward;
       }),

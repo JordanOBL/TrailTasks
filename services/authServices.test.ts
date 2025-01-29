@@ -10,7 +10,6 @@ jest.mock('../helpers/ErrorHandler');
 const mockUser = createMockUserBase(); 
 
 describe('AuthServices functions', () => {
-
   describe('checkLocalUserExists', () => {
     afterEach(async () => {
       // Optionally call database.unsafeResetDatabase() 

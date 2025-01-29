@@ -42,3 +42,24 @@ export function createMockUserBase(overrides?: Partial<User>) {
   }
 }
 
+export async function createUser(database: Database, newUser: any){
+  await database.write(async() => {
+    await database.get('users').create(user => {
+      user.username = newUser.username;
+      user.firstName = newUser.firstName;
+      user.lastName = newUser.lastName;
+      user.email = newUser.email;
+      user.password = newUser.password;
+      user.pushNotificationsEnabled = true;
+      user.themePreference = 'light';
+      user.trailId = '1';
+      user.dailyStreak = 0;
+      user.lastDailyStreakDate = new Date();
+      user.trailProgress = '0.00';
+      user.traiStartedAt = newUser.trailStartedAt;
+      user.trailTokens = 50;
+      user.totalMiles = '0.00';
+      user.prestigeLevel = 0;})
+  })
+}
+
