@@ -9,7 +9,7 @@ import {watermelonDatabase} from "../index";
 jest.mock('../helpers/ErrorHandler');
 const mockUser = createMockUserBase(); 
 
-describe('AuthServices functions', () => {
+describe('Auth Services', () => {
   describe('checkLocalUserExists', () => {
     afterEach(async () => {
       // Optionally call database.unsafeResetDatabase() 

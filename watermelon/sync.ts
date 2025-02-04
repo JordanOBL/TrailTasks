@@ -4,7 +4,8 @@ import {Database} from '@nozbe/watermelondb';
 import SyncLogger from '@nozbe/watermelondb/sync/SyncLogger';
 import handleError from "../helpers/ErrorHandler";
 import {synchronize} from '@nozbe/watermelondb/sync';
-import {DATABASE_URL, DATABASE_PULL_URL, DATABASE_PUSH_URL} from "@env"
+//import {DATABASE_URL, DATABASE_PULL_URL, DATABASE_PUSH_URL} from "@env"
+import Config from "react-native-config";
 const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
 
 //singleton
@@ -17,7 +18,6 @@ export async function sync(database: Database,isConnected: boolean = false, user
     console.debug('sync() device internet:', isConnected);
     //set locatStorage connection status
 
-
     if (!isRunning && isConnected) {
       //stop more than one instance
       isRunning = true;
@@ -28,12 +28,13 @@ export async function sync(database: Database,isConnected: boolean = false, user
           try {
             console.debug('user from pull changes', userId);
             console.debug("pullChanges lastPulledAt", lastPulledAt);
+            console.debug("config.DATABASE_PULL_URL", Config.DATABASE_PULL_URL);
             //get new changees in the watermelon database
             const urlParams = userId
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
             const response = await fetch(
-              `${DATABASE_PULL_URL}/pull?${urlParams}`
+              `${Config.DATABASE_PULL_URL}/pull?${urlParams}`
             );
             if (!response.ok) {
               console.error('in pull in sync()');
@@ -59,7 +60,7 @@ export async function sync(database: Database,isConnected: boolean = false, user
           try{
           console.debug('in push on client side sync()');
           const response = await fetch(
-            `${DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
+            `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
             {
               method: 'POST',
               body: JSON.stringify({changes}),

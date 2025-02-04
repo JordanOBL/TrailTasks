@@ -1,28 +1,14 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
 import React, { useState } from 'react';
 
 import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
 import handleError from "../helpers/ErrorHandler";
 import useAddons from '../helpers/Addons/useAddons';
 import {withObservables} from '@nozbe/watermelondb/react';
+import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
 
 const AddOnStoreScreen = ({user, userAddons}) => {
   const {addons, loading, error} = useAddons();
-
-  const handlePurchase = async (addOn: { requiredTotalMiles: number; price: number; name: any; }) => {
-    try {
-
-    if (user.totalMiles >= addOn.requiredTotalMiles && user.trailTokens >= addOn.price) {
-      //decrease user trail tokens
-      //add addon to users_addons either full addon or update qty
-      await user.buyAddon(addOn);
-      alert(`You purchased ${addOn.name}`);
-      return;
-    }
-    } catch (err) {
-      handleError(err, "handlePurchase");
-    }
-  };
 
   if (loading) {
     return <Text>Loading Add-Ons...</Text>;
@@ -31,14 +17,21 @@ const AddOnStoreScreen = ({user, userAddons}) => {
     return <Text>Error loading Add-Ons: {error}</Text>;
   }
 
-  //console.log(addons);
+  async function handleAddonPurchase(addon) {
+    try {
+      let successMessage = await user.buyAddon(addon);
+      Alert.alert('Success', successMessage);
+    } catch (err) {
+      Alert.alert('Purchase Failed', err.message);
+    }
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around', padding: 10}}>
         <Text style={styles.tokens}>Trail Tokens: {user.trailTokens}</Text>
         <Text style={styles.miles}>Total Miles: {user.totalMiles}</Text>
       </View>
-      <EnhancedAddOnStore availableAddOns={addons} usersAddons={userAddons} user={user} onPurchase={handlePurchase} />
+      <EnhancedAddOnStore availableAddOns={addons} usersAddons={userAddons} user={user} onPurchase={handleAddonPurchase} />
     </SafeAreaView>
   );
 };

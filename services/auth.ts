@@ -10,8 +10,7 @@ import {
 import React from "react";
 import handleError from "../helpers/ErrorHandler";
 import formatDateTime from "../helpers/formatDateTime";
-import {DATABASE_URL} from "@env"
-
+import Config from "react-native-config";
 //checkExistingUser checks for a user in the local database
 export const checkLocalUserExists = async (
 	email: string,
@@ -37,8 +36,8 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
-		console.log(`http://${DATABASE_URL}/api/users`, { email, password });
-		const response = await fetch(`http://${DATABASE_URL}/api/users`, {
+		console.log(`http://${Config.DATABASE_URL}/api/users`, { email, password });
+		const response = await fetch(`http://${Config.DATABASE_URL}/api/users`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -69,7 +68,7 @@ export async function registerValidation(email: string, username: string) {
 		return 'Please enter email and username';
 	}
 	try {
-		const response = await fetch(`http://${DATABASE_URL}/api/registerValidation`, {
+		const response = await fetch(`http://${Config.DATABASE_URL}/api/registerValidation`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -260,7 +259,7 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 				console.debug('Creating achievements:', remoteUser.userAchievements);
 				console.debug('Creating completed trails:', remoteUser.usersCompletedTrails);
 				console.debug('Creating user Parks:', remoteUser.userParks);
-				console.debug('Creating users addons:', remoteUser.userAddOns);
+				console.debug('Creating users addons:', remoteUser.userAddons);
 
 				// @ts-ignore
 				const newUser =  watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
@@ -349,7 +348,7 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 						newUserAchievement.completedAt = achievement.completed_at;
 					}))
 
-				const userCompletedTrails = [...remoteUser.usersCompletedTrails].map((existingCompletedTrail: User_Completed_Trail) =>
+				const userCompletedTrails = [...remoteUser.userCompletedTrails].map((existingCompletedTrail: User_Completed_Trail) =>
 					// @ts-ignore
 					watermelonDatabase.collections.get('users_completed_trails').prepareCreate((newCompletedTrail: User_Completed_Trail) => {
 						newCompletedTrail._raw.id = existingCompletedTrail.id;
@@ -371,7 +370,7 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 
 					})
 				)
-				const userParks = [...remoteUser.usersParks].map((existingUserPark: User_Park) => {
+				const userParks = [...remoteUser.userParks].map((existingUserPark: User_Park) => {
 					// @ts-ignore
 					watermelonDatabase.collections.get('users_parks').prepareCreate((newUserPark: User_Park) => {
 						newUserPark._raw.id = existingUserPark.id;
@@ -407,7 +406,7 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 
 				
 				console.debug('attempting to writebatch of new user from master DB')
-				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...userCompletedTrails, ...usersParks, ...userAddons]);
+				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...userCompletedTrails, ...userParks, ...userAddons]);
 				console.debug('batch write done...')
 			});
 

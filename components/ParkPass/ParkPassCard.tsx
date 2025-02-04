@@ -5,7 +5,7 @@ import * as Progress from 'react-native-progress';
 import {withObservables} from "@nozbe/watermelondb/react";
 import {useEffect} from "react";
 
-const ParkPassCard = ({ data, redeemParkPass, user }) => {
+const ParkPassCard = ({ data, user }) => {
 
     const progress = data.completedTrails / data.totalTrails
     return (
@@ -49,8 +49,9 @@ const ParkPassCard = ({ data, redeemParkPass, user }) => {
                     <Button
                         mode="contained"
                         buttonColor="rgb(7,254,213)"
-                        onPress={() => {
-                            redeemParkPass(data.parkId);
+                        onPress={async () => {
+                            //redeemParkPass(data.parkId);
+                            await user.redeemParkPass(data.parkId)
                             console.log('Redeem reward for park!')
                         }}
                         style={styles.redeemButton}

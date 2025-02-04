@@ -48,3 +48,5 @@ end
 
 # WatermelonDB dependency
 pod 'simdjson', path: '../node_modules/@nozbe/simdjson', modular_headers: true
+pod 'react-native-config', :path => '../node_modules/react-native-config'
+

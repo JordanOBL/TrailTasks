@@ -110,7 +110,7 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
                 renderItem={({ item }) => (
                     <EnhancedParkPassCard
                         data={item}
-                        redeemParkPass={redeemParkPass}
+                        //redeemParkPass={redeemParkPass}
                         user={user}
                     />
                 )}

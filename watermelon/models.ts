@@ -152,62 +152,70 @@ export class User extends Model {
     return null;
   }
 
+  prepareConsumeUserAddons(record){
+    if(record.quantity > 1){
+      return record.prepareUpdate((addon) => {
+        addon.quantity -= 1;
+      });
+    }else{
+      return record.prepareMarkAsDeleted();
+    }
+  }
+
   //create new session
   @writer
   async startNewSession(sessionDetails) {
     try {
-      //get user addons
-      const usersAddons = await this.usersAddons;
 
-      console.debug(
-          'in models startNewSession preparing to create new session'
-      );
-      //create a new session and get sessionID to add sessionaddons
       const newSession = this.collections
-          .get('users_sessions')
-          //@ts-ignore
-          .prepareCreate((userSession) => {
-            userSession.userId = this.id;
-            userSession.sessionName = sessionDetails.sessionName;
-            userSession.sessionDescription = '';
-            userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
-            userSession.totalSessionTime = '0';
-            userSession.totalDistanceHiked = '0.00';
-            userSession.dateAdded = formatDateTime(new Date());
-          });
+      .get('users_sessions')
+      .prepareCreate((userSession) => {
+        userSession.userId = this.id
+        userSession.sessionName = sessionDetails.sessionName
+        userSession.sessionDescription = sessionDetails.sessionDescription || ''
+        userSession.sessionCategoryId = sessionDetails.sessionCategoryId
+        userSession.totalSessionTime = '0'
+        userSession.totalDistanceHiked = '0.00'
+        userSession.dateAdded = formatDateTime(new Date())
+      })
 
-      await this.batch(
-          newSession,
-          //create session addons
-          ...sessionDetails.backpack.map((backpackAddon) => {
-            if (backpackAddon.addon != null) {
-              return this.collections
-                  .get('sessions_addons')
-                  .prepareCreate((sessionAddon) => {
-                    sessionAddon.sessionId = newSession.id;
-                    sessionAddon.addonId = backpackAddon.addon.id;
-                  });
-            }
-          }),
-          //decrement users used addon
-          ...usersAddons.map((backpackAddon) => {
-            return backpackAddon.prepareUpdate((userAddon) => {
-              userAddon.quantity = backpackAddon.quantity - 1;
-            });
-          })
-      );
-      usersAddons.forEach(async (backpackAddon) => {
-        if (backpackAddon != null && backpackAddon.quantity - 1 <= 0) {
-          return await backpackAddon.markAsDeleted();
+      const sessionAddonsPrepares = []
+      const consumePrepares = []
+
+      for (const slot of sessionDetails.backpack) {
+        if (!slot.addon) continue
+
+        // create a session_addons record
+        const sessionAddonPrepared = this.collections
+        .get('sessions_addons')
+        .prepareCreate((sa) => {
+          sa.sessionId = newSession.id
+          sa.addonId = slot.addon.id
+        })
+        sessionAddonsPrepares.push(sessionAddonPrepared)
+
+        const [addonRecord] = await this.usersAddons.extend(Q.where('addon_id', slot.addon.id))
+
+        if (!addonRecord) {
+          // handle "user doesn't actually have this addon"? 
+          // or skip, or throw an error
+          continue
         }
-      });
 
-      return {newSession, status: true};
+        const consumePrepared = this.prepareConsumeUserAddons(addonRecord)
+        consumePrepares.push(consumePrepared)
+      }
+
+      // 3) batch everything
+      await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares)
+
+      return { newSession, status: true }    
     } catch (e) {
-      handleError(e, 'Error user.startNewSession()');
-      return {data: null, status: false};
+      handleError(e, 'Error user.startNewSession()')
+      return { data: null, status: false }
     }
   }
+
 
   @writer
   async getTodaysTotalSessionTime() {
@@ -387,38 +395,65 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return subscription[0];
   }
 
-  @writer
-  async buyAddon(addon) {
-    try {
-      const [existingAddon] = await this.usersAddons.extend(
-        Q.where('addon_id', addon.id)
-      );
-      let transaction; 
-      if (!existingAddon) {
-        transaction = this.collections
-          .get('users_addons')
-          .prepareCreate((user_addon) => {
-            user_addon.userId = this.id;
-            user_addon.addonId = addon.id;
-            user_addon.quantity = 1;
-          });
-      } else {
-        transaction = existingAddon.prepareUpdate((user_addon) => {
-          user_addon.quantity += 1
-        })
-      }
-      await this.database.batch(
-        transaction,
-        this.prepareUpdate((user) => {
-          user.trailTokens = this.trailTokens - addon.price;
-        }))
-    } catch (err) {
-      console.error('Error in buyAddon:', err);
-      throw err; // Rethrow the error to handle it at the higher level
+@writer
+async buyAddon(addOn) {
+  try {
+    // 1. Check if user has enough miles:
+    //    They need to have *at least* addOn.requiredTotalMiles.
+    //    If user.totalMiles < requiredTotalMiles, they don't qualify.
+    if (this.totalMiles < addOn.requiredTotalMiles) {
+      throw new Error(`You must have at least ${addOn.requiredTotalMiles} miles to purchase ${addOn.name}`);
     }
-  }
 
-  @writer
+    // 2. Check if user has enough tokens:
+    //    Similarly, they need at least addOn.price tokens.
+    //    If user.trailTokens < price, they cannot buy.
+    if (this.trailTokens < addOn.price) {
+      throw new Error(`You must have at least ${addOn.price} tokens to purchase ${addOn.name}`);
+    }
+
+    // 3. Prepare updates/transactions:
+    //    Check if the user already has this addon in user_addons.
+    const [existingAddon] = await this.usersAddons.extend(
+      Q.where('addon_id', addOn.id)
+    );
+
+    let transaction;
+    if (!existingAddon) {
+      // If user doesn't have this addon, create a new record with quantity = 1
+      transaction = this.collections
+        .get('users_addons')
+        .prepareCreate((userAddon) => {
+          userAddon.userId = this.id;
+          userAddon.addonId = addOn.id;
+          userAddon.quantity = 1;
+        });
+    } else {
+      // If user already has this addon, increment the quantity
+      transaction = existingAddon.prepareUpdate((userAddon) => {
+        userAddon.quantity += 1;
+      });
+    }
+
+    // 4. Execute the DB updates in a single batch:
+    //    a) Create/Update the user's_addons entry
+    //    b) Deduct the tokens from the user
+    await this.database.batch(
+      transaction,
+      this.prepareUpdate((user) => {
+        user.trailTokens = this.trailTokens - addOn.price;
+      })
+    );
+
+    // 5. Notify success
+    return `You purchased ${addOn.name}`
+  } catch (err) {
+    console.error("Error in buyAddon:", err);
+    // Rethrow to handle it at a higher level if needed
+    throw err;
+  }
+}
+@writer
   async unlockAchievements(userId, completedAchievements) {
     try {
       const unlockedAchievements = await Promise.all(

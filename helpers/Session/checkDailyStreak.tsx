@@ -16,7 +16,7 @@ async function checkDailyStreak(user: User, sessionDetails: SessionDetails) {
 
 
   // Check if today's date matches the last daily streak date
-  if (isToday(user.lastDailyStreakDate)) {
+  if (isToday(results)) {
     return null; // Return early if the daily streak is already updated for today
   }
 

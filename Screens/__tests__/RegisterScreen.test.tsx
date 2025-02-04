@@ -22,7 +22,7 @@ describe('Register',()=>{
 	//reset MasterDb
 
 	// Reset the local database
-	afterEach(async () => {
+	beforeEach(async () => {
 		await watermelonDatabase.write(async () => {
 			await watermelonDatabase.unsafeResetDatabase();
 		})

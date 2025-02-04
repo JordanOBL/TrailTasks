@@ -3,9 +3,6 @@ import { View, Text, Button, StyleSheet, FlatList, SafeAreaView, Image} from 're
 import {withObservables} from '@nozbe/watermelondb/react';
 import addonImages from '../../helpers/Addons/addonImages';
 const AddOnStore = ({ availableAddOns, user, onPurchase, usersAddons }) => {
-// Import your images using `require`
-
-
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
