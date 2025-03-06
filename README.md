@@ -1,79 +1,107 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+Trail Tasks: Revolutionizing Productivity for the Outdoor Enthusiast
+Trail Tasks is an innovative mobile application designed to bridge the gap between productivity and the great outdoors. Leveraging the proven Pomodoro technique, Trail Tasks transforms work sessions into virtual hiking experiences, allowing users to hike through some of the most iconic national park trails in the United States—all while staying productive. Whether you’re working on a project, studying, or simply trying to stay focused, Trail Tasks makes every session an adventure.
 
-# Getting Started
+Key Features
+1. Pomodoro Timer with a Twist
+Trail Tasks incorporates a traditional Pomodoro timer, but with a unique twist: as users work, they virtually hike a trail corresponding to real-world distances. The timer starts users at a pace of 2 mph, with their speed increasing every 10 minutes as a reward for sustained focus. This gamified approach to productivity encourages users to stay on task while enjoying the mental escape of a virtual hike.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+2. Virtual Hiking Experience
+Users can select from a variety of national park trails, each with different lengths and difficulties. As they work, they progress along the chosen trail, gaining distance every 0.01 miles. The realistic simulation keeps users engaged and motivated, turning everyday tasks into rewarding journeys.
 
-## Step 1: Start the Metro Server
+3. Trail Tokens & Achievements
+Completion of trails earns users trail tokens, which can be used to unlock new trails and other features. Achievements in areas such as session time, miles hiked, and trails completed across various parks and states add a layer of gamification, enhancing user engagement and satisfaction.
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+4. Offline & Online Support
+Trail Tasks is designed to work seamlessly both offline and online. This ensures that users can continue their productivity journey without interruption, even in areas with limited connectivity. Online functionality enables users to view global leaderboards and compare their miles hiked with others, fostering a sense of community and competition.
 
-To start Metro, run the following command from the _root_ of your React Native project:
+5. Detailed Productivity Stats
+Users can track their productivity over various time periods and session categories, giving them insight into their work habits and progress. This feature not only helps users stay motivated but also allows them to optimize their workflow for better results.
 
-```bash
-# using npm
-npm start
+Park Progression, Prestige, and Levels
+Park Levels
+Each park tracks a lifetime level, increasing every time a user completes all trails in that park.
+Park levels do not reset upon prestige, allowing users to track their lifetime mastery of individual parks.
+Example:
+Completing all trails in Yosemite three times = Yosemite Level 3.
+Park Rewards
+Completing all trails in a park earns a park reward (e.g., tokens, badges, achievements).
+Rewards can only be redeemed once per prestige.
+Upon prestige, park reward redemption resets, allowing users to redeem rewards immediately without rehiking if park completion criteria were already met.
+Park Prestige
+Reflects a user’s global progress across all parks.
+Prestige is earned by completing all parks to the required level.
+Upon prestiging:
+Park reward redemption resets for all parks.
+Prestige level increases, unlocking higher rewards and multipliers.
+Trail Rewards
+Trails can be hiked repeatedly for individual rewards, no matter if the park has been redeemed.
+Workflow Example
+Complete all trails in Yosemite → Yosemite Level 1 → Redeem reward.
+Complete all trails in Yellowstone → Yellowstone Level 1 → Redeem reward.
+Complete all parks → Prestige Level 1.
+Prestige resets park rewards; Yosemite Level 2 reward can now be redeemed without rehiking.
+Future Features
+Friends & Friendly Leaderboards
+Connect with friends and compete across categories such as:
 
-# OR using Yarn
-yarn start
-```
+Most Miles in a Week
+Longest Continuous Session
+Most Trails Completed
+Group Hikes
+Join group hikes with friends or other users to complete trails together for shared experiences.
 
-## Step 2: Start your Application
+Hiking Playlists
+Curated playlists matching trail ambiance enhance the immersive experience of virtual hiking.
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+Events & Challenges
+Participate in special events, such as through hikes, to earn limited edition badges.
 
-### For Android
+Leaderboards
+Prestige Leaderboard: Showcase users with the highest prestige levels globally.
+Park-Level Leaderboard: Highlight users with the highest lifetime park levels.
+Add-Ons
+Trail Tasks will introduce a store for purchasing session add-ons with trail tokens. These include:
 
-```bash
-# using npm
-npm run android
+Hiking Poles:
 
-# OR using Yarn
-yarn android
-```
+Enhanced Break Reward
+Extended Pace Bonus Duration
+Penalty Reduction
+Energy Bars:
 
-### For iOS
+Temporary Pace Boost
+Double Break Reward
+Trail Shoes:
 
-```bash
-# using npm
-npm run ios
+Pace Reset Buffer
+Steady Pace
+Bike:
 
-# OR using Yarn
-yarn ios
-```
+High-Speed Mode
+Extended Use
+Water Bottle:
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+Mid-Session Refill
+Cooldown Reduction
+Target Audience
+Remote Workers
+Stay productive while enjoying a virtual escape to the great outdoors.
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+Outdoor Enthusiasts
+Satisfy your need for adventure during busy workdays.
 
-## Step 3: Modifying your App
+Productivity Seekers
+Enhance your workflow with Trail Tasks’ gamified approach.
 
-Now that you have successfully run the app, let's modify it.
+Gamification Fans
+Turn everyday tasks into a rewarding game.
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+Health & Wellness Advocates
+Achieve balance by integrating movement and mindfulness into your workday.
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+Monetization & Subscription Model
+Trail Tasks offers:
 
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Free Tier: Access select trails, track basic stats, and participate in community events.
+Premium Subscription: Access all trails, advanced stats, exclusive events, and special add-ons.
+Trail Tasks isn’t just an app—it’s a revolution in how we approach productivity and wellness. By combining the best of nature with cutting-edge technology, Trail Tasks is set to redefine the way we work, play, and stay connected to the world around us.
