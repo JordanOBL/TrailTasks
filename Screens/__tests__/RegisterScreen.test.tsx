@@ -26,7 +26,8 @@ describe('Register',()=>{
 		await watermelonDatabase.write(async () => {
 			await watermelonDatabase.unsafeResetDatabase();
 		})
-
+//bootsrap initall data from masterdb to local
+		await sync(watermelonDatabase, true);
 		await pool.query('TRUNCATE TABLE users CASCADE');
 
 		jest.clearAllMocks();
@@ -40,9 +41,6 @@ describe('Register',()=>{
 
 
 	test('registers new user and logs in', async ()=>{
-		//bootsrap initall data from masterdb to local
-		await sync(watermelonDatabase, true);
-
 		//assert no users in DB
 		await waitFor(async () => {
 			const users = await watermelonDatabase.collections.get('users').query().fetch()

@@ -11,6 +11,7 @@ import React from "react";
 import handleError from "../helpers/ErrorHandler";
 import formatDateTime from "../helpers/formatDateTime";
 import Config from "react-native-config";
+import {ExistingUserResponse} from "../types/api";
 //checkExistingUser checks for a user in the local database
 export const checkLocalUserExists = async (
 	email: string,
@@ -18,12 +19,12 @@ export const checkLocalUserExists = async (
 	watermelonDatabase: Database
 ) => {
 	try {
-		const existingUser: User[] | any = await watermelonDatabase
+		const [ existingUser ]: User[] | any = await watermelonDatabase
 			.get('users')
 			.query(Q.and(Q.where('email', email), Q.where('password', password)))
 			.fetch();
 
-		return existingUser[0];
+		return existingUser;
 	} catch (err) {
 		handleError(err, "checkLocalUserExists");
 	}
@@ -36,8 +37,7 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
-		console.log(`http://${Config.DATABASE_URL}/api/users`, { email, password });
-		const response = await fetch(`http://${Config.DATABASE_URL}/api/users`, {
+		const response: ExistingUserResponseSuccess | ExistingUserResponseFail = await fetch(`http://${Config.DATABASE_URL}/api/users`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -53,7 +53,6 @@ export const checkGlobalUserExists = async (
 			throw new Error('Network response was not ok');
 		}
 		const responseJson = await response.json();
-		console.log('user from checkGlobalUserExists', responseJson);
 		return responseJson || null;
 	} catch (err) {
 		handleError(err, "checkGlobalUserExists");
@@ -243,25 +242,14 @@ export const checkForLoggedInUser = async (
 };
 
 //saveUserToLocalDB saves user and related data to local database
-export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Database) {
+export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSuccess, watermelonDatabase: Database) {
 	try
 {
 		if (remoteUser && remoteUser.user)
-	{
 			// Save the user and related data to local database
-			console.debug('existing user', remoteUser);
 			await watermelonDatabase.write(async () => {
 				// Create user
-				console.debug('Creating new user:', remoteUser.user);
-				console.debug('Creating new session:', remoteUser.userSessions);
-				console.debug('Creating purchased trails:', remoteUser.userPurchasedTrails);
-				console.debug('Creating subscription:', remoteUser.userSubscription);
-				console.debug('Creating achievements:', remoteUser.userAchievements);
-				console.debug('Creating completed trails:', remoteUser.usersCompletedTrails);
-				console.debug('Creating user Parks:', remoteUser.userParks);
-				console.debug('Creating users addons:', remoteUser.userAddons);
-
-				// @ts-ignore
+						// @ts-ignore
 				const newUser =  watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
 					newUser._raw.id = remoteUser.user.id;
 					newUser.firstName = remoteUser.user.first_name;
@@ -279,7 +267,6 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 					newUser.totalMiles = remoteUser.user.total_miles;
 					newUser.prestigeLevel = remoteUser.user.prestige_level;
 				})
-				console.debug('newUser', newUser)
 
 				const userSessions = [...remoteUser.userSessions].map((session: User_Session) =>
 					// @ts-ignore
@@ -404,18 +391,8 @@ export async function saveUserToLocalDB(remoteUser: any, watermelonDatabase: Dat
 					})
 				})
 
-				
-				console.debug('attempting to writebatch of new user from master DB')
 				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...userCompletedTrails, ...userParks, ...userAddons]);
-				console.debug('batch write done...')
 			});
-
-			// Retrieve the newly created user from the database
-			console.debug('retrieving new user from DB')
-			remoteUser = await checkExistingUser(email, password, watermelonDatabase);
-			console.debug('Retrieved new user: ' + remoteUser);
-			//await sync(watermelonDatabase, remoteUser.id);
-		}
 	} catch (err) {
 		handleError(err, "saveUserToLocalDB")
 	}

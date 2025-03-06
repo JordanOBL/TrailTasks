@@ -7,6 +7,7 @@ import {
     StyleSheet,
     Text,
     View,
+    SafeAreaView,
 } from 'react-native';
 import {
     Subscription,
@@ -128,30 +129,30 @@ const HomeScreen: React.FC<Props> = ({
             <Text style={styles.loadingText}>Loading Your Data...</Text>
         </View>
     ) : (
-        <View testID="homescreen" style={styles.container}>
-            {/* <SyncIndicator delay={3000} /> */}
-            {<TutorialModal  visible={showTutorial} onClose={handleTutorialClose} />}
+            <SafeAreaView testID="homescreen" style={styles.container}>
+                {/* <SyncIndicator delay={3000} /> */}
+                <TutorialModal  visible={showTutorial} onClose={handleTutorialClose} />
 
-            <View
-                style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                }}>
-                <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
-                <Text style={styles.onlineStatus}>
-                    {isConnected ? 'Online' : 'Offline'}
-                </Text>
-                <Text style={styles.dailyStreak}>
-                    Daily Streak: {user?.dailyStreak}
-                </Text>
-            </View>
-<View style={{height: 200}}>
-            <Carousel
-                loop
-                pagingEnabled={true}
-                snapEnabled={true}
-                width={width}
+                <View
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                    }}>
+                    <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
+                    <Text style={styles.onlineStatus}>
+                        {isConnected ? 'Online' : 'Offline'}
+                    </Text>
+                    <Text style={styles.dailyStreak}>
+                        Daily Streak: {user?.dailyStreak}
+                    </Text>
+                </View>
+                <View style={{height: 200}}>
+                    <Carousel
+                        loop
+                        pagingEnabled={true}
+                        snapEnabled={true}
+                        width={width}
                 height={width / 2}
                 autoPlay={false}
                 data={[...new Array(2).keys()]}
@@ -294,7 +295,7 @@ const HomeScreen: React.FC<Props> = ({
                     <Text style={styles.logoutButtonText}>Logout</Text>
                 </Pressable>
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 };
 

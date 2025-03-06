@@ -1,5 +1,6 @@
 import {Button, Modal, StyleSheet, Text, View} from 'react-native';
 import React, {useState} from 'react';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 // @ts-ignore
 const TutorialModal = ({visible, onClose}) => {
@@ -56,7 +57,9 @@ const TutorialModal = ({visible, onClose}) => {
   };
 
   return (
-    <Modal testID="tutorial-modal" visible={visible} animationType="slide" transparent={true}>
+  <SafeAreaProvider>
+    <SafeAreaView style={styles.modalContainer}>
+    <Modal visible={visible} animationType="slide" transparent={true} >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.stepText}>
@@ -73,9 +76,10 @@ const TutorialModal = ({visible, onClose}) => {
             color="rgb(41,184,169)"
           />
         </View>
-        
       </View>
     </Modal>
+  </SafeAreaView>
+  </SafeAreaProvider>
   );
 };
 
