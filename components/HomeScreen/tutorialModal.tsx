@@ -57,7 +57,7 @@ const TutorialModal = ({visible, onClose}) => {
   };
 
   return (
-  <SafeAreaProvider>
+  <SafeAreaProvider testID="tutorial-modal">
     <SafeAreaView style={styles.modalContainer}>
     <Modal visible={visible} animationType="slide" transparent={true} >
       <View style={styles.modalContainer}>

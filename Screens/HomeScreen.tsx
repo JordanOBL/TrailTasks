@@ -268,16 +268,6 @@ const HomeScreen: React.FC<Props> = ({
                     }>
                     Leaderboards
                 </ScreenLink>
-                {/*<ScreenLink*/}
-                {/*    user={user}*/}
-                {/*    navigation={navigation}*/}
-                {/*    navTo={'CompletedHikes'}*/}
-                {/*    needsActiveSubscription={true}*/}
-                {/*    hasActiveSubscription={*/}
-                {/*       true*/}
-                {/*    }>*/}
-                {/*    Completed Trails*/}
-                {/*</ScreenLink>*/}
                 <ScreenLink
                         user={user}
                     navigation={navigation}
@@ -290,7 +280,7 @@ const HomeScreen: React.FC<Props> = ({
                 </ScreenLink>
 
                 <Pressable
-                    onPress={async () => logout()}
+                    onPress={() => logout()}
                     style={styles.logoutButton}>
                     <Text style={styles.logoutButtonText}>Logout</Text>
                 </Pressable>
@@ -345,7 +335,7 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         paddingRight: 20,
     },
-    rankContainer: {
+    rankContainer: { borderWidth: 1,
         alignItems: 'center',
     },
     rankImage: {
@@ -390,7 +380,7 @@ const styles = StyleSheet.create({
         color: 'rgb(7, 254, 213)',
         fontSize: 12,
     },
-    paginationDotsContainer: {
+    paginationDotsContainer: { borderWidth: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -419,8 +409,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgb(31, 33, 35)',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'rgb(221, 224, 226)',
-        fontWeight: '900',
         marginBottom: 10,
         padding: 20,
     },

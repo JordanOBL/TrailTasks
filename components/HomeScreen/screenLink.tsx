@@ -1,4 +1,4 @@
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, TouchableOpacity, StyleSheet, Text, View} from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import React from 'react';
@@ -22,7 +22,7 @@ const ScreenLink = ({
 }: Props) => {
   return (
     
-    <Pressable
+    <TouchableOpacity
       style={styles.LinkContainer}
       onPress={() =>
         !needsActiveSubscription
@@ -55,7 +55,7 @@ const ScreenLink = ({
           ? ' - Pro '
           : ''}
       </Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

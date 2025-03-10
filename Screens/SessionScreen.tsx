@@ -27,12 +27,14 @@ interface Props {
   setUser: any;
   currentTrail: Trail;
   userAchievements: User_Achievement[];
+  initialSessionDetails?: SessionDetails;
 }
 const SessionScreen = ({
   user,
   setUser,
   currentTrail,
   userAchievements,
+  initialSessionDetails,
 }:
   Props) =>
 {
@@ -49,7 +51,7 @@ const SessionScreen = ({
   const [sessionCategories, setSessionCategories] = React.useState<
     Session_Category[] | []
   >([]);
-  const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>({
+  const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>(initialSessionDetails || {
     startTime: null,
     sessionName: '',
     sessionDescription: '',
@@ -174,7 +176,7 @@ const SessionScreen = ({
   }, [sessionDetails.sessionCategoryId]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="session-screen">
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
       ) : !sessionDetails.startTime && !timer.isRunning ? (

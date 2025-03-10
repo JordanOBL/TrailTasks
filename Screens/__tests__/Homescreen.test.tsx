@@ -13,7 +13,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 const Stack = createStackNavigator();
 
-describe('LoginScreen', () => {
+describe('HomeScreen', () => {
 	const mockUser = createMockUserBase();
 	const mockTrail = { id: '1', trailName: 'Mock Trail 1' };
 	let testUser
@@ -46,12 +46,6 @@ describe('LoginScreen', () => {
 			return newUser;
 
 		});
-
-
-
-
-
-
 
 		// Wait for the sync to complete by ensuring trails are loaded
 		await waitFor(
@@ -109,7 +103,7 @@ describe('LoginScreen', () => {
 		
 		await waitFor(()=>{
 
-			expect(getByTestId('tutorial-modal')).toBeTruthy();
+			expect(getByTestId('tutorial-modal')).toBeOnTheScreen();
 		})
 
 	})
@@ -139,7 +133,7 @@ describe('LoginScreen', () => {
 
 		
 		await waitFor(() => {
-			expect(queryByTestId("tutorial-modal")).toBeNull()
+			expect(queryByTestId("tutorial-modal")).not.toBeOnTheScreen();
 		})
 
 	})

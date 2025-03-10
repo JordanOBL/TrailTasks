@@ -20,6 +20,7 @@ const SettingsModal = ({
             transparent={true}
             visible={isSettingsModalVisible}
             onRequestClose={() => setIsSettingsModalVisible(false)}
+            testID="settings-modal"
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
@@ -29,6 +30,7 @@ const SettingsModal = ({
                         <View style={styles.fieldContainer}>
                             <Text style={styles.label}>Session Title</Text>
                             <TextInput
+                                testID="session-name-input"
                                 value={sessionDetails.sessionName}
                                 style={styles.input}
                                 onChangeText={(value) => NewSessionHandlers.SessionNameChange({ setSessionDetails, value })}
@@ -41,6 +43,8 @@ const SettingsModal = ({
                         <View style={styles.fieldContainer}>
                             <Text style={styles.label}>Category</Text>
                             <Dropdown
+                                testID="session-category-dropdown"
+                                itemTestIDField="category-dropdown-selection"
                                 style={styles.dropdown}
                                 data={sessionCategories}
                                 labelField="sessionCategoryName"
@@ -65,6 +69,7 @@ const SettingsModal = ({
                             <View style={styles.column}>
                                 <Text style={styles.label}>Focus Time</Text>
                                 <Dropdown
+                                    testID="focus-time-dropdown"
                                     style={styles.dropdown}
                                     data={timeOptions}
                                     labelField="label"
@@ -81,6 +86,7 @@ const SettingsModal = ({
                             <View style={styles.column}>
                                 <Text style={styles.label}>Short Break</Text>
                                 <Dropdown
+                                    testID="short-break-dropdown"
                                     style={styles.dropdown}
                                     data={timeOptions}
                                     labelField="label"
@@ -97,6 +103,7 @@ const SettingsModal = ({
                             <View style={styles.column}>
                                 <Text style={styles.label}>Long Break</Text>
                                 <Dropdown
+                                    testID="long-break-dropdown"
                                     style={styles.dropdown}
                                     data={timeOptions}
                                     labelField="label"
@@ -117,6 +124,7 @@ const SettingsModal = ({
                             <View style={styles.column}>
                                 <Text style={styles.label}>Sets</Text>
                                 <TextInput
+                                    testID="sets-input"
                                     value={String(timer.sets)}
                                     onChangeText={(value) =>
                                         setTimer((prev) => ({ ...prev, sets: parseInt(value, 10) || 1 }))
@@ -129,6 +137,7 @@ const SettingsModal = ({
                             <View style={styles.column}>
                                 <Text style={styles.label}>Auto-Continue</Text>
                                 <Switch
+                                    testID="auto-continue-switch"
                                     trackColor={{ false: '#767577', true: '#81b0ff' }}
                                     thumbColor={timer.autoContinue ? '#f5dd4b' : '#f4f3f4'}
                                     ios_backgroundColor="#3e3e3e"
@@ -142,7 +151,7 @@ const SettingsModal = ({
                     </ScrollView>
 
                     {/* Save and Close */}
-                    <Pressable style={styles.saveButton} onPress={() => setIsSettingsModalVisible(false)}>
+                    <Pressable testID="save-and-close-button" style={styles.saveButton} onPress={() => setIsSettingsModalVisible(false)}>
                         <Text style={styles.buttonText}>Save & Close</Text>
                     </Pressable>
                 </View>

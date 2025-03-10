@@ -119,11 +119,11 @@ const NewSessionOptions = ({
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} testID="new-session-options">
             {/* Session Name */}
             <View style={styles.header}>
-                <Text style={styles.sessionName}>{sessionDetails.sessionName}</Text>
-                <Text style={styles.sessionCategory}>{sessionCategories.filter(item => item.id === sessionDetails.sessionCategoryId)[0]?.sessionCategoryName  || ""}</Text>
+                <Text testID="session-name-display" style={styles.sessionName}>{sessionDetails.sessionName}</Text>
+                <Text testID="session-category-display" style={styles.sessionCategory}>{sessionCategories.filter(item => item.id === sessionDetails.sessionCategoryId)[0]?.sessionCategoryName  || ""}</Text>
 
             </View>
             <View style={styles.timerContainer}>
@@ -149,6 +149,7 @@ const NewSessionOptions = ({
                     mode="contained"
                     onPress={() => setIsSettingsModalVisible(true)}
                     style={styles.button}
+                    testID="settings-modal-button"
                 >
                     Settings
                 </Button>
@@ -168,6 +169,7 @@ const NewSessionOptions = ({
                 </View>
 
                 <Pressable
+                    testID="start-session-button"
                     onPress={startSession}
                     style={[
                         styles.startBtn,
