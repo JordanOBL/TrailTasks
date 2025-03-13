@@ -106,10 +106,7 @@ describe('New Session Handlers checkLocalStorageSessionSettings()',() => {
     );
 
     const results = await NewSessionHandlers.checkLocalStorageSessionSettings({sessionCategoryId:'1', database: watermelonDatabase})
-    console.log('results', results)
-
     await waitFor(() => {
-
       expect(results.sessionCategoryId).toBe('1')
     })
 

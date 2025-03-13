@@ -19,8 +19,8 @@ import {withObservables} from "@nozbe/watermelondb/react";
 import {useAuthContext} from "../services/AuthContext";
 
 // @ts-ignore
-const TrailDetailScreen = ({ route, navigation, trail, userPurchasedTrails, completedTrails }) => {
-    const {user} = useAuthContext();
+const TrailDetailScreen = ({ route,user, navigation}) => {
+    const {trail, userPurchasedTrails, completedTrails} = route.params;
     const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
     const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -30,7 +30,7 @@ const TrailDetailScreen = ({ route, navigation, trail, userPurchasedTrails, comp
     const [isCompleted, setIsCompleted] = useState(false);
 
     useEffect(() => {
-        
+        console.debug("props trail:",trail)
         if (trail && userPurchasedTrails && completedTrails) {
             setIsFreeTrail(trail.is_free);
             setIsPurchased(userPurchasedTrails?.some((purchasedTrail: User_Purchased_Trail) => purchasedTrail.trailId == trail.id));
@@ -90,7 +90,7 @@ const TrailDetailScreen = ({ route, navigation, trail, userPurchasedTrails, comp
     const buttonText = getButtonText();
 
     if (!trail) {
-        return <Text>Loading...</Text>;
+        return <Text style={{color: 'red'}}>Loading...</Text>;
     }
 
     if (errorMessage) {

@@ -18,7 +18,7 @@ const ExploreStackNavigator = () => {
             </ExploreStack.Screen>
             <ExploreStack.Screen
                 name="TrailDetails"
-                options={{ headerShown: false, presentation: 'modal', unmountOnBlur: false }} 
+                options={{ headerShown: false, presentation: 'modal', unmountOnBlur: true }} 
             >
                 {(props) => <EnhancedTrailDetailScreen user={user} {...props}  />}
             </ExploreStack.Screen>

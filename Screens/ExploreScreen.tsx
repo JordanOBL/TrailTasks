@@ -57,12 +57,13 @@ const ExploreScreen = ({
           if (fullTrailRecords.length === 0) {
             setErrorMessage("Error Getting trails, try again later!");
           } else {
+        console.debug("fullTrailRecords", fullTrailRecords);
             setTrailsCollection(fullTrailRecords);
           }
         } catch (err) {
           handleError(err, "getFullTrailInfo");
         }
-      }, [userPurchasedTrails, user, ]);
+      }, [userPurchasedTrails, user ]);
 
 
 useFocusEffect(
@@ -74,7 +75,7 @@ useFocusEffect(
   if (!trailsCollection) {
     return (
       <SafeAreaView>
-        <Text style={{color: 'red'}}>Loading...</Text>
+        <Text style={{color: 'blue'}}>Loading...</Text>
       </SafeAreaView>
     );
   }

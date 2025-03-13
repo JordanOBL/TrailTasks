@@ -70,6 +70,8 @@ const ActiveSession = ({
 	const watermelonDatabase = useDatabase();
 	const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);
 	const [appState, setAppState] = useState(AppState.currentState);
+
+	const [sessionCompletedTrails, setSessionCompletedTrails] = useState<User_Completed_Trail[]>([]);
 	const onAchievementEarned = useCallback(
 		(achievements: Achievement[]) => {
 			setEarnedAchievements((prevAchievements) => [
@@ -81,7 +83,7 @@ const ActiveSession = ({
 	);
 
 	const addCompletedTrail = ({ trail }: { trail: Trail }) => {
-		setCompletedTrails((prevCompletedTrails) => [...prevCompletedTrails, trail]);
+		setSessionCompletedTrails((prevSessionCompletedTrails) => [...prevSessionCompletedTrails, trail]);
 	};
 
 	const onCompletedTrail = useCallback(
@@ -333,7 +335,7 @@ const ActiveSession = ({
 						<StatBox label="Strikes" value={sessionDetails.strikes} />
 						<StatBox label="Reward" value={sessionDetails.trailTokensEarned + sessionDetails.sessionTokensEarned} />
 						<StatBox label="Achievements" value={earnedAchievements.length} />
-						<StatBox label="Trails" value={completedTrails.length} />
+						<StatBox label="Trails" value={sessionCompletedTrails.length} />
 					</View>
 				</View>
 			</ScrollView>
