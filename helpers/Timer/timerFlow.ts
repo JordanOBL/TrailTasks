@@ -291,8 +291,6 @@ export async function endSession({
   try {
     //check daily streak
     // @ts-ignore
-    console.debug("sessionDetails", sessionDetails)
-    console.debug("endSession checking daily streak")
     await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
     resetTimerState(setTimer)

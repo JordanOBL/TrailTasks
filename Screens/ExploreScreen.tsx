@@ -57,7 +57,6 @@ const ExploreScreen = ({
           if (fullTrailRecords.length === 0) {
             setErrorMessage("Error Getting trails, try again later!");
           } else {
-        console.debug("fullTrailRecords", fullTrailRecords);
             setTrailsCollection(fullTrailRecords);
           }
         } catch (err) {

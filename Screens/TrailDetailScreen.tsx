@@ -30,7 +30,6 @@ const TrailDetailScreen = ({ route,user, navigation}) => {
     const [isCompleted, setIsCompleted] = useState(false);
 
     useEffect(() => {
-        console.debug("props trail:",trail)
         if (trail && userPurchasedTrails && completedTrails) {
             setIsFreeTrail(trail.is_free);
             setIsPurchased(userPurchasedTrails?.some((purchasedTrail: User_Purchased_Trail) => purchasedTrail.trailId == trail.id));

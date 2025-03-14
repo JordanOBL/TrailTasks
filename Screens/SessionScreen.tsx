@@ -95,7 +95,6 @@ const SessionScreen = ({
   })
   async function handleEndSession () {
 		try {
-      console.debug('handleEndSession');
 			await endSession({ user, setTimer, setSessionDetails, sessionDetails });
       setShowResultsScreen(false);
 		} catch (err) {
@@ -104,7 +103,6 @@ const SessionScreen = ({
 	};
 
   async function handleShowResultsScreen() {
-    console.debug('handleShowResultsScreen');
     const sessionTokensReward = await Rewards.calculateSessionTokens({setSessionDetails, sessionDetails, timer})
     await Rewards.rewardFinalTokens( {sessionDetails, sessionTokensReward, user} )
     setShowResultsScreen(true);
