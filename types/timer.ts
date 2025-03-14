@@ -11,7 +11,8 @@ type Timer = {
   sets: number,
   completedSets: number,
   pace: number,
-  autoContinue: boolean
+  autoContinue: boolean,
+  elapsedTime: number
 }
 
 export default Timer

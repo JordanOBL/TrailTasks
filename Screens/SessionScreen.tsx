@@ -21,8 +21,10 @@ import { useKeepAwake } from '@sayem314/react-native-keep-awake';
 import {useNavigation} from '@react-navigation/native';
 import {withObservables} from '@nozbe/watermelondb/react';
 import {endSession} from '../helpers/Timer/timerFlow';
+import { useInternetConnection  } from '../hooks/useInternetConnection';
 import Rewards from '../helpers/Session/Rewards';
 import SoloResultsScreen from './SoloResultsScreen';
+import {sync} from '../watermelon/sync';
 interface Props {
   user: User;
   setUser: any;
@@ -41,6 +43,8 @@ const SessionScreen = ({
 {
 
   useKeepAwake();
+
+  const {isConnected} = useInternetConnection();
   //@ts-ignore
   const navigation = useNavigation();
   const watermelonDatabase = useDatabase();
@@ -90,17 +94,19 @@ const SessionScreen = ({
     sets: 3,
     completedSets: 0,
     pace: 2,
-    autoContinue: false
+    autoContinue: false,
+    elapsedTime: 0
 
   })
   async function handleEndSession () {
-		try {
-			await endSession({ user, setTimer, setSessionDetails, sessionDetails });
+    try {
+      await endSession({ user, setTimer, setSessionDetails, sessionDetails });
+      await sync(watermelonDatabase, isConnected, user.id);
       setShowResultsScreen(false);
-		} catch (err) {
-			handleError(err, 'onEndSession');
-		}
-	};
+    } catch (err) {
+      handleError(err, 'onEndSession');
+    }
+  };
 
   async function handleShowResultsScreen() {
     const sessionTokensReward = await Rewards.calculateSessionTokens({setSessionDetails, sessionDetails, timer})
@@ -216,7 +222,6 @@ const SessionScreen = ({
           userSession={userSession}
           currentSessionCategory={currentSessionCategory}
           user={user}
-          endSession={handleEndSession}
           showResultsScreen={handleShowResultsScreen}
         />
       )}

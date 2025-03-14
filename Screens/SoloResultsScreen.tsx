@@ -4,21 +4,21 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native
 const SoloResultsScreen = ({ sessionDetails, user,timer, endSession }) => {
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="session-results-screen">
       <Text style={styles.title}>Session Results</Text>
 
       <View style={styles.sessionSummary}>
-        <Text style={styles.summaryText}>Total Distance: <Text style={styles.value}>{sessionDetails.totalDistanceHiked.toFixed(2)} miles</Text></Text>
-        <Text style={styles.summaryText}>Sets Completed: <Text style={styles.value}>{timer.completedSets}</Text></Text>
+        <Text style={styles.summaryText}>Total Distance: <Text testID="total-distance-text" style={styles.value}>{sessionDetails.totalDistanceHiked.toFixed(2)} miles</Text></Text>
+        <Text style={styles.summaryText}>Sets Completed: <Text testID="sets-completed-text" style={styles.value}>{timer.completedSets}</Text></Text>
       </View>
 
       <Text style={styles.title}>Rewards</Text>
       <View style={styles.sessionSummary}>
-        <Text style={styles.summaryText}>Trail Tokens: <Text style={styles.value}>{sessionDetails.trailTokensEarned}</Text></Text>
-        <Text style={styles.summaryText}>Session Tokens: <Text style={styles.value}>{sessionDetails.sessionTokensEarned}</Text></Text>
+        <Text style={styles.summaryText}>Trail Tokens: <Text testID="trail-tokens-earned-text" style={styles.value}>{sessionDetails.trailTokensEarned}</Text></Text>
+        <Text style={styles.summaryText} testID="session-tokens-earned-text">Session Tokens: <Text style={styles.value}>{sessionDetails.sessionTokensEarned}</Text></Text>
       </View>
 
-      <TouchableOpacity style={styles.returnButton} onPress={endSession}>
+      <TouchableOpacity style={styles.returnButton} testID="return-to-lobby-button" onPress={endSession}>
         <Text style={styles.returnButtonText}>Return to Lobby</Text>
       </TouchableOpacity>
     </View>

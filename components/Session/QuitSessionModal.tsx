@@ -5,7 +5,7 @@ const QuitSessionModal = ({ isVisible, continueSession, sessionDetails, showResu
   const unfinishedSets = sessionDetails.sets - sessionDetails.completedSets
   
   return (
-    <Modal transparent={true} visible={isVisible} animationType="fade" testId="quit-session-modal">
+    <Modal transparent={true} visible={isVisible} animationType="fade" testID="quit-session-modal">
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
           <Text style={styles.titleText}>Quit Session Early!?</Text>
@@ -13,12 +13,12 @@ const QuitSessionModal = ({ isVisible, continueSession, sessionDetails, showResu
           {( sessionDetails.completedSets < 3 ) && <View style={styles.messageContainer}>
             <Text style={styles.messageText}>You have {unfinishedSets} left to recieve session rewards. </Text>
                     </View> }
-          <TouchableOpacity style={styles.buttonEndSession} onPress={showResultsScreen}>
+          <TouchableOpacity style={styles.buttonEndSession} testID="confirm-quit-button" onPress={showResultsScreen}>
             <Text style={styles.buttonText}>Quit Session</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.buttonNewSet} onPress={continueSession}>
-            <Text style={styles.buttonText}>Cancel (Resume)</Text>
+          <TouchableOpacity testID="confirm-cancel-button" style={styles.buttonNewSet} onPress={continueSession}>
+            <Text  style={styles.buttonText}>Cancel (Resume)</Text>
           </TouchableOpacity>
         </View>
       </View>

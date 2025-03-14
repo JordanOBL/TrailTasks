@@ -1,5 +1,9 @@
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from 'react-native-reanimated';
 
 import BootSplash from 'react-native-bootsplash';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
@@ -22,6 +26,12 @@ import handleError from './helpers/ErrorHandler'; // Import the hook
 import {useAuthContext} from "./services/AuthContext";
 import {useInternetConnection} from "./hooks/useInternetConnection";
 import AuthScreen from "./Screens/AuthScreen";
+
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false, // Reanimated runs in strict mode by default
+});
 
 const App = () => {
   const watermelonDatabase = useDatabase();

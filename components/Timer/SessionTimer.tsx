@@ -27,45 +27,44 @@ const SessionTimer = ({
 }: Props) => {
   const countdown = formatCountdown(timer.time);
 
-  useEffect(() => {
-    let timerInterval: string | number | NodeJS.Timeout | undefined;
-    if (timer?.isRunning && !timer?.isPaused && !timer.isCompleted) {
-      timerInterval = setInterval(() => {
-        if (timer.time <= 0) {
-          checkTimerIsZero({timer, setTimer});
+ useEffect(() => {
+  let timerInterval: NodeJS.Timeout | undefined;
+
+  if (timer?.isRunning && !timer?.isPaused && !timer.isCompleted) {
+    timerInterval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev.time <= 0) {
+          checkTimerIsZero({ timer: prev, setTimer });
+          return prev; // Don't modify state here, let checkTimerIsZero handle it
         }
-        if (timer.time > 0 && !timer.isBreak) {
+
+        if (!prev.isBreak) {
           checkPaceIncrease({
-            timer,
+            timer: prev,
             setTimer,
             minimumPace,
             maximumPace,
             paceIncreaseInterval,
             paceIncreaseValue,
           });
+
+          return { ...prev, time: prev.time - 1, elapsedTime: prev.elapsedTime + 1 };
+        } else {
+          return { ...prev, time: prev.time - 1 };
         }
+      });
+    }, 1000);
+  }
 
-        setTimer((prev) => ({...prev, time: prev.time - 1}));
-      }, 1000);
+  return () => {
+    if (timerInterval) {
+      clearInterval(timerInterval);
     }
-
-    // Clear the interval when the component unmounts or dependencies change
-    return () => clearInterval(timerInterval);
-  }, [
-    timer.time,
-    timer.isCompleted,
-    timer?.isRunning,
-    timer?.isPaused,
-    minimumPace,
-    maximumPace,
-    paceIncreaseInterval,
-    paceIncreaseValue,
-    timer,
-    setTimer,
-  ]);
+  };
+}, [timer?.isRunning, timer?.isPaused, timer?.isCompleted, minimumPace, maximumPace, paceIncreaseInterval, paceIncreaseValue]);
 
   return (
-    <View style={styles.timerContainer}>
+    <View style={styles.timerContainer} testID="timer-display">
       <Text
         style={[
           styles.timerText,
@@ -77,6 +76,7 @@ const SessionTimer = ({
           ? 'Completed'
           : countdown}
       </Text>
+      <Text style={{color: '#D3E5EB'}}>{formatCountdown(timer.elapsedTime)}</Text>
     </View>
   );
 };

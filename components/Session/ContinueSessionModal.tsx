@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const ContinueSessionModal = ({ isVisible, onEndSession, onAddSession, onAddSet, focusTime }) => {
+const ContinueSessionModal = ({ isVisible, showResultsScreen, onAddSession, onAddSet, focusTime }) => {
   const extraSetReward = Math.ceil( (focusTime/60) * .25 )
   const extraSessionReward = Math.ceil( ( ( focusTime/60 ) * 1.5  ) + (focusTime/60))
   return (
@@ -11,7 +11,7 @@ const ContinueSessionModal = ({ isVisible, onEndSession, onAddSession, onAddSet,
           <Text style={styles.titleText}>Great Job Finishing Your Sets!</Text>
 
           <View style={styles.messageContainer}>
-            <Text style={styles.messageText}>You've completed all 3 sets.</Text>
+            <Text style={styles.messageText}>You've completed all sets.</Text>
             <Text style={styles.messageText}>What would you like to do next?</Text>
           </View>
 
@@ -25,7 +25,7 @@ const ContinueSessionModal = ({ isVisible, onEndSession, onAddSession, onAddSet,
             <Text style={styles.buttonRewardText}>{ `Extra Tokens: +${extraSessionReward}` } </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.buttonEndSession} onPress={onEndSession}>
+          <TouchableOpacity style={styles.buttonEndSession} onPress={showResultsScreen}>
             <Text style={styles.buttonText}>End Session</Text>
           </TouchableOpacity>
 

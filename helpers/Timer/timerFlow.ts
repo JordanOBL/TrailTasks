@@ -204,7 +204,8 @@ function resetTimerState(setTimer: React.Dispatch<React.SetStateAction<Timer>>) 
       pace: 2,
       autoContinue: false,
       startTime: null,
-      isCompleted: false
+      isCompleted: false,
+      elapsedTime: 0
     };
   });
 
@@ -281,6 +282,7 @@ export async function endSession({
   setTimer,
   sessionDetails,
   setSessionDetails,
+
 }:
   {
     user: User;
@@ -294,6 +296,7 @@ export async function endSession({
     await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
     resetTimerState(setTimer)
+    
   } catch (err: any) {
     handleError(err, "endSession");
     setSessionDetails((prev) => {

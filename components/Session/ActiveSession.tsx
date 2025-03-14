@@ -220,9 +220,9 @@ const ActiveSession = ({
 		if (timer.isCompleted) {
 			endSessionTimeout = setTimeout(() => {
 				if (timer.autoContinue) {
-					onAddSession().then(r => {});
+					onAddSession();
 				} else {
-					onEndSession();
+					endSession();
 				}
 			}, 60000); // 1 minute for modal countdown
 		}
@@ -296,6 +296,7 @@ const ActiveSession = ({
 					onAddSession={onAddSession}
 					onAddSet={onAddSet}
 					focusTime={timer.focusTime}
+					endSession={endSession}
 				/>
 
 				<SessionTimer
@@ -308,12 +309,13 @@ const ActiveSession = ({
 				/>
 				<View style={styles.buttonsContainer}>
 					{/* Stop Button */}
-					<Pressable onPress={handleShowQuitSessionModal} style={[styles.button, styles.endSessionButton]}>
+					<Pressable onPress={handleShowQuitSessionModal} testID="stop-button" style={[styles.button, styles.endSessionButton]}>
 						<Icon name="square" size={28} color="white" />
 					</Pressable>
 
 					{/* Pause/Resume Button (conditionally rendered icon) */}
 					<Pressable
+						testID="pause-resume-button"
 						onPress={() =>
 							timer.isPaused
 								? resumeSession(setTimer)
@@ -329,13 +331,13 @@ const ActiveSession = ({
 					</Pressable>
 					{/* Skip Break Button (conditionally rendered) */}
 					{timer.isBreak && (
-						<Pressable onPress={() => skipBreak({ timer, setTimer })} style={[styles.button, styles.skipBreakButton]}>
+						<Pressable testID="skip-break-button" onPress={() => skipBreak({ timer, setTimer })} style={[styles.button, styles.skipBreakButton]}>
 							<Icon name="play-skip-forward" size={28} color="white" />
 						</Pressable>
 					)}
 				</View>
 				<View style={styles.trailNameContainer}>
-					<Text style={styles.trailName}>{currentTrail.trailName}</Text>
+					<Text style={styles.trailName} testID="current-trail-name">{currentTrail.trailName}</Text>
 					<EnhancedDistanceProgressBar
 						timer={timer}
 						sessionDetails={sessionDetails}
@@ -348,10 +350,10 @@ const ActiveSession = ({
 					<View style={styles.statsGrid}>
 						<StatBox label="Pace" value={`${timer.pace} mph`} />
 						<StatBox label="Sets" value={`${timer.completedSets} / ${timer.sets}`} />
-						<StatBox label="Strikes" value={sessionDetails.strikes} />
+						<StatBox  label="Strikes" value={sessionDetails.strikes} />
 						<StatBox label="Reward" value={sessionDetails.trailTokensEarned + sessionDetails.sessionTokensEarned} />
-						<StatBox label="Achievements" value={earnedAchievements.length} />
-						<StatBox label="Trails" value={sessionCompletedTrails.length} />
+						<StatBox  label="Achievements" value={earnedAchievements.length} />
+						<StatBox  label="Trails" value={sessionCompletedTrails.length} />
 					</View>
 				</View>
 			</ScrollView>
@@ -362,7 +364,7 @@ const ActiveSession = ({
 const StatBox = ({ label, value }) => (
 	<View style={styles.infoBox}>
 		<Text style={styles.infoLabel}>{label}</Text>
-		<Text style={styles.infoValue}>{value}</Text>
+		<Text testID={label.toLowerCase()} style={styles.infoValue}>{value}</Text>
 	</View>
 );
 
