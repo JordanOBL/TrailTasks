@@ -42,7 +42,7 @@ const timer = {
       completedHike: false,
       strikes: 0,
       penaltyValue: 1,
-      endSessionModal: false,
+      continueSessionModal: false,
       totalDistanceHiked: 0.0,
       totalTokenBonus: 0,
       trailTokensEarned:0,

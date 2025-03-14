@@ -23,6 +23,7 @@ import {
 	Text,
 	View,
 } from 'react-native';
+import ContinueSessionModal from './ContinueSessionModal';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ActiveSessionBackpack from './ActiveSessionBackpack';
 import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
@@ -34,7 +35,7 @@ import { useDatabase } from '@nozbe/watermelondb/react';
 import {withObservables} from '@nozbe/watermelondb/react';
 import SessionTimer from '../Timer/SessionTimer';
 import NextHundredthMileSeconds from '../../helpers/Timer/nextHundredthMileSeconds';
-import EndSessionModal from '../Session/EndSessionModal';
+import QuitSessionModal from './QuitSessionModal';
 import Rewards from '../../helpers/Session/Rewards';
 import handleError from '../../helpers/ErrorHandler';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -52,6 +53,8 @@ interface Props {
 	completedTrails: User_Completed_Trail[];
 	achievementsWithCompletion: AchievementsWithCompletion[];
 	currentSessionCategory: string;
+	showResultsScreen: boolean;
+	endSession: () => void;
 }
 
 const ActiveSession = ({
@@ -66,11 +69,13 @@ const ActiveSession = ({
 	completedTrails,
 	achievementsWithCompletion,
 	currentSessionCategory,
+	endSession,
+	showResultsScreen,
 }: Props) => {
 	const watermelonDatabase = useDatabase();
 	const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);
 	const [appState, setAppState] = useState(AppState.currentState);
-
+	const [showQuitSessionModal, setShowQuitSessionModal] = useState(false);
 	const [sessionCompletedTrails, setSessionCompletedTrails] = useState<User_Completed_Trail[]>([]);
 	const onAchievementEarned = useCallback(
 		(achievements: Achievement[]) => {
@@ -145,13 +150,19 @@ const ActiveSession = ({
 		}
 	}, [achievementsWithCompletion]);
 
-	const onEndSession = async () => {
-		try {
-			await endSession({ user, timer, setTimer, setSessionDetails, sessionDetails });
-		} catch (err) {
-			handleError(err, 'onEndSession');
-		}
-	};
+	async function handleShowQuitSessionModal() {
+		await pauseSession(timer, setTimer, sessionDetails, setSessionDetails)
+
+		await Rewards.calculateSessionTokens({setSessionDetails,sessionDetails, timer})
+		setShowQuitSessionModal(true)
+	}
+
+	async function handleContinueSession(){
+		await resumeSession(setTimer)
+		setShowQuitSessionModal(false)
+	}
+
+
 
 	const onAddSession = async () => {
 		try {
@@ -273,13 +284,20 @@ const ActiveSession = ({
 	return (
 		<SafeAreaView style={styles.container} testID="active-session-screen">
 			<ScrollView style={{ paddingBottom: 80 }}>
-				<EndSessionModal
+				<QuitSessionModal
+					isVisible={showQuitSessionModal}
+					showResultsScreen={showResultsScreen}
+					continueSession={handleContinueSession}
+					sessionDetails={sessionDetails}
+					/>
+				<ContinueSessionModal
 					isVisible={timer.isCompleted}
-					onEndSession={onEndSession}
+					showResultsScreen={showResultsScreen}
 					onAddSession={onAddSession}
 					onAddSet={onAddSet}
 					focusTime={timer.focusTime}
 				/>
+
 				<SessionTimer
 					timer={timer}
 					setTimer={setTimer}
@@ -290,11 +308,9 @@ const ActiveSession = ({
 				/>
 				<View style={styles.buttonsContainer}>
 					{/* Stop Button */}
-					<Pressable onPress={onEndSession} style={[styles.button, styles.endSessionButton]}>
+					<Pressable onPress={handleShowQuitSessionModal} style={[styles.button, styles.endSessionButton]}>
 						<Icon name="square" size={28} color="white" />
 					</Pressable>
-
-
 
 					{/* Pause/Resume Button (conditionally rendered icon) */}
 					<Pressable

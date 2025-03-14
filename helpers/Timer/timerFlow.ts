@@ -26,6 +26,7 @@ import Timer from "../../types/timer";
 export async function increaseDistanceHiked({
   user,
   timer,
+  setSessionDetails,
   sessionDetails,
   userSession,
   achievementsWithCompletion,
@@ -45,6 +46,7 @@ export async function increaseDistanceHiked({
   //increase state current_trail_distance, user total miles by .01 every .01 miles (pace dependent)
   try
 {
+
     //update users distance on database && usersession
     await user.increaseDistanceHikedWriter({
       user,
@@ -52,6 +54,7 @@ export async function increaseDistanceHiked({
       timer,
       sessionDetails
     });
+    setSessionDetails(prev => ( {...prev, totalDistanceHiked: prev.totalDistanceHiked + .01} ));
     console.log("updated user distance on database");
     //Check for any achievements that would unlock at the users current total miles hiked
     //return array of achievements {achievementId, achievementName}[]
@@ -225,7 +228,7 @@ function resetSessionState(
       completedTrail: false,
       strikes: 0,
       penaltyValue: 1,
-      endSessionModal: false,
+      continueSessionModal: false,
       totalDistanceHiked: 0.0,
       totalTokenBonus: 0,
       trailTokensEarned:0,
@@ -275,14 +278,12 @@ export async function pauseSession(
 //end a session by caling reset session state
 export async function endSession({
   user,
-  timer,
   setTimer,
   sessionDetails,
   setSessionDetails,
 }:
   {
     user: User;
-    timer: Timer;
     setTimer: React.Dispatch<React.SetStateAction<SetTimer>>;
     sessionDetails: SessionDetails;
     setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
@@ -290,8 +291,8 @@ export async function endSession({
   try {
     //check daily streak
     // @ts-ignore
-    const sessionTokensReward = Rewards.calculateSessionTokens({setSessionDetails,sessionDetails, timer})
-    await Rewards.rewardFinalTokens({sessionDetails, sessionTokensReward, user})
+    console.debug("sessionDetails", sessionDetails)
+    console.debug("endSession checking daily streak")
     await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
     resetTimerState(setTimer)

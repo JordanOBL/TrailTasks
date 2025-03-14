@@ -1,6 +1,6 @@
 import React, { useState,useRef, useEffect } from 'react';
 import { AppState, Dimensions, View, Text, FlatList, Pressable, Platform,  StyleSheet, SafeAreaView, TextInput, Switch, Modal, ScrollView } from 'react-native';
-import ResultsScreen from './ResultsScreen';
+import GroupResultsScreen from './GroupResultsScreen';
 import useWebSocket from 'react-use-websocket';
  import { Dropdown } from 'react-native-element-dropdown';
 import timeOptions from '../helpers/Session/timeOptions';
@@ -9,7 +9,7 @@ import * as Progress from 'react-native-progress';
 import formatCountdown from '../helpers/Timer/formatCountdown';
 import Icon from 'react-native-vector-icons/Ionicons'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import EndSessionModal from '../components/Session/EndSessionModal';
+import ContinueSessionModal from '../components/Session/ContinueSessionModal';
 import {useInternetConnection} from '../hooks/useInternetConnection';
 
 const StatBox = ({ label, value }) => (
@@ -555,7 +555,7 @@ useEffect(() => {
       )}
 
       {view === 'results' && (
-      <ResultsScreen
+      <GroupResultsScreen
         session={session}
         hikers={hikers}
         user={user}

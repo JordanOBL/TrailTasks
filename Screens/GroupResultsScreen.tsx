@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 
-const ResultsScreen = ({ session,user,timer,  hikers, handleReturnToLobby }) => {
+const GroupResultsScreen = ({ session,user,timer,  hikers, handleReturnToLobby }) => {
   let totalDistance = 0;
 
   Object.values(hikers).forEach((hiker) => {
@@ -44,7 +44,7 @@ const ResultsScreen = ({ session,user,timer,  hikers, handleReturnToLobby }) => 
   );
 };
 
-export default ResultsScreen;
+export default GroupResultsScreen;
 
 const styles = StyleSheet.create({
   container: {

@@ -131,7 +131,7 @@ export default enhance(ParkPassScreen);
 const styles = StyleSheet.create({
     container: {
         backgroundColor: 'rgb(18, 19, 21)',
-        padding: 10,
+        paddingBottom: 80,
     },
     title: {
         fontSize: 24,

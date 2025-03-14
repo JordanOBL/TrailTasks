@@ -63,41 +63,41 @@ describe('Solo SessionScreen',() => {
 
 	test('Renders New Session Options', async () => {
 		const { getByTestId, queryByTestId } = render(
-			<DatabaseProvider database={watermelonDatabase}>
-				<InternetConnectionProvider>
-					<AuthProvider initialUser={testUser}>
-						<NavigationContainer>
-							<Stack.Navigator>
-								<Stack.Screen name="Solo">
-									{props => <EnhancedSessionScreen{...props} initialSessionDetails={{
-										startTime: null,
-										sessionName: '',
-										sessionDescription: '',
-										sessionCategoryId: '1',
-										breakTimeReduction:0,
-										minimumPace: 2,
-										maximumPace: 5.5,
-										paceIncreaseValue: .25,
-										paceIncreaseInterval: 900, //15 minutes,
-										increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
-										completedHike: false,
-										strikes: 0,
-										penaltyValue: 1,
-										endSessionModal: false,
-										totalDistanceHiked: 0.0,
-										totalTokenBonus: 0,
-										trailTokensEarned:0,
-										sessionTokensEarned:0,
-										isLoading: false,
-										isError: false,
-										backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
-									}} user={testUser} />}
-								</Stack.Screen>
-							</Stack.Navigator>
-						</NavigationContainer>
-					</AuthProvider>
-				</InternetConnectionProvider>
-			</DatabaseProvider>
+		<DatabaseProvider database={watermelonDatabase}>
+			<InternetConnectionProvider>
+				<AuthProvider initialUser={testUser}>
+					<NavigationContainer>
+						<Stack.Navigator>
+							<Stack.Screen name="Solo">
+								{props => <EnhancedSessionScreen{...props} initialSessionDetails={{
+									startTime: null,
+									sessionName: '',
+									sessionDescription: '',
+									sessionCategoryId: '1',
+									breakTimeReduction:0,
+									minimumPace: 2,
+									maximumPace: 5.5,
+									paceIncreaseValue: .25,
+									paceIncreaseInterval: 900, //15 minutes,
+									increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
+									completedHike: false,
+									strikes: 0,
+									penaltyValue: 1,
+									continueSessionModal: false,
+									totalDistanceHiked: 0.0,
+									totalTokenBonus: 0,
+									trailTokensEarned:0,
+									sessionTokensEarned:0,
+									isLoading: false,
+									isError: false,
+									backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
+								}} user={testUser} />}
+							</Stack.Screen>
+						</Stack.Navigator>
+					</NavigationContainer>
+				</AuthProvider>
+			</InternetConnectionProvider>
+		</DatabaseProvider>
 		);
 
 
@@ -108,41 +108,41 @@ describe('Solo SessionScreen',() => {
 	})
 	test('Renders active session screen', async () => {
 		const { getByTestId, queryByTestId } = render(
-			<DatabaseProvider database={watermelonDatabase}>
-				<InternetConnectionProvider>
-					<AuthProvider initialUser={testUser}>
-						<NavigationContainer>
-							<Stack.Navigator>
-								<Stack.Screen name="Solo">
-									{props => <EnhancedSessionScreen{...props} initialSessionDetails={{
-										startTime: null,
-										sessionName: 'test name',
-										sessionDescription: '',
-										sessionCategoryId: '1',
-										breakTimeReduction:0,
-										minimumPace: 2,
-										maximumPace: 5.5,
-										paceIncreaseValue: .25,
-										paceIncreaseInterval: 900, //15 minutes,
-										increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
-										completedHike: false,
-										strikes: 0,
-										penaltyValue: 1,
-										endSessionModal: false,
-										totalDistanceHiked: 0.0,
-										totalTokenBonus: 0,
-										trailTokensEarned:0,
-										sessionTokensEarned:0,
-										isLoading: false,
-										isError: false,
-										backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
-									}} user={testUser} />}
-								</Stack.Screen>
-							</Stack.Navigator>
-						</NavigationContainer>
-					</AuthProvider>
-				</InternetConnectionProvider>
-			</DatabaseProvider>
+		<DatabaseProvider database={watermelonDatabase}>
+			<InternetConnectionProvider>
+				<AuthProvider initialUser={testUser}>
+					<NavigationContainer>
+						<Stack.Navigator>
+							<Stack.Screen name="Solo">
+								{props => <EnhancedSessionScreen{...props} initialSessionDetails={{
+									startTime: null,
+									sessionName: 'test name',
+									sessionDescription: '',
+									sessionCategoryId: '1',
+									breakTimeReduction:0,
+									minimumPace: 2,
+									maximumPace: 5.5,
+									paceIncreaseValue: .25,
+									paceIncreaseInterval: 900, //15 minutes,
+									increasePaceOnBreakValue: 0, //TODO: possible addon sleeping bag increases pace by this interval on breaks
+									completedHike: false,
+									strikes: 0,
+									penaltyValue: 1,
+									continueSessionModal: false,
+									totalDistanceHiked: 0.0,
+									totalTokenBonus: 0,
+									trailTokensEarned:0,
+									sessionTokensEarned:0,
+									isLoading: false,
+									isError: false,
+									backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
+								}} user={testUser} />}
+							</Stack.Screen>
+						</Stack.Navigator>
+					</NavigationContainer>
+				</AuthProvider>
+			</InternetConnectionProvider>
+		</DatabaseProvider>
 		);
 		expect(getByTestId("start-session-button")).toBeEnabled();	
 		fireEvent.press(getByTestId("start-session-button"))	
@@ -223,7 +223,7 @@ describe('New session options settings', () => {
 			completedHike: false,
 			strikes: 0,
 			penaltyValue: 1,
-			endSessionModal: false,
+			continueSessionModal: false,
 			totalDistanceHiked: 0.0,
 			totalTokenBonus: 0,
 			trailTokensEarned:0,

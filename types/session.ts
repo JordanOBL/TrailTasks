@@ -13,7 +13,7 @@ export interface SessionDetails {
   penaltyValue: number;
   increasePaceOnBreakValue: number;
   strikes: number;
-  endSessionModal: boolean;
+  continueSessionModal: boolean;
   totalTokenBonus: number
   trailTokensEarned: number;
   sessionTokensEarned: number;

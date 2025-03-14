@@ -8,7 +8,6 @@ import {
   User,
   User_Achievement,
 } from '../watermelon/models';
-
 import {AchievementsWithCompletion} from '../types/achievements';
 import EnhancedActiveSession from '../components/Session/ActiveSession';
 import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
@@ -21,7 +20,9 @@ import {useDatabase} from '@nozbe/watermelondb/react';
 import { useKeepAwake } from '@sayem314/react-native-keep-awake';
 import {useNavigation} from '@react-navigation/native';
 import {withObservables} from '@nozbe/watermelondb/react';
-
+import {endSession} from '../helpers/Timer/timerFlow';
+import Rewards from '../helpers/Session/Rewards';
+import SoloResultsScreen from './SoloResultsScreen';
 interface Props {
   user: User;
   setUser: any;
@@ -51,6 +52,7 @@ const SessionScreen = ({
   const [sessionCategories, setSessionCategories] = React.useState<
     Session_Category[] | []
   >([]);
+  const [showResultsScreen, setShowResultsScreen] = React.useState(false);
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>(initialSessionDetails || {
     startTime: null,
     sessionName: '',
@@ -65,7 +67,7 @@ const SessionScreen = ({
     completedHike: false,
     strikes: 0,
     penaltyValue: 1,
-    endSessionModal: false,
+    continueSessionModal: false,
     totalDistanceHiked: 0.0,
     totalTokenBonus: 0,
     trailTokensEarned:0,
@@ -91,6 +93,22 @@ const SessionScreen = ({
     autoContinue: false
 
   })
+  async function handleEndSession () {
+		try {
+      console.debug('handleEndSession');
+			await endSession({ user, setTimer, setSessionDetails, sessionDetails });
+      setShowResultsScreen(false);
+		} catch (err) {
+			handleError(err, 'onEndSession');
+		}
+	};
+
+  async function handleShowResultsScreen() {
+    console.debug('handleShowResultsScreen');
+    const sessionTokensReward = await Rewards.calculateSessionTokens({setSessionDetails, sessionDetails, timer})
+    await Rewards.rewardFinalTokens( {sessionDetails, sessionTokensReward, user} )
+    setShowResultsScreen(true);
+  }
 
   async function getAchievementsWithCompletion() {
     const query = `SELECT achievements.*, 
@@ -179,7 +197,7 @@ const SessionScreen = ({
     <SafeAreaView style={styles.container} testID="session-screen">
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
-      ) : !sessionDetails.startTime && !timer.isRunning ? (
+      ) : !sessionDetails.startTime && !timer.isRunning && !showResultsScreen ? (
         <EnhancedNewSessionOptions
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
@@ -189,7 +207,8 @@ const SessionScreen = ({
           sessionCategories={sessionCategories}
           user={user}
         />
-      ) : (
+      ) : showResultsScreen ?
+      (<SoloResultsScreen user={user} sessionDetails={sessionDetails} timer={timer} endSession={handleEndSession} />): (
         <EnhancedActiveSession
           sessionDetails={sessionDetails}
           setSessionDetails={setSessionDetails}
@@ -199,6 +218,8 @@ const SessionScreen = ({
           userSession={userSession}
           currentSessionCategory={currentSessionCategory}
           user={user}
+          endSession={handleEndSession}
+          showResultsScreen={handleShowResultsScreen}
         />
       )}
     </SafeAreaView>
