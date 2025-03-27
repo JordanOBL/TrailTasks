@@ -43,8 +43,8 @@ export function createMockUserBase(overrides?: Partial<User>) {
 }
 
 export async function createUser(database: Database, newUser: any){
-  await database.write(async() => {
-    await database.get('users').create(user => {
+  const user = await database.write(async() => {
+    const user = await database.get('users').create(user => {
       user.username = newUser.username;
       user.firstName = newUser.firstName;
       user.lastName = newUser.lastName;
@@ -59,7 +59,12 @@ export async function createUser(database: Database, newUser: any){
       user.traiStartedAt = newUser.trailStartedAt;
       user.trailTokens = 50;
       user.totalMiles = '0.00';
-      user.prestigeLevel = 0;})
+      user.prestigeLevel = 0;
+    })
+
+    return user
   })
+
+  return user
 }
 

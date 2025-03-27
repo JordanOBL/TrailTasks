@@ -19,10 +19,9 @@ const StatBox = ({ label, value }) => (
   </View>
 );
 
-const GroupSessionComponent =  ({ user }) => {
+const GroupSessionComponent =  ({ user, debugRef=null }) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const { isConnected, ipAddress } = useInternetConnection();
-
   //this will check is emulater or device
   ////!TODO:Remove fo or production
   const [serverUrl, setServerUrl] = useState(null);
@@ -39,7 +38,6 @@ const GroupSessionComponent =  ({ user }) => {
     strikes: 0,
     tokensEarned: 0,
     bonusTokens: 0,
-
   });
   const [messageQueue, setMessageQueue] = useState([]);
   const [error, setError] = useState('');
@@ -60,18 +58,18 @@ const GroupSessionComponent =  ({ user }) => {
   });
 
   let targetDistance = 0.5 * session.level;
-useEffect(() => {
+  useEffect(() => {
     const setupConnection = async () => {
 
         if (isConnected) {
           // Check if we're on the emulator or a physical device
-          const isEmulator = ipAddress[1] == 0;  // Emulator IP
+          const isEmulator = ipAddress && ipAddress[1] == 0;  // Emulator IP
           if (isEmulator) {
             setServerUrl('ws://10.0.2.2:8080/groupsession'); // Use emulator IP
           } else if (Platform.OS === 'android') {
             // Use the actual IP for the physical device
             setServerUrl('ws://192.168.1.42:8080/groupsession');
-          } else if (Platform.OS === 'ios') {
+          } else {
               // Use the actual IP for the physical device
               setServerUrl('ws://127.0.0.1:8080/groupsession');
               }
@@ -189,6 +187,7 @@ useEffect(() => {
 
   // Toggle ready state for the current user
   function toggleReadyState(){
+   console.log(`toggle hiker ${user.username}`, hikers); 
     sendJsonMessage({
       header: { protocol: 'ready', userId: user.id, roomId },
       message: { },
@@ -304,14 +303,31 @@ useEffect(() => {
     }, [timer.isRunning])
   );
 
+  useEffect(() => {
+  if (process.env.NODE_ENV !== 'production' && debugRef) {
+    debugRef.current = {
+      messageQueue,
+      error,
+      hikers,
+      session,
+      roomId,
+      timer,
+      view,
+      isConnected,
+      serverUrl,
+
+    };
+  }
+}, [hikers, session, roomId, timer, view, isConnected, messageQueue, error, serverUrl]);
+
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView testID="group-session-screen" style={styles.container}>
       {view === 'session' && isConnected ?  (
         <View style={styles.initialContainer}>
           <Text style={styles.title}>Group Session</Text>
 
-          <Pressable style={styles.createRoomButton} onPress={handleCreateRoom}>
+          <Pressable testID="create-room-button" style={styles.createRoomButton} onPress={handleCreateRoom}>
             <Text style={styles.buttonText}>Create Room</Text>
           </Pressable>
 
@@ -321,14 +337,15 @@ useEffect(() => {
             value={roomId}
             onChangeText={setRoomId}
             style={styles.input}
+            testID="join-room-input"
           />
-          <Pressable style={styles.joinRoomButton} onPress={handleJoinRoom}>
+          <Pressable testID="join-room-button" style={styles.joinRoomButton} onPress={handleJoinRoom}>
             <Text style={styles.buttonText}>Join Room</Text>
           </Pressable>
         </View>
       ) : <View><Text>No Internet Connection</Text></View> }
 
-       <EndSessionModal isVisible={view === 'endModal'} focusTime={timer.focusTime} onEndSession={handleEnd} onAddSession={handleExtraSession} onAddSet={handleExtraSet}  />
+       <ContinueSessionModal isVisible={view === 'endModal'} focusTime={timer.focusTime} onShowResultsScreen={() => setView('results')} onAddSession={handleExtraSession} onAddSet={handleExtraSet}  />
 
 
       {view === 'lobby' && (
@@ -450,12 +467,12 @@ useEffect(() => {
               <Text style={styles.buttonText}>Configure Session</Text>
             </Pressable>
 
-            <Pressable onPress={toggleReadyState} style={styles.toggleReadyButton}>
+            <Pressable testID="toggle-ready-button" onPress={toggleReadyState} style={styles.toggleReadyButton}>
               <Text style={styles.buttonText}>{hikers[user.id]?.isReady ? 'Unready' : 'Ready Up'}</Text>
             </Pressable>
 
             {hikers[user.id]?.isHost && Object.values(hikers).every(hiker => hiker.isReady) && (
-              <Pressable onPress={handleStart} style={styles.startButton}>
+              <Pressable testID="start-group-session-button" onPress={handleStart} style={styles.startButton}>
                 <Text style={styles.buttonText}>Start Session</Text>
               </Pressable>
             )}
@@ -471,8 +488,8 @@ useEffect(() => {
                 const [userId, hiker] = item;
                 return (
                   <View style={styles.hikerCard}>
-                    <Text style={styles.hikerName}>{hiker.username}</Text>
-                    <Text style={styles.hikerStatus}>{hiker.isReady ? 'Ready' : 'Not Ready'}</Text>
+                    <Text testID={`hiker-${userId}-name`} style={styles.hikerName}>{hiker.username}</Text>
+                    <Text testID={`hiker-${userId}-status`} style={styles.hikerStatus}>{hiker.isReady ? 'Ready' : 'Not Ready'}</Text>
                   </View>
                 );
               }}

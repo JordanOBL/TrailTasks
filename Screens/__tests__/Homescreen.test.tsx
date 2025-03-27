@@ -111,7 +111,7 @@ describe('HomeScreen', () => {
 	test('doesnt not show tutorial if users mils > 0', async()=> {
 		await watermelonDatabase.write(async () => {
 			await testUser.update(user => {
-				user.totalMiles = '0.01'
+				user.totalMiles = '0.02'
 			})
 		})
 
@@ -133,7 +133,7 @@ describe('HomeScreen', () => {
 
 		
 		await waitFor(() => {
-			expect(queryByTestId("tutorial-modal")).not.toBeOnTheScreen();
+			expect(getByTestId("tutorial-modal")).not.toBeOnTheScreen();
 		})
 
 	})

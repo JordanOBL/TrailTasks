@@ -1,3 +1,4 @@
+import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { WrappedApp} from '../../index';
 import {testDb as watermelonDatabase} from '../../watermelon/testDB';
@@ -28,7 +29,7 @@ const timer = {
       autoContinue: false
 
     }
-    const sessionDetails = {
+    const sessionDetails ={
       startTime: null,
       sessionName: '',
       sessionDescription: '',
@@ -118,11 +119,17 @@ describe('New Session Handlers checkLocalStorageSessionSettings()',() => {
 
 describe('NewSessionHandler StartSessionClick', () => {
  test('user invokes start new session', async () => {
+    const setSessionDetails = jest.fn();
+    const setTimer = jest.fn();
     //get user form database
     const [testUser] = await watermelonDatabase.get('users').query().fetch();
-    const result = await NewSessionHandlers.StartSessionClick(sessionDetails);
-    const sessions  = await watermelonDatabase.get('users_sessions').query().fetch();
-    expect(sessions.length).toBe(1)
+    const result = await NewSessionHandlers.StartSessionClick({sessionDetails, setSessionDetails, timer, setTimer, database: watermelonDatabase, user: testUser});
+
+    const sessions= await watermelonDatabase.get('users_sessions').query().fetch();
+    await waitFor(() => {
+      
+    expect(sessions).toHaveLength(1)
+    })
   })
 
 })
