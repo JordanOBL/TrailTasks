@@ -89,18 +89,21 @@ const HomeScreen: React.FC<Props> = ({
         }
         if (user && user.lastDailyStreakDate) {
             resetDailyStreak();
-        }
-    }, [user]);
-
-
-    //Check to see if user is new to the app by checking if theyve hiked any miles
+        }//Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
-    React.useEffect(() => {
-        // Check if the user has any miles hiked
-        if (user?.totalMiles <= 0) {
+           // Check if the user has any miles hiked
+        console.debug('Checking if user has any miles hiked', user?.totalMiles);
+        
+        if (user?.totalMiles <= 0.00) {
             setShowTutorial(true); // Show the tutorial if the user has no miles hiked
+        }else{
+            setShowTutorial(false);
         }
+
     }, [user]);
+
+
+    
 
     //this useEffect gets the correct Rank based on  the users miles
     useFocusEffect(
@@ -131,8 +134,7 @@ const HomeScreen: React.FC<Props> = ({
     ) : (
             <SafeAreaView testID="homescreen" style={styles.container}>
                 {/* <SyncIndicator delay={3000} /> */}
-                <TutorialModal  visible={showTutorial} onClose={handleTutorialClose} />
-
+               {showTutorial && <TutorialModal  onClose={handleTutorialClose} />} 
                 <View
                     style={{
                         display: 'flex',

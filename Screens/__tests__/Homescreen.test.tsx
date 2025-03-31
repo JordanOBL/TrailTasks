@@ -38,7 +38,7 @@ describe('HomeScreen', () => {
 				user.pushNotificationsEnabled = mockUser.pushNotificationsEnabled;
 				user.trailStartedAt = mockUser.trailStartedAt;
 				user.trailProgress = mockUser.trailProgress;
-				user.totalMiles = mockUser.totalMiles;
+				user.totalMiles = '0.00';
 				user.dailyStreak = mockUser.dailyStreak;
 				user.themePreference = mockUser.themePreference;
 				// Initialize other fields as necessary
@@ -103,7 +103,7 @@ describe('HomeScreen', () => {
 		
 		await waitFor(()=>{
 
-			expect(getByTestId('tutorial-modal')).toBeOnTheScreen();
+			expect(getByTestId('tutorial-modal')).toBeDefined();
 		})
 
 	})
@@ -113,6 +113,10 @@ describe('HomeScreen', () => {
 			await testUser.update(user => {
 				user.totalMiles = '0.02'
 			})
+		})
+
+		await waitFor(() => {
+			expect(testUser.totalMiles).toBe('0.02')
 		})
 
 		const { getByTestId, queryByTestId } = render(
@@ -133,7 +137,7 @@ describe('HomeScreen', () => {
 
 		
 		await waitFor(() => {
-			expect(getByTestId("tutorial-modal")).not.toBeOnTheScreen();
+			expect(queryByTestId("tutorial-modal")).not.toBeOnTheScreen();
 		})
 
 	})

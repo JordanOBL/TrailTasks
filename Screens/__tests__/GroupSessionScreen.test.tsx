@@ -38,11 +38,7 @@ const mockUserB = createMockUserBase({
 								testUserA = await createUser(watermelonDatabase, mockUserA);
 								testUserB = await createUser(watermelonDatabase, mockUserB);
 				})
-				afterAll(async () => {
-								await watermelonDatabase.write(async () => {
-												await watermelonDatabase.unsafeResetDatabase();
-								})
-				})
+		
 
 
 
@@ -105,7 +101,7 @@ const mockUserB = createMockUserBase({
 		//create room by userA
 		fireEvent.press(getByTestIdA('create-room-button'));
 		await waitFor(() => {
-			console.log('debugRefA',debugRefA.current)
+			console.log('debugRefA creates room',debugRefA.current)
 			//gets roomId from server
 			expect(debugRefA.current.roomId).toBeTruthy();
 			//adds user to room

@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 // @ts-ignore
-const TutorialModal = ({visible, onClose}) => {
+const TutorialModal = ({onClose}) => {
   const [currentStep, setCurrentStep] = useState(0);
   const tutorialSteps = [
     {
@@ -57,9 +57,9 @@ const TutorialModal = ({visible, onClose}) => {
   };
 
   return (
-  <SafeAreaProvider testID="tutorial-modal">
+  <SafeAreaProvider testID="tutorial-modal"  >
     <SafeAreaView style={styles.modalContainer}>
-    <Modal visible={visible} animationType="slide" transparent={true} >
+    <Modal  animationType="slide" transparent={true} >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.stepText}>

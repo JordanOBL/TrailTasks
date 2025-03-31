@@ -409,19 +409,19 @@ const GroupSessionComponent =  ({ user, debugRef=null }) => {
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Long Break:</Text>
-                        <Dropdown
-                                            style={styles.dropdown}
-                                            placeholderStyle={styles.placeholderStyle}
-                                            selectedTextStyle={styles.selectedTextStyle}
-                                            iconStyle={styles.iconStyle}
-                                            data={timeOptions}
-                                            maxHeight={300}
-                                            labelField="label"
-                                            valueField="value"
-                                            placeholder="Select item"
-                                            value={timer.longBreakTime}
-                                            onChange={(selectedItem) => setTimer(prev => ({...prev, longBreakTime: selectedItem.value }))}
-                                          />
+                  <Dropdown
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    iconStyle={styles.iconStyle}
+                    data={timeOptions}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select item"
+                    value={timer.longBreakTime}
+                    onChange={(selectedItem) => setTimer(prev => ({...prev, longBreakTime: selectedItem.value }))}
+                  />
 
                 </View>
 
