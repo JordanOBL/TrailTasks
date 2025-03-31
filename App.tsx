@@ -39,9 +39,7 @@ const App = () => {
   const {isConnected} = useInternetConnection()
   const isDarkMode = useColorScheme() === 'dark';
   const [form, setForm] = useState('login');
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+ 
    const handleFormChange = () => {
     if (form === 'login') {
       setForm('register');

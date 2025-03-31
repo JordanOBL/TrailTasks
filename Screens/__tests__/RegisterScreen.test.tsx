@@ -22,7 +22,7 @@ describe('Register',()=>{
 	//reset MasterDb
 
 	// Reset the local database
-	beforeEach(async () => {
+	beforeAll(async () => {
 		await watermelonDatabase.write(async () => {
 			await watermelonDatabase.unsafeResetDatabase();
 		})
@@ -36,6 +36,10 @@ describe('Register',()=>{
 	//Disconnect from master Db
 	afterAll(async ()=>{
 		await pool.end();
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
+
 	})
 
 
@@ -79,17 +83,17 @@ describe('Register',()=>{
 		await waitFor(async () => {
 			const addedusers = await watermelonDatabase.collections.get('users').query().fetch()
 			expect(addedusers).toHaveLength(1);
-		}, 10000)
+		})
 
 	
 	})
 	test('shows error if email already exists', async ()=>{
-		 // Mock the `sync` function dynamically for this test
-		const syncSpy = jest.spyOn(require('../../watermelon/sync'), 'sync');
-		syncSpy.mockImplementation(() => Promise.resolve()); // Mock behavior
+	 //Mock the `sync` function dynamically for this test
+			const syncSpy = jest.spyOn(require('../../watermelon/sync'), 'sync');
+			syncSpy.mockImplementation(() => Promise.resolve()); // Mock behavior
 
-		await pool.query('INSERT INTO users (id, username, email, password, first_name, last_name, trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', ['ABC123', mockUser.username, mockUser.email, mockUser.password, mockUser.firstName, mockUser.lastName, mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
-
+			{/*await pool.query('INSERT INTO users (id, username, email, password, first_name, last_name, trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', ['ABC123', mockUser.username, mockUser.email, mockUser.password, mockUser.firstName, mockUser.lastName, mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
+		*/}
 		const {getByTestId,queryByTestId} = render(
 			<DatabaseProvider database={watermelonDatabase}>
 				<InternetConnectionProvider>
@@ -120,13 +124,14 @@ describe('Register',()=>{
 		syncSpy.mockRestore();
 	})
 	test('shows error if username already exists', async ()=>{
-		 // Mock the `sync` function dynamically for this test
-		const syncSpy = jest.spyOn(require('../../watermelon/sync'), 'sync');
-		syncSpy.mockImplementation(() => Promise.resolve()); // Mock behavior
-		
-		//change the email because it will check that first
-		//keep username the same so that error logs
-		await pool.query('INSERT INTO users (id, username, email, password, first_name, last_name, trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', ['ABC123', mockUser.username, 'DifferentEmail', mockUser.password, mockUser.firstName, mockUser.lastName, mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
+	  // Mock the `sync` function dynamically for this test
+			const syncSpy = jest.spyOn(require('../../watermelon/sync'), 'sync');
+			syncSpy.mockImplementation(() => Promise.resolve()); // Mock behavior
+
+			{/*	//change the email because it will check that first
+			//keep username the same so that error logs
+			await pool.query('INSERT INTO users (id, username, email, password, first_name, last_name, trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', ['ABC123', mockUser.username, 'DifferentEmail', mockUser.password, mockUser.firstName, mockUser.lastName, mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
+		*/}
 
 		const {getByTestId,queryByTestId} = render(
 			<DatabaseProvider database={watermelonDatabase}>
@@ -144,7 +149,7 @@ describe('Register',()=>{
 		fireEvent.changeText(getByTestId('first-name-input'),mockUser.firstName);
 
 		fireEvent.changeText(getByTestId('last-name-input'),mockUser.lastName);
-		fireEvent.changeText(getByTestId('email-input'),mockUser.email);
+		fireEvent.changeText(getByTestId('email-input'),'DifferentEmail@email.com');
 		fireEvent.changeText(getByTestId('password-input'),mockUser.password);
 		fireEvent.changeText(getByTestId('confirm-password-input'),mockUser.password);
 		fireEvent.changeText(getByTestId('username-input'),mockUser.username);
