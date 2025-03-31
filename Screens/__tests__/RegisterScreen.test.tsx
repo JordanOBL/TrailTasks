@@ -23,18 +23,19 @@ describe('Register',()=>{
 
 	// Reset the local database
 	beforeAll(async () => {
+		await pool.query('TRUNCATE TABLE users CASCADE');
 		await watermelonDatabase.write(async () => {
 			await watermelonDatabase.unsafeResetDatabase();
 		})
 //bootsrap initall data from masterdb to local
 		await sync(watermelonDatabase, true);
-		await pool.query('TRUNCATE TABLE users CASCADE');
 
 		jest.clearAllMocks();
 	})
 
 	//Disconnect from master Db
 	afterAll(async ()=>{
+		await pool.query('TRUNCATE TABLE users CASCADE');
 		await pool.end();
 		await watermelonDatabase.write(async () => {
 			await watermelonDatabase.unsafeResetDatabase();
@@ -45,12 +46,7 @@ describe('Register',()=>{
 
 
 	test('registers new user and logs in', async ()=>{
-		//assert no users in DB
-		await waitFor(async () => {
-			const users = await watermelonDatabase.collections.get('users').query().fetch()
-			expect(users).toHaveLength(0);
-		})
-
+	
 		const {getByTestId,queryByTestId} = render(
 			<DatabaseProvider database={watermelonDatabase}>
 				<InternetConnectionProvider>
@@ -61,11 +57,12 @@ describe('Register',()=>{
 			</DatabaseProvider>)
 
 		// Wait for register-screen
-		await waitFor(() => {
+		await waitFor( async () => {
 			expect(getByTestId('register-screen')).toBeTruthy();
+			const users = await watermelonDatabase.collections.get('users').query().fetch()
+			expect(users).toHaveLength(0);
 		});
 
-		await waitFor(async () => {
 			fireEvent.changeText(getByTestId('first-name-input'),mockUser.firstName);
 
 			fireEvent.changeText(getByTestId('last-name-input'),mockUser.lastName);
@@ -74,8 +71,6 @@ describe('Register',()=>{
 			fireEvent.changeText(getByTestId('confirm-password-input'),mockUser.password);
 			fireEvent.changeText(getByTestId('username-input'),mockUser.username);
 
-		})
-		// Enter details of mock user to register
 
 		// Press create account button
 		fireEvent.press(getByTestId('create-account-button'));
@@ -83,7 +78,7 @@ describe('Register',()=>{
 		await waitFor(async () => {
 			const addedusers = await watermelonDatabase.collections.get('users').query().fetch()
 			expect(addedusers).toHaveLength(1);
-		})
+		});
 
 	
 	})

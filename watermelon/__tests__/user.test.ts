@@ -4,6 +4,7 @@ import {sync} from '../sync'
 import {createMockUserBase, createUser} from '../../__mocks__/UserModel'
 import {Q} from '@nozbe/watermelondb'
 import {SessionDetails} from '../../types/session'
+import {waitFor} from '@testing-library/react-native'
 
 const mockUser = createMockUserBase()
 
@@ -184,7 +185,6 @@ describe('users writers', () => {
       const [addonToBuy] = await testDb.get('addons').query(Q.where('id', '1')).fetch() 
       await user.buyAddon(addonToBuy)
       usersAddons = await user.usersAddons
-      console.log('usersAddons', usersAddons)
       expect(usersAddons[0].quantity).toBe(1)
       //consume addon in session
       await testDb.write(async () => {
@@ -240,8 +240,6 @@ describe('users writers', () => {
      
 const { newSession, status } = await user.startNewSession(mockSessionDetails)
 
-console.log('status', status)
-console.log('new created session', newSession)
 
 expect(status).toBeTruthy()
 expect(newSession.id).toBeTruthy()
@@ -252,6 +250,28 @@ expect(session.id).toEqual(newSession.id)
       const usersAddons = await user.usersAddons
       expect(usersAddons).toHaveLength(0)
     })
+    
+  })
+
+  describe('awardFinalSessionTokens()', () => {
+    beforeAll(async()=>{
+      await testDb.write(async () => {
+        await testDb.unsafeResetDatabase();
+      })
+      //test server needs to be running (trailTasksServer -> npm run test-server)
+      await sync(testDb, true)
+      //create user
+      await createUser(testDb, mockUser)
+    })
+    it('successfully applies reward tokens', async () => {
+      const reward = 100
+
+      const [ user  ]:User = await testDb.get('users').query().fetch()
+      const previousTokens = user.trailTokens
+      await user.awardFinalSessionTokens(reward)
+      await waitFor(() => expect(user.trailTokens).toBe(previousTokens + reward))
+    })
+
   })
 
   

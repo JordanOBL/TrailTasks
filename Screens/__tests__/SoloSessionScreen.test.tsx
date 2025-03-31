@@ -61,6 +61,12 @@ describe('Solo SessionScreen',() => {
 		jest.clearAllMocks();
 	})
 
+	afterAll(async () => {
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
+	})
+
 	test('Renders New Session Options', async () => {
 		const { getByTestId, queryByTestId } = render(
 		<DatabaseProvider database={watermelonDatabase}>
@@ -246,7 +252,8 @@ describe('New session options settings', () => {
 			sets: 3,
 			completedSets: 0,
 			pace: 2,
-			autoContinue: false
+			autoContinue: false,
+			elapsedTime: 0,
 
 		})
 

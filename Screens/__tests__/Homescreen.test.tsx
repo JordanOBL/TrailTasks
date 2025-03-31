@@ -59,6 +59,11 @@ describe('HomeScreen', () => {
 		);
 
 	});
+	afterAll(async () => {
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
+	});
 
 	test('renders correctly', async () => {
 		const {getByTestId} = render(

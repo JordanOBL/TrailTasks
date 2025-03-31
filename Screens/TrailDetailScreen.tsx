@@ -19,8 +19,8 @@ import {withObservables} from "@nozbe/watermelondb/react";
 import {useAuthContext} from "../services/AuthContext";
 
 // @ts-ignore
-const TrailDetailScreen = ({ route,user, navigation}) => {
-    const {trail, userPurchasedTrails, completedTrails} = route.params;
+const TrailDetailScreen = ({ route,user, navigation, userPurchasedTrails, completedTrails, trail}) => {
+    //const {trail, userPurchasedTrails, completedTrails} = route.params;
     const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
     const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");

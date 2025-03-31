@@ -192,7 +192,6 @@ export const setSubscriptionStatus = async (
 				return subscription[0].id
 			}
 		}
-		console.debug('returning undefined in setsubscription')
 		return;
 	} catch (err) {
 		handleError(err, "setSubscriptionStatus");

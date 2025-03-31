@@ -1,4 +1,4 @@
-import {getByTestId, render, waitFor, fireEvent} from '@testing-library/react-native';
+import {getByTestId, render, waitFor, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {testDb as watermelonDatabase} from '../../watermelon/testDB';
 import {createMockUserBase} from '../../__mocks__/UserModel';
@@ -79,13 +79,21 @@ describe('ActiveSession', () => {
 			isLoading: false,
 			isError: false,
 			backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
-			  })
+		})
 		trail = await testUser.trail;
-                completedTrails = await testUser.completedTrails;
+		completedTrails = await testUser.completedTrails;
 		newUserSession = newSession
-  })
-                 
-	
+	})
+
+	afterAll(async () => {
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
+	});
+
+
+
+
 	const TestWrapper = () => {
 		const [sessionDetails, setSessionDetails] = React.useState({
 			startTime: Date.now(),
@@ -109,21 +117,22 @@ describe('ActiveSession', () => {
 			isLoading: false,
 			isError: false,
 			backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
-			  })
+		})
 		const [timer, setTimer] = React.useState({
-		    startTime: Date.now(),
-		    isCompleted: false,
-		    time: 1500,
-		    isRunning: false,
-		    isPaused: false,
-		    isBreak: false,
-		    focusTime: 1500,
-		    shortBreakTime: 300,
-		    longBreakTime: 2700,
-		    sets: 3,
-		    completedSets: 0,
-		   pace: 2,
-		    autoContinue: false
+			startTime: Date.now(),
+			isCompleted: false,
+			time: 1500,
+			isRunning: false,
+			isPaused: false,
+			isBreak: false,
+			focusTime: 1500,
+			shortBreakTime: 300,
+			longBreakTime: 2700,
+			sets: 3,
+			completedSets: 0,
+			pace: 2,
+			autoContinue: false,
+			elapsedTime: 0
 		})
 		const [showResultsScreen, setShowResultsScreen] = React.useState(false)
 		const [currentTrail, setCurrentTrail] = React.useState(trail)
@@ -133,80 +142,81 @@ describe('ActiveSession', () => {
 		const currentSessionCategory = '1'
 		const achievementsWithCompletion = []
 		async function handleEndSession(){
-		    try {
-		      await endSession({ user, setTimer, setSessionDetails, sessionDetails });
-		      await sync(watermelonDatabase, isConnected, user.id);
-		      setShowResultsScreen(false);
-		    } catch (err) {
-		      handleError(err, 'onEndSession');
-		    }
+			try {
+				await endSession({ user, setTimer, setSessionDetails, sessionDetails });
+				await sync(watermelonDatabase, isConnected, user.id);
+				setShowResultsScreen(false);
+			} catch (err) {
+				handleError(err, 'onEndSession');
+			}
 		};
 		async function handleShowResultsScreen() {
-		    const sessionTokensReward = await Rewards.calculateSessionTokens({setSessionDetails, sessionDetails, timer})
-		    await Rewards.rewardFinalTokens( {sessionDetails, sessionTokensReward, user} )
-		    setShowResultsScreen(true);
-	  	}
+			const sessionTokensReward = await Rewards.calculateSessionTokens({setSessionDetails, sessionDetails, timer})
+			await Rewards.rewardFinalTokens( {sessionDetails, sessionTokensReward, user} )
+			setShowResultsScreen(true);
+		}
 
 		return (
 			<DatabaseProvider database={watermelonDatabase}>
 				<InternetConnectionProvider>
-				  <AuthProvider initialUser={testUser}>
+					<AuthProvider initialUser={testUser}>
 						<NavigationContainer>
-						<ActiveSession 
-						setSessionDetails={setSessionDetails} 
-						sessionDetails={sessionDetails} 
-						timer={timer} 
-						setTimer={setTimer} 
-						userSession={userSession}
-						user={testUser} 
-						currentTrail={currentTrail} 
-						queuedTrails={queuedTrails} 
-						completedTrails={completedTrails} 
-						achievementsWithCompletion={achievementsWithCompletion} 
-						currentSessionCategory={currentSessionCategory}
-						endSession={handleEndSession} 
-						showResultsScreen={handleShowResultsScreen}   
-						/>
+							<ActiveSession 
+								setSessionDetails={setSessionDetails} 
+								sessionDetails={sessionDetails} 
+								timer={timer} 
+								setTimer={setTimer} 
+								userSession={userSession}
+								user={testUser} 
+								currentTrail={currentTrail} 
+								queuedTrails={queuedTrails} 
+								completedTrails={completedTrails} 
+								achievementsWithCompletion={achievementsWithCompletion} 
+								currentSessionCategory={currentSessionCategory}
+								endSession={handleEndSession} 
+								showResultsScreen={handleShowResultsScreen}   
+							/>
 						</NavigationContainer>
-				  </AuthProvider>
+					</AuthProvider>
 				</InternetConnectionProvider>
 			</DatabaseProvider>
 		)
-}
+	}
 
 	it('renders correctly', async () => {
 		const {getByTestId} = render(<TestWrapper />)
 		expect(getByTestId('active-session-screen')).toBeOnTheScreen()
-    expect(getByTestId('pace')).toHaveTextContent('2 mph')
-    expect(getByTestId('reward')).toHaveTextContent('0')
-    expect(getByTestId('current-trail-name')).toHaveTextContent('The Beehive Loop Trail')
+		expect(getByTestId('pace')).toHaveTextContent('2 mph')
+		screen.debug()
+		expect(getByTestId('reward')).toHaveTextContent(0)
+		expect(getByTestId('current-trail-name')).toHaveTextContent('The Beehive Loop Trail')
 	})
 
-  it('displays end session confirmation modal', async () => {
-				const {getByTestId} = render(<TestWrapper />)
-				await waitFor(() => {
-								expect(getByTestId('stop-button')).toBeOnTheScreen()
-				})
-				fireEvent.press(getByTestId('stop-button'))
-				await waitFor(() => {
-								expect(getByTestId('quit-session-modal')).toBeOnTheScreen()
-				})
-  })
-  it('closes end session confirmation modal', async () => {
-  	
-  	const {getByTestId, queryByTestId} = render(<TestWrapper />)
-  	await waitFor(() => {
-  					expect(getByTestId('stop-button')).toBeOnTheScreen()
-  	})
-  	fireEvent.press(getByTestId('stop-button'))
-  	await waitFor(() => {
-  					expect(queryByTestId('quit-session-modal')).toBeOnTheScreen()
-  					expect(getByTestId('confirm-cancel-button')).toBeOnTheScreen()
-  	})
-  	fireEvent.press(getByTestId('confirm-cancel-button'))
-  	await waitFor(() => {
-  					expect(queryByTestId('quit-session-modal')).not.toBeOnTheScreen()
-  	})
-  })
+	it('displays end session confirmation modal', async () => {
+		const {getByTestId} = render(<TestWrapper />)
+		await waitFor(() => {
+			expect(getByTestId('stop-button')).toBeOnTheScreen()
+		})
+		fireEvent.press(getByTestId('stop-button'))
+		await waitFor(() => {
+			expect(getByTestId('quit-session-modal')).toBeOnTheScreen()
+		})
+	})
+	it('closes end session confirmation modal', async () => {
+
+		const {getByTestId, queryByTestId} = render(<TestWrapper />)
+		await waitFor(() => {
+			expect(getByTestId('stop-button')).toBeOnTheScreen()
+		})
+		fireEvent.press(getByTestId('stop-button'))
+		await waitFor(() => {
+			expect(queryByTestId('quit-session-modal')).toBeOnTheScreen()
+			expect(getByTestId('confirm-cancel-button')).toBeOnTheScreen()
+		})
+		fireEvent.press(getByTestId('confirm-cancel-button'))
+		await waitFor(() => {
+			expect(queryByTestId('quit-session-modal')).not.toBeOnTheScreen()
+		})
+	})
 
 })

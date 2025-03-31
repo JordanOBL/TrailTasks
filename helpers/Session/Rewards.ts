@@ -45,9 +45,10 @@ Rewards.calculateSessionTokens = ({
     if (timer.completedSets > adjustedExpectedSets) {
       continuationBonus = (timer.completedSets - adjustedExpectedSets) * 5; // +5 per extra set
     }
-
     // 🔥 Final Token Calculation
     const totalTokens = baseTokens + bonusTokens + continuationBonus;
+
+    console.debug('totalTokens', totalTokens);
 
     // **Update Session State**
     setSessionDetails((prevSessionDetails) => ({

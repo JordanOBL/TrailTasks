@@ -28,6 +28,10 @@ describe('Auth Services', () => {
 	//Disconnect from master Db
 	afterAll(async ()=>{
 		await pool.end();
+                await testDb.write(async () => {
+			await testDb.unsafeResetDatabase();
+		})
+
 	})
 
 

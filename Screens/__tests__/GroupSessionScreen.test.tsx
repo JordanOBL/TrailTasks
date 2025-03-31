@@ -11,34 +11,39 @@ import {TestWrapper} from '../../__mocks__/TestWrapper';
 
 describe('GroupSessionScreen', () => {
 
-const mockUserA = createMockUserBase({
+	const mockUserA = createMockUserBase({
 		id: 'A',
-    username: 'mockusernameA',
-    email: 'mockemailA@example.com',
-    firstName: 'mockfirstnameA',
-    lastName: 'mocklastnameA',
-    password: 'mockPasswordA',
-});
-const mockUserB = createMockUserBase({
+		username: 'mockusernameA',
+		email: 'mockemailA@example.com',
+		firstName: 'mockfirstnameA',
+		lastName: 'mocklastnameA',
+		password: 'mockPasswordA',
+	});
+	const mockUserB = createMockUserBase({
 		id: 'B',
-    username: 'mockusernameB',
-    email: 'mockemailB@example.com',
-    firstName: 'mockfirstnameB',
-    lastName: 'mocklastnameB',
-    password: 'mockPasswordB',
-});
+		username: 'mockusernameB',
+		email: 'mockemailB@example.com',
+		firstName: 'mockfirstnameB',
+		lastName: 'mocklastnameB',
+		password: 'mockPasswordB',
+	});
 
-				let testUserA, testUserB
-				// Reset the local database
-				beforeAll(async () => {
-								await watermelonDatabase.write(async () => {
-												await watermelonDatabase.unsafeResetDatabase();
-								})
-								await sync(watermelonDatabase, true);
-								testUserA = await createUser(watermelonDatabase, mockUserA);
-								testUserB = await createUser(watermelonDatabase, mockUserB);
-				})
-		
+	let testUserA, testUserB
+	// Reset the local database
+	beforeAll(async () => {
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
+		await sync(watermelonDatabase, true);
+		testUserA = await createUser(watermelonDatabase, mockUserA);
+		testUserB = await createUser(watermelonDatabase, mockUserB);
+	})
+
+	afterAll(async () => {
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
+	})
 
 
 

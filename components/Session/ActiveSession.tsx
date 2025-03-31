@@ -233,9 +233,7 @@ const ActiveSession = ({
 	}, [timer.isCompleted]);
 
 	async function updateSessionTokens() {
-		console.debug('useEffect: updataing sessionTokens');
 		const sessionTokenRewards = await Rewards.calculateSessionTokens({ timer, sessionDetails, setSessionDetails });
-		console.debug('DONE updating session tokens sessionTokenRewards',sessionTokenRewards);
 	}
 
 	useEffect(() => {
@@ -246,10 +244,8 @@ const ActiveSession = ({
 		const handleAppStateChange = (nextAppState: string | ((prevState: 'active' | 'background' | 'inactive' | 'unknown' | 'extension') => 'active' | 'background' | 'inactive' | 'unknown' | 'extension')) => {
 			if(timer.isRunning){
 				if (appState.match(/active/) && nextAppState?.match(/inactive|background/)) {
-					console.log('App is in the background or inactive.');
 					pauseSession(timer, setTimer, sessionDetails, setSessionDetails);
 				} else if (nextAppState === 'active' && appState.match(/inactive|background/)) {
-					console.log('App is back in the foreground.');
 
 					resumeSession(setTimer)
 				}
@@ -265,14 +261,11 @@ const ActiveSession = ({
 	useFocusEffect(
 		React.useCallback(() => {
 			// Screen is focused
-			console.log('Timer screen is focused.');
-			console.log('timer usefocuseffect', timer);
 			if(timer.isRunning){
 				resumeSession(setTimer)
 			}
 			return () => {
 				// Screen is unfocused
-				console.log('Timer screen is unfocused.');
 				if(timer.isRunning){
 					pauseSession(timer, setTimer, sessionDetails, setSessionDetails);
 				}
@@ -351,7 +344,7 @@ const ActiveSession = ({
 						<StatBox label="Pace" value={`${timer.pace} mph`} />
 						<StatBox label="Sets" value={`${timer.completedSets} / ${timer.sets}`} />
 						<StatBox  label="Strikes" value={sessionDetails.strikes} />
-						<StatBox label="Reward" value={sessionDetails.trailTokensEarned + sessionDetails.sessionTokensEarned} />
+						<StatBox label="Reward" value={Number( sessionDetails?.trailTokensEarned + sessionDetails?.sessionTokensEarned )} />
 						<StatBox  label="Achievements" value={earnedAchievements.length} />
 						<StatBox  label="Trails" value={sessionCompletedTrails.length} />
 					</View>

@@ -17,15 +17,15 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
   const [error, setError] = useState<string>('');
 
   // Observe user changes (only if user is a Watermelon model)
-  useEffect(() => {
-    let subscription: any;
-    if (user && typeof user.observe === 'function') {
-      subscription = user.observe().subscribe((updatedUser: any) => {
-        setUser(updatedUser);
-      });
-    }
-    return () => subscription?.unsubscribe();
-  }, [user]);
+//  useEffect(() => {
+//    let subscription: any;
+//    if (user && typeof user.observe === 'function') {
+//      subscription = user.observe().subscribe((updatedUser: any) => {
+//        setUser(updatedUser);
+//      });
+//    }
+//    return () => subscription?.unsubscribe();
+//  }, [user]);
 
   // Check if there's a user in local DB
   const initUser = useCallback(async () => {
@@ -102,6 +102,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           return;
         }
         const result = await registerValidation(email, username);
+        console.debug('registerValidation result', result);
         if (result.duplicateAttribute) {
             setError(result.message);
             return;
