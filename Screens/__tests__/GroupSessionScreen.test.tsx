@@ -119,6 +119,27 @@ describe('GroupSessionScreen', () => {
 			expect(getByTestIdA(`hiker-${testUserA.id}-status`)).toHaveTextContent('Not Ready');
 		})
 
+		//toggle ready Hiker A
+		fireEvent.press(getByTestIdA('toggle-ready-button'));
+		await waitFor(() => {
+			//shows hiker status Ready
+			expect(getByTestIdA(`hiker-${testUserA.id}-status`)).toHaveTextContent('Ready');
+			//expect start session button to be available since all (1 user) hikers are ready
+			expect(getByTestIdA('start-group-session-button')).toBeDefined();
+		})
+
+		fireEvent.press(queryByTestIdA('configure-session-button'));
+		await waitFor(() => {
+			//starts session
+			expect(getByTestIdA('settings-modal')).toBeDefined();
+		})
+		fireEvent.changeText(getByTestIdA('session-name-input'),'Test Session');
+		fireEvent.press(getByTestIdA('save-close-settings-button'));
+		await waitFor(() => {
+			expect(debugRefA.current.session.name).toBe('Test Session');
+		})
+	
+
 		
 
 	//render user B
@@ -134,12 +155,14 @@ describe('GroupSessionScreen', () => {
 		})
 
 
-		//join room by userB
+		// userB joins Hiker A's Room
+		// input hiker A's roomId
 		fireEvent.changeText(getByTestIdB('join-room-input'), debugRefA.current.roomId);
-		fireEvent.press(getByTestIdB('join-room-button'));
+
+		//click	join room
+		fireEvent.press(queryByTestIdB('join-room-button'));
 		await waitFor(() => {
 			//gets roomId from server
-			expect(debugRefB.current.roomId).toBeTruthy();
 			//adds user to room
 			expect(debugRefB.current.hikers[testUserB.id]).toBeTruthy();
 			//changes to lobby screen
@@ -148,64 +171,37 @@ describe('GroupSessionScreen', () => {
 			expect(screen.getByText(testUserB.username)).toBeTruthy();
 			//shows hikerB status Not Ready
 			expect(getByTestIdB(`hiker-${testUserB.id}-status`)).toHaveTextContent('Not Ready');
+			//expect join button to be gone because not all hikers (user B) are ready
+			expect(queryByTestIdA('start-group-session-button')).toBeNull();
 			//shows hiker B that user A is in room and not ready
-			expect(queryByTestIdA(`hiker-${testUserA.id}-status`)).toHaveTextContent('Not Ready');
-		})
-
-		await waitFor(() => {
 			//shows both users on both screens
 			expect(queryByTestIdA(`hiker-${testUserA.id}-name`)).toBeTruthy();
 			expect(queryByTestIdA(`hiker-${testUserB.id}-name`)).toBeTruthy();
 
 			expect(queryByTestIdB(`hiker-${testUserA.id}-name`)).toBeTruthy();
 			expect(queryByTestIdB(`hiker-${testUserB.id}-name`)).toBeTruthy();
-			
+			expect(debugRefB.current.session.name).toBe('Test Session');
 		})
+
 		//ready userB
-		fireEvent.press(getByTestIdA(`toggle-ready-button`));
 		//Ready hiker A(Both should Be ready After this)
 		fireEvent.press(getByTestIdB(`toggle-ready-button`));
 		await waitFor(() => {
 			//shows hiker A that user B is in room and ready
 			expect(queryByTestIdA(`hiker-${testUserB.id}-status`)).toHaveTextContent('Ready');
 			//shows hiker B that user B is in room and ready
-			expect(queryByTestIdB(`hiker-${testUserB.id}-status`)).toHaveTextContent('Ready');
+			expect(queryByTestIdB(`hiker-${testUserA.id}-status`)).toHaveTextContent('Ready');
+
+			//expect start session button to be available becasue both hikers are ready
+			expect(queryByTestIdA('start-group-session-button')).toBeTruthy();
+			//start button only available to host
+			expect(queryByTestIdB('start-group-session-button')).toBeFalsy();
 		})
 
-		
+	
 
-await waitFor(() => {
-  const ready = debugRefA.current?.hikers?.[testUserA.id]?.isReady;
-  if (!ready) {
-    console.log('[TEST] Still waiting for A to become ready...');
-  }
-  expect(ready).toBe(true);
-}, { timeout: 1500 }); // increase timeout if needed
-		if (!queryByTestIdA('start-group-session-button')) {
-  console.log('View:', debugRefA.current.view);
-  console.log('Hiker A Ready:', debugRefA.current.hikers[testUserA.id]?.isReady);
-  console.log('Hiker B Ready:', debugRefA.current.hikers[testUserB.id]?.isReady);
-}
+	
 
-		await waitFor(() => {
-			//shows hiker A that user A is in room and ready
-			expect(getByTestIdA(`hiker-${testUserA.id}-status`)).toHaveTextContent('Ready');
-			expect(getByTestIdA(`hiker-${testUserB.id}-status`)).toHaveTextContent('Ready');
-			//shows hiker B that user A is in room and ready
-			expect(getByTestIdB(`hiker-${testUserA.id}-status`)).toHaveTextContent('Ready');
-			expect(getByTestIdB(`hiker-${testUserB.id}-status`)).toHaveTextContent('Ready');
-
-			//if all hikers ready show start button to host
-			//hiker A is host
-			expect(debugRefA.current.hikers[testUserA.id].isHost).toBeTruthy();
-			//hiker B is not host
-			expect(debugRefB.current.hikers[testUserB.id].isHost).toBeFalsy();
-	// Simulate a pause to let the server process the create
-
-			//shows start button
-			expect(queryByTestIdA('start-group-session-button')).toHaveTextContent('Start Session');
-				
-		})
 
 	})
 
