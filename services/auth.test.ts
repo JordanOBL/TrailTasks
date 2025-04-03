@@ -1,4 +1,5 @@
 // __tests__/authHelpers.test.ts
+import {waitFor} from '@testing-library/react-native';
 import { Database } from '@nozbe/watermelondb';
 import { checkLocalUserExists, checkGlobalUserExists, saveUserToLocalDB } from './auth'; // adjust path as needed
 import {GlobalExistingUserResponseSuccess, GlobalExistingUserResponseFail} from '../types/api'
@@ -44,8 +45,6 @@ describe('Auth Services', () => {
           user.email = mockUser.email
           user.password = mockUser.password
           user.username = mockUser.username
-          user.firstName = mockUser.firstName
-          user.lastName = mockUser.lastName
           user.trailStartedAt = mockUser.trailStartedAt
           user.trailId = mockUser.trailId
           user.trailProgress = mockUser.trailProgress
@@ -77,13 +76,15 @@ describe('Auth Services', () => {
 
     it('returns a user if found in the global DB', async () => {
       //create user in test global PG bd
-      await pool.query('INSERT INTO users (id, username, email, password, first_name, last_name, trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', [mockUser.id, mockUser.username, mockUser.email, mockUser.password, mockUser.firstName, mockUser.lastName, mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
+      await pool.query('INSERT INTO users (id, username, email, password, trail_id,  trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [mockUser.id, mockUser.username, mockUser.email, mockUser.password, mockUser.trailId, mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
 
       //ACT. call checkGlobalUserExists()
       //if user found 
-      const result: GlobalExistingUserResponseSuccess | GlobalExistingUserResponseFail = await checkGlobalUserExists(mockUser.email, mockUser.password);
-      //ASSERT. check if user is returned
-      expect(result.user.id).toEqual(mockUser.id);
+      await waitFor(async () => {
+
+        const result: GlobalExistingUserResponseSuccess | GlobalExistingUserResponseFail = await checkGlobalUserExists(mockUser.email, mockUser.password);
+        expect(result.user.id).toEqual(mockUser.id);
+      })
     })
     it('returns null if no user found', async () => {
       const result: GlobalExistingUserResponseSuccess | GlobalExistingUserResponseFail = await checkGlobalUserExists('not@found.com', 'nope');
@@ -100,7 +101,7 @@ describe('Auth Services', () => {
       expect(user).toBeUndefined();
 
       //create user in test global PG bd
-      await pool.query('INSERT INTO users (id, username, email, password, first_name, last_name, trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', [mockUser.id, mockUser.username, mockUser.email, mockUser.password, mockUser.firstName, mockUser.lastName, mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
+      await pool.query('INSERT INTO users (id, username, email, password, trail_id,  trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [mockUser.id, mockUser.username, mockUser.email, mockUser.password,mockUser.trailId,  mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
 
       //get global user
       const result: GlobalExistingUserResponseSuccess | GlobalExistingUserResponseFail = await checkGlobalUserExists(mockUser.email, mockUser.password);

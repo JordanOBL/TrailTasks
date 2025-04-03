@@ -15,7 +15,6 @@ export async function sync(database: Database,isConnected: boolean = false, user
   try {
     //check internet Connection
     // @ts-ignore
-    console.debug('sync() device internet:', isConnected);
     //set locatStorage connection status
 
     if (!isRunning && isConnected) {
@@ -26,9 +25,7 @@ export async function sync(database: Database,isConnected: boolean = false, user
         database,
         pullChanges: async ({lastPulledAt, schemaVersion, migration}) => {
           try {
-            console.debug('user from pull changes', userId);
-            console.debug("pullChanges lastPulledAt", lastPulledAt);
-            console.debug("config.DATABASE_PULL_URL", Config.DATABASE_PULL_URL);
+            //console.debug("config.DATABASE_PULL_URL", Config.DATABASE_PULL_URL);
             //get new changees in the watermelon database
             const urlParams = userId
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
@@ -41,7 +38,6 @@ export async function sync(database: Database,isConnected: boolean = false, user
               throw new Error(await response.text());
             }
             const {changes, timestamp} = await response.json();
-            console.debug('finished pulling changes, timestamp: ', timestamp);
 
             //UNDER NO CIRCUMSTANCES SHOULD YOU COMMIT THES LINES UNCOMMENTED!!!
             //           require('@nozbe/watermelondb/sync/debugPrintChanges').default(
@@ -58,7 +54,6 @@ export async function sync(database: Database,isConnected: boolean = false, user
         //sending server user watermelondb changes
         pushChanges: async ({changes, lastPulledAt}) => {
           try{
-          console.debug('in push on client side sync()');
           const response = await fetch(
             `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
             {

@@ -101,8 +101,6 @@ export class User extends Model {
   };
 
   @field('username') username;
-  @field('first_name') firstName;
-  @field('last_name') lastName;
   @field('email') email;
   @field('password') password;
   @field('daily_streak') dailyStreak;
@@ -247,8 +245,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   @writer
   async getUser() {
     return {
-      firstName: this.firstName,
-      lastName: this.lastName,
       username: this.username,
       email: this.email,
       id: this.id,
@@ -353,17 +349,13 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   @writer
   async addUser(
       username,
-      firstName,
-      lastName,
       email,
       password,
       trailStartedAt
   ) {
     const newUser = await this.collections.get('users').create((user) => {
       user.username = username;
-      user.firstName = firstName;
-      user.lastName = lastName;
-      user.email = email;
+          user.email = email;
       user.password = password;
       user.pushNotificationsEnabled = true;
       user.themePreference = 'light';

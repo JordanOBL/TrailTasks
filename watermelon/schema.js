@@ -50,8 +50,6 @@ const schema = appSchema({
       name: 'users',
       columns: [
         {name: 'username', type: 'string'},
-        {name: 'first_name', type: 'string'},
-        {name: 'last_name', type: 'string'},
         {name: 'email', type: 'string'},
         {name: 'password', type: 'string'},
         {name: 'daily_streak', type: 'number', isOptional: true},

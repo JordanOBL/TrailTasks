@@ -61,8 +61,6 @@ describe('LoginScreen', () => {
 				user.email = mockUser.email;
 				user.password = mockUser.password;
 				user.username = mockUser.username;
-				user.firstName = mockUser.firstName;
-				user.lastName = mockUser.lastName;
 				user.trailId = mockUser.trailId; // Ensure this matches a seeded trail
 				user.trailTokens = mockUser.trailTokens;
 				user.lastDailyStreakDate = mockUser.lastDailyStreakDate;
@@ -151,7 +149,7 @@ describe('LoginScreen', () => {
 
 		// Wait for the homescreen to appear, indicating successful login
 		await waitFor(() => {
-			expect(queryByTestId('login-screen')).toBeFalsy()
+			expect(queryByTestId('login-screen')).toBeNull()
 			//expect(checkForLoggedInUser).toHaveBeenCalledWith(mockUser.email, mockUser.password);
 		}); // Increase timeout as needed
 

@@ -67,9 +67,9 @@ describe('New Session Handlers checkLocalStorageSessionSettings()',() => {
 
     jest.clearAllMocks();
   })
-  it('should return undefined', async () => {
+  it('should return empty object', async () => {
     const result = await NewSessionHandlers.checkLocalStorageSessionSettings('1', watermelonDatabase);
-    expect(result).toBe(undefined);
+    expect(result).toMatchObject({});
   })
   it('should return recentSettings for a category', async () => {
    
@@ -79,8 +79,6 @@ describe('New Session Handlers checkLocalStorageSessionSettings()',() => {
         user.email = mockUser.email;
         user.password = mockUser.password;
         user.username = mockUser.username;
-        user.firstName = mockUser.firstName;
-        user.lastName = mockUser.lastName;
         user.trailId = mockUser.trailId; // Ensure this matches a seeded trail
         user.trailTokens = mockUser.trailTokens;
         user.lastDailyStreakDate = mockUser.lastDailyStreakDate;

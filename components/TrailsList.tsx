@@ -80,7 +80,7 @@ const TrailsList = ({
   };
 //@ts-ignore
   const renderTrailItem = ({ item }) => (
-      <EnhancedTrailCard trail={item} user={user} />
+      <EnhancedTrailCard trail={item} key={item.id} user={user} />
   );
 
   return (

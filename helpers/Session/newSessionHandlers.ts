@@ -12,8 +12,12 @@ NewSessionHandlers.checkLocalStorageSessionSettings = async (
   {sessionCategoryId, database}:{ sessionCategoryId: string,
     database: Database }
 ) => {
+  if(!sessionCategoryId || !database) {
+      return {};
+    }
+
   try{
-    const recentSettings = await database.localStorage.get(
+         const recentSettings = await database.localStorage.get(
       'category ' + sessionCategoryId + ' settings'
     );
 
@@ -21,7 +25,7 @@ NewSessionHandlers.checkLocalStorageSessionSettings = async (
       //@ts-ignore
       return JSON.parse(recentSettings);
     }
-    return undefined;
+    return {};
   } catch (err) {
     handleError(err, "checkLocalStorageSessionSettings")
   }

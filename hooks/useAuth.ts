@@ -80,9 +80,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
   // Wrap your existing “handleRegister” logic
   const register = useCallback(
-    async ({firstName, lastName, email, password, confirmPassword, username}:{
-      firstName: string,
-      lastName: string,
+    async ({ email, password, confirmPassword, username}:{
       email: string,
       password: string,
       confirmPassword: string,
@@ -93,7 +91,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
         setError('');
 
         // Basic validation
-        if (!firstName || !lastName || !email || !password || !confirmPassword || !username) {
+        if (!email || !password || !confirmPassword || !username) {
           setError('All fields are required');
           return;
         }
@@ -102,7 +100,6 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           return;
         }
         const result = await registerValidation(email, username);
-        console.debug('registerValidation result', result);
         if (result.duplicateAttribute) {
             setError(result.message);
             return;
@@ -110,7 +107,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
         // Otherwise create user in local DB
         const newUser = await createNewUser(
-          { firstName, lastName, email, password, username, watermelonDatabase}
+          {  email, password, username, watermelonDatabase}
         );
         if (newUser) {
           // Possibly set user in state after register

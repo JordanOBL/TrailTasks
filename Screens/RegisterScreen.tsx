@@ -10,15 +10,13 @@ interface Props {
 const RegisterScreen = ({handleFormChange}) => {
     const {register, error} = useAuthContext();
     const {isConnected, refreshConnectionStatus} = useInternetConnection();
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [username, setUsername] = useState('');
 
     function handleRegister(){
-        register({ firstName, lastName, email, password, confirmPassword, username });
+        register({ email, password, confirmPassword, username });
     }
 
     return (
@@ -34,14 +32,12 @@ const RegisterScreen = ({handleFormChange}) => {
                 </View>
                 <View style={styles.registerContainer}>
                     <RegisterForm
-                        firstName={firstName}
-                        lastName={lastName}
+                        
                         email={email}
                         password={password}
                         confirmPassword={confirmPassword}
                         username={username}
-                        onFirstNameChange={setFirstName}
-                        onLastNameChange={setLastName}
+                       
                         onEmailChange={setEmail}
                         onPasswordChange={setPassword}
                         onConfirmPasswordChange={setConfirmPassword}

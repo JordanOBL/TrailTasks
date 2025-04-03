@@ -88,32 +88,25 @@ export async function registerValidation(email: string, username: string) {
 
 //createNewUser creates a new user
 export const createNewUser = async ({
-	firstName,
-	lastName,
 	email,
 	password,
 	username,
 	watermelonDatabase
 }: {
-		firstName: string;
-		lastName: string;
 		email: string;
 		password: string;
 		username: string;
 	 watermelonDatabase: Database}) => {
 	try {
 		//const trailStartedAt = formatDateTime(new Date());
-		console.log('createNewUser', firstName, lastName, email, password, username);
+		console.log('createNewUser',  email, password, username);
 		//!BCYPT PASSWORD BEFORE ADDING TO DB
 		const newUser = await watermelonDatabase.write(async () => {
 			const newUser = await watermelonDatabase
 				.get('users')
 				.create((user: User) =>
 				{
-						//@ts-ignore
-						user.firstName = firstName.trim().toLowerCase();
-						//@ts-ignore
-						user.lastName = lastName.trim().toLowerCase();
+
 						//@ts-ignore
 						user.email = email.trim().toLowerCase();
 						//@ts-ignore
@@ -251,8 +244,6 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 						// @ts-ignore
 				const newUser =  watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
 					newUser._raw.id = remoteUser.user.id;
-					newUser.firstName = remoteUser.user.first_name;
-					newUser.lastName = remoteUser.user.last_name;
 					newUser.email = remoteUser.user.email;
 					newUser.password = remoteUser.user.password;
 					newUser.username = remoteUser.user.username;

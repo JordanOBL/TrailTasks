@@ -60,13 +60,20 @@ const HomeScreen: React.FC<Props> = ({
                                          userSessions,
                                      }) => {
     const watermelonDatabase = useDatabase();
-    const [userRank, setUserRank] = React.useState<Rank | undefined>();
+    const userRankRef = React.useRef<Rank>({
+        level: 'loading',
+        group: 'loading',
+        image: null,
+        range: [],
+        title: 'loading'});
     const {isConnected} = useInternetConnection();
     const [activeIndex, setActiveIndex] = React.useState(0);
     const data = [...new Array(2).keys()]; // Your data array
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
     const {logout} = useAuthContext();
+
+ userRankRef.current = React.useMemo(() => getUserRank(Ranks, user?.totalMiles), [user?.totalMiles]);
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -111,8 +118,7 @@ const HomeScreen: React.FC<Props> = ({
             if (!user) {
                 return;
             }
-            const rank = getUserRank(Ranks, user?.totalMiles);
-            setUserRank(rank);
+            
             checkUnsyncedChanges().then(result => {
                 if (result) {
                      sync(watermelonDatabase,isConnected, user.id).catch(err =>handleError(err, 'useCallback sync HomeScreen'));
@@ -162,16 +168,16 @@ const HomeScreen: React.FC<Props> = ({
                 onSnapToItem={(index) => setActiveIndex(index)}
                 renderItem={({index}) => (
                     <View style={styles.carouselItem}>
-                        {userRank && index === 0 ? (
+                        {userRankRef.current && index === 0 ? (
                             <View style={styles.rankContainer}>
                                 <Image
-                                    source={userRank?.image}
+                                    source={userRankRef.current?.image}
                                     style={styles.rankImage}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.rankLevel}>Rank {userRank?.level}</Text>
+                                <Text style={styles.rankLevel}>Rank {userRankRef.current?.level}</Text>
                                 <Text style={styles.rankTitle}>
-                                    {userRank?.group} {userRank?.title}
+                                    {userRankRef.current?.group} {userRankRef.current?.title}
                                 </Text>
                                 <Text style={styles.username}>{user.username}</Text>
                             </View>

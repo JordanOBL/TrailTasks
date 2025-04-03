@@ -15,16 +15,12 @@ describe('GroupSessionScreen', () => {
 		id: 'A',
 		username: 'mockusernameA',
 		email: 'mockemailA@example.com',
-		firstName: 'mockfirstnameA',
-		lastName: 'mocklastnameA',
 		password: 'mockPasswordA',
 	});
 	const mockUserB = createMockUserBase({
 		id: 'B',
 		username: 'mockusernameB',
 		email: 'mockemailB@example.com',
-		firstName: 'mockfirstnameB',
-		lastName: 'mocklastnameB',
 		password: 'mockPasswordB',
 	});
 

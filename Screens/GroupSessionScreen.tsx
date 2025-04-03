@@ -80,7 +80,7 @@ const GroupSessionComponent =  ({ user, debugRef=null }) => {
     };
 
     setupConnection();
-  }, [serverUrl]);
+  }, []);
 
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
 
@@ -96,7 +96,8 @@ const GroupSessionComponent =  ({ user, debugRef=null }) => {
     }
 
     setHikers(resetHikers);
-    setTimer({
+    setTimer(prev => ({
+      ...prev,
       startTime: null,
       isRunning: false,
       pace: 2.0,
@@ -109,8 +110,9 @@ const GroupSessionComponent =  ({ user, debugRef=null }) => {
       longBreakTime: 2700,
       sets: 3,
       autoContinue: false,
-    });
-    setSession({
+    }));
+    setSession(prev => ({
+      ...prev,
       name: '',
       distance: 0.0,
       level: 1,
@@ -118,7 +120,7 @@ const GroupSessionComponent =  ({ user, debugRef=null }) => {
       strikes: 0,
       tokensEarned: 0,
       bonusTokens: 0,
-    });
+    }));
   }
 
 

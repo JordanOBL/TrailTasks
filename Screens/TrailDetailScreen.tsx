@@ -19,8 +19,23 @@ import {withObservables} from "@nozbe/watermelondb/react";
 import {useAuthContext} from "../services/AuthContext";
 
 // @ts-ignore
-const TrailDetailScreen = ({ route,user, navigation, userPurchasedTrails, completedTrails, trail}) => {
-    //const {trail, userPurchasedTrails, completedTrails} = route.params;
+const TrailDetailScreen = ({ route,user, navigation}) => {
+    const params = route?.params ?? {};
+
+const {
+  trail,
+  userPurchasedTrails,
+  completedTrails,
+} = params;
+
+const resolvedTrail = trail ?? {
+  id: 0,
+  trail_name: 'Trail Not Found',
+  trail_description: 'Trail Not Found',
+  trail_distance: 0,
+  trail_of_the_week: false
+};
+
     const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
     const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -46,18 +61,7 @@ const TrailDetailScreen = ({ route,user, navigation, userPurchasedTrails, comple
         return 'Short';
     })();
 
-//    const reward = (() => {
-//        let calculatedReward = trailDistance;
-//        if (true) { //SUBSCRIPTION
-//            if (calculatedReward >= 5 && calculatedReward < 10) {
-//                calculatedReward = Math.ceil(calculatedReward * 1.5);
-//            } else if (calculatedReward >= 10) {
-//                calculatedReward = Math.ceil(calculatedReward * 2);
-//            }
-//        }
-//        return Math.ceil(calculatedReward)
-//    })();
-//
+
 
     let calculatedReward = Math.ceil(Number(trailDistance));
     const reward = trail?.trail_of_the_week ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
