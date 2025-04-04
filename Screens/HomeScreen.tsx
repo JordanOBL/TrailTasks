@@ -33,6 +33,7 @@ import isYesterday from '../helpers/isYesterday';
 import isToday from '../helpers/isToday';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import handleError from "../helpers/ErrorHandler";
+import SyncButton from "../components/syncButton"
 
 
 interface Rank {
@@ -99,7 +100,6 @@ const HomeScreen: React.FC<Props> = ({
         }//Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
            // Check if the user has any miles hiked
-        console.debug('Checking if user has any miles hiked', user?.totalMiles);
         
         if (user?.totalMiles <= 0.00) {
             setShowTutorial(true); // Show the tutorial if the user has no miles hiked
@@ -151,9 +151,13 @@ const HomeScreen: React.FC<Props> = ({
                     <Text style={styles.onlineStatus}>
                         {isConnected ? 'Online' : 'Offline'}
                     </Text>
-                    <Text style={styles.dailyStreak}>
-                        Daily Streak: {user?.dailyStreak}
-                    </Text>
+                    <View>
+                        <Text style={styles.dailyStreak}>
+                            Daily Streak: {user?.dailyStreak}
+                        </Text>
+                        <SyncButton />
+                    </View>
+
                 </View>
                 <View style={{height: 200}}>
                     <Carousel
@@ -315,6 +319,8 @@ const styles = StyleSheet.create({
     dailyStreak: {
         color: 'rgb(7, 254, 213)',
         fontSize: 12,
+        display: 'flex',
+        flexDirection: 'column'
     },
     loadingContainer: {
         flex: 1,

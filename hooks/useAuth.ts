@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Database } from '@nozbe/watermelondb';
-import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists, setSubscriptionStatus, setLocalStorageUser, createNewUser , registerValidation, saveUserToLocalDB} from '../services/auth';
+import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists,  setLocalStorageUser, createNewUser , registerValidation, saveUserToLocalDB} from '../services/auth';
 import {useInternetConnection} from './useInternetConnection';
 import handleError from '../helpers/ErrorHandler';
 import { User } from '../watermelon/models';
@@ -68,7 +68,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           return;
         }
 
-        await setSubscriptionStatus(localUser, watermelonDatabase);
+        //await setSubscriptionStatus(localUser, watermelonDatabase);
         await setLocalStorageUser(localUser, watermelonDatabase);
         setUser(localUser);
       } catch (err) {

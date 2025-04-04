@@ -159,16 +159,16 @@ const schema = appSchema({
         {name: 'updated_at', type: 'number'},
       ],
     }),
-    tableSchema({
-      name: 'users_subscriptions',
-      columns: [
-        {name: 'user_id', type: 'string'}, //ref
-        {name: 'is_active', type: 'boolean'}, //ref
-        {name: 'expires_at', type: 'string', isOptional: true}, //ref
-        {name: 'created_at', type: 'number'},
-        {name: 'updated_at', type: 'number'},
-      ],
-    }),
+//    tableSchema({
+//      name: 'users_subscriptions',
+//      columns: [
+//        {name: 'user_id', type: 'string'}, //ref
+//        {name: 'is_active', type: 'boolean'}, //ref
+//        {name: 'expires_at', type: 'string', isOptional: true}, //ref
+//        {name: 'created_at', type: 'number'},
+//        {name: 'updated_at', type: 'number'},
+//      ],
+//    }),
     tableSchema({
       name: 'addons',
       columns: [

@@ -93,7 +93,7 @@ export class User extends Model {
     trails: {type: 'belongs_to', key: 'trail_id'},
     users_completed_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_queued_trails: {type: 'has_many', foreignKey: 'user_id'},
-    users_subscriptions: {type: 'has_one', foreignKey: 'user_id'},
+    //users_subscriptions: {type: 'has_one', foreignKey: 'user_id'},
     users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_addons: {type: 'has_many', foreignKey: 'user_id'},
     users_parks: {type: 'has_many', foreignKey: 'user_id'}, // Added for park-level tracking
@@ -128,7 +128,7 @@ export class User extends Model {
   @children('users_parks') usersParks; // Added to track user progress in parks
 
 
-  @relation('users_subscriptions', 'subscription_id') userSubscription;
+  //@relation('users_subscriptions', 'subscription_id') userSubscription;
 
   @writer
   async purchaseTrail(trail, cost) {
@@ -372,20 +372,20 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return newUser[0];
   }
 
-  @writer
-  async addUserSubscription() {
-    const subscription = await this.collections
-        .get('users_subscriptions')
-        .create((user_subscription) => {
-          //@ts-ignore
-          user_subscription.userId = this.id;
-          //@ts-ignore
-          user_subscription.isActive = false;
-          user_subscription.expiresAt = formatDateTime(new Date());
-        });
-
-    return subscription[0];
-  }
+//  @writer
+//  async addUserSubscription() {
+//    const subscription = await this.collections
+//        .get('users_subscriptions')
+//        .create((user_subscription) => {
+//          //@ts-ignore
+//          user_subscription.userId = this.id;
+//          //@ts-ignore
+//          user_subscription.isActive = false;
+//          user_subscription.expiresAt = formatDateTime(new Date());
+//        });
+//
+//    return subscription[0];
+//  }
 
 @writer
 async buyAddon(addOn) {
@@ -777,22 +777,22 @@ export class User_Session extends Model {
   }
 }
 
-// @ts-ignore
-export class Subscription extends Model {
-  static table = 'users_subscriptions';
-  static associations = {
-    users: {type: 'belongs_to', key: 'user_id'},
-  };
-  @field('user_id') userId;
-  @field('is_active') isActive;
-  @field('expires_at') expiresAt;
-  @date('created_at') createdAt;
-  @date('updated_at') updatedAt;
-
-  @relation('users', 'user_id') user;
-
-  @children('users') users;
-}
+//// @ts-ignore
+//export class Subscription extends Model {
+//  static table = 'users_subscriptions';
+//  static associations = {
+//    users: {type: 'belongs_to', key: 'user_id'},
+//  };
+//  @field('user_id') userId;
+//  @field('is_active') isActive;
+//  @field('expires_at') expiresAt;
+//  @date('created_at') createdAt;
+//  @date('updated_at') updatedAt;
+//
+//  @relation('users', 'user_id') user;
+//
+//  @children('users') users;
+//}
 
 // @ts-ignore
 export class Addon extends Model {
