@@ -6,15 +6,15 @@ import { AuthProvider } from '../services/AuthContext';
 import {testDb as mockDatabase} from '../watermelon/testDB';
 export const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
-          <NavigationContainer>
-    <DatabaseProvider database={mockDatabase}>
-      <InternetConnectionProvider>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </InternetConnectionProvider>
-    </DatabaseProvider>
-          </NavigationContainer>
+    <NavigationContainer>
+      <DatabaseProvider database={mockDatabase}>
+        <InternetConnectionProvider>
+          <AuthProvider >
+            {children}
+          </AuthProvider>
+        </InternetConnectionProvider>
+      </DatabaseProvider>
+    </NavigationContainer>
   );
 };
 

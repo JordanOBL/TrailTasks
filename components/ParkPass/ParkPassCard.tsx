@@ -4,8 +4,14 @@ import { Card, Text, Button, Badge } from 'react-native-paper';
 import * as Progress from 'react-native-progress';
 import {withObservables} from "@nozbe/watermelondb/react";
 import {useEffect} from "react";
+import {CombinedData, User} from "../../watermelon/models";
 
-const ParkPassCard = ({ data, user }) => {
+interface Props {
+    data: CombinedData;
+    user: User;
+}
+
+const ParkPassCard = ({ data, user }: Props) => {
 
     const progress = data.completedTrails / data.totalTrails
     return (
