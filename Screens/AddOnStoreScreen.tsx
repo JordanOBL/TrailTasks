@@ -1,6 +1,8 @@
 import { FlatList, SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
 import React, { useState } from 'react';
-
+import {sync} from '../watermelon/sync';
+import {useDatabase} from '@nozbe/watermelondb/react';
+import {useInternetConnection} from '../hooks/useInternetConnection';
 import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
 import handleError from "../helpers/ErrorHandler";
 import useAddons from '../helpers/Addons/useAddons';
@@ -9,6 +11,8 @@ import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
 
 const AddOnStoreScreen = ({user, userAddons}) => {
   const {addons, loading, error} = useAddons();
+  const watermelondb = useDatabase();
+  const {isConnected} = useInternetConnection();
 
   if (loading) {
     return <Text>Loading Add-Ons...</Text>;
@@ -20,6 +24,9 @@ const AddOnStoreScreen = ({user, userAddons}) => {
   async function handleAddonPurchase(addon) {
     try {
       let successMessage = await user.buyAddon(addon);
+      if(successMessage){
+        await sync(watermelondb, isConnected, user.id)
+      }
       Alert.alert('Success', successMessage);
     } catch (err) {
       Alert.alert('Purchase Failed', err.message);

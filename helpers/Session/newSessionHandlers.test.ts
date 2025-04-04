@@ -1,3 +1,4 @@
+import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { WrappedApp} from '../../index';
 import {testDb as watermelonDatabase} from '../../watermelon/testDB';
@@ -28,7 +29,7 @@ const timer = {
       autoContinue: false
 
     }
-    const sessionDetails = {
+    const sessionDetails ={
       startTime: null,
       sessionName: '',
       sessionDescription: '',
@@ -66,9 +67,9 @@ describe('New Session Handlers checkLocalStorageSessionSettings()',() => {
 
     jest.clearAllMocks();
   })
-  it('should return undefined', async () => {
+  it('should return empty object', async () => {
     const result = await NewSessionHandlers.checkLocalStorageSessionSettings('1', watermelonDatabase);
-    expect(result).toBe(undefined);
+    expect(result).toMatchObject({});
   })
   it('should return recentSettings for a category', async () => {
    
@@ -78,8 +79,6 @@ describe('New Session Handlers checkLocalStorageSessionSettings()',() => {
         user.email = mockUser.email;
         user.password = mockUser.password;
         user.username = mockUser.username;
-        user.firstName = mockUser.firstName;
-        user.lastName = mockUser.lastName;
         user.trailId = mockUser.trailId; // Ensure this matches a seeded trail
         user.trailTokens = mockUser.trailTokens;
         user.lastDailyStreakDate = mockUser.lastDailyStreakDate;
@@ -118,11 +117,17 @@ describe('New Session Handlers checkLocalStorageSessionSettings()',() => {
 
 describe('NewSessionHandler StartSessionClick', () => {
  test('user invokes start new session', async () => {
+    const setSessionDetails = jest.fn();
+    const setTimer = jest.fn();
     //get user form database
     const [testUser] = await watermelonDatabase.get('users').query().fetch();
-    const result = await NewSessionHandlers.StartSessionClick(sessionDetails);
-    const sessions  = await watermelonDatabase.get('users_sessions').query().fetch();
-    expect(sessions.length).toBe(1)
+    const result = await NewSessionHandlers.StartSessionClick({sessionDetails, setSessionDetails, timer, setTimer, database: watermelonDatabase, user: testUser});
+
+    const sessions= await watermelonDatabase.get('users_sessions').query().fetch();
+    await waitFor(() => {
+      
+    expect(sessions).toHaveLength(1)
+    })
   })
 
 })

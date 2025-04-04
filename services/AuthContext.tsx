@@ -10,8 +10,7 @@ type AuthContextType = {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   error: string;
   login: (email: string, password: string) => Promise<void>;
-  register: ( firstName: string,
-      lastName: string,
+  register: (  
       email: string,
       password: string,
       confirmPassword: string,

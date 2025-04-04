@@ -18,7 +18,7 @@ import handleError from '../../helpers/ErrorHandler';
 import RefreshConnection from "../RefreshConnection";
 
 //const logger = new SyncLogger(10 /* limit of sync logs to keep in memory */);
-const RegisterForm = ({firstName = '', lastName = '', email = '', password = '', confirmPassword = '', username = '', onFirstNameChange, onLastNameChange, onEmailChange, onPasswordChange, onConfirmPasswordChange, onUsernameChange, error = '', isConnected = false, onRegisterPress, onRefreshPress, onFormChange}) => {
+const RegisterForm = ({email = '', password = '', confirmPassword = '', username = '', onFirstNameChange, onLastNameChange, onEmailChange, onPasswordChange, onConfirmPasswordChange, onUsernameChange, error = '', isConnected = false, onRegisterPress, onRefreshPress, onFormChange}) => {
     return isConnected ? (
         <KeyboardAvoidingView
             testID="register-form"
@@ -28,23 +28,7 @@ const RegisterForm = ({firstName = '', lastName = '', email = '', password = '',
             <Text testID="register-error" style={styles.error}>{error || ''}</Text>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.formContainer}>
-                    <TextInput
-                        testID="first-name-input"
-                        value={firstName}
-                        onChangeText={onFirstNameChange}
-                        placeholder="First Name"
-                        placeholderTextColor={'rgba(255, 255, 255, .5)'}
-                        style={styles.input}
-                    />
-                    <TextInput
-                        testID="last-name-input"
-                        value={lastName}
-                        onChangeText={onLastNameChange}
-                        placeholder="Last Name"
-                        placeholderTextColor={'rgba(255, 255, 255, .5)'}
-                        style={styles.input}
-                    />
-                    <TextInput
+                                      <TextInput
                         testID="email-input"
                         value={email.toLowerCase()}
                         onChangeText={onEmailChange}
@@ -86,8 +70,6 @@ const RegisterForm = ({firstName = '', lastName = '', email = '', password = '',
                             !email.trim() ||
                                 !password.trim() ||
                                 !confirmPassword.trim() ||
-                                !firstName.trim() ||
-                                !lastName.trim() ||
                                 !username.trim()
                         }
                         onPress={onRegisterPress}
@@ -99,8 +81,6 @@ const RegisterForm = ({firstName = '', lastName = '', email = '', password = '',
                                 !email ||
                                     !password ||
                                     !confirmPassword ||
-                                    !firstName ||
-                                    !lastName ||
                                     !username
                                         ? 'grey'
                                         : 'rgb(7,254,213)',

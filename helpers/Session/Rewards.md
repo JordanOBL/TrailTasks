@@ -10,6 +10,7 @@ Trail Completion Rewards
 
 Users receive tokens when they fully complete a trail.
 The number of tokens depends on the trail distance (longer trails reward more tokens).
+
 Session Rewards
 
 Tokens are earned based on total focused time during a session.

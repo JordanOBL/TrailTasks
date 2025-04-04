@@ -2,7 +2,7 @@ import React, { useState,useRef, useEffect } from 'react';
 import { AppState, Dimensions, View, Text, FlatList, Pressable, Platform,  StyleSheet, SafeAreaView, TextInput, Switch, Modal, ScrollView } from 'react-native';
 import GroupResultsScreen from './GroupResultsScreen';
 import useWebSocket from 'react-use-websocket';
- import { Dropdown } from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import timeOptions from '../helpers/Session/timeOptions';
 import {handleResponse} from '../helpers/Websockets/HandleResponse';
 import * as Progress from 'react-native-progress';
@@ -19,10 +19,9 @@ const StatBox = ({ label, value }) => (
   </View>
 );
 
-const GroupSessionComponent =  ({ user }) => {
+const GroupSessionComponent =  ({ user, debugRef=null }) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const { isConnected, ipAddress } = useInternetConnection();
-
   //this will check is emulater or device
   ////!TODO:Remove fo or production
   const [serverUrl, setServerUrl] = useState(null);
@@ -39,7 +38,6 @@ const GroupSessionComponent =  ({ user }) => {
     strikes: 0,
     tokensEarned: 0,
     bonusTokens: 0,
-
   });
   const [messageQueue, setMessageQueue] = useState([]);
   const [error, setError] = useState('');
@@ -60,29 +58,29 @@ const GroupSessionComponent =  ({ user }) => {
   });
 
   let targetDistance = 0.5 * session.level;
-useEffect(() => {
+  useEffect(() => {
     const setupConnection = async () => {
 
-        if (isConnected) {
-          // Check if we're on the emulator or a physical device
-          const isEmulator = ipAddress[1] == 0;  // Emulator IP
-          if (isEmulator) {
-            setServerUrl('ws://10.0.2.2:8080/groupsession'); // Use emulator IP
-          } else if (Platform.OS === 'android') {
-            // Use the actual IP for the physical device
-            setServerUrl('ws://192.168.1.42:8080/groupsession');
-          } else if (Platform.OS === 'ios') {
-              // Use the actual IP for the physical device
-              setServerUrl('ws://127.0.0.1:8080/groupsession');
-              }
-
+      if (isConnected) {
+        // Check if we're on the emulator or a physical device
+        const isEmulator = ipAddress && ipAddress[1] == 0;  // Emulator IP
+        if (isEmulator) {
+          setServerUrl('ws://10.0.2.2:8080/groupsession'); // Use emulator IP
+        } else if (Platform.OS === 'android') {
+          // Use the actual IP for the physical device
+          setServerUrl('ws://192.168.1.42:8080/groupsession');
         } else {
-          setError('No internet connection');
+          // Use the actual IP for the physical device
+          setServerUrl('ws://127.0.0.1:8080/groupsession');
         }
+
+      } else {
+        setError('No internet connection');
+      }
     };
 
     setupConnection();
-  }, [serverUrl]);
+  }, []);
 
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
 
@@ -98,7 +96,8 @@ useEffect(() => {
     }
 
     setHikers(resetHikers);
-    setTimer({
+    setTimer(prev => ({
+      ...prev,
       startTime: null,
       isRunning: false,
       pace: 2.0,
@@ -111,8 +110,9 @@ useEffect(() => {
       longBreakTime: 2700,
       sets: 3,
       autoContinue: false,
-    });
-    setSession({
+    }));
+    setSession(prev => ({
+      ...prev,
       name: '',
       distance: 0.0,
       level: 1,
@@ -120,7 +120,7 @@ useEffect(() => {
       strikes: 0,
       tokensEarned: 0,
       bonusTokens: 0,
-    });
+    }));
   }
 
 
@@ -128,10 +128,10 @@ useEffect(() => {
   useEffect(() => {
     if (lastJsonMessage) {
       handleResponse(lastJsonMessage, setHikers, setRoomId, setView, user, setMessageQueue, setError, setTimer, setSession);
-     }
+    }
   }, [lastJsonMessage]);
 
-   // Create or Join Room
+  // Create or Join Room
   function handleCreateRoom(){
     sendJsonMessage({
       header: { protocol: 'create', userId: user.id },
@@ -147,21 +147,21 @@ useEffect(() => {
     });
   }
 
- function handlePause() {
-  setHikers(prev => ({
-    ...prev,
-    [user.id]: {
-      ...prev[user.id],
-      isPaused: true,
-      strikes: prev[user.id].strikes + 1,
-    },
-  }));
+  function handlePause() {
+    setHikers(prev => ({
+      ...prev,
+      [user.id]: {
+        ...prev[user.id],
+        isPaused: true,
+        strikes: prev[user.id].strikes + 1,
+      },
+    }));
     setSession(prev => ({...prev, strikes: prev.strikes + 1 }));
-  sendJsonMessage({
-    header: { protocol: 'pause', roomId, userId: user.id },
-    message: {},
-  });
-}
+    sendJsonMessage({
+      header: { protocol: 'pause', roomId, userId: user.id },
+      message: {},
+    });
+  }
 
 
   function handleLeaveActiveSession(){
@@ -223,7 +223,8 @@ useEffect(() => {
     });
   }
   function handleStart(){
-       sendJsonMessage({
+    console.warn('clicked start');
+    sendJsonMessage({
       header: { protocol: 'start', userId: user.id, roomId },
       message: { start: true},
     });
@@ -236,23 +237,23 @@ useEffect(() => {
   const intervalRef = useRef(null);
 
   // Set up and manage the countdown interval
- useEffect(() => {
-  if (!timer || !timer.isRunning) {
+  useEffect(() => {
+    if (!timer || !timer.isRunning) {
       return;
     }
-  if (timer.duration > 0) {
-       intervalRef.current = setInterval(() => {
-      setTimer(prev => ({
-        ...prev,
-        duration: prev.duration > 0 ? prev.duration - 1 : 0,
-      }));
-    }, 1000);
+    if (timer.duration > 0) {
+      intervalRef.current = setInterval(() => {
+        setTimer(prev => ({
+          ...prev,
+          duration: prev.duration > 0 ? prev.duration - 1 : 0,
+        }));
+      }, 1000);
 
-  }
+    }
 
 
-  return () => clearInterval(intervalRef.current);
-}, [timer]);
+    return () => clearInterval(intervalRef.current);
+  }, [timer]);
 
   //auto end if moda
   const timeoutRef = useRef(null); //this is a timeout to make the modal visible and then not visible again after 5 seconds if the endModal appears
@@ -272,15 +273,15 @@ useEffect(() => {
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState) => {
-    if(timer.isRunning){
-      if (appState.match(/active/) && nextAppState.match(/inactive|background/)) {
-        console.log('App is in the background or inactive.');
-        handlePause();
-      } else if (nextAppState === 'active' && appState.match(/inactive|background/)) {
-        console.log('App is back in the foreground.');
-        handleResume();
-      }
-      setAppState(nextAppState);
+      if(timer.isRunning){
+        if (appState.match(/active/) && nextAppState.match(/inactive|background/)) {
+          console.log('App is in the background or inactive.');
+          handlePause();
+        } else if (nextAppState === 'active' && appState.match(/inactive|background/)) {
+          console.log('App is back in the foreground.');
+          handleResume();
+        }
+        setAppState(nextAppState);
       }
     };
 
@@ -291,27 +292,48 @@ useEffect(() => {
   useFocusEffect(
     React.useCallback(() => {
       // Screen is focused
-      
+
       if(timer.isRunning){
         handleResume();
       }
       return () => {
         // Screen is unfocused
         if(timer.isRunning){
-            handlePause();
+          handlePause();
         }
       };
     }, [timer.isRunning])
   );
 
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' && debugRef) {
+      debugRef.current = {
+        messageQueue,
+        error,
+        hikers,
+        session,
+        roomId,
+        timer,
+        view,
+        isConnected,
+        serverUrl,
+
+      };
+    }
+  }, [hikers, session, roomId, timer, view, isConnected, messageQueue, error, serverUrl]);
+
+  if(!isConnected){
+    return <View><Text>No Internet Connection</Text></View>;
+  }
+
 
   return (
-    <SafeAreaView style={styles.container}>
-      {view === 'session' && isConnected ?  (
+    <SafeAreaView testID="group-session-screen" style={styles.container}>
+      {view === 'session' && (
         <View style={styles.initialContainer}>
           <Text style={styles.title}>Group Session</Text>
 
-          <Pressable style={styles.createRoomButton} onPress={handleCreateRoom}>
+          <Pressable testID="create-room-button" style={styles.createRoomButton} onPress={handleCreateRoom}>
             <Text style={styles.buttonText}>Create Room</Text>
           </Pressable>
 
@@ -321,14 +343,15 @@ useEffect(() => {
             value={roomId}
             onChangeText={setRoomId}
             style={styles.input}
+            testID="join-room-input"
           />
-          <Pressable style={styles.joinRoomButton} onPress={handleJoinRoom}>
+          <Pressable testID="join-room-button" style={styles.joinRoomButton} onPress={handleJoinRoom}>
             <Text style={styles.buttonText}>Join Room</Text>
           </Pressable>
         </View>
-      ) : <View><Text>No Internet Connection</Text></View> }
+      )}
 
-       <EndSessionModal isVisible={view === 'endModal'} focusTime={timer.focusTime} onEndSession={handleEnd} onAddSession={handleExtraSession} onAddSet={handleExtraSet}  />
+      <ContinueSessionModal isVisible={view === 'endModal'} focusTime={timer.focusTime} onShowResultsScreen={() => setView('results')} onAddSession={handleExtraSession} onAddSet={handleExtraSet}  />
 
 
       {view === 'lobby' && (
@@ -339,6 +362,7 @@ useEffect(() => {
             transparent={true}
             visible={isSettingsModalVisible}
             onRequestClose={() => setSettingsModalVisible(false)}
+            testID="settings-modal"
           >
             <View style={styles.modalOverlay}>
               <ScrollView style={styles.modalContent}>
@@ -347,6 +371,7 @@ useEffect(() => {
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Session Title:</Text>
                   {hikers[user.id].isHost ? <TextInput
+                    testID="session-name-input"
                     value={session.name}
                     style={styles.input}
                     onChangeText={(value) => setSession((prev) => ({ ...prev, name: value }))}
@@ -358,59 +383,63 @@ useEffect(() => {
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Focus Time:</Text>
-                        <Dropdown
-                          style={styles.dropdown}
-                          placeholderStyle={styles.placeholderStyle}
-                          selectedTextStyle={styles.selectedTextStyle}
-                          iconStyle={styles.iconStyle}
-                          data={timeOptions}
-                          maxHeight={300}
-                          labelField="label"
-                          valueField="value"
-                          placeholder="Select item"
-                          value={timer.focusTime}
-                          onChange={(selectedItem) => setTimer(prev => ({...prev, focusTime: selectedItem.value }))}
-                        />
+                  <Dropdown
+                    testID="focus-time-dropdown"
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    iconStyle={styles.iconStyle}
+                    data={timeOptions}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select item"
+                    value={timer.focusTime}
+                    onChange={(selectedItem) => setTimer(prev => ({...prev, focusTime: selectedItem.value }))}
+                  />
                 </View>
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Short Break:</Text>
-                    <Dropdown
-                                        style={styles.dropdown}
-                                        placeholderStyle={styles.placeholderStyle}
-                                        selectedTextStyle={styles.selectedTextStyle}
-                                        iconStyle={styles.iconStyle}
-                                        data={timeOptions}
-                                        maxHeight={300}
-                                        labelField="label"
-                                        valueField="value"
-                                        placeholder="Select item"
-                                        value={timer.shortBreakTime}
-                                        onChange={(selectedItem) => setTimer(prev => ({...prev, shortBreakTime: selectedItem.value }))}
-                                      />
+                  <Dropdown
+                    testID="short-break-dropdown"
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    iconStyle={styles.iconStyle}
+                    data={timeOptions}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select item"
+                    value={timer.shortBreakTime}
+                    onChange={(selectedItem) => setTimer(prev => ({...prev, shortBreakTime: selectedItem.value }))}
+                  />
                 </View>
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Long Break:</Text>
-                        <Dropdown
-                                            style={styles.dropdown}
-                                            placeholderStyle={styles.placeholderStyle}
-                                            selectedTextStyle={styles.selectedTextStyle}
-                                            iconStyle={styles.iconStyle}
-                                            data={timeOptions}
-                                            maxHeight={300}
-                                            labelField="label"
-                                            valueField="value"
-                                            placeholder="Select item"
-                                            value={timer.longBreakTime}
-                                            onChange={(selectedItem) => setTimer(prev => ({...prev, longBreakTime: selectedItem.value }))}
-                                          />
+                  <Dropdown
+                    testID="long-break-dropdown"
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholderStyle}
+                    selectedTextStyle={styles.selectedTextStyle}
+                    iconStyle={styles.iconStyle}
+                    data={timeOptions}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select item"
+                    value={timer.longBreakTime}
+                    onChange={(selectedItem) => setTimer(prev => ({...prev, longBreakTime: selectedItem.value }))}
+                  />
 
                 </View>
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Sets:</Text>
                   {hikers[user.id].isHost ? <TextInput
+                    testID="sets-input"
                     value={String(timer.sets)}
                     onChangeText={(value) => setTimer((prev) => ({ ...prev, sets: parseInt(value, 10) || 1 }))}
                     keyboardType="numeric"
@@ -434,6 +463,7 @@ useEffect(() => {
                 <Pressable
                   style={styles.closeButton}
                   onPress={() => sendUpdatedConfig()}
+                  testID="save-close-settings-button"
                 >
                   <Text style={styles.buttonText}>{hikers[user.id].isHost ? 'Save & Close' : 'Close'}</Text>
                 </Pressable>
@@ -444,18 +474,19 @@ useEffect(() => {
           {/* Lobby Controls */}
           <View style={styles.buttonContainer}>
             <Pressable
+              testID="configure-session-button"
               style={styles.settingsButton}
               onPress={() => setSettingsModalVisible(true)}
             >
               <Text style={styles.buttonText}>Configure Session</Text>
             </Pressable>
 
-            <Pressable onPress={toggleReadyState} style={styles.toggleReadyButton}>
+            <Pressable testID="toggle-ready-button" onPress={toggleReadyState} style={styles.toggleReadyButton}>
               <Text style={styles.buttonText}>{hikers[user.id]?.isReady ? 'Unready' : 'Ready Up'}</Text>
             </Pressable>
 
             {hikers[user.id]?.isHost && Object.values(hikers).every(hiker => hiker.isReady) && (
-              <Pressable onPress={handleStart} style={styles.startButton}>
+              <Pressable testID="start-group-session-button" onPress={handleStart} style={styles.startButton}>
                 <Text style={styles.buttonText}>Start Session</Text>
               </Pressable>
             )}
@@ -471,8 +502,8 @@ useEffect(() => {
                 const [userId, hiker] = item;
                 return (
                   <View style={styles.hikerCard}>
-                    <Text style={styles.hikerName}>{hiker.username}</Text>
-                    <Text style={styles.hikerStatus}>{hiker.isReady ? 'Ready' : 'Not Ready'}</Text>
+                    <Text testID={`hiker-${userId}-name`} style={styles.hikerName}>{hiker.username}</Text>
+                    <Text testID={`hiker-${userId}-status`} style={styles.hikerStatus}>{hiker.isReady ? 'Ready' : 'Not Ready'}</Text>
                   </View>
                 );
               }}
@@ -482,7 +513,7 @@ useEffect(() => {
       )}
       {view === 'timer' && (
         <>
-          <Text style={{fontSize:32, color: timer.isBreak ? 'grey' : 'cyan', textAlign: 'center'}}>{
+          <Text testID="group-session-timer" style={{fontSize:32, color: timer.isBreak ? 'grey' : 'cyan', textAlign: 'center'}}>{
             timer ? formatCountdown(Number(timer.duration).toFixed(0)) : formatCountdown(0)
           }</Text>
           <View style={styles.buttonsContainer}>
@@ -526,7 +557,7 @@ useEffect(() => {
             useNativeDriver={true}
             color={timer.isBreak ? 'rgb(255,0,0)' : 'rgb(7,254,213)'}
           />
-           <View style={styles.statsContainer}>
+          <View style={styles.statsContainer}>
             <View style={styles.statsGrid}>
               <StatBox label="Pace" value={`${timer.pace} mph`} />
               <StatBox label="Sets" value={`${timer.completedSets} / ${timer.sets}`} />
@@ -555,12 +586,12 @@ useEffect(() => {
       )}
 
       {view === 'results' && (
-      <GroupResultsScreen
-        session={session}
-        hikers={hikers}
-        user={user}
-        handleReturnToLobby={handleReturnToLobby}
-        timer={timer}
+        <GroupResultsScreen
+          session={session}
+          hikers={hikers}
+          user={user}
+          handleReturnToLobby={handleReturnToLobby}
+          timer={timer}
         />
       )}
     </SafeAreaView>
@@ -574,22 +605,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     paddingHorizontal: 20,
   },
-      dropdown: {
-        margin: 8,
-        height: 40,
-        backgroundColor: 'white',
-        borderRadius: 12,
-        padding: 12,
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
+  dropdown: {
+    margin: 8,
+    height: 40,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
 
-        elevation: 2,
-      },
+    elevation: 2,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',

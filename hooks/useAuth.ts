@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Database } from '@nozbe/watermelondb';
-import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists, setSubscriptionStatus, setLocalStorageUser, createNewUser , registerValidation, saveUserToLocalDB} from '../services/auth';
+import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists,  setLocalStorageUser, createNewUser , registerValidation, saveUserToLocalDB} from '../services/auth';
 import {useInternetConnection} from './useInternetConnection';
 import handleError from '../helpers/ErrorHandler';
 import { User } from '../watermelon/models';
@@ -17,15 +17,15 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
   const [error, setError] = useState<string>('');
 
   // Observe user changes (only if user is a Watermelon model)
-  useEffect(() => {
-    let subscription: any;
-    if (user && typeof user.observe === 'function') {
-      subscription = user.observe().subscribe((updatedUser: any) => {
-        setUser(updatedUser);
-      });
-    }
-    return () => subscription?.unsubscribe();
-  }, [user]);
+//  useEffect(() => {
+//    let subscription: any;
+//    if (user && typeof user.observe === 'function') {
+//      subscription = user.observe().subscribe((updatedUser: any) => {
+//        setUser(updatedUser);
+//      });
+//    }
+//    return () => subscription?.unsubscribe();
+//  }, [user]);
 
   // Check if there's a user in local DB
   const initUser = useCallback(async () => {
@@ -68,7 +68,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           return;
         }
 
-        await setSubscriptionStatus(localUser, watermelonDatabase);
+        //await setSubscriptionStatus(localUser, watermelonDatabase);
         await setLocalStorageUser(localUser, watermelonDatabase);
         setUser(localUser);
       } catch (err) {
@@ -80,9 +80,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
   // Wrap your existing “handleRegister” logic
   const register = useCallback(
-    async ({firstName, lastName, email, password, confirmPassword, username}:{
-      firstName: string,
-      lastName: string,
+    async ({ email, password, confirmPassword, username}:{
       email: string,
       password: string,
       confirmPassword: string,
@@ -93,7 +91,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
         setError('');
 
         // Basic validation
-        if (!firstName || !lastName || !email || !password || !confirmPassword || !username) {
+        if (!email || !password || !confirmPassword || !username) {
           setError('All fields are required');
           return;
         }
@@ -109,7 +107,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
         // Otherwise create user in local DB
         const newUser = await createNewUser(
-          { firstName, lastName, email, password, username, watermelonDatabase}
+          {  email, password, username, watermelonDatabase}
         );
         if (newUser) {
           // Possibly set user in state after register

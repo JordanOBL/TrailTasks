@@ -15,8 +15,6 @@ describe('RegisterForm Component', () => {
 		// Wait for register-screen
 		await waitFor(() => {
 			expect(queryByTestId('register-form')).toBeTruthy();
-			expect(getByTestId('first-name-input')).toBeTruthy();
-			expect(getByTestId('last-name-input')).toBeTruthy();
 			expect(getByTestId('email-input')).toBeTruthy();
 			expect(getByTestId('password-input')).toBeTruthy();
 			expect(getByTestId('confirm-password-input')).toBeTruthy();

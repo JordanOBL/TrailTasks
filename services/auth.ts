@@ -88,32 +88,25 @@ export async function registerValidation(email: string, username: string) {
 
 //createNewUser creates a new user
 export const createNewUser = async ({
-	firstName,
-	lastName,
 	email,
 	password,
 	username,
 	watermelonDatabase
 }: {
-		firstName: string;
-		lastName: string;
 		email: string;
 		password: string;
 		username: string;
 	 watermelonDatabase: Database}) => {
 	try {
 		//const trailStartedAt = formatDateTime(new Date());
-		console.log('createNewUser', firstName, lastName, email, password, username);
+		console.log('createNewUser',  email, password, username);
 		//!BCYPT PASSWORD BEFORE ADDING TO DB
 		const newUser = await watermelonDatabase.write(async () => {
 			const newUser = await watermelonDatabase
 				.get('users')
 				.create((user: User) =>
 				{
-						//@ts-ignore
-						user.firstName = firstName.trim().toLowerCase();
-						//@ts-ignore
-						user.lastName = lastName.trim().toLowerCase();
+
 						//@ts-ignore
 						user.email = email.trim().toLowerCase();
 						//@ts-ignore
@@ -139,17 +132,17 @@ export const createNewUser = async ({
 
 			return newUser
 		});
-		if (newUser) {
-
-			const subscription = await newUser.addUserSubscription();
-
-			if (subscription) {
-				await watermelonDatabase.localStorage.set(
-					'subscription_id',
-					subscription.id
-				);
-			}
-		}
+//		if (newUser) {
+//
+//			const subscription = await newUser.addUserSubscription();
+//
+//			if (subscription) {
+//				await watermelonDatabase.localStorage.set(
+//					'subscription_id',
+//					subscription.id
+//				);
+//			}
+//		}
 
 		// return newUser;
 
@@ -157,10 +150,10 @@ export const createNewUser = async ({
 			await watermelonDatabase.localStorage.set('user_id', newUser.id);
 			//@ts-ignore
 			await watermelonDatabase.localStorage.set('username', newUser.username);
-			await watermelonDatabase.localStorage.set(
-				'subscriptionStatus',
-				'inactive'
-			);
+//			await watermelonDatabase.localStorage.set(
+//				'subscriptionStatus',
+//				'inactive'
+//			);
 			return newUser;
 		}
 	} catch (err) {
@@ -170,34 +163,33 @@ export const createNewUser = async ({
 
 
 //setSubscriptionStatus sets the subscription id in local storage
-export const setSubscriptionStatus = async (
-	user: Model,
-	watermelonDatabase: Database
-) => {
-	try
-{
-		if (user && user.id)
-	{
-			const subscription: Subscription[] | any =
-				await watermelonDatabase.collections
-				.get('users_subscriptions')
-				.query(Q.where('user_id', user.id))
-
-			if (subscription && subscription[0])
-		{
-				await watermelonDatabase.localStorage.set(
-					'subscription_id',
-					subscription[0].id
-				);
-				return subscription[0].id
-			}
-		}
-		console.debug('returning undefined in setsubscription')
-		return;
-	} catch (err) {
-		handleError(err, "setSubscriptionStatus");
-	}
-};
+//export const setSubscriptionStatus = async (
+//	user: Model,
+//	watermelonDatabase: Database
+//) => {
+//	try
+//{
+//		if (user && user.id)
+//	{
+//			const subscription: Subscription[] | any =
+//				await watermelonDatabase.collections
+//				.get('users_subscriptions')
+//				.query(Q.where('user_id', user.id))
+//
+//			if (subscription && subscription[0])
+//		{
+//				await watermelonDatabase.localStorage.set(
+//					'subscription_id',
+//					subscription[0].id
+//				);
+//				return subscription[0].id
+//			}
+//		}
+//		return;
+//	} catch (err) {
+//		handleError(err, "setSubscriptionStatus");
+//	}
+//};
 
 //setLocalStorageUser sets the logged in user in local storage
 export const setLocalStorageUser = async (
@@ -231,9 +223,9 @@ export const checkForLoggedInUser = async (
 			let user = await watermelonDatabase.collections.get('users').find(userId);
 
 			//@ts-ignore
-			if (user.id) {
-				await setSubscriptionStatus(user, watermelonDatabase);
-			}
+//			if (user.id) {
+//				await setSubscriptionStatus(user, watermelonDatabase);
+//			}
 			setUser((prevUser: User | null) => user);
 		}
 	} catch (err) {
@@ -252,8 +244,6 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 						// @ts-ignore
 				const newUser =  watermelonDatabase.collections.get('users').prepareCreate((newUser: User) => {
 					newUser._raw.id = remoteUser.user.id;
-					newUser.firstName = remoteUser.user.first_name;
-					newUser.lastName = remoteUser.user.last_name;
 					newUser.email = remoteUser.user.email;
 					newUser.password = remoteUser.user.password;
 					newUser.username = remoteUser.user.username;
@@ -312,12 +302,12 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 				)
 				//            // Create user subscription
 				// @ts-ignore
-				const userSubscriptions =  watermelonDatabase.collections.get('users_subscriptions').prepareCreate((newUserSubscription: Subscription) => {
-					newUserSubscription._raw.id = remoteUser.userSubscription.id;
-					newUserSubscription.userId = remoteUser.userSubscription.user_id;
-					newUserSubscription.isActive = remoteUser.userSubscription.is_active;
-					newUserSubscription.expiresAt = remoteUser.userSubscription.expires_at;
-				})
+//				const userSubscriptions =  watermelonDatabase.collections.get('users_subscriptions').prepareCreate((newUserSubscription: Subscription) => {
+//					newUserSubscription._raw.id = remoteUser.userSubscription.id;
+//					newUserSubscription.userId = remoteUser.userSubscription.user_id;
+//					newUserSubscription.isActive = remoteUser.userSubscription.is_active;
+//					newUserSubscription.expiresAt = remoteUser.userSubscription.expires_at;
+//				})
 				//            // Create user achievements
 				const userAchievements = [...remoteUser.userAchievements].map((achievement: User_Achievement) =>
 					// @ts-ignore
@@ -391,7 +381,7 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 					})
 				})
 
-				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, userSubscriptions, ...userAchievements, ...userCompletedTrails, ...userParks, ...userAddons]);
+				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, ...userAchievements, ...userCompletedTrails, ...userParks, ...userAddons]);
 			});
 	} catch (err) {
 		handleError(err, "saveUserToLocalDB")

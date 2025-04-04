@@ -37,7 +37,7 @@ export const handleResponse = (
     });
   }
 
-  console.log("new message: ", message.response);
+  console.log("new message for user: ",user.username, message.response);
 
   switch (header.protocol) {
     case "create":
@@ -68,6 +68,7 @@ export const handleResponse = (
       break;
 
     case "ready":
+      console.log("ready resonse hikers: ", response.hikers);
         setHikers((prev) =>(  {...prev, ...response.hikers} ));
         break;
     case "start":

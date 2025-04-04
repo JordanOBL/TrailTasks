@@ -33,6 +33,7 @@ import isYesterday from '../helpers/isYesterday';
 import isToday from '../helpers/isToday';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import handleError from "../helpers/ErrorHandler";
+import SyncButton from "../components/syncButton"
 
 
 interface Rank {
@@ -60,13 +61,20 @@ const HomeScreen: React.FC<Props> = ({
                                          userSessions,
                                      }) => {
     const watermelonDatabase = useDatabase();
-    const [userRank, setUserRank] = React.useState<Rank | undefined>();
+    const userRankRef = React.useRef<Rank>({
+        level: 'loading',
+        group: 'loading',
+        image: null,
+        range: [],
+        title: 'loading'});
     const {isConnected} = useInternetConnection();
     const [activeIndex, setActiveIndex] = React.useState(0);
     const data = [...new Array(2).keys()]; // Your data array
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
     const {logout} = useAuthContext();
+
+ userRankRef.current = React.useMemo(() => getUserRank(Ranks, user?.totalMiles), [user?.totalMiles]);
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -89,18 +97,20 @@ const HomeScreen: React.FC<Props> = ({
         }
         if (user && user.lastDailyStreakDate) {
             resetDailyStreak();
-        }
-    }, [user]);
-
-
-    //Check to see if user is new to the app by checking if theyve hiked any miles
+        }//Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
-    React.useEffect(() => {
-        // Check if the user has any miles hiked
-        if (user?.totalMiles <= 0) {
+           // Check if the user has any miles hiked
+        
+        if (user?.totalMiles <= 0.00) {
             setShowTutorial(true); // Show the tutorial if the user has no miles hiked
+        }else{
+            setShowTutorial(false);
         }
+
     }, [user]);
+
+
+    
 
     //this useEffect gets the correct Rank based on  the users miles
     useFocusEffect(
@@ -108,8 +118,7 @@ const HomeScreen: React.FC<Props> = ({
             if (!user) {
                 return;
             }
-            const rank = getUserRank(Ranks, user?.totalMiles);
-            setUserRank(rank);
+            
             checkUnsyncedChanges().then(result => {
                 if (result) {
                      sync(watermelonDatabase,isConnected, user.id).catch(err =>handleError(err, 'useCallback sync HomeScreen'));
@@ -131,8 +140,7 @@ const HomeScreen: React.FC<Props> = ({
     ) : (
             <SafeAreaView testID="homescreen" style={styles.container}>
                 {/* <SyncIndicator delay={3000} /> */}
-                <TutorialModal  visible={showTutorial} onClose={handleTutorialClose} />
-
+               {showTutorial && <TutorialModal  onClose={handleTutorialClose} />} 
                 <View
                     style={{
                         display: 'flex',
@@ -143,9 +151,13 @@ const HomeScreen: React.FC<Props> = ({
                     <Text style={styles.onlineStatus}>
                         {isConnected ? 'Online' : 'Offline'}
                     </Text>
-                    <Text style={styles.dailyStreak}>
-                        Daily Streak: {user?.dailyStreak}
-                    </Text>
+                    <View>
+                        <Text style={styles.dailyStreak}>
+                            Daily Streak: {user?.dailyStreak}
+                        </Text>
+                        <SyncButton />
+                    </View>
+
                 </View>
                 <View style={{height: 200}}>
                     <Carousel
@@ -160,16 +172,16 @@ const HomeScreen: React.FC<Props> = ({
                 onSnapToItem={(index) => setActiveIndex(index)}
                 renderItem={({index}) => (
                     <View style={styles.carouselItem}>
-                        {userRank && index === 0 ? (
+                        {userRankRef.current && index === 0 ? (
                             <View style={styles.rankContainer}>
                                 <Image
-                                    source={userRank?.image}
+                                    source={userRankRef.current?.image}
                                     style={styles.rankImage}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.rankLevel}>Rank {userRank?.level}</Text>
+                                <Text style={styles.rankLevel}>Rank {userRankRef.current?.level}</Text>
                                 <Text style={styles.rankTitle}>
-                                    {userRank?.group} {userRank?.title}
+                                    {userRankRef.current?.group} {userRankRef.current?.title}
                                 </Text>
                                 <Text style={styles.username}>{user.username}</Text>
                             </View>
@@ -307,6 +319,8 @@ const styles = StyleSheet.create({
     dailyStreak: {
         color: 'rgb(7, 254, 213)',
         fontSize: 12,
+        display: 'flex',
+        flexDirection: 'column'
     },
     loadingContainer: {
         flex: 1,

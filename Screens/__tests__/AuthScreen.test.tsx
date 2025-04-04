@@ -72,8 +72,6 @@ describe('AuthScreen', () => {
 		// Assert that the register screen is initially displayed
 		await waitFor(() => {
 			expect(getByTestId('register-screen')).toBeTruthy();
-			expect(queryByTestId('first-name-input')).toBeTruthy();
-			expect(queryByTestId('last-name-input')).toBeTruthy();
 			expect(getByTestId('email-input')).toBeTruthy();
 			expect(getByTestId('password-input')).toBeTruthy();
 			expect(getByTestId('confirm-password-input')).toBeTruthy();

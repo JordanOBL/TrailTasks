@@ -30,8 +30,6 @@ describe('Solo SessionScreen',() => {
 				user.email = mockUser.email;
 				user.password = mockUser.password;
 				user.username = mockUser.username;
-				user.firstName = mockUser.firstName;
-				user.lastName = mockUser.lastName;
 				user.trailId = mockUser.trailId; // Ensure this matches a seeded trail
 				user.trailTokens = mockUser.trailTokens;
 				user.lastDailyStreakDate = mockUser.lastDailyStreakDate;
@@ -59,6 +57,12 @@ describe('Solo SessionScreen',() => {
 			{ timeout: 10000 } // Increase timeout as needed
 		);
 		jest.clearAllMocks();
+	})
+
+	afterAll(async () => {
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
 	})
 
 	test('Renders New Session Options', async () => {
@@ -170,8 +174,6 @@ describe('New session options settings', () => {
 				user.email = mockUser.email;
 				user.password = mockUser.password;
 				user.username = mockUser.username;
-				user.firstName = mockUser.firstName;
-				user.lastName = mockUser.lastName;
 				user.trailId = mockUser.trailId; // Ensure this matches a seeded trail
 				user.trailTokens = mockUser.trailTokens;
 				user.lastDailyStreakDate = mockUser.lastDailyStreakDate;
@@ -246,7 +248,8 @@ describe('New session options settings', () => {
 			sets: 3,
 			completedSets: 0,
 			pace: 2,
-			autoContinue: false
+			autoContinue: false,
+			elapsedTime: 0,
 
 		})
 

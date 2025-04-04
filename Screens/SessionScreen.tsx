@@ -223,6 +223,7 @@ const SessionScreen = ({
           currentSessionCategory={currentSessionCategory}
           user={user}
           showResultsScreen={handleShowResultsScreen}
+          endSession={handleEndSession}
         />
       )}
     </SafeAreaView>
