@@ -13,7 +13,6 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
 
 
 
-
 //    const getParksData = useCallback(async () => {
 //        try {
 //            const parksData: Park[] = await watermelonDatabase.get('parks').query().fetch()
@@ -35,19 +34,30 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
 //        }
 //    }, [user, completedTrails]);
 //
-
-    
-        if(userParks && user) {
+    //{
+       // parkId: '24',
+        //parkName: 'Grand Canyon',
+        //parkImageUrl: undefined,
+        //totalTrails: 3,
+        //completedTrails: 0,
+        //trails: [ [Trail], [Trail], [Trail] ],
+        //pass: undefined
+      //},
+   useEffect(() => {
+       if(userParks && user) {
             const fetchParkPassData = async () => {
                 const parks: Park[] = await watermelonDatabase.get('parks').query().fetch()
                 const trails : Trail[] = await watermelonDatabase.get('trails').query().fetch();
                 const combinedParkPassData = combineDataForParks(parks, trails, completedTrails)
+            console.log(combinedParkPassData)
                 setCombinedData(combinedParkPassData);
             };
 
-            fetchParkPassData();
+             fetchParkPassData();
         }
 
+   },[]) 
+        
     const combineDataForParks: CombinedData[] = (parks: Park[], trails: Trail[], usersCompletedTrails: User_Completed_Trail[]) => {
         // Map completed trails for quick lookup
         // Trails only marked as completed if completeion count is greater than users current prestige level
@@ -127,7 +137,9 @@ const enhance = withObservables(['user', 'completedTrails'], ({ user }) => ({
     userParks: user.usersParks,
 }));
 
-export default enhance(ParkPassScreen);
+const EnhancedParkPassScreen = enhance(ParkPassScreen);
+
+export default EnhancedParkPassScreen;
 
 const styles = StyleSheet.create({
     container: {
