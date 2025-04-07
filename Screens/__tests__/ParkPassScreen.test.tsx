@@ -243,4 +243,72 @@ describe('ParkPassScreen', () => {
 								})
 								
 				})
+      it('carryovers trail completion upon prestige', async() =>{
+     const parks = await watermelonDatabase.get('parks').query().fetch();
+								const preparedCreatedPasses =	parks.map((park) =>{
+												return watermelonDatabase.get('users_parks').prepareCreate((parkPass) => {
+																parkPass.userId = testUser.id;
+																parkPass.parkId = park.id
+																parkPass.lastCompleted = Date.now()
+																parkPass.isRewardRedeemed = true
+																parkPass.parkLevel = 1
+
+												})
+								})
+//create completed trail with simulating completeing each trail twice
+              const trails = await watermelonDatabase.get('trails').query(Q.where('park_id', '1')).fetch();
+								const preparedCreatedTrails =	trails.map((trail) =>{
+												return watermelonDatabase.get('users_completed_trails').prepareCreate((completedTrail) => {
+																completedTrail.userId = testUser.id;
+																//Beehive Loop Trail id = 1 | Park Id = 1 Acadia National Park
+																completedTrail.trailId = trail.id
+																completedTrail.firstCompletedAt = Date.now()
+																completedTrail.lastCompletedAt = Date.now()
+																completedTrail.best_completed_time = '1:00:00'
+																completedTrail.completionCount = 2
+												})
+								})
+							
+
+
+								//add all completed trails in the same park	
+								await watermelonDatabase.write(async () => {
+												await watermelonDatabase.batch(
+																[ ...preparedCreatedPasses, ...preparedCreatedTrails ]	
+												)
+								})
+
+								const {getByTestId ,queryByTestId} = render(
+												<TestWrapper testUser={testUser}>
+																<EnhancedParkPassScreen user={testUser}  />
+												</TestWrapper>
+								)
+								await waitFor(() => {
+								  expect(getByTestId('park-pass-screen')).toBeDefined();
+                   //shows prestige button user has all park passes redemed
+								  expect(getByTestId('prestige-button')).toBeDefined();
+								})
+              fireEvent.press(getByTestId('prestige-button'));
+               const tokens = await testUser.trailTokens;
+
+								await waitFor(() => {
+                  //pressing pretige button grants user prestige lvl x 1000, user starts with 50
+                  expect(tokens).toBe(1050);
+                  //shows badge for unlocking in previous prestige
+									expect(getByTestId('park-1-completed-badge')).toBeDefined();
+                  //shows reddem buttom from caryover trail completeion of count 2
+									expect(queryByTestId('park-1-redeem-button')).toBeDefined();
+                  expect(getByTestId('park-1-progress-text')).toHaveTextContent(`${trails.length}/${trails.length}`);
+								})
+               //pressing reddem button makes park level increase
+               fireEvent.press(getByTestId('park-1-redeem-button'));
+               await waitFor(() => {
+                  //increased park level to 2 after redeeming from prestige
+                  //only allow increasing after prestige to encourage hiking all trails for park pass rewards although trail completion will carry over.
+                  expect(getByTestId('park-1-level')).toHaveTextContent(2);
+									expect(getByTestId('park-2-level')).toHaveTextContent(1);																																							
+               })
+
+      })
+	
 });

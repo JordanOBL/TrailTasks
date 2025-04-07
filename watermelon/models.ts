@@ -586,7 +586,6 @@ async buyAddon(addOn) {
       });
 
     } else if (this.prestigeLevel === existingParkPass.parkLevel) {
-      console.log('existingPass:', existingParkPass);
        newUserPark = existingParkPass.prepareUpdate((pass) => {
           pass.parkLevel += 1;
           pass.lastCompleted = Date.now();
@@ -600,6 +599,15 @@ async buyAddon(addOn) {
       newUserPark,
     )
 
+  }
+
+  @writer
+  async prestigeParkPasses() {
+    const reward = ( (this.prestigeLevel + 1) * 1000 ) ;
+    await this.update((user) => {
+      user.prestigeLevel += 1;
+      user.trailTokens += reward;
+    });
   }
 }
 

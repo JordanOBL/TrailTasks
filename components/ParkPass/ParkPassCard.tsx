@@ -62,7 +62,7 @@ const ParkPassCard = ({ data, user }: Props) => {
                 </Text>
 
                 {/* Redeem Button */}
-                {progress === 1 && (!data.pass || !data.pass?.isRewardRedeemed) ? (
+                {progress === 1 && ( !data.pass || ( data.pass?.parkLevel <= user.prestigeLevel ) ) ? (
                     <Button
                         testID={`park-${data.parkId}-redeem-button`}
                         mode="contained"
@@ -70,7 +70,6 @@ const ParkPassCard = ({ data, user }: Props) => {
                         onPress={async () => {
                             //redeemParkPass(data.parkId);
                             await user.redeemParkPass(data.parkId)
-                            console.log('Redeem reward for park!')
                         }}
                         style={styles.redeemButton}
                         dark={false}

@@ -56,13 +56,13 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
              fetchParkPassData();
         }
 
-   },[userParks]) 
+   },[user, userParks, completedTrails]); 
         
     const combineDataForParks: CombinedData[] = (parks: Park[], trails: Trail[], usersCompletedTrails: User_Completed_Trail[]) => {
         // Map completed trails for quick lookup
-        // Trails only marked as completed if completeion count is greater than users current prestige level
+        // Trails only marked as completed if completeion count is greater than users current prestige level allowing park completion progress to be reset upon prestige
         const completedTrailMap:Record<string, boolean> = usersCompletedTrails.reduce((map, completed) => {
-            if(completed.completionCount == user.prestigeLevel + 1) {
+            if(completed.completionCount >= user.prestigeLevel + 1) {
                 map[completed.trailId] = completed;
             }
             return map;
@@ -115,21 +115,19 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
         <View testID="park-pass-screen" style={styles.container}>
             <Text testID='park-pass-count' style={styles.completedPasses}>{userParks.length} / {combinedData.length}</Text>
             {userParks.length === combinedData.length && userParks.every(pass => pass.parkLevel === user.prestigeLevel + 1) && (
-            <View>
+                <View>
                     <Text> All Park Passes Completed! </Text>
                     <Text> Prestige to reset and rank up your Park Passes for more rewards. Dont worry, your previous trail completions count towards unlocking/redeeming the next rank of Park Passes!</Text>
-                    <Button  testID={`prestige-button`}
+                    <Button  testID={"prestige-button"}
                         mode="contained"
                         buttonColor="rgb(7,254,213)"
                         onPress={async () => {
-                            //redeemParkPass(data.parkId);
-                            //await user.redeemParkPass(data.parkId)
-                            console.log('prestiged!')
+                            await user.prestigeParkPasses();
                         }}
                         style={styles.prestigeButton}
                         dark={false}
- >Prestige</Button>
-            </View>)}
+                    >Prestige</Button>
+                </View>)}
             <FlatList
                 data={combinedData}
                 keyExtractor={(item) => item.parkId}

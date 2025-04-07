@@ -306,7 +306,6 @@ expect(session.id).toEqual(newSession.id)
       const [ user  ]:User = await testDb.get('users').query().fetch()
       const previousTokens =  await user.trailTokens
       const [ previousParkPass ] = await user.usersParks
-      console.debug(previousParkPass)
 
       //update user prestige
      await testDb.write(async () => {
@@ -314,17 +313,46 @@ expect(session.id).toEqual(newSession.id)
           user.prestigeLevel = 1
         })
       })
-      console.debug(user)
       //test user completed all trails (park is '1')
       await user.redeemParkPass('1')
       const [ newParkPass ] = await user.usersParks
-      console.debug(newParkPass)
       const newTokens = await user.trailTokens
       await waitFor(() => { 
         //check user tokens to be reward = 200 + (100 * user.prestige Level (gained earning ALL park passes (completed all trail)))
         expect(newTokens).toEqual(previousTokens + 200 + 100) 
         //check user park passes to be +1
         expect(newParkPass.parkLevel).toEqual(2)
+      })
+    })
+  })
+
+  describe('parkPassPrestige()', () => {
+    beforeAll(async()=>{
+      await testDb.write(async () => {
+        await testDb.unsafeResetDatabase();
+      })
+      //test server needs to be running (trailTasksServer -> npm run test-server)
+      await sync(testDb, true)
+      //create user
+      await createUser(testDb, mockUser)
+    })
+
+    it('successfully applies reward tokens and updates users prestige level correctly when user prestige level', async () => {
+      //Prestige reward = new prestige level * 1000
+
+      const [ user  ]:User = await testDb.get('users').query().fetch()
+      const previousTokens =  await user.trailTokens
+      await user.prestigeParkPasses()
+      const newTokens = await user.trailTokens
+      await waitFor(() => {
+        expect(newTokens).toEqual(previousTokens + 1000)
+        expect(user.prestigeLevel).toEqual(1)
+      })
+      await user.prestigeParkPasses()
+      const newTokens2 = await user.trailTokens
+      await waitFor(() => {
+        expect(newTokens2).toEqual(newTokens + 2000)
+        expect(user.prestigeLevel).toEqual(2)
       })
     })
   })
