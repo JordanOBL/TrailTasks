@@ -114,8 +114,8 @@ export class User extends Model {
   @field('trail_tokens') trailTokens;
   @field('is_subscribed') isSubscribed;
   @field('prestige_level') prestigeLevel;
-  @readonly @date('created_at') createdAt;
-  @readonly @date('updated_at') updatedAt;
+@date('created_at') createdAt;
+ @date('updated_at') updatedAt;
 
   @relation('trails', 'trail_id') trail;
 
@@ -817,8 +817,8 @@ export class Addon extends Model {
   @field('required_total_miles') requiredTotalMiles;
   @field('effect_type') effectType;
   @field('effect_value') effectValue;
-  @readonly @date('created_at') createdAt;
-  @readonly @date('updated_at') updatedAt;
+   @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 }
 
 // @ts-ignore
@@ -832,8 +832,8 @@ export class User_Addon extends Model {
   @field('user_id') userId;
   @field('addon_id') addonId;
   @field('quantity') quantity;
-  @readonly @date('created_at') createdAt;
-  @readonly @date('updated_at') updatedAt;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 
   @relation('users', 'user_id') user;
   @relation('addons', 'addon_id') addon; //relation('addons', 'addon_id') addon;

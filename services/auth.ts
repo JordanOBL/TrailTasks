@@ -258,9 +258,9 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 					newUser.prestigeLevel = remoteUser.user.prestige_level;
 				})
 
-				const userSessions = [...remoteUser.userSessions].map((session: User_Session) =>
+				const userSessions = [...remoteUser.userSessions].map((session: User_Session) => {
 					// @ts-ignore
-					watermelonDatabase.collections.get('users_sessions').prepareCreate((newUserSession: User_Session) => {
+					return watermelonDatabase.collections.get('users_sessions').prepareCreate((newUserSession: User_Session) => {
 						newUserSession._raw.id = session.id;
 						// @ts-ignore
 						newUserSession.userId = session.user_id;
@@ -283,12 +283,13 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 						// @ts-ignore
 						newUserSession.sessionEndedAt = session.session_ended_at;
 					})
-				)
+				})
+				
 				//            // Create user purchased trail
 				// @ts-ignore
-				const userPurchasedTrails = [...remoteUser.userPurchasedTrails].map((existingPurchasedTrail: User_Purchased_Trail) =>
+				const userPurchasedTrails = [...remoteUser.userPurchasedTrails].map((existingPurchasedTrail: User_Purchased_Trail) =>{
 					// @ts-ignore
-					watermelonDatabase.collections.get('users_purchased_trails').prepareCreate((newUserPurchasedTrail: User_Purchased_Trail) => {
+					return watermelonDatabase.collections.get('users_purchased_trails').prepareCreate((newUserPurchasedTrail: User_Purchased_Trail) => {
 						newUserPurchasedTrail._raw.id = existingPurchasedTrail.id;
 						// @ts-ignore
 						newUserPurchasedTrail.userId = existingPurchasedTrail.user_id;
@@ -297,9 +298,10 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 						// @ts-ignore
 						newUserPurchasedTrail.trailId = existingPurchasedTrail.trail_id;
 						// @ts-ignore
-						newUserPurchasedTrail.createdAt = existingPurchasedTrail.created_at;
+						//newUserPurchasedTrail.createdAt = existingPurchasedTrail.created_at;
 					})
-				)
+				})
+				
 				//            // Create user subscription
 				// @ts-ignore
 //				const userSubscriptions =  watermelonDatabase.collections.get('users_subscriptions').prepareCreate((newUserSubscription: Subscription) => {
@@ -309,9 +311,9 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 //					newUserSubscription.expiresAt = remoteUser.userSubscription.expires_at;
 //				})
 				//            // Create user achievements
-				const userAchievements = [...remoteUser.userAchievements].map((achievement: User_Achievement) =>
+				const userAchievements = [...remoteUser.userAchievements].map((achievement: User_Achievement) => {
 					// @ts-ignore
-					watermelonDatabase.collections.get('users_achievements').prepareCreate((newUserAchievement: User_Achievement) => {
+					return watermelonDatabase.collections.get('users_achievements').prepareCreate((newUserAchievement: User_Achievement) => {
 						newUserAchievement._raw.id = achievement.id;
 						// @ts-ignore
 						newUserAchievement.userId = achievement.user_id;
@@ -320,36 +322,37 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 						// @ts-ignore
 						newUserAchievement.achievementDescription = achievement.achievement_description;
 						// @ts-ignore
-						newUserAchievement.createdAt = achievement.created_at;
+						//newUserAchievement.createdAt = achievement.created_at;
 						// @ts-ignore
 						newUserAchievement.completedAt = achievement.completed_at;
-					}))
-
-				const userCompletedTrails = [...remoteUser.userCompletedTrails].map((existingCompletedTrail: User_Completed_Trail) =>
-					// @ts-ignore
-					watermelonDatabase.collections.get('users_completed_trails').prepareCreate((newCompletedTrail: User_Completed_Trail) => {
-						newCompletedTrail._raw.id = existingCompletedTrail.id;
-						// @ts-ignore
-						newCompletedTrail.userId = existingCompletedTrail.user_id;
-						// @ts-ignore
-						newCompletedTrail.trailId = existingCompletedTrail.trail_id;
-						// @ts-ignore
-						newCompletedTrail.bestCompletedTime = existingCompletedTrail.best_completed_time;
-						// @ts-ignore
-						newCompletedTrail.firstCompletedAt = existingCompletedTrail.first_completed_at;
-						// @ts-ignore
-						newCompletedTrail.lastCompletedAt = existingCompletedTrail.last_completed_at;
-						newCompletedTrail.completionCount = existingCompletedTrail.completion_count;
-						// @ts-ignore
-						newCompletedTrail.createdAt = existingCompletedTrail.created_at;
-						// @ts-ignore
-						newCompletedTrail.updatedAt = existingCompletedTrail.updated_at;
-
 					})
-				)
+				})
+
+		const userCompletedTrails = [...remoteUser.userCompletedTrails].map((existingCompletedTrail: User_Completed_Trail) =>{ 
+			// @ts-ignore
+			return watermelonDatabase.collections.get('users_completed_trails').prepareCreate((newCompletedTrail: User_Completed_Trail) => {
+				newCompletedTrail._raw.id = existingCompletedTrail.id;
+				// @ts-ignore
+				newCompletedTrail.userId = existingCompletedTrail.user_id;
+				// @ts-ignore
+				newCompletedTrail.trailId = existingCompletedTrail.trail_id;
+				// @ts-ignore
+				newCompletedTrail.bestCompletedTime = existingCompletedTrail.best_completed_time;
+				// @ts-ignore
+				newCompletedTrail.firstCompletedAt = existingCompletedTrail.first_completed_at;
+				// @ts-ignore
+				newCompletedTrail.lastCompletedAt = existingCompletedTrail.last_completed_at;
+				newCompletedTrail.completionCount = existingCompletedTrail.completion_count;
+				// @ts-ignore
+				//newCompletedTrail.createdAt = existingCompletedTrail.created_at;
+				// @ts-ignore
+				//newCompletedTrail.updatedAt = existingCompletedTrail.updated_at;
+
+			}) 
+		})
 				const userParks = [...remoteUser.userParks].map((existingUserPark: User_Park) => {
 					// @ts-ignore
-					watermelonDatabase.collections.get('users_parks').prepareCreate((newUserPark: User_Park) => {
+					return watermelonDatabase.collections.get('users_parks').prepareCreate((newUserPark: User_Park) => {
 						newUserPark._raw.id = existingUserPark.id;
 						// @ts-ignore
 						newUserPark.userId = existingUserPark.user_id;
@@ -359,15 +362,15 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 						newUserPark.parkLevel = existingUserPark.park_level;
 						newUserPark.lastCompleted = existingUserPark.last_completed;
 						// @ts-ignore
-						newUserPark.createdAt = existingUserPark.created_at;
+						//newUserPark.createdAt = existingUserPark.created_at;
 						// @ts-ignore
-						newUserPark.updatedAt = existingUserPark.updated_at;
+						//newUserPark.updatedAt = existingUserPark.updated_at;
 					})
 				})
 
 				const userAddons = [...remoteUser.userAddons].map((addon: User_Addon) => {
 					// @ts-ignore
-					watermelonDatabase.collections.get('user_addons').prepareCreate((newUserAddon: User_Addon) => {
+					return watermelonDatabase.collections.get('users_addons').prepareCreate((newUserAddon: User_Addon) => {
 						newUserAddon._raw.id = addon.id;
 						// @ts-ignore
 						newUserAddon.userId = addon.user_id;
@@ -375,9 +378,9 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 						newUserAddon.addonId = addon.addon_id;
 						newUserAddon.quantity = addon.quantity;
 						// @ts-ignore
-						newUserAddon.createdAt = addon.created_at;
+						//newUserAddon.createdAt = addon.created_at;
 						// @ts-ignore
-						newUserAddon.updatedAt = addon.updated_at;
+						//newUserAddon.updatedAt = addon.updated_at;
 					})
 				})
 
