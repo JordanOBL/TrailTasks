@@ -13,27 +13,37 @@ interface Props {
 
 const ParkPassCard = ({ data, user }: Props) => {
 
-    const progress = data.completedTrails / data.totalTrails
+    const progress = data?.completedTrails / data?.totalTrails
+   
     return (
         <Card style={styles.cardContainer}>
             <View style={styles.content}>
                 {/* Show Park Level Badge */}
                 {data.pass && (
-                    <Badge style={styles.levelBadge}>{data.pass.parkLevel}</Badge>
+                    <Badge testID={`park-${data.parkId}-level`} style={styles.levelBadge}>{data.pass.parkLevel}</Badge>
                 )}
 
                 {/* Park Name */}
                 <Text style={styles.title}>{data.parkName}</Text>
 
                 {/* Park Image */}
-                <Image
-                    source={
-                         data.pass?.parkLevel > user.prestigeLevel
-                            ? require('../../assets/redeemableBadge.png')
-                            : require('../../assets/incompleteBadge.png')
-                    }
+                { data.pass && data.pass.isRewardRedeemed &&
+                    <Image
+                        testID={`park-${data.parkId}-completed-badge`}
+                        //change image by park level
+                        source={
+                            require('../../assets/redeemableBadge.png')
+                        }
+                        style={styles.badgeImage}
+                    /> }
+                { !data.pass || ( data.pass?.parkLevel <= user.prestigeLevel ) &&
+                    <Image
+                        testID={`park-${data.parkId}-incomplete-badge`}
+                        source={
+                            require('../../assets/incompleteBadge.png')
+                        }
                     style={styles.badgeImage}
-                />
+                /> }
                 {/* Progress Bar */}
                 <Progress.Bar
                     progress={progress}
@@ -43,16 +53,18 @@ const ParkPassCard = ({ data, user }: Props) => {
                     color="rgb(7,254,213)"
                     unfilledColor="rgba(0, 0, 0, 0.1)"
                     style={styles.progressBar}
+                    key={data.parkId}
                 />
 
                 {/* Progress Text */}
-                <Text style={styles.progressText}>
+                <Text testID={`park-${data.parkId}-progress-text`} style={styles.progressText}>
                     {data.completedTrails}/{data.totalTrails}
                 </Text>
 
                 {/* Redeem Button */}
-                {progress === 1 && !data.pass?.isRewardRedeemed ? (
+                {progress === 1 && (!data.pass || !data.pass?.isRewardRedeemed) ? (
                     <Button
+                        testID={`park-${data.parkId}-redeem-button`}
                         mode="contained"
                         buttonColor="rgb(7,254,213)"
                         onPress={async () => {

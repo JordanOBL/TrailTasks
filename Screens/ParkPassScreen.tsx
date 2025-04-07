@@ -5,6 +5,7 @@ import { useDatabase, withObservables } from '@nozbe/watermelondb/react';
 import EnhancedParkPassCard from '../components/ParkPass/ParkPassCard';
 import {Q} from '@nozbe/watermelondb';
 import {CombinedData} from '../types/parkPasses';
+import {Button } from 'react-native-paper';
 
 
 const ParkPassScreen = ({ user, completedTrails, userParks}) => {
@@ -49,14 +50,13 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
                 const parks: Park[] = await watermelonDatabase.get('parks').query().fetch()
                 const trails : Trail[] = await watermelonDatabase.get('trails').query().fetch();
                 const combinedParkPassData = combineDataForParks(parks, trails, completedTrails)
-            console.log(combinedParkPassData)
                 setCombinedData(combinedParkPassData);
             };
 
              fetchParkPassData();
         }
 
-   },[]) 
+   },[userParks]) 
         
     const combineDataForParks: CombinedData[] = (parks: Park[], trails: Trail[], usersCompletedTrails: User_Completed_Trail[]) => {
         // Map completed trails for quick lookup
@@ -114,6 +114,22 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
     return (
         <View testID="park-pass-screen" style={styles.container}>
             <Text testID='park-pass-count' style={styles.completedPasses}>{userParks.length} / {combinedData.length}</Text>
+            {userParks.length === combinedData.length && userParks.every(pass => pass.parkLevel === user.prestigeLevel + 1) && (
+            <View>
+                    <Text> All Park Passes Completed! </Text>
+                    <Text> Prestige to reset and rank up your Park Passes for more rewards. Dont worry, your previous trail completions count towards unlocking/redeeming the next rank of Park Passes!</Text>
+                    <Button  testID={`prestige-button`}
+                        mode="contained"
+                        buttonColor="rgb(7,254,213)"
+                        onPress={async () => {
+                            //redeemParkPass(data.parkId);
+                            //await user.redeemParkPass(data.parkId)
+                            console.log('prestiged!')
+                        }}
+                        style={styles.prestigeButton}
+                        dark={false}
+ >Prestige</Button>
+            </View>)}
             <FlatList
                 data={combinedData}
                 keyExtractor={(item) => item.parkId}
@@ -121,6 +137,8 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
                 contentContainerStyle={styles.listContent}
                 renderItem={({ item }) => (
                     <EnhancedParkPassCard
+                        key={item.parkId}
+                        testID={`park-pass-${item.parkId}`}
                         data={item}
                         user={user}
                     />
@@ -162,6 +180,10 @@ const styles = StyleSheet.create({
     listContent: {
         alignItems: 'center', // Centers the grid content
         justifyContent: 'center',
+    }, 
+    prestigeButton: {
+        marginTop: 8,
+        borderRadius: 20,
     },
 
 });

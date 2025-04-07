@@ -567,30 +567,29 @@ async buyAddon(addOn) {
   }
 
   @writer
-  async redeemParkPass(parkId) {
+  async redeemParkPass(parkId:string) {
     const reward = ( this.prestigeLevel * 100 ) + 200;
     let newUserPark
-    const userParkPass = await this.collections
+    const [ existingParkPass ] = await this.collections
         .get('users_parks')
         .query(Q.and(Q.where('user_id', this.id), Q.where('park_id', parkId)))
         .fetch();
 
     // If park pass does not exist, create it
-    if (userParkPass.length === 0) {
+    if (!existingParkPass) {
       newUserPark = this.collections.get('users_parks').prepareCreate((parkPass) => {
         parkPass.userId = this.id;
         parkPass.parkId = parkId;
-        parkPass.lastCompleted = new Date().toISOString();
+        parkPass.lastCompleted = Date.now();
         parkPass.parkLevel = 1;
         parkPass.isRewardRedeemed = true;
       });
 
-    } else if (this.prestigeLevel === existingPass.parkLevel) {
-      const existingPass = userParkPass[0];
-      console.log('existingPass:', existingPass);
-       newUserPark = existingPass.prepareUpdate((pass) => {
+    } else if (this.prestigeLevel === existingParkPass.parkLevel) {
+      console.log('existingPass:', existingParkPass);
+       newUserPark = existingParkPass.prepareUpdate((pass) => {
           pass.parkLevel += 1;
-          pass.lastCompleted = new Date().toISOString();
+          pass.lastCompleted = Date.now();
           pass.isRewardRedeemed = true;
         })
     }
