@@ -267,11 +267,94 @@ expect(session.id).toEqual(newSession.id)
       const reward = 100
 
       const [ user  ]:User = await testDb.get('users').query().fetch()
-      const previousTokens = user.trailTokens
+      const previousTokens = await user.trailTokens
       await user.awardFinalSessionTokens(reward)
       await waitFor(() => expect(user.trailTokens).toBe(previousTokens + reward))
     })
 
+  })
+
+  describe('Redeem Park Pass', () => {
+    beforeAll(async()=>{
+      await testDb.write(async () => {
+        await testDb.unsafeResetDatabase();
+      })
+      //test server needs to be running (trailTasksServer -> npm run test-server)
+      await sync(testDb, true)
+      //create user
+      await createUser(testDb, mockUser)
+    })
+    it('successfully applies reward tokens and adds park pass', async () => {
+
+      const [ user  ]:User = await testDb.get('users').query().fetch()
+      const previousTokens =  await user.trailTokens
+      const previousParkPasses = await user.usersParks
+           //test user completed all acadia parks (park is '1')
+      await user.redeemParkPass('1')
+
+      const newParkPasses = await user.usersParks
+      const newTokens = await user.trailTokens
+      await waitFor(() => { 
+        //check user tokens to be reward = 200 + (100 * user.prestige Level (gained earning ALL park passes (completed all trail)))
+        expect(newTokens).toEqual(previousTokens + 200) 
+        //check user park passes to be +1
+        expect(newParkPasses.length).toEqual(previousParkPasses.length + 1)
+      })
+    })
+    it('successfully applies reward tokens and updates park level correctly when user prestige level is > 0', async () => {
+
+      const [ user  ]:User = await testDb.get('users').query().fetch()
+      const previousTokens =  await user.trailTokens
+      const [ previousParkPass ] = await user.usersParks
+
+      //update user prestige
+     await testDb.write(async () => {
+        await user.update((user) => {
+          user.prestigeLevel = 1
+        })
+      })
+      //test user completed all trails (park is '1')
+      await user.redeemParkPass('1')
+      const [ newParkPass ] = await user.usersParks
+      const newTokens = await user.trailTokens
+      await waitFor(() => { 
+        //check user tokens to be reward = 200 + (100 * user.prestige Level (gained earning ALL park passes (completed all trail)))
+        expect(newTokens).toEqual(previousTokens + 200 + 100) 
+        //check user park passes to be +1
+        expect(newParkPass.parkLevel).toEqual(2)
+      })
+    })
+  })
+
+  describe('parkPassPrestige()', () => {
+    beforeAll(async()=>{
+      await testDb.write(async () => {
+        await testDb.unsafeResetDatabase();
+      })
+      //test server needs to be running (trailTasksServer -> npm run test-server)
+      await sync(testDb, true)
+      //create user
+      await createUser(testDb, mockUser)
+    })
+
+    it('successfully applies reward tokens and updates users prestige level correctly when user prestige level', async () => {
+      //Prestige reward = new prestige level * 1000
+
+      const [ user  ]:User = await testDb.get('users').query().fetch()
+      const previousTokens =  await user.trailTokens
+      await user.prestigeParkPasses()
+      const newTokens = await user.trailTokens
+      await waitFor(() => {
+        expect(newTokens).toEqual(previousTokens + 1000)
+        expect(user.prestigeLevel).toEqual(1)
+      })
+      await user.prestigeParkPasses()
+      const newTokens2 = await user.trailTokens
+      await waitFor(() => {
+        expect(newTokens2).toEqual(newTokens + 2000)
+        expect(user.prestigeLevel).toEqual(2)
+      })
+    })
   })
 
   
