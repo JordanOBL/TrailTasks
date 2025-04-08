@@ -27,7 +27,7 @@ const ParkPassCard = ({ data, user }: Props) => {
                 <Text style={styles.title}>{data.parkName}</Text>
 
                 {/* Park Image */}
-                { data.pass && data.pass.isRewardRedeemed &&
+                { data.pass &&
                     <Image
                         testID={`park-${data.parkId}-completed-badge`}
                         //change image by park level
@@ -36,7 +36,7 @@ const ParkPassCard = ({ data, user }: Props) => {
                         }
                         style={styles.badgeImage}
                     /> }
-                { !data.pass || ( data.pass?.parkLevel <= user.prestigeLevel ) &&
+                { ( !data.pass || ( data.pass?.parkLevel <= user.prestigeLevel )  )&&
                     <Image
                         testID={`park-${data.parkId}-incomplete-badge`}
                         source={
