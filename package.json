@@ -5,8 +5,10 @@
   "scripts": {
     "android:prod": "NODE_ENV=production react-native run-android",
     "android:test": "ENVFILE=.env.test react-native run-android",
-    "android:dev": "ENVFILE=.env.development react-native run-android",
-    "ios": "react-native run-ios",
+    "android:dev": "ENVFILE=.env.development react-native run-android --port=8082",
+    "ios:prod": "NODE_ENV=production react-native run-ios",
+    "ios:test": "ENVFILE=.env.test react-native run-ios",
+    "ios:dev": "ENVFILE=.env.development react-native run-ios --port=8083",
     "lint": "eslint .",
     "start": "react-native start",
     "start:test": "ENVFILE=.env.test npx react-native start",
