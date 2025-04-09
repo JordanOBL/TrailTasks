@@ -1,4 +1,4 @@
-package com.summitsessions
+package com.trailtasks.app
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -1,6 +1,6 @@
 {
-  "name": "summitsessions",
-  "displayName": "summitsessions",
+  "name": "Trail Tasks",
+  "displayName": "Trail Tasks",
   "extra": {
     "eas": {
       "projectId": "65f44901-3750-4dcb-b632-2c854f260dbd"

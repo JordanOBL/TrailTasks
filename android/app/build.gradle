@@ -79,9 +79,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.summitsessions"
+    namespace "com.trailtasks.app"
     defaultConfig {
-        applicationId "com.summitsessions"
+        applicationId "com.trailtasks.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
