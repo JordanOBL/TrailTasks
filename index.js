@@ -15,7 +15,9 @@ import {
   Addon,
   User_Addon,
   Session_Addon,
-  User_Park
+  User_Park,
+  User_Friend, 
+  Cached_Friend
 } from './watermelon/models';
 
 import App from './App';
@@ -29,10 +31,12 @@ import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {name as appName} from './app.json';
 import schema from './watermelon/schema';
 import {testDb} from './watermelon/testDB';
+import migrations from './watermelon/migrations';
 
 const adapter = new SQLiteAdapter({
   schema,
   dbName: 'TrailTasks',
+  migrations,
 });
 
 export const watermelonDatabase = new Database({
@@ -52,7 +56,9 @@ export const watermelonDatabase = new Database({
     User_Purchased_Trail,
     Addon,
     User_Addon,
-    Session_Addon
+    Session_Addon, 
+    User_Friend, 
+    Cached_Friend
   ],
 });
 

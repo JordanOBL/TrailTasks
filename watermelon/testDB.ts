@@ -17,7 +17,9 @@ import {
   Addon,
   User_Addon,
   Session_Addon,
-  User_Park
+  User_Park,
+  Cached_Friend,
+  User_Friend
 } from './models';
 
 // Create the Node-based SQLite adapter
@@ -47,6 +49,8 @@ export const testDb = new Database({
   Addon,
   User_Addon,
   Session_Addon,
-  User_Park
+  User_Park,
+  Cached_Friend,
+  User_Friend
   ],actionsEnabled: true,
 });

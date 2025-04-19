@@ -53,14 +53,14 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           return;
         }
 
-        let localUser = await checkLocalUserExists(email, password, watermelonDatabase);
+        let localUser = await checkLocalUserExists(email.toLowerCase(), password, watermelonDatabase);
         if (!localUser && isConnected) {
           // Attempt remote login
-          const remoteUser = await checkGlobalUserExists(email, password);
+          const remoteUser = await checkGlobalUserExists(email.toLowerCase(), password);
           if (remoteUser) {
             // Write remote data to local DB (this is your large block that creates user, sessions, etc.)
             await saveUserToLocalDB(remoteUser, watermelonDatabase);
-            localUser = await checkLocalUserExists(email, password, watermelonDatabase);
+            localUser = await checkLocalUserExists(email.toLowerCase(), password, watermelonDatabase);
           }
         }
         if (!localUser) {
@@ -99,7 +99,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           setError('Passwords do not match');
           return;
         }
-        const result = await registerValidation(email, username);
+        const result = await registerValidation(email.toLowerCase(), username.toLowerCase());
         if (result.duplicateAttribute) {
             setError(result.message);
             return;
@@ -107,7 +107,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
         // Otherwise create user in local DB
         const newUser = await createNewUser(
-          {  email, password, username, watermelonDatabase}
+          {  email: email.toLowerCase(), password, username: username.toLowerCase(), watermelonDatabase}
         );
         if (newUser) {
           // Possibly set user in state after register

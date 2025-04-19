@@ -19,6 +19,7 @@ export function createMockUserBase(overrides?: Partial<User>) {
     trailTokens: 50,
     lastDailyStreakDate: new Date(),
     prestigeLevel: 0,
+    roomId:'',
     
     // ... any other fields used in your code
 
@@ -57,6 +58,7 @@ export async function createUser(database: Database, newUser: any){
       user.trailTokens = 50;
       user.totalMiles = '0.00';
       user.prestigeLevel = 0;
+      user.roomId = newUser.roomId || '';
     })
 
     return user

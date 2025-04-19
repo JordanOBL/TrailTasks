@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: 'parks',
@@ -62,6 +62,7 @@ const schema = appSchema({
         {name: 'trail_tokens', type: 'number'},
         {name: 'prestige_level', type: 'number'},
         {name: 'total_miles', type: 'string'},
+        {name: 'room_id', type: 'string', isOptional: true },
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],
@@ -214,6 +215,28 @@ const schema = appSchema({
       ],
     }
     ),
+    tableSchema({
+      name: 'users_friends',
+      columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'friend_id', type: 'string', isIndexed: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    }), 
+    tableSchema({
+      name: 'cached_friends',
+      columns: [
+        { name: 'user_id', type: 'string', isIndexed: true },
+        { name: 'friend_id', type: 'string', isIndexed: true },
+        { name: 'total_miles', type: 'string', isOptional: false },
+        { name: 'current_trail', type: 'string', isOptional: false }, // Friend status
+        {name: 'username', type: 'string', isOptional: false},
+        {name: 'room_id', type: 'string', isOptional: true},
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+      ],
+    })
   ],
 });
 

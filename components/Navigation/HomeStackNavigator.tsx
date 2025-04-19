@@ -6,7 +6,7 @@ import EnhancedHomeScreen from '../../Screens/HomeScreen';
 import EnhancedLeaderboardsScreen from '../../Screens/LeaderboardsScreen';
 import EnhancedStatsScreen from '../../Screens/StatsScreen';
 import EnhancedSubscribeScreen from '../../Screens/SubscribeScreen';
-import FriendsScreen from '../../Screens/FriendsScreen';
+import EnhancedFriendsScreen from '../../Screens/FriendsScreen';
 import EnhancedParkPassScreen from "../../Screens/ParkPassScreen";
 import SettingsScreen from '../../Screens/SettingsScreen';
 import {User} from '../../watermelon/models';
@@ -40,14 +40,18 @@ export function HomeStackNavigator() {
         )}
       </Home.Screen>
 
-     
+
 
       <Home.Screen name="Stats" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
         {(props: any) => (
           <EnhancedStatsScreen {...props} user={user}  />
         )}
       </Home.Screen>
-      <Home.Screen name="Friends" component={FriendsScreen} />
+      <Home.Screen name="Friends"  options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
+        {(props: any) => (
+          <EnhancedFriendsScreen {...props} user={user}  />
+        )}
+      </Home.Screen>
       <Home.Screen name="CompletedHikes" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
         {(props: any) => (
           <EnhancedCompletedTrailsScreen
