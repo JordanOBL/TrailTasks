@@ -7,11 +7,12 @@ import timeOptions from '../helpers/Session/timeOptions';
 import {handleResponse} from '../helpers/Websockets/HandleResponse';
 import * as Progress from 'react-native-progress';
 import formatCountdown from '../helpers/Timer/formatCountdown';
+import {useDatabase} from '@nozbe/watermelondb/react';
 import Icon from 'react-native-vector-icons/Ionicons'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ContinueSessionModal from '../components/Session/ContinueSessionModal';
 import {useInternetConnection} from '../hooks/useInternetConnection';
-
+import {sync} from '../watermelon/sync';
 const StatBox = ({ label, value }) => (
   <View style={styles.infoBox}>
     <Text style={styles.infoLabel}>{label}</Text>
@@ -19,16 +20,32 @@ const StatBox = ({ label, value }) => (
   </View>
 );
 
-const GroupSessionComponent =  ({ user, debugRef=null }) => {
+const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route }) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const { isConnected, ipAddress } = useInternetConnection();
+  const database = useDatabase();
+
   //this will check is emulater or device
   ////!TODO:Remove fo or production
   const [serverUrl, setServerUrl] = useState(null);
-  const { sendJsonMessage, lastJsonMessage, isReady } = useWebSocket(serverUrl);
+  const { sendJsonMessage, lastJsonMessage, isReady } = useWebSocket(serverUrl, {
+    onClose: async () => {
+      console.log('close');
+      if(user && user.roomId){
+        await user.removeRoomId()
+      }
+    },
+  });
   const width = Dimensions.get('window').width;
   const [view, setView] = useState('session'); // "session" for initial, "lobby" for room
   const [roomId, setRoomId] = useState('');
+  useEffect(() => {
+  console.log('Group params:', route.params);
+    console.log('JoinRoomId', joinRoomId)
+    if(route.params?.joinRoomId){
+      setRoomId(route.params.joinRoomId)
+    }
+}, []);
   //Hiers is and object [string] userInfo
   const [hikers, setHikers] = useState({});
   const [session, setSession] = useState({
@@ -82,6 +99,16 @@ const GroupSessionComponent =  ({ user, debugRef=null }) => {
     setupConnection();
   }, []);
 
+  useEffect(() => {
+    async function setUserRoomId(){
+      await user.addRoomId(roomId);
+      await sync(database, isConnected, user.id);
+    }
+    if (user && roomId) {
+      setUserRoomId();
+    }
+
+  }, [user, roomId]);
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
 
   function reset() {

@@ -97,6 +97,8 @@ export class User extends Model {
     users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_addons: {type: 'has_many', foreignKey: 'user_id'},
     users_parks: {type: 'has_many', foreignKey: 'user_id'}, // Added for park-level tracking
+    users_friends: {type: 'has_many', foreignKey: 'user_id'},
+    cached_friends: {type: 'has_many', foreignKey: 'user_id'},
 
   };
 
@@ -114,6 +116,7 @@ export class User extends Model {
   @field('trail_tokens') trailTokens;
   @field('is_subscribed') isSubscribed;
   @field('prestige_level') prestigeLevel;
+  @field('room_id') roomId;
 @date('created_at') createdAt;
  @date('updated_at') updatedAt;
 
@@ -126,9 +129,60 @@ export class User extends Model {
   @children('users_purchased_trails') usersPurchasedTrails;
   @children('users_addons') usersAddons;
   @children('users_parks') usersParks; // Added to track user progress in parks
-
+  @children('users_friends') friends;
+ @children('cached_friends') cachedFriends; 
 
   //@relation('users_subscriptions', 'subscription_id') userSubscription;
+  @writer
+  async addRoomId(roomId){
+    try{
+      await this.update(() => {
+        this.roomId = roomId
+      })
+    }catch(err){
+      handleError('user.updateRoomId()', err)
+    }
+  }
+
+  @writer
+  async removeRoomId(){
+    try{
+      await this.update(() => {
+        this.roomId = null
+      })
+    }catch(err){
+      handleError('user.removeRoomId()', err)
+    }
+  }
+
+  @writer
+  async addFriend(friend){
+    console.log('in addFriend', friend)
+    try{
+      await this.batch(
+        this.collections.get('users_friends').prepareCreate((userFriend) =>{
+          userFriend.userId = this.id;
+          userFriend.friendId = friend.friendId;
+        }),
+
+        this.collections.get('cached_friends').prepareCreate((cachedFriend) =>{
+          cachedFriend.userId = this.id;
+          cachedFriend.friendId = friend.friendId;
+          cachedFriend.username = friend.username
+          cachedFriend.totalMiles = friend.totalMiles
+          cachedFriend.currentTrail = friend.currentTrail
+          cachedFriend.trailProgress = friend.trailProgress
+          cachedFriend.roomId = friend.roomId
+
+        })
+      )
+      return {success: true} 
+
+    }catch(err){
+      handleError('user.addFriend()', err)
+      return {success: false}
+    }
+  }
 
   @writer
   async purchaseTrail(trail, cost) {
@@ -354,8 +408,8 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       trailStartedAt
   ) {
     const newUser = await this.collections.get('users').create((user) => {
-      user.username = username;
-          user.email = email;
+      user.username = username.toLowerCase();
+          user.email = email.toLowerCase();
       user.password = password;
       user.pushNotificationsEnabled = true;
       user.themePreference = 'light';
@@ -622,6 +676,37 @@ export class Park_State extends Model {
   @field('state_name') stateName;
 
   @immutableRelation('parks', 'park_id') park;
+}
+
+export class User_Friend extends Model {
+  static table = 'users_friends';
+  static associations = {
+    users: {type: 'belongs_to', key: 'user_id'},
+    users: {type: 'belongs_to', key: 'friend_id'},
+  };
+  @field('user_id') userId;
+  @field('friend_id') friendId;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
+}
+
+export class Cached_Friend extends Model {
+  static table = 'cached_friends';
+  static associations = {
+    users: {type: 'belongs_to', key: 'user_id'},
+    users: {type: 'belongs_to', key: 'friend_id'},
+  };
+  @field('user_id') userId;
+  @field('friend_id') friendId;
+  @field('username') username;
+  @field('total_miles') totalMiles;
+  @field('current_trail') currentTrail;
+  @field('trail_progress') trailProgress;
+  @field('room_id') roomId;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
+
+  @immutableRelation('users', 'user_id') user;
 }
 
 

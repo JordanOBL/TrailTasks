@@ -1,4 +1,4 @@
-export const handleResponse = (
+export const handleResponse = async (
   message,
   setHikers,
   setRoomId,
@@ -9,7 +9,7 @@ export const handleResponse = (
   setTimer,
   setSession
 ) => {
-  let { header, response }= message;
+  let { header, response } = message;
 
   function reset() {
     setTimer({

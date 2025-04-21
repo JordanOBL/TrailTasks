@@ -19,7 +19,6 @@ import {useAuthContext} from '../services/AuthContext';
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
 import {Pressable} from 'react-native';
-import Ranks from '../helpers/Ranks/ranksData';
 import ScreenLink from '../components/HomeScreen/screenLink';
 import SyncIndicator from '../components/SyncIndicator';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
@@ -35,14 +34,6 @@ import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import handleError from "../helpers/ErrorHandler";
 import SyncButton from "../components/syncButton"
 
-
-interface Rank {
-    level: string;
-    group: string;
-    image?: any;
-    range: number[];
-    title: string;
-}
 
 interface Props {
     user: User;
@@ -74,7 +65,7 @@ const HomeScreen: React.FC<Props> = ({
     const [showTutorial, setShowTutorial] = React.useState(false);
     const {logout} = useAuthContext();
 
- userRankRef.current = React.useMemo(() => getUserRank(Ranks, user?.totalMiles), [user?.totalMiles]);
+ userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -244,7 +235,7 @@ const HomeScreen: React.FC<Props> = ({
                         user={user}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                        false
+                        true
                     }
                     navigation={navigation}
                     navTo={'Friends'}>

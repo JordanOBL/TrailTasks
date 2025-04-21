@@ -48,7 +48,10 @@ export async function sync(database: Database, isConnected: boolean = false, use
         },
 
         pushChanges: async ({ changes, lastPulledAt }) => {
-          try {
+          try {   
+            // Remove any table that your PostgreSQL does NOT support
+            console.log('changes',changes)
+            // example
             const response = await fetch(
               `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
               {
