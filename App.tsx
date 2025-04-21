@@ -63,6 +63,9 @@ const App = () => {
             await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
             await PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
             await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
+            await PermissionsAndroid.request('android.permission.ACCESS_FINE_LOCATION');
+            await PermissionsAndroid.request('android.permission.ACCESS_COARSE_LOCATION');
+            await PermissionsAndroid.request('android.permission.ACCESS_BACKGROUND_LOCATION');
           }
 
         }

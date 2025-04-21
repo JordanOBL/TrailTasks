@@ -2,6 +2,7 @@
 #import "RNBootSplash.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <TSBackgroundFetch/TSBackgroundFetch.h>
 
 @implementation AppDelegate
 
@@ -10,6 +11,9 @@
   self.moduleName = @"Trail Tasks";
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
+  // [REQUIRED] Register BackgroundFetch
+  [[TSBackgroundFetch sharedInstance] didFinishLaunching];
+
   self.initialProps = @{};
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
