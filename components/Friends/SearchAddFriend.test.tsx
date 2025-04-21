@@ -28,7 +28,7 @@ describe('SearchAddFriend', () => {
 
 
   it('should render correctly', async () => {
-    const {getByTestId} = render(<SearchAddFriend user={testUser} isConnected={true} />)
+    const {getByTestId} = render(<SearchAddFriend cachedFriendUsernames={[]} user={testUser} isConnected={true} />)
     await waitFor(() => {
       expect(getByTestId('friend-search-input')).toBeTruthy()
     expect(getByTestId('friend-search-button')).toBeTruthy()
@@ -38,7 +38,7 @@ describe('SearchAddFriend', () => {
   
       await pool.query('INSERT INTO users (id, username, email, password, trail_id,  trail_started_at, trail_tokens, total_miles, room_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)', ['12345432efvcxs', 'testfriend','testfriend@gmail.com', testUser.password, '7', testUser.trailStartedAt, 500, '43.00','', new Date(), new Date()]);
     
-    const {getByTestId} = render(<SearchAddFriend user={testUser} isConnected={true} />)
+    const {getByTestId} = render(<SearchAddFriend cachedFriendUsernames={[]} user={testUser} isConnected={true} />)
     await waitFor(() => {
       expect(getByTestId('friend-search-input')).toBeTruthy()
     })
@@ -46,10 +46,41 @@ describe('SearchAddFriend', () => {
 
     fireEvent.press(getByTestId('friend-search-button'))
     await waitFor(() => {
-      expect(getByTestId('12345432efvcxs-friend-card')).toBeTruthy()
+      expect(getByTestId('12345432efvcxs-found-friend-card')).toBeTruthy()
+    }, 5000)
+
+  })
+  it('should show error message if user not found', async () => {
+    const {getByTestId} = render(<SearchAddFriend cachedFriendUsernames={[]} user={testUser} isConnected={true} />)
+    await waitFor(() => {
+      expect(getByTestId('friend-search-input')).toBeTruthy()
     })
-    
-
-
+    fireEvent.changeText(getByTestId('friend-search-input'), 'nonexistinguser')
+    fireEvent.press(getByTestId('friend-search-button'))
+    await waitFor(() => {
+      expect(getByTestId('friend-search-error')).toHaveTextContent('User not found')
+    })
+  })
+  it('should show error message if user already added as friend', async () => {
+    const {getByTestId} = render(<SearchAddFriend cachedFriendUsernames={['testfriend']} user={testUser} isConnected={true} />)
+    await waitFor(() => {
+      expect(getByTestId('friend-search-input')).toBeTruthy()
+    })
+    fireEvent.changeText(getByTestId('friend-search-input'), 'testfriend')
+    fireEvent.press(getByTestId('friend-search-button'))
+    await waitFor(() => {
+      expect(getByTestId('friend-search-error')).toHaveTextContent('User already added as friend')
+    })
+  })
+  it('show error message if user tries to search for themselves', async () => {
+    const {getByTestId} = render(<SearchAddFriend cachedFriendUsernames={[]} user={testUser} isConnected={true} />)
+    await waitFor(() => {
+      expect(getByTestId('friend-search-input')).toBeTruthy()
+    })
+    fireEvent.changeText(getByTestId('friend-search-input'), testUser.username)
+    fireEvent.press(getByTestId('friend-search-button'))
+    await waitFor(() => {
+      expect(getByTestId('friend-search-error')).toHaveTextContent('Cannot add yourself')
+    })
   })
 })

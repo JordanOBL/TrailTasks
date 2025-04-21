@@ -10,11 +10,19 @@ import {checkForLoggedInUser} from '../../services/auth';
 import {InternetConnectionProvider} from '../../contexts/InternetConnectionProvider';
 import EnhancedFriendsScreen from '../FriendsScreen';
 import NetInfo from '@react-native-community/netinfo';
+import pg from 'pg';
+import {useNavigation} from '@react-navigation/native';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_CONNECTION_STRING });
 
 describe('Friends Screen', () => {
 				let getByTestId: any;
 				let queryByTestId: any;
 				let testUser = createMockUserBase();
+
+   const navigation = {
+			 navigate: jest.fn(),
+		} 
 
 
 
@@ -22,12 +30,13 @@ describe('Friends Screen', () => {
 								await watermelonDatabase.write(async () => {
 												await watermelonDatabase.unsafeResetDatabase();
 								})
+								pool.query('TRUNCATE TABLE users CASCADE');
 
 								await sync(watermelonDatabase,true);
 								testUser = await createUser(watermelonDatabase,testUser);
 								const rendered = render(
 												<TestWrapper testUser={testUser}>
-																<EnhancedFriendsScreen user={testUser} />
+																<EnhancedFriendsScreen navigation={navigation} user={testUser} />
 												</TestWrapper>	
 								)
 
@@ -36,6 +45,12 @@ describe('Friends Screen', () => {
 
 
 				})
+	afterAll(async () => {
+		await watermelonDatabase.write(async () => {
+			await watermelonDatabase.unsafeResetDatabase();
+		})
+		await pool.end();
+	})
 
 				test('it renders friends screen correctly', async () => {
 								await waitFor(() => {
@@ -59,32 +74,34 @@ describe('Friends Screen', () => {
 												expect(getByTestId('no-friends-message')).toBeTruthy();
 								})
 				})
-				test('gets friends from global server, saves as local cached friends, and shows friends card', async () => {
+				test('searches and finds global user, adds user to friends and cached friends, and shows friends card', async () => {
 								//create testUser2 to be friend of testUser
-								let testUser2 = createMockUserBase({username: 'testUser2', email: 'testUser2@me.com', totalMiles: '100.00'});
+								let testUser2 = createMockUserBase({username: 'testuser2', email: 'testUser2@me.com', totalMiles: '100.00'});
 								testUser2 = await createUser(watermelonDatabase, testUser2);
 
 								//create friend relationship between testUser and testUser2 from testUser	
-								const friend = await watermelonDatabase.write(async () => {
-												const friend = await watermelonDatabase.get('users_friends').create(friend => {
-																friend.friendId = testUser2.id
-																friend.userId = testUser.id
-												})
-												return friend
-								})
-								//send friends relationship to global server
+															//send friends relationship to global server
 								await sync(watermelonDatabase, true, testUser.id);
 
 								//render friends screen
-								const {getByTestId} = render(<TestWrapper testUser={testUser}>
-												<EnhancedFriendsScreen user={testUser} />
-								</TestWrapper>);
+		            await waitFor(() => {
+		              expect(getByTestId('friend-search-input')).toBeTruthy();
+		            })
+		fireEvent.changeText(getByTestId('friend-search-input'), 'testuser2')
+		fireEvent.press(getByTestId('friend-search-button'))
+							
 
 
 								await waitFor(() => {
-												expect(getByTestId(`${friend.friendId}-friend-card`)).toBeDefined();
+												expect(getByTestId(`${testUser2.id}-found-friend-card`)).toBeDefined();
+			expect(getByTestId(`add-friend-${testUser2.id}-button`)).toBeDefined();
 
 								})
+		fireEvent.press(getByTestId(`add-friend-${testUser2.id}-button`))
+		await waitFor(() => {
+			expect(getByTestId(`${testUser2.id}-friend-card`)).toBeDefined();
+		}, {timeout: 10000})
+
 				})
 
 				test('shows cached friends without internet connection', async () => {
@@ -92,7 +109,7 @@ describe('Friends Screen', () => {
 								NetInfo.fetch.mockImplementationOnce(() => Promise.resolve({ isConnected: false }));
 
 								//create testUser2 to be friend of testUser
-								let testUser2 = createMockUserBase({username: 'testUser2', email: 'testUser2@me.com'});
+								let testUser2 = createMockUserBase({username: 'testuser2', email: 'testUser2@me.com'});
 								testUser2 = await createUser(watermelonDatabase, testUser2);
 								await watermelonDatabase.write(async () => {
 												const friend = await watermelonDatabase.get('cached_friends').create(cached_friend => {
@@ -116,43 +133,45 @@ describe('Friends Screen', () => {
 								await waitFor(() => {
 												expect(getByTestId(`${testUser2.id}-friend-card`)).toBeDefined()
 
-								})
-				})
-				test('navigates to group session main screen with friends roomId in the imput to join room', async () =>{
+		})
+	})
+	test('navigates to group session main screen with friends roomId in the imput to join room', async () =>{
 
-								//create testUser2 to be friend of testUser
-								let testUser2 = createMockUserBase({username: 'testUser2', email: 'testUser2@me.com', roomId: 'testRoomId'});
+  
+															//create testUser2 to be friend of testUser
+								let testUser2 = createMockUserBase({username: 'testuser2', email: 'testUser2@me.com', totalMiles: '100.00', roomId: '12345'});
 								testUser2 = await createUser(watermelonDatabase, testUser2);
+
 								//create friend relationship between testUser and testUser2 from testUser	
-								const friend = await watermelonDatabase.write(async () => {
-												const friend = await watermelonDatabase.get('users_friends').create(friend => {	
-																friend.userId = testUser.id
-																friend.friendId = testUser2.id
-												})
-												return friend
-								})
-								//send friends relationship to global server
+															//send friends relationship to global server
 								await sync(watermelonDatabase, true, testUser.id);
 
-
-
-
-								const {getByTestId} = render(<TestWrapper testUser={testUser}>
-												<EnhancedFriendsScreen user={testUser} />
-								</TestWrapper>);
+								//render friends screen
+		            await waitFor(() => {
+		              expect(getByTestId('friend-search-input')).toBeTruthy();
+		            })
+		fireEvent.changeText(getByTestId('friend-search-input'), 'testuser2')
+		fireEvent.press(getByTestId('friend-search-button'))
+							
 
 
 								await waitFor(() => {
-												expect(getByTestId(`${testUser2.id}-friend-card`)).toBeDefined()
+												expect(getByTestId(`${testUser2.id}-found-friend-card`)).toBeDefined();
+			expect(getByTestId(`add-friend-${testUser2.id}-button`)).toBeDefined();
 
-												expect(getByTestId(`join-room-${testUser2.roomId}-button`)).toBeTruthy();
-								})
+								}, {timeout: 5000})
+		fireEvent.press(getByTestId(`add-friend-${testUser2.id}-button`))
+		await waitFor(() => {
+			expect(getByTestId(`${testUser2.id}-friend-card`)).toBeDefined();
+			expect(getByTestId(`join-room-${testUser2.roomId}-button`)).toBeDefined();
+		}, {timeout: 5000})
 
+			
 
 								fireEvent.press(getByTestId(`join-room-${testUser2.roomId}-button`))
 
 								await waitFor(() => {
-												expect(getByTestId('group-session-screen')).toBeTruthy();
+												expect(navigation.navigate).toHaveBeenCalledWith('Timer', { screen: 'Group',params: { joinRoomId: testUser2.roomId } });
 								})
 				})
 })

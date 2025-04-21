@@ -40,9 +40,7 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
   const [view, setView] = useState('session'); // "session" for initial, "lobby" for room
   const [roomId, setRoomId] = useState('');
   useEffect(() => {
-  console.log('Group params:', route.params);
-    console.log('JoinRoomId', joinRoomId)
-    if(route.params?.joinRoomId){
+    if(route?.params?.joinRoomId){
       setRoomId(route.params.joinRoomId)
     }
 }, []);

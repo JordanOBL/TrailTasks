@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "start": "react-native start",
     "start:test": "ENVFILE=.env.test npx react-native start",
-    "test": " NODE_ENV=test ENVFILE=.env.test jest"
+    "test": " NODE_ENV=test ENVFILE=.env.test jest --silent --runInBand",
+    "test:coverage": "NODE_ENV=test ENVFILE=.env.test jest --silent --runInBand --coverage"
   },
   "dependencies": {
     "@babel/plugin-transform-class-properties": "^7.25.9",

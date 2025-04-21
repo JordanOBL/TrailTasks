@@ -19,7 +19,7 @@ const SearchAddFriend = ({ user, cachedFriendUsernames, isConnected , database})
     return;
   }
 
-    if (cachedFriendUsernames.includes(search.toLowerCase())) {
+    if (cachedFriendUsernames.length > 0 && cachedFriendUsernames.includes(search.toLowerCase())) {
       setError('User already added as friend');
       setTimeout(() => setError(''), 2000);
       return;
@@ -99,7 +99,7 @@ const SearchAddFriend = ({ user, cachedFriendUsernames, isConnected , database})
         />
       )}
 
-      {error !== '' && <Text style={styles.error}>{error}</Text>}
+      {error !== '' && <Text testID="friend-search-error" style={styles.error}>{error}</Text>}
     </View>
   );
 };

@@ -11,7 +11,7 @@ const SearchFriendCard = ({ friend, isConnected, handleAction }) => {
   const rank = getUserRank(friend.totalMiles)
 
   return (
-    <View testID={`${friend.friendId}-friend-card`} style={styles.card}>
+    <View testID={`${friend.friendId}-found-friend-card`} style={styles.card}>
       <View style={styles.details}>
         <Text testID={`${friend.friendId}-friend-username`} style={styles.username} numberOfLines={1} ellipsizeMode="tail">
           {friend.username}
