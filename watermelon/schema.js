@@ -1,7 +1,7 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 const schema = appSchema({
-  version: 2,
+  version: 3,
   tables: [
     tableSchema({
       name: 'parks',
@@ -231,6 +231,7 @@ const schema = appSchema({
         { name: 'friend_id', type: 'string', isIndexed: true },
         { name: 'total_miles', type: 'string', isOptional: false },
         { name: 'current_trail', type: 'string', isOptional: false }, // Friend status
+        { name: 'trail_progress', type: 'string', isOptional: false },
         {name: 'username', type: 'string', isOptional: false},
         {name: 'room_id', type: 'string', isOptional: true},
         { name: 'created_at', type: 'number' },

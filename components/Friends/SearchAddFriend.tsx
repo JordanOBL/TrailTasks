@@ -3,10 +3,10 @@ import { StyleSheet, TextInput, View, Text } from 'react-native';
 import handleError from '../../helpers/ErrorHandler';
 import Config from 'react-native-config';
 import { Button } from 'react-native-paper';
-import FriendCard from './FriendCard';
+import SearchFriendCard from './SearchFriendCard';
 import {sync} from '../../watermelon/sync';
 
-const SearchAddFriend = ({ user, isConnected , database}) => {
+const SearchAddFriend = ({ user, cachedFriendUsernames, isConnected , database}) => {
   const [search, setSearch] = useState('');
   const [foundFriend, setFoundFriend] = useState(null);
   const [error, setError] = useState('');
@@ -19,6 +19,12 @@ const SearchAddFriend = ({ user, isConnected , database}) => {
     return;
   }
 
+    if (cachedFriendUsernames.includes(search.toLowerCase())) {
+      setError('User already added as friend');
+      setTimeout(() => setError(''), 2000);
+      return;
+    }
+
     try {
       const result = await fetch(`http://${Config.DATABASE_URL}/api/searchFriends?username=${search}`);
       const { friend } = await result.json();
@@ -29,6 +35,7 @@ const SearchAddFriend = ({ user, isConnected , database}) => {
             username: friend.username,
             totalMiles: friend.total_miles,
             currentTrail: friend.current_trail,
+            trailProgress: friend.trail_progress,
             roomId: friend.room_id || '',
           }
         : null;
@@ -51,8 +58,8 @@ const SearchAddFriend = ({ user, isConnected , database}) => {
     console.log('friend state', foundFriend);
   }, [foundFriend]);
 
-  async function handleAddFriend(friendId) {
-    const result = await user.addFriend(foundFriend.friendId);
+  async function handleAddFriend(friend) {
+    const result = await user.addFriend(friend);
     if (result.success) {
       await sync(database, isConnected, user.id);
       setFoundFriend(null);
@@ -84,10 +91,9 @@ const SearchAddFriend = ({ user, isConnected , database}) => {
       </View>
 
       {foundFriend?.friendId && (
-        <FriendCard
+        <SearchFriendCard
           key={foundFriend.friendId}
           friend={foundFriend}
-          action="add"
           handleAction={handleAddFriend}
           isConnected={isConnected}
         />
@@ -102,9 +108,12 @@ export default SearchAddFriend;
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 16,
-    paddingBottom: 10,
+   padding: 16, 
     marginTop: 10,
+    borderColor: 'grey',
+    borderWidth: 1,
+    borderRadius: 10,
+    borderOpacity: 0.5,
   },
   searchRow: {
     flexDirection: 'row',
@@ -145,6 +154,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     color: 'white',
+    textAlign: 'center',
   },
 });
 

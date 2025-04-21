@@ -156,19 +156,31 @@ export class User extends Model {
   }
 
   @writer
-  async addFriend(friendId){
+  async addFriend(friend){
+    console.log('in addFriend', friend)
     try{
-      const userFriend = await this.collections.get('users_friends').create((userFriend) =>{
-        userFriend.userId = this.id;
-        userFriend.friendId = friendId;
-      })
-      if(userFriend){
-        return {success: true} 
-      }
-      return {success: false}
- 
+      await this.batch(
+        this.collections.get('users_friends').prepareCreate((userFriend) =>{
+          userFriend.userId = this.id;
+          userFriend.friendId = friend.friendId;
+        }),
+
+        this.collections.get('cached_friends').prepareCreate((cachedFriend) =>{
+          cachedFriend.userId = this.id;
+          cachedFriend.friendId = friend.friendId;
+          cachedFriend.username = friend.username
+          cachedFriend.totalMiles = friend.totalMiles
+          cachedFriend.currentTrail = friend.currentTrail
+          cachedFriend.trailProgress = friend.trailProgress
+          cachedFriend.roomId = friend.roomId
+
+        })
+      )
+      return {success: true} 
+
     }catch(err){
       handleError('user.addFriend()', err)
+      return {success: false}
     }
   }
 
@@ -689,6 +701,7 @@ export class Cached_Friend extends Model {
   @field('username') username;
   @field('total_miles') totalMiles;
   @field('current_trail') currentTrail;
+  @field('trail_progress') trailProgress;
   @field('room_id') roomId;
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;

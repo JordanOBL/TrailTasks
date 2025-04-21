@@ -1,14 +1,12 @@
+
 import { StyleSheet, Text, View, Pressable } from 'react-native'
 import React from 'react'
 import getUserRank from '../../helpers/Ranks/getUserRank'
  import {withObservables} from '@nozbe/watermelondb/react';
 import { Cached_Friend } from '../../watermelon/models'
 
-const FriendCard = ({ friend, isConnected, handleAction }) => {
-  if (!friend || (!friend.friendId && !friend.friend_id)) {
-    console.warn('[FriendCard] Invalid friend data:', friend)
-    return null
-  }
+const SearchFriendCard = ({ friend, isConnected, handleAction }) => {
+
 
   const rank = getUserRank(friend.totalMiles)
 
@@ -32,27 +30,23 @@ const FriendCard = ({ friend, isConnected, handleAction }) => {
         style={({ pressed }) => [
           styles.button,
           pressed && styles.buttonPressed,
-          (!isConnected || !friend.roomId)  && styles.disabledButton,
+          !isConnected  && styles.disabledButton,
         ]}
-        disabled={!isConnected || !friend.roomId}
-        onPress={() =>handleAction(friend.roomId)}
-        testID={
-         `join-room-${friend.roomId || friend.room_id}-button`
-        }
+        onPress={() =>{
+          handleAction(friend)
+        }}
+        testID={ `add-friend-${friend.friendId}-button`}
       >
         <Text style={styles.buttonText}>
-          {!isConnected ? 'No connection' : 'Join'}
+          {'Add'}
         </Text>
       </Pressable>
     </View>
   )
 }
 
-const enhance = withObservables(['cachedFriends'], ({friend }) => ({
-  friend,
-}))
-const EnhancedFriendCard = enhance(FriendCard)
-export default EnhancedFriendCard
+
+export default SearchFriendCard
 
 const styles = StyleSheet.create({
   card: {

@@ -37,6 +37,19 @@ export default schemaMigrations({
           ]
         })
       ],
-    }],
+    },
+    {
+      // ⚠️ Set this to a number one larger than the current schema version
+      toVersion: 3,
+      steps: [
+        addColumns({
+          table: 'cached_friends',
+          columns: [
+            { name: 'trail_progress', type: 'string', isOptional: false },
+          ]
+        })      
+      ],
+    }
+  ],
 
 });
