@@ -108,12 +108,11 @@ export default SearchAddFriend;
 
 const styles = StyleSheet.create({
   wrapper: {
-   padding: 16, 
+   padding: 26, 
     marginTop: 10,
     borderColor: 'grey',
     borderWidth: 1,
-    borderRadius: 10,
-    borderOpacity: 0.5,
+    borderRadius: 6,
   },
   searchRow: {
     flexDirection: 'row',
@@ -134,10 +133,7 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     backgroundColor: '#07FED5',
-    borderRadius: 8,
-    paddingHorizontal: 14,
     justifyContent: 'center',
-    height: 44,
   },
   searchButtonText: {
     color: '#000',
@@ -155,6 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: 'white',
     textAlign: 'center',
+    opacity: 0.5,
   },
 });
 

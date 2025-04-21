@@ -103,7 +103,7 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
       {/*<FriendsList cachedFriends={cachedFriends} isConnected={isConnected} handleJoinSession={handleJoinSession} />*/}
       <View style={styles.titleUpdateContainer}>
       <Text style={styles.friendsTitle} testID='friends-title'>Friends:</Text>
-       {isConnected && <Button style={styles.refreshButton} icon="refresh" mode="outlined" onPress={() => setRefreshFriends(true)} testID='refresh-friends-button' >Update</Button>}
+       {isConnected && <Button style={styles.refreshButton} icon="refresh" mode="outlined" onPress={() => setRefreshFriends(true)} testID='refresh-friends-button' textColor="#07FED5" >Update</Button>}
       </View>
       <ScrollView testID='friends-list' contentContainerStyle={{paddingBottom: 100}} >
       {cachedFriends.length > 0 ? cachedFriends.map(friend => <EnhancedFriendCard key={friend.friendId} friend={friend}  isConnected={isConnected} handleAction={handleJoinSession} />) : <Text style={styles.noFriendsMessage} testID='no-friends-message'>Add a friend, or check back later</Text>
@@ -144,5 +144,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 18,
   },
+  refreshButton: {
+  opacity: 0.8
+  }
 
 })
