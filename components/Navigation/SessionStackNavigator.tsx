@@ -21,7 +21,6 @@ export function SessionStackNavigator()
       <Session.Screen name="Solo" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
         {(props:any) => <EnhancedSessionScreen user={user} {...props} />}
       </Session.Screen>
-
     </Session.Navigator>
   )
 }

@@ -1,6 +1,8 @@
 import {Addon} from "../watermelon/models";
+type SESSION_TYPE = "PHYSICAL" | "POMODORO" 
 export interface SessionDetails {
   startTime: string | null;
+  type: SESSION_TYPE;
   sessionName: string;
   sessionDescription: string;
   sessionCategoryId: null;

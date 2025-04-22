@@ -2,7 +2,8 @@ import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
-import timeOptions from '../../helpers/Session/timeOptions';
+import timeOptions from '../../helpers/Session/timeOptions'
+;import { SegmentedButtons } from 'react-native-paper';
 
 const SettingsModal = ({
                            timer,
@@ -26,6 +27,23 @@ const SettingsModal = ({
                 <View style={styles.modalContent}>
                     <Text style={styles.title}>Session Settings</Text>
                     <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <View style={styles.segmentedButtonContainer}>
+                            <Text style={styles.label}>Type</Text>
+                            <SegmentedButtons
+                                buttons={[{ value: 'POMODORO', label: 'Pomodoro', style: sessionDetails.type == 
+                                'POMODORO' ? {backgroundColor: 'rgb(7,254,213)'} : {backgroundColor: 'black'}, labelStyle: sessionDetails.type == 
+                                'POMODORO' ? {color: 'black'} : {color: 'rgba(255,255,255,0.5)'}}, { value: 'PHYSICAL', label: 'Physical', style: sessionDetails.type == 
+                                'PHYSICAL' ? {backgroundColor: 'rgb(7,254,213)'} : {backgroundColor: 'black'}, labelStyle : sessionDetails.type == 
+                                'PHYSICAL' ? {color: 'black'} : {color: 'rgba(255,255,255,0.5)'} }]}
+                                density="small"
+                                testID="session-type-switch"
+                                onValueChange={(value) => {
+                                    setTimer((prev) => ({ ...prev, type: value }))
+                                    setSessionDetails((prev) => ({ ...prev, type: value }))
+                                }} 
+                                style={styles.segmentedButton}
+                            />
+                        </View>
                         {/* Session Name */}
                         <View style={styles.fieldContainer}>
                             <Text style={styles.label}>Session Title</Text>
@@ -65,7 +83,9 @@ const SettingsModal = ({
                         </View>
 
                         {/* Time Settings */}
-                        <View style={styles.row}>
+                        {sessionDetails.type === 'POMODORO' && (
+                            
+                            <View style={styles.row}>
                             <View style={styles.column}>
                                 <Text style={styles.label}>Focus Time</Text>
                                 <Dropdown
@@ -118,8 +138,10 @@ const SettingsModal = ({
                                 />
                             </View>
                         </View>
+                        )}
+{sessionDetails.type === 'POMODORO' && 
+    
 
-                        {/* Sets and Auto-Continue */}
                         <View style={styles.row}>
                             <View style={styles.column}>
                                 <Text style={styles.label}>Sets</Text>
@@ -148,6 +170,7 @@ const SettingsModal = ({
                                 />
                             </View>
                         </View>
+                        }
                     </ScrollView>
 
                     {/* Save and Close */}
@@ -191,7 +214,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#ccc',
-        marginBottom: 5,
+        marginVertical: 15,
     },
     input: {
         backgroundColor: '#333',
@@ -237,5 +260,11 @@ const styles = StyleSheet.create({
         color: '#1c1c1c',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    segmentedButtonContainer: {
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginVertical: 20,
+        padding: 20,
     },
 });

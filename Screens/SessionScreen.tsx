@@ -11,6 +11,7 @@ import {
 import {AchievementsWithCompletion} from '../types/achievements';
 import EnhancedActiveSession from '../components/Session/ActiveSession';
 import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
+import EnhancedPhysicalSession from '../components/Session/PhysicalSession';
 import {Q} from '@nozbe/watermelondb';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
@@ -76,6 +77,7 @@ const SessionScreen = ({
     totalTokenBonus: 0,
     trailTokensEarned:0,
     sessionTokensEarned:0,
+    type: "POMODORO",
     isLoading: false,
     isError: false,
     backpack: [{addon: null, minimumTotalMiles:0.0}, {addon: null, minimumTotalMiles:75.0}, {addon: null, minimumTotalMiles:175.0}, {addon: null, minimumTotalMiles:375.0}]
@@ -92,6 +94,7 @@ const SessionScreen = ({
     shortBreakTime: 300,
     longBreakTime: 2700,
     sets: 3,
+    type: "POMODORO",
     completedSets: 0,
     pace: 2,
     autoContinue: false,
@@ -201,31 +204,44 @@ const SessionScreen = ({
     <SafeAreaView style={styles.container} testID="session-screen">
       {sessionDetails.isLoading ? (
         <Text style={styles.loading}>Loading...</Text>
-      ) : !sessionDetails.startTime && !timer.isRunning && !showResultsScreen ? (
-        <EnhancedNewSessionOptions
-          sessionDetails={sessionDetails}
-          setSessionDetails={setSessionDetails}
-          timer={timer}
-          setTimer={setTimer}
-          setUserSession={setUserSession}
-          sessionCategories={sessionCategories}
-          user={user}
-        />
-      ) : showResultsScreen ?
-      (<SoloResultsScreen user={user} sessionDetails={sessionDetails} timer={timer} endSession={handleEndSession} />): (
-        <EnhancedActiveSession
-          sessionDetails={sessionDetails}
-          setSessionDetails={setSessionDetails}
-          timer={timer}
-          setTimer={setTimer}
-          achievementsWithCompletion={achievementsWithCompletion}
-          userSession={userSession}
-          currentSessionCategory={currentSessionCategory}
-          user={user}
-          showResultsScreen={handleShowResultsScreen}
-          endSession={handleEndSession}
-        />
-      )}
+      ) :  showResultsScreen ?
+            (<SoloResultsScreen user={user} sessionDetails={sessionDetails} timer={timer} endSession={handleEndSession} />): !sessionDetails.startTime && !timer.isRunning ? (
+          <EnhancedNewSessionOptions
+            sessionDetails={sessionDetails}
+            setSessionDetails={setSessionDetails}
+            timer={timer}
+            setTimer={setTimer}
+            setUserSession={setUserSession}
+            sessionCategories={sessionCategories}
+            user={user}
+          />
+        ) : sessionDetails.type === "POMODORO" ? (
+              <EnhancedActiveSession
+                sessionDetails={sessionDetails}
+                setSessionDetails={setSessionDetails}
+                timer={timer}
+                setTimer={setTimer}
+                achievementsWithCompletion={achievementsWithCompletion}
+                userSession={userSession}
+                currentSessionCategory={currentSessionCategory}
+                user={user}
+                showResultsScreen={handleShowResultsScreen}
+                endSession={handleEndSession}
+              />
+            ) : <EnhancedPhysicalSession
+              sessionDetails={sessionDetails}
+              setSessionDetails={setSessionDetails}
+              timer={timer}
+              setTimer={setTimer}
+              userSession={userSession}
+              user={user}
+              showResultsScreen={handleShowResultsScreen}
+                achievementsWithCompletion={achievementsWithCompletion}
+              endSession={handleEndSession}
+                debug={true}
+            />
+      }
+
     </SafeAreaView>
   );
 };

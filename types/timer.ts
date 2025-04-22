@@ -1,3 +1,4 @@
+type TIMER_TYPE = "PHYSICAL" | "POMODORO" 
 type Timer = {
   startTime: string | null;
   isCompleted: boolean;
@@ -9,6 +10,7 @@ type Timer = {
   shortBreakTime: number,
   longBreakTime: number,
   sets: number,
+  type: TIMER_TYPE,
   completedSets: number,
   pace: number,
   autoContinue: boolean,

@@ -162,3 +162,30 @@ jest.mock('@react-navigation/native', () => {
     }),
   };
 });
+
+jest.mock('react-native-background-geolocation', () => {
+  return {
+    __esModule: true, // if you're using ES modules
+  default: {
+    on: jest.fn(),
+    onLocation: jest.fn(),
+    onMotionChange: jest.fn(),
+    onActivityChange: jest.fn(),
+    onProviderChange: jest.fn(),
+    ready: jest.fn(() => Promise.resolve({ enabled: true })),
+    start: jest.fn(),
+    stop: jest.fn(),
+    LOG_LEVEL_VERBOSE: 1,
+    removeListeners: jest.fn(),
+  },
+    Subscription: {
+      remove: jest.fn()
+    },
+    Location: {
+      coords: {
+        latitude: 0,
+        longitude: 0
+      }
+    }
+  }
+})
