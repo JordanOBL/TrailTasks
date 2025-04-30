@@ -1,6 +1,7 @@
 import {Database} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 
+import migrations from './migrations';
 import mySchema from './schema';
 import {
   Achievement,
@@ -28,6 +29,7 @@ const adapter = new SQLiteAdapter({
   // Watermelon checks if we’re on RN or Node. 
   // Because we mocked index.native, it’ll use `better-sqlite3` in Node.
   synchronous: true, 
+  migrations,
   jsi: false, // If your version of Watermelon complains about JSI, ensure it's off
 })
 

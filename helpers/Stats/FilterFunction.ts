@@ -60,4 +60,7 @@ export const FilterBy = (
 		});
 	// Update state with the filtered sessions
 	setFilteredUserSessions(filteredSessions);
+
+	// Return the filtered sessions
+	return filteredSessions;
 };

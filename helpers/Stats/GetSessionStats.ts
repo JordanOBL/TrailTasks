@@ -64,10 +64,12 @@ export const getSessionStats = (
 		return timeOfDay;
 	});
 
+	//Returns ex.{ Evening: 1, Morning: 1, Afternoon: 2 }
 	const timeOfDayCount = productiveTimes.reduce((acc, timeOfDay) => {
 		acc[timeOfDay] = (acc[timeOfDay] || 0) + 1;
 		return acc;
 	}, {} as { [key: string]: number });
+
 
 	// @ts-ignore
 	const mostProductiveTime = Object.keys(timeOfDayCount).reduce((a, b) =>

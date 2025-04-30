@@ -12,7 +12,7 @@ interface Props {
 const SessionList = ({filteredUserSessions}: Props) => {
   // @ts-ignore
   const renderSessionItem = ({item}) => (
-    <View style={styles.sessionContainer}>
+    <View style={styles.sessionContainer} testID={`session-list-item-${item.id}`}>
       <Text style={styles.title}>{item.session_name}</Text>
       <Text style={styles.category}>
         Category: {item.session_category_name}
@@ -34,6 +34,7 @@ const SessionList = ({filteredUserSessions}: Props) => {
 
   return (
     <FlatList
+      testID="sessions-list"
       data={filteredUserSessions}
       renderItem={renderSessionItem}
       keyExtractor={(item, index) => index.toString()}

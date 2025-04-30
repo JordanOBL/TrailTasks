@@ -41,7 +41,7 @@ const Stats: React.FC<Props> = ({
   }, [filteredUserSessions]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="stats-container">
       <View style={styles.header}>
         <Text style={styles.headerText}>Stats for: "{filteredCategory}"</Text>
         <Text style={styles.headerText}>Period: "{filteredTime}"</Text>
@@ -49,22 +49,22 @@ const Stats: React.FC<Props> = ({
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.statsContainer}>
           <Text style={styles.statTitle}>Total Focus Time</Text>
-          <Text style={styles.statValue}>{formatTime(totalTime)}</Text>
+          <Text testID="total-focus-time" style={styles.statValue}>{formatTime(totalTime)}</Text>
         </View>
         <View style={styles.statsContainer}>
           <Text style={styles.statTitle}>Total Distance Hiked</Text>
-          <Text style={styles.statValue}>{totalDistance.toFixed(2)} miles</Text>
+          <Text testID="total-distance" style={styles.statValue}>{totalDistance.toFixed(2)} miles</Text>
         </View>
         {filteredCategory === 'All Categories' && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Used Category</Text>
-            <Text style={styles.statValue}>{mostUsedCategory}</Text>
+            <Text testID="most-used-category" style={styles.statValue}>{mostUsedCategory}</Text>
           </View>
         )}
         {filteredCategory === 'All Categories' && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Productive Time</Text>
-            <Text style={styles.statValue}>{mostProductiveTimes[0]}</Text>
+            <Text testID="most-productive-time" style={styles.statValue}>{mostProductiveTimes[0]}</Text>
           </View>
         )}
       </ScrollView>

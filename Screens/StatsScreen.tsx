@@ -65,13 +65,15 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 
   const handleCategoryFilterChange = (categoryName: string) => {
     setCategoryFilter(categoryName);
-    setFilteredUserSessions(
-      categoryName === 'All Categories'
-        ? userSessionsWithCategories
-        : userSessionsWithCategories.filter(
-            (session) => session.sessionCategoryName === categoryName
-          )
-    );
+    setFilteredUserSessions( prev => {
+      if (categoryName === 'All Categories') {
+        return userSessionsWithCategories
+      } else {
+        return userSessionsWithCategories.filter(
+          (session) => session.sessionCategoryName === categoryName
+        )
+      }
+    })
   };
 
   async function getUserSessionsWithCategories() {
@@ -111,10 +113,12 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   React.useEffect(() => {
     getSessionCategories();
     getUserSessionsWithCategories();
+
+    return () => {};
   }, [user]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="stats-screen">
       {/* Filter Toggle */}
       <Pressable
         style={styles.filterToggle}
@@ -199,6 +203,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
       {/* Screen View Toggle */}
       <Pressable
         style={styles.toggleButton}
+        testID="toggle-stats-screen"
         onPress={() => setView(view === 'stats' ? 'sessions' : 'stats')}>
         <Ionicons
           name={view === 'stats' ? 'list-outline' : 'podium-outline'}
