@@ -17,7 +17,7 @@ export function createMockUserBase(overrides?: Partial<User>) {
     pushNotificationsEnabled: true,
     themePreference: 'light',
     trailTokens: 50,
-    lastDailyStreakDate: new Date(),
+    lastDailyStreakDate: new Date().toISOString(),
     prestigeLevel: 0,
     roomId:'',
     
@@ -50,14 +50,14 @@ export async function createUser(database: Database, newUser: any){
       user.password = newUser.password;
       user.pushNotificationsEnabled = true;
       user.themePreference = 'light';
-      user.trailId = '1';
-      user.dailyStreak = 0;
-      user.lastDailyStreakDate = new Date();
-      user.trailProgress = '0.00';
+      user.trailId = newUser.trailId || '1';
+      user.dailyStreak = newUser.dailyStreak || 0;
+      user.lastDailyStreakDate = newUser.lastDailyStreakDate || new Date().toISOString();
+      user.trailProgress = newUser.trailProgress || '0.00';
       user.traiStartedAt = newUser.trailStartedAt;
-      user.trailTokens = 50;
-      user.totalMiles = '0.00';
-      user.prestigeLevel = 0;
+      user.trailTokens = newUser.trailTokens || 50;
+      user.totalMiles = newUser.totalMiles || '0.00';
+      user.prestigeLevel = newUser.prestigeLevel || 0;
       user.roomId = newUser.roomId || '';
     })
 

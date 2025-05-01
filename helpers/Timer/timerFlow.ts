@@ -293,7 +293,6 @@ export async function endSession({
   try {
     //check daily streak
     // @ts-ignore
-    await checkDailyStreak(user, sessionDetails)
     resetSessionState(setSessionDetails);
     resetTimerState(setTimer)
     

@@ -191,7 +191,7 @@ export class User extends Model {
         .create((purchased_trail) => {
           purchased_trail.userId = this.id;
           purchased_trail.trailId = trail.id;
-          purchased_trail.purchasedAt = Date.now();
+          purchased_trail.purchasedAt = new Date().toISOString();
         });
     if (results) {
       await this.update(() => {
@@ -322,7 +322,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return await this.update(() => {
       this.dailyStreak += 1;
       this.lastDailyStreakDate = new Date();
-      this.trailTokens += 5;
+      this.trailTokens += 15;
     });
     // } else {
     //   return await this.update(() => {
@@ -335,6 +335,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   async resetDailyStreak() {
     return await this.update(() => {
       this.dailyStreak = 0;
+      this.lastDailyStreakDate = new Date();
     });
   }
 
@@ -634,7 +635,7 @@ async buyAddon(addOn) {
       newUserPark = this.collections.get('users_parks').prepareCreate((parkPass) => {
         parkPass.userId = this.id;
         parkPass.parkId = parkId;
-        parkPass.lastCompleted = Date.now();
+        parkPass.lastCompleted = new Date().toISOString();
         parkPass.parkLevel = 1;
         parkPass.isRewardRedeemed = true;
       });
@@ -642,7 +643,7 @@ async buyAddon(addOn) {
     } else if (this.prestigeLevel === existingParkPass.parkLevel) {
        newUserPark = existingParkPass.prepareUpdate((pass) => {
           pass.parkLevel += 1;
-          pass.lastCompleted = Date.now();
+          pass.lastCompleted = new Date().toISOString();
           pass.isRewardRedeemed = true;
         })
     }

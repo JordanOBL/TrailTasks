@@ -11,6 +11,9 @@ import HomeScreen from '../HomeScreen';
 import { sync } from '../../watermelon/sync';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import pg from 'pg';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_CONNECTION_STRING });
 const Stack = createStackNavigator();
 
 describe('HomeScreen', () => {
@@ -61,6 +64,8 @@ describe('HomeScreen', () => {
 		await watermelonDatabase.write(async () => {
 			await watermelonDatabase.unsafeResetDatabase();
 		})
+		pool.query('TRUNCATE TABLE users CASCADE');
+		pool.end();
 	});
 
 	test('renders correctly', async () => {
@@ -143,6 +148,52 @@ describe('HomeScreen', () => {
 			expect(queryByTestId("tutorial-modal")).not.toBeOnTheScreen();
 		})
 
+	})
+
+	test('it shows the correct daily streak', async () => {
+		const prevDailyStreak = testUser.dailyStreak;
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		const yesterday = new Date();
+		yesterday.setDate(yesterday.getDate() - 1);
+		await watermelonDatabase.write(async () => {
+			watermelonDatabase.batch(
+			testUser.prepareUpdate(user => {
+				user.lastDailyStreakDate = yesterday.toISOString();
+			}),
+			watermelonDatabase.get('users_sessions').prepareCreate((session) => {
+				session._id = '1'
+				session.userId = testUser.id
+				session.sessionCategoryId = '1'
+				session.sessionName = 'Session 1'
+				session.sessionDescription = 'Session 1 description'
+				session.totalSessionTime = 300
+				session.totalDistanceHiked = '10.00'
+				session.dateAdded = today.toISOString()
+			})
+			)
+		})
+
+		const {getByTestId} = render(
+			<DatabaseProvider database={watermelonDatabase}>
+				<InternetConnectionProvider>
+				<AuthProvider initialUser={testUser}>
+					<NavigationContainer>
+						<Stack.Navigator>
+							<Stack.Screen name="Home">
+								{props => <EnhancedHomeScreen {...props} user={testUser} />}
+							</Stack.Screen>
+						</Stack.Navigator>
+					</NavigationContainer>
+				</AuthProvider>
+				</InternetConnectionProvider>
+			</DatabaseProvider>
+		);
+		await waitFor(() => {
+			expect(getByTestId('daily-streak')).toBeDefined();
+			expect(prevDailyStreak).toBe(0);
+			expect(getByTestId('daily-streak')).toHaveTextContent('1');
+		})
 	})
 
 

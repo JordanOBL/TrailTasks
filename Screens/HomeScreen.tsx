@@ -78,17 +78,10 @@ const HomeScreen: React.FC<Props> = ({
 
     //this useEffect checks daily streak and resets if needed
     React.useEffect(() => {
-        async function resetDailyStreak() {
-            if (
-                !isYesterday(user.lastDailyStreakDate) &&
-                !isToday(user.lastDailyStreakDate)
-            ) {
-                await user.resetDailyStreak();
-            }
+        if(user){
+         checkDailyStreak(user)
         }
-        if (user && user.lastDailyStreakDate) {
-            resetDailyStreak();
-        }//Check to see if user is new to the app by checking if theyve hiked any miles
+       //Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
            // Check if the user has any miles hiked
         
@@ -143,7 +136,7 @@ const HomeScreen: React.FC<Props> = ({
                         {isConnected ? 'Online' : 'Offline'}
                     </Text>
                     <View>
-                        <Text style={styles.dailyStreak}>
+                        <Text style={styles.dailyStreak} testID="daily-streak">
                             Daily Streak: {user?.dailyStreak}
                         </Text>
                         <SyncButton />
