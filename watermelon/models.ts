@@ -295,25 +295,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return userSessions.length;
   }
 
-  // getUser
-  @writer
-  async getUser() {
-    return {
-      username: this.username,
-      email: this.email,
-      id: this.id,
-      password: this.password,
-      push_notifications_enabled: this.pushNotificationsEnabled,
-      theme_preference: this.themePreference,
-      trail_id: this.trailId,
-      trail_progress: this.trailProgress,
-      trail_started_at: this.trailStartedAt,
-
-      updated_at: this.updatedAt,
-      created_at: this.createdAt,
-    };
-  }
-
   @writer
   async increaseDailyStreak() {
     //const subscription = await this.userSubscription;
@@ -321,7 +302,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     // if (subscription.isActive) {
     return await this.update(() => {
       this.dailyStreak += 1;
-      this.lastDailyStreakDate = new Date();
+      this.lastDailyStreakDate = new Date().toISOString();
       this.trailTokens += 15;
     });
     // } else {
@@ -335,7 +316,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   async resetDailyStreak() {
     return await this.update(() => {
       this.dailyStreak = 0;
-      this.lastDailyStreakDate = new Date();
+      this.lastDailyStreakDate = new Date().toISOString();
     });
   }
 
@@ -416,7 +397,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       user.themePreference = 'light';
       user.trailId = '1';
       user.dailyStreak = 0;
-      user.lastDailyStreakDate = new Date();
+      user.lastDailyStreakDate = new Date().toISOString();
       user.trailProgress = '0.00';
       user.traiStartedAt = trailStartedAt;
       user.trailTokens = 20;

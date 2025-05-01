@@ -8,9 +8,7 @@ function isYesterday(date: Date | null) {
 
   // Check if the given date is equal to yesterday's date
   return (
-    checkDate.getFullYear() === yesterday.getFullYear() &&
-    checkDate.getMonth() === yesterday.getMonth() &&
-    checkDate.getDate() === yesterday.getDate()
+    checkDate.toLocaleDateString('en-CA') === yesterday.toLocaleDateString('en-CA')
   );
 }
 

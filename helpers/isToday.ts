@@ -8,10 +8,8 @@ console.debug({today: new Date()})
   const checkDate = new Date(date);
 
   // Check if the given date is equal to today's date
-  return (
-    checkDate.getFullYear() == today.getFullYear() &&
-    checkDate.getMonth() === today.getMonth() &&
-    checkDate.getDate() === today.getDate()
+return (
+    checkDate.toLocaleDateString('en-CA') === today.toLocaleDateString('en-CA')
   );
 }
 
