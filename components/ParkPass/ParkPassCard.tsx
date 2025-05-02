@@ -102,6 +102,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
+        borderColor: 'rgba(255, 255, 255, .5)',
+        borderWidth: 0.5,
     },
     levelBadge: {
         position: 'absolute',
@@ -130,6 +132,8 @@ const styles = StyleSheet.create({
     },
     progressBar: {
         width: '100%',
+        borderColor: 'rgba(255, 255, 255, .5)',
+        borderWidth: 0.5,
     },
     progressText: {
         fontSize: 12,
