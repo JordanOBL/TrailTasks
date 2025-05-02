@@ -13,7 +13,7 @@ import {Session_Category, User, User_Session} from '../watermelon/models';
 import {FilterBy} from '../helpers/Stats/FilterFunction';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {Q} from '@nozbe/watermelondb';
-import SelectDropdown from 'react-native-select-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import SessionList from '../components/Stats/SessionList';
 import Stats from '../components/Stats/Stats';
 import handleError from "../helpers/ErrorHandler";
@@ -64,6 +64,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   };
 
   const handleCategoryFilterChange = (categoryName: string) => {
+    console.log(categoryName);
     setCategoryFilter(categoryName);
     setFilteredUserSessions( prev => {
       if (categoryName === 'All Categories') {
@@ -103,7 +104,13 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
         .query()
         .fetch()) as Session_Category[];
       if (sessionCategories) {
-        setSessionCategories(sessionCategories);
+        const sessionCategoriesWithId = sessionCategories.map((category) => {
+        return {
+            sessionCategoryName: category.sessionCategoryName, 
+            sessionCategoryId: category.id
+          }
+        });
+        setSessionCategories(sessionCategoriesWithId);
       }
     } catch (err) {
       handleError(err, "getSessionCategories() in Stats Screen");
@@ -117,6 +124,12 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
     return () => {};
   }, [user]);
 
+  React.useEffect(() => {
+    FilterBy(timeFilter, categoryFilter, userSessionsWithCategories, setFilteredUserSessions);
+    setShowFilterMenu(false)
+  }, [timeFilter, categoryFilter]);
+
+
   return (
     <SafeAreaView style={styles.container} testID="stats-screen">
       {/* Filter Toggle */}
@@ -127,7 +140,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
         <Ionicons
           name={showFilterMenu ? 'caret-up-outline' : 'caret-down-outline'}
           size={20}
-          color="rgb(221, 224, 226)"
+          color="rgba(221, 224, 226, 0.5)"
         />
       </Pressable>
 
@@ -135,52 +148,52 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
       {showFilterMenu && (
         <View style={styles.filterMenu}>
           {/* Category Filter Dropdown */}
-          <SelectDropdown
+          { categoryFilter === 'All Categories' ? <Dropdown
             data={[
-              {sessionCategoryName: 'All Categories'},
+              {sessionCategoryName: 'All Categories', sessionCategoryId: 0},
               ...sessionCategories,
             ]}
-            onSelect={(selectedItem) =>
+            onChange={(selectedItem) =>
               handleCategoryFilterChange(selectedItem.sessionCategoryName)
             }
-            buttonTextAfterSelection={(selectedItem) =>
-              selectedItem.sessionCategoryName
-            }
-            rowTextStyle={styles.filterRowText}
-            rowTextForSelection={(item) => item.sessionCategoryName}
-            defaultButtonText={categoryFilter}
-            buttonStyle={styles.filterButton}
-            buttonTextStyle={styles.filterButtonText}
-            dropdownStyle={styles.filterDropdown}
-          />
+            testID="session-category-dropdown"
+            itemTestIDField="category-dropdown-selection"
+            style={styles.dropdown}
+            labelField="sessionCategoryName"
+            valueField="sessionCategoryId"
+            placeholder="Select a category"
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            value={categoryFilter}
+          /> : <Text style={styles.selectedTextStyle}>{categoryFilter}</Text> }
 
           {/* Time Filter Dropdown */}
-          <SelectDropdown
+          {timeFilter === 'All Time' ? <Dropdown
+            style={styles.dropdown}
             data={timeFrames}
-            onSelect={(selectedItem) =>
+            onChange={(selectedItem) =>
               handleTimeFilterChange(selectedItem.label)
             }
-            buttonTextAfterSelection={(selectedItem) => selectedItem.label}
-            rowTextStyle={styles.filterRowText}
-            rowTextForSelection={(item) => item.label}
-            defaultButtonText={timeFilter}
-            buttonStyle={styles.filterButton}
-            buttonTextStyle={styles.filterButtonText}
-            dropdownStyle={styles.filterDropdown}
-          />
+            labelField="label"
+            valueField="value"
+            placeholder="Select a time frame"
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            value={timeFilter}
+
+          /> : <Text style={styles.selectedTextStyle}>{timeFilter}</Text> }
 
           {/* Filter Button */}
           <Pressable
             style={[styles.filterButton, styles.filterApplyButton]}
-            onPress={() =>
-              FilterBy(
-                timeFilter,
-                categoryFilter,
-                userSessionsWithCategories,
-                setFilteredUserSessions
-              )
+            onPress={() =>{
+              setCategoryFilter('All Categories')
+              setTimeFilter('All Time')
+          
+              setShowFilterMenu(false)
+            }
             }>
-            <Text style={styles.filterApplyButtonText}>Apply</Text>
+            <Text style={styles.filterApplyButtonText}>Reset</Text>
           </Pressable>
         </View>
       )}
@@ -220,71 +233,81 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgb(18, 19, 21)',
   },
-  filterToggle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 10,
-    backgroundColor: 'rgb(7, 254, 213)',
-  },
-  filterToggleText: {
-    color: 'rgb(18, 19, 21)',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  filterMenu: {
-    position: 'absolute',
-    top: 50,
-    left: 10,
-    backgroundColor: 'rgb(18, 19, 21)',
-    borderRadius: 10,
-    elevation: 5,
-    padding: 20,
-    zIndex: 1,
-  },
-  filterButton: {
+  dropdown: {
     backgroundColor: 'rgb(31, 33, 35)',
     borderRadius: 5,
-    paddingVertical: 12,
     paddingHorizontal: 16,
+    paddingVertical: 12,
     marginBottom: 10,
-  },
-  filterButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
     color: 'rgb(221, 224, 226)',
   },
-  filterDropdown: {
-    backgroundColor: 'rgb(31, 33, 35)',
-    borderRadius: 5,
-    borderWidth: 0,
-    borderColor: 'rgb(221, 224, 226)',
-    marginTop: 5,
-  },
-  filterRowText: {
-    color: 'rgb(221, 224, 226)',
-  },
-  filterApplyButton: {
-    backgroundColor: 'rgb(7, 254, 213)',
-    alignItems: 'center',
-  },
-  filterApplyButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'rgb(18, 19, 21)',
-  },
-  toggleButton: {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
-    backgroundColor: 'rgb(7, 254, 213)',
-    borderRadius: 30,
-    width: 60,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 5,
-  },
+ filterToggle: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  backgroundColor: '#1C1C1E',
+  borderBottomColor: '#2C2C2E',
+  borderBottomWidth: 1,
+},
+filterToggleText: {
+  color: '#D1D1D6',
+  fontWeight: '600',
+  fontSize: 17,
+},
+filterMenu: {
+  width: '100%',
+  backgroundColor: '#1C1C1E',
+  padding: 16,
+  borderBottomLeftRadius: 12,
+  borderBottomRightRadius: 12,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 5,
+  elevation: 3,
+},
+filterButton: {
+  backgroundColor: '#2C2C2E',
+  borderRadius: 8,
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  marginVertical: 6,
+},
+filterApplyButton: {
+  backgroundColor: '#0A84FF', // iOS blue
+  alignItems: 'center',
+},
+filterApplyButtonText: {
+  fontSize: 16,
+  fontWeight: '600',
+  color: 'white',
+},
+selectedTextStyle: {
+  fontSize: 16,
+  fontWeight: '500',
+  color: '#0A84FF',
+  paddingVertical: 4,
+},
+placeholderStyle: {
+  color: '#8E8E93',
+},
+toggleButton: {
+  position: 'absolute',
+  bottom: 20,
+  right: 20,
+  backgroundColor: '#0A84FF',
+  borderRadius: 28,
+  width: 56,
+  height: 56,
+  alignItems: 'center',
+  justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+},
 });
 
 export default StatsScreen;

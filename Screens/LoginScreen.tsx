@@ -56,20 +56,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   image: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 5,
-    borderColor: 'grey', // Adjusted to ensure circular shape with the new size
-  },
-  title: {
-    fontSize: 32, // Big font size
-    fontWeight: 'bold', // Bold text
-    color: 'white', // White color
-    marginTop: 30, // Add some space between the image and the title
-  },
-  loginContainer: {
-    width: '100%', // Make sure the login form takes the full width
-    alignItems: 'center', // Center the login form
-  },
-});
+  width: 160,
+  height: 160,
+  borderRadius: 80,
+  borderWidth: 3,
+  borderColor: 'rgb(7,254,213)',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 6,
+},
+title: {
+  fontSize: 28,
+  fontWeight: 'bold',
+  color: 'white',
+  marginTop: 20,
+  letterSpacing: 1.2,
+},
+loginContainer: {
+  width: '90%',
+  paddingTop: 10,
+},});

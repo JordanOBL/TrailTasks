@@ -132,7 +132,7 @@ const HomeScreen: React.FC<Props> = ({
                         justifyContent: 'space-between',
                     }}>
                     <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
-                    <Text style={styles.onlineStatus}>
+                    <Text style={[ styles.onlineStatus, {color: isConnected ? 'green' : 'red'} ]}>
                         {isConnected ? 'Online' : 'Offline'}
                     </Text>
                     <View>
@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgb(18, 19, 21)',
         padding: 10,
     },
-    dailyStreak: {
-        color: 'rgb(7, 254, 213)',
-        fontSize: 12,
-        display: 'flex',
-        flexDirection: 'column'
-    },
+  dailyStreak: {
+  fontSize: 13,
+  color: 'rgb(7, 254, 213)',
+  fontWeight: '600',
+  textAlign: 'center',
+},
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -315,11 +315,11 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
     },
-    onlineStatus: {
-        color: 'green',
-        textAlign: 'center',
-        fontSize: 12,
-    },
+   onlineStatus: {
+  fontSize: 12,
+  fontWeight: '600',
+  marginTop: 2,
+},
     username: {
         color: 'rgb(249, 253, 255)',
         fontSize: 12,
@@ -333,86 +333,95 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         paddingRight: 20,
     },
-    rankContainer: { borderWidth: 1,
-        alignItems: 'center',
-    },
-    rankImage: {
-        width: 80,
-        height: 80,
-    },
-    rankLevel: {
-        color: 'rgb(249, 253, 255)',
-        fontSize: 18,
-        fontWeight: '700',
-        textAlign: 'center',
-    },
-    rankTitle: {
-        color: 'rgb(249, 253, 255)',
-        fontSize: 16,
-        fontWeight: '700',
-        textAlign: 'center',
-    },
-    currentTrailContainer: {
-        padding: 10,
-        width: '100%',
-        backgroundColor: 'rgb(28, 29, 31)',
-        borderColor: 'rgb(7, 254, 213)',
-        borderWidth: 1,
-        borderRadius: 10,
-    },
-    trailText: {
-        color: 'rgba(221, 224, 226, .7)',
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    trailName: {
-        color: 'rgb(249, 253, 255)',
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 10,
-    },
+   rankContainer: {
+  borderRadius: 12,
+  backgroundColor: 'rgb(28, 29, 31)',
+  padding: 16,
+  alignItems: 'center',
+  width: '90%',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+  elevation: 4,
+},
+rankImage: {
+  width: 72,
+  height: 72,
+  marginBottom: 12,
+},
+rankLevel: {
+  fontSize: 16,
+  fontWeight: '600',
+  color: 'rgb(7, 254, 213)',
+  marginBottom: 2,
+},
+rankTitle: {
+  fontSize: 15,
+  fontWeight: '500',
+  color: 'rgb(221, 224, 226)',
+  marginBottom: 6,
+},
+  currentTrailContainer: {
+  padding: 16,
+  borderRadius: 12,
+  backgroundColor: 'rgb(28, 29, 31)',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.1,
+  shadowRadius: 3,
+  elevation: 3,
+},
+trailText: {
+  fontSize: 14,
+  color: 'rgba(221, 224, 226, .8)',
+  fontWeight: '500',
+  textAlign: 'center',
+  marginBottom: 4,
+},
+trailName: {
+  fontSize: 17,
+  fontWeight: '600',
+  color: 'rgb(7, 254, 213)',
+  textAlign: 'center',
+  marginBottom: 8,
+},
     trailTokens: {
-        color: 'rgb(7, 254, 213)',
-        fontSize: 12,
-    },
-    paginationDotsContainer: { borderWidth: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 10,
-    },
-    paginationDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        borderColor: 'rgb(7, 254, 213)',
-        borderWidth: 0.3,
-        marginHorizontal: 4,
-        backgroundColor: 'black',
-    },
-    activePaginationDot: {
-        backgroundColor: 'rgb(7, 254, 213)',
-    },
+  fontSize: 13,
+  fontWeight: '600',
+  color: 'rgb(7, 254, 213)',
+},
+   paginationDotsContainer: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginTop: 8,
+},
+paginationDot: {
+  width: 6,
+  height: 6,
+  borderRadius: 3,
+  marginHorizontal: 5,
+  backgroundColor: 'rgba(255,255,255,0.2)',
+},
+activePaginationDot: {
+  backgroundColor: 'rgb(7, 254, 213)',
+},
     linkContainer: {
         marginTop: 10,
         backgroundColor: 'rgb(18, 19, 21)',
     },
-    logoutButton: {
-        borderColor: 'rgb(31, 33, 35)',
-        borderWidth: 1,
-        borderRadius: 10,
-        backgroundColor: 'rgb(31, 33, 35)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 10,
-        padding: 20,
-    },
-    logoutButtonText: {
-        color: 'red',
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-});
+  logoutButton: {
+  marginTop: 20,
+  borderRadius: 8,
+  borderColor: 'rgba(255,255,255,0.1)',
+  borderWidth: 1,
+  backgroundColor: 'rgba(255, 0, 0, 0.1)',
+  paddingVertical: 12,
+  alignItems: 'center',
+},
+logoutButtonText: {
+  fontSize: 16,
+  fontWeight: '600',
+  color: 'red',
+},});

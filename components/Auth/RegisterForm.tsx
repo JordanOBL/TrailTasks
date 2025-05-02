@@ -88,18 +88,10 @@ const RegisterForm = ({email = '', password = '', confirmPassword = '', username
                         ]}>
                         <Text style={styles.buttonText}>Create Account</Text>
                     </Pressable>
-                    <Pressable
-                        testID="login-form-button"
-                        onPress={onFormChange}
-                        style={[
-                            styles.button,
-                            styles.loginButton,
-                            { backgroundColor: 'rgb(61,63,65)' },
-                        ]}>
-                        <Text style={styles.buttonText}>
-                            Login
-                        </Text>
-                    </Pressable>
+                 <Pressable testID="login-form-button" onPress={onFormChange}>
+  <Text style={styles.linkText}>Already have an account? Login</Text>
+</Pressable>
+
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -109,14 +101,9 @@ const RegisterForm = ({email = '', password = '', confirmPassword = '', username
        <RefreshConnection  >
            You're currently offline. Please connect to the internet to complete your registration.
        </RefreshConnection>
-    <Pressable
-        onPress={onFormChange}
-        style={[
-            styles.button,
-            {backgroundColor: 'rgb(7,254,213)'},
-        ]}>
-        <Text style={styles.buttonText}>Login</Text>
-    </Pressable></View>
+   <Pressable testID="login-form-button" onPress={onFormChange}>
+  <Text style={styles.linkText}>Already have an account? Login</Text>
+</Pressable></View>
     );
 };
 
@@ -136,15 +123,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
     },
-    input: {
-        width: '100%',
-        padding: 12, // Slightly reduced padding to create more space
-        fontSize: 18,
-        color: 'white',
-        backgroundColor: 'rgba(31, 33, 35, 0.5)',
-        borderRadius: 10,
-        marginBottom: 15, // Slightly reduced margin to create more space
-    },
+input: {
+  width: '100%',
+  padding: 14,
+  fontSize: 16,
+  color: 'white',
+  backgroundColor: 'rgb(31,33,35)',
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.1)',
+  marginBottom: 16,
+}
+,
     button: {
         padding: 15,
         borderRadius: 10,
@@ -159,17 +149,26 @@ const styles = StyleSheet.create({
     loginButton: {
         backgroundColor: 'rgb(61,63,65)', // Login button color
     },
-    buttonText: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: 'black',
-    },
+  buttonText: {
+  fontSize: 18,
+  fontWeight: '600',
+  color: 'black',
+  letterSpacing: 0.3,
+},
     error: {
         marginTop: 10, // Adjusted for better spacing
         color: 'red',
         fontSize: 16,
         textAlign: 'center',
     },
+    linkText: {
+  color: 'rgb(7,254,213)',
+  textAlign: 'center',
+  fontSize: 16,
+  marginTop: 10,
+  textDecorationLine: 'underline',
+},
+
 });
 
 export default RegisterForm;

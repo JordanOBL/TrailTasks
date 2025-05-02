@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     cardContainer: {
         borderRadius: 12,
         margin: 10,
-        backgroundColor: '#fff',
+        backgroundColor: '#000',
         width: 160, // Match consistent size for a grid layout
         alignItems: 'center',
         elevation: 4,
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '800',
         textAlign: 'center',
-        color: '#333',
+        color: '#fff',
         marginBottom: 4,
     },
     progressBar: {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     progressText: {
         fontSize: 12,
         fontWeight: '800',
-        color: '#666',
+        color: '#fff',
         margin: 10,
     },
     redeemButton: {

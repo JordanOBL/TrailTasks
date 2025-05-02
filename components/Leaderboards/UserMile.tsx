@@ -10,25 +10,27 @@ interface Props {
   userRank?:any;
 }
 
-const UserMile = ({ index, user, hiker, userRank}: Props) => {
-  const borderColor =
-     hiker?.username === user?.username ? 'rgb(7,254,213)' : 'rgb(61,63,65)';
-  const textColor =
-      hiker?.username === user?.username  ? 'rgb(7,254,213)' : 'rgb(161,163,165)';
+const UserMile = ({ index, user, hiker, userRank }: Props) => {
+  const isCurrentUser = hiker?.username === user?.username;
+  const borderColor = isCurrentUser ? 'rgb(7,254,213)' : 'rgb(31, 33, 35)';
+  const textColor = isCurrentUser ? 'rgb(7,254,213)' : 'rgb(221, 224, 226)';
+  const backgroundColor = isCurrentUser ? 'rgba(7, 254, 213, 0.1)' : 'rgb(24, 25, 27)';
 
   return (
-    <SafeAreaView style={[styles.container, {borderColor}]}>
-      <View style={[styles.column, {width: '20%'}]}>
-        <Text style={[styles.text, {color: textColor}]}>{userRank?.rank || index + 1}</Text>
+    <SafeAreaView style={[styles.container, { borderColor, backgroundColor }]}>
+      <View style={[styles.column, { width: '20%' }]}>
+        <Text style={[styles.text, { color: textColor }]}>
+          {userRank?.rank || index + 1}
+        </Text>
       </View>
-      <View style={[styles.column, {width: '50%'}]}>
-        <Text style={[styles.text, {color: textColor}]}>
+      <View style={[styles.column, { width: '50%' }]}>
+        <Text style={[styles.text, { color: textColor }]} numberOfLines={1}>
           {hiker?.username || user.username}
         </Text>
       </View>
-      <View style={[styles.column, {width: '30%'}]}>
-        <Text style={[styles.text, {color: textColor}]}>
-          {!hiker?.total_miles ? '0.00' :  hiker?.total_miles } mi.
+      <View style={[styles.column, { width: '30%' }]}>
+        <Text style={[styles.text, { color: textColor }]}>
+          {parseFloat(hiker?.total_miles || '0').toFixed(2)} mi
         </Text>
       </View>
     </SafeAreaView>
@@ -44,23 +46,20 @@ export default EnhancedUserMile;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'black',
     flexDirection: 'row',
-    width: '100%',
-    marginVertical: 2,
     borderWidth: 1,
-    padding: 5,
+    borderRadius: 10,
+    marginVertical: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
   },
   column: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderColor: 'rgb(61,63,65)',
-    borderRightWidth: 1,
   },
   text: {
-    fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: '600',
     textAlign: 'center',
-    padding: 5,
   },
 });

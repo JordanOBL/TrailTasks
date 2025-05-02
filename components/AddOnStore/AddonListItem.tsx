@@ -31,33 +31,28 @@ export default EnhancedAddonListItem;
 
 const styles = StyleSheet.create({
   container: {
-    display: 'flex',
     flexDirection: 'row',
+    backgroundColor: 'rgb(31, 33, 35)',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
     alignItems: 'center',
-    flexwrap: 'wrap',
-    padding: 10,
-    backgroundColor: '#fff',
-    marginBottom: 10,
-    borderRadius: 8,
-    borderColor: '#ddd',
-    borderWidth: 1,
+    gap: 12,
   },
   addonTitle: {
-    display: 'flex',
-    width: '100%',
-    alignItems: 'flex-start',
-  },
-  addonDescription: {
-  display: 'flex',
-    flexDirection: 'row',
-    width: '75%',
-    flexWrap: 'wrap',
-    fontSize: 12,
-    color: 'black',
+    flex: 1,
+    justifyContent: 'center',
   },
   addonName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'black',
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgb(7, 254, 213)',
+    marginBottom: 4,
+  },
+  addonDescription: {
+    fontSize: 12,
+    color: 'rgba(221, 224, 226, 0.75)',
+    flexWrap: 'wrap',
   },
 });
+

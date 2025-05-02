@@ -40,37 +40,40 @@ export default EnhancedAddOnStore;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    flex: 1,
+    backgroundColor: 'rgb(18, 19, 21)',
+    padding: 16,
   },
   addonItem: {
-    padding: 15,
-    backgroundColor: '#000',
-    marginBottom: 10,
-    borderRadius: 8,
-    borderColor: 'cyan',
-    borderWidth: 1,
+    backgroundColor: 'rgb(31, 33, 35)',
+    padding: 16,
+    marginBottom: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
+    alignItems: 'center',
   },
   addonName: {
     fontSize: 18,
+    fontWeight: '600',
+    color: 'rgb(7, 254, 213)',
+    marginTop: 12,
+    marginBottom: 4,
     textAlign: 'center',
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  addonDescription: {
-    textAlign: 'center',
-    letterSpacing: 1,
-    fontSize: 14,
-    color: '#666',
-    marginVertical: 5,
   },
   addonCost: {
     fontSize: 14,
     color: 'gold',
+    marginBottom: 4,
+  },
+  addonDescription: {
+    color: 'rgba(221, 224, 226, 0.7)',
+    fontSize: 14,
     textAlign: 'center',
+    marginVertical: 8,
   },
 });
+

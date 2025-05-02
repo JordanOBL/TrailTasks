@@ -98,40 +98,49 @@ export default EnhancedAchievementsList;
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'space-evenly',
-    paddingTop: 22,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    backgroundColor: 'rgb(18, 19, 21)',
   },
   achievementContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   achievementContent: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   achievementText: {
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: '600',
+    flexShrink: 1,
   },
   achievementDescription: {
-    backgroundColor: 'rgba(210,180,140, .2)',
+    marginTop: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     padding: 10,
+    borderRadius: 8,
   },
   descriptionText: {
-    fontWeight: 'bold',
     fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 5,
+    color: 'rgb(221, 224, 226)',
+    textAlign: 'left',
+    lineHeight: 20,
   },
   completedText: {
-    fontWeight: 'bold',
     fontSize: 12,
     textAlign: 'center',
     color: '#960000',
   },
   loadingText: {
-    color: 'white',
+    color: 'rgb(221, 224, 226)',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
+

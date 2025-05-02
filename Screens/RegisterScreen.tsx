@@ -74,17 +74,22 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         width: '100%'
     },
-    image: {
-        width: 50, // Reduced size of the image to create more space
-        height: 50,
-        borderRadius: 40, // Maintain circular shape with new size
-    },
-    title: {
-        fontSize: 24, // Slightly smaller font size for better layout balance
-        fontWeight: 'bold',
-        color: 'white',
-        marginTop: 10,
-    },
+ image: {
+  width: 100,
+  height: 100,
+  borderRadius: 50,
+  borderWidth: 2,
+  borderColor: 'rgb(7,254,213)',
+  alignSelf: 'center',
+  marginBottom: 10,
+},
+title: {
+  fontSize: 26,
+  fontWeight: 'bold',
+  color: 'rgb(7,254,213)',
+  textAlign: 'center',
+  letterSpacing: 1.2,
+},
     registerContainer: {
         width: '100%',
         paddingHorizontal: 20,

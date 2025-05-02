@@ -46,18 +46,21 @@ const EnhancedLeaderboard = enhance(Leaderboard);
 export default EnhancedLeaderboard;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'black',
-        paddingHorizontal: 16,
-    },
-    sectionTitle: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 16,
-        marginVertical: 10,
-    },
-    listContainer: {
-        paddingBottom: 400, // Adjust this value as needed
-    },
+  container: {
+    flex: 1,
+    backgroundColor: 'rgb(18, 19, 21)',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: 'rgb(7, 254, 213)',
+    marginBottom: 12,
+    alignSelf: 'center',
+  },
+  listContainer: {
+    paddingBottom: 100,
+  },
 });
+
