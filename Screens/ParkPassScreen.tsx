@@ -14,7 +14,7 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
     const watermelonDatabase = useDatabase();
 
 const { theme } = useTheme();
-
+const canPrestige = userParks.length > 0 && (userParks.length === combinedData.length && userParks.every(pass => pass.parkLevel === user.prestigeLevel + 1 ))
 
   useEffect(() => {
        if(userParks && user) {
@@ -81,17 +81,14 @@ const { theme } = useTheme();
         });
     };
 
-    if(!user || !userParks || !combinedData) {
-        return <Text style={{color: 'white', textAlign: 'center'}}>Loading Park Passes...</Text>
+    if(!user || !userParks || !combinedData?.length) {
+        return (<View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white', textAlign: 'center'}}>Loading Park Passes...</Text></View>)
         
     }
 
-
-    return (
-        <View testID="park-pass-screen" style={[styles.container, { backgroundColor: theme.background }]}>
-            <Text testID='park-pass-count' style={[styles.completedPasses, { color: theme.text }]}>{userParks.length} / {combinedData.length}</Text>
-            {userParks.length === combinedData.length && userParks.every(pass => pass.parkLevel === user.prestigeLevel + 1) && (
-                <View style={{padding: 16, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, margin: 16}}>
+    if(canPrestige) {
+        return (
+             <View style={{padding: 16, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, margin: 16}}>
                     <Text style={{color: 'white', fontSize: 16, fontWeight: '600', marginBottom: 8}}>All Park Passes Completed!</Text>
                     <Text style={{color: 'white', fontSize: 14, marginBottom: 8}}>
                         Prestige to reset and rank up your Park Passes for more rewards. Your completed trails still count toward the next rank!
@@ -105,7 +102,15 @@ const { theme } = useTheme();
                         style={styles.prestigeButton}
                         dark={false}
                     >Prestige</Button>
-                </View>)}
+                </View>
+        )
+    }
+
+
+    return (
+        <View testID="park-pass-screen" style={[styles.container, { backgroundColor: theme.background }]}>
+            <Text testID='park-pass-count' style={[styles.completedPasses, { color: theme.text }]}>{userParks.length} / {combinedData.length}</Text>
+           
             <FlatList
                 data={combinedData}
                 keyExtractor={(item) => item.parkId}

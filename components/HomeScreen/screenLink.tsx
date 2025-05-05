@@ -57,17 +57,13 @@ export default ScreenLink;
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({
     H2: {
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: '700',
-      textAlign: 'left',
     },
     LinkContainer: {
       borderColor: theme.linkBorder,
-      borderWidth: 1,
       borderRadius: 10,
       backgroundColor: theme.linkBackground,
-      flex: 1,
-      alignItems: 'center',
       justifyContent: 'flex-start',
       marginBottom: 10,
       padding: 20,

@@ -7,6 +7,7 @@ import { sync } from '../watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/react';
 import { useInternetConnection } from '../hooks/useInternetConnection';
 import { useTheme } from '../contexts/ThemeProvider';
+import {useAuthContext} from '../services/AuthContext';
 import { lightTheme, darkTheme } from '../theme';
 
 interface Props {
@@ -17,6 +18,7 @@ const SettingsScreen = ({ user }: Props) => {
   const database = useDatabase();
   const { isConnected } = useInternetConnection();
   const { theme, toggleTheme } = useTheme();
+  const {logout} = useAuthContext();
 
   const currentThemeName = theme === darkTheme ? 'dark' : 'light';
 
@@ -34,6 +36,11 @@ const SettingsScreen = ({ user }: Props) => {
         <Text style={styles.buttonText}>
           Switch to {currentThemeName === 'dark' ? 'Light' : 'Dark'} Mode
         </Text>
+      </Pressable>
+      <Pressable
+        onPress={() => logout()}
+        style={styles.logoutButton}>
+        <Text style={styles.logoutButtonText}>Logout</Text>
       </Pressable>
     </View>
   );
@@ -58,6 +65,20 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       color: theme.buttonText,
       fontSize: 16,
       fontWeight: '600',
+    },
+    logoutButton: {
+      marginTop: 20,
+      borderRadius: 8,
+      borderColor: theme.border,
+      borderWidth: 1,
+      backgroundColor: 'rgba(255, 0, 0, 0.1)',
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    logoutButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: 'red',
     },
   });
 

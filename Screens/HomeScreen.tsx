@@ -15,7 +15,6 @@ import {
     User_Session,
 } from '../watermelon/models';
 import {useFocusEffect} from '@react-navigation/native';
-import {useAuthContext} from '../services/AuthContext';
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
 import {Pressable} from 'react-native';
@@ -65,7 +64,6 @@ const HomeScreen: React.FC<Props> = ({
     const data = [...new Array(2).keys()]; // Your data array
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
-    const {logout} = useAuthContext();
     const styles = getStyles(theme); // dynamically generate styles based on theme
 
     userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
@@ -194,7 +192,9 @@ const HomeScreen: React.FC<Props> = ({
                     />
                 ))}
             </View>
-            <ScrollView style={styles.linkContainer}>
+            <ScrollView style={styles.linkContainer}
+  contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} // adjust for safety
+  keyboardShouldPersistTaps="handled">
                 <ScreenLink
                         user={user}
                     needsActiveSubscription={false}
@@ -278,11 +278,7 @@ const HomeScreen: React.FC<Props> = ({
                     Settings
                 </ScreenLink>
 
-                <Pressable
-                    onPress={() => logout()}
-                    style={styles.logoutButton}>
-                    <Text style={styles.logoutButtonText}>Logout</Text>
-                </Pressable>
+                
             </ScrollView>
         </SafeAreaView>
     );
@@ -303,6 +299,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       flex: 1,
       backgroundColor: theme.background,
       padding: 10,
+
     },
     loadingContainer: {
       flex: 1,
@@ -327,7 +324,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     username: {
       color: theme.text,
       fontSize: 12,
-      fontWeight: '800',
+      fontWeight: '1800',
       paddingHorizontal: 10,
     },
     carouselItem: {
@@ -415,19 +412,6 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       marginTop: 10,
       backgroundColor: theme.background,
     },
-    logoutButton: {
-      marginTop: 20,
-      borderRadius: 8,
-      borderColor: theme.border,
-      borderWidth: 1,
-      backgroundColor: 'rgba(255, 0, 0, 0.1)',
-      paddingVertical: 12,
-      alignItems: 'center',
-    },
-    logoutButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: 'red',
-    },
+ 
   });
 

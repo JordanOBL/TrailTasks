@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android:prod": "NODE_ENV=production react-native run-android",
+    "android:prod": "ENVFILE=.env.production NODE_ENV=production react-native run-android",
     "android:test": "ENVFILE=.env.test react-native run-android",
     "android:dev": "ENVFILE=.env.development react-native run-android --port=8082",
     "ios:prod": "NODE_ENV=production react-native run-ios",

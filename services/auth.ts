@@ -13,6 +13,7 @@ import formatDateTime from "../helpers/formatDateTime";
 import Config from "react-native-config";
 import {ExistingUserResponse} from "../types/api";
 //checkExistingUser checks for a user in the local database
+const HTTP_HTTPS = Config.NODE_ENV === 'production' ? 'https' : 'http';
 export const checkLocalUserExists = async (
 	email: string,
 	password: string,
@@ -37,7 +38,7 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
-		const response: ExistingUserResponseSuccess | ExistingUserResponseFail = await fetch(`http://${Config.DATABASE_URL}/api/users`, {
+		const response: ExistingUserResponseSuccess | ExistingUserResponseFail = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/users`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -67,7 +68,7 @@ export async function registerValidation(email: string, username: string) {
 		return 'Please enter email and username';
 	}
 	try {
-		const response = await fetch(`http://${Config.DATABASE_URL}/api/registerValidation`, {
+		const response = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/registerValidation`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -78,6 +79,7 @@ export async function registerValidation(email: string, username: string) {
 			throw new Error('Network response was not ok');
 		}
 		const responseJson = await response.json();
+		console.log('responseJson', responseJson);
 		return responseJson
 	} catch (err) {
 		handleError(err, "registerValidation");

@@ -100,7 +100,8 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           return;
         }
         const result = await registerValidation(email.toLowerCase(), username.toLowerCase());
-        if (result.duplicateAttribute) {
+        console.log(result);
+        if (result?.duplicateAttribute != '') {
             setError(result.message);
             return;
         }

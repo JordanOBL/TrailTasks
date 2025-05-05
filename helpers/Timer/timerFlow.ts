@@ -156,7 +156,7 @@ export async function updateUsersTrailAndQueue({
   try {
     const currentDate = formatDateTime(new Date());
     //!check if user is subscribed. If so make all trails random, else only make basic subscription trails random
-    const randomTrailId = Math.floor(Math.random() * 50 + 1).toString();
+    const randomTrailId = Math.floor(Math.random() * 188 + 1).toString();
     //if user has set their own trails to be up next
     if (queuedTrails.length)
   {
