@@ -38,6 +38,8 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
+        console.debug('http or https', HTTP_HTTPS)
+	console.debug('config database url', Config.DATABASE_URL)
 		const response: ExistingUserResponseSuccess | ExistingUserResponseFail = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/users`, {
 			method: 'POST',
 			headers: {

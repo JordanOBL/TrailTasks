@@ -1,7 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 
 /**
@@ -141,3 +140,4 @@ dependencies {
     }
 }
 apply from:("../../node_modules/react-native-vector-icons/fonts.gradle");
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
