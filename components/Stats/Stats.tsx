@@ -1,10 +1,9 @@
 import * as React from 'react';
-
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
-
-import {Session_Category} from '../../watermelon/models';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Session_Category } from '../../watermelon/models';
 import formatTime from '../../helpers/formatTime';
-import {getSessionStats} from '../../helpers/Stats/GetSessionStats';
+import { getSessionStats } from '../../helpers/Stats/GetSessionStats';
+import { useTheme } from '../../contexts/ThemeProvider';
 
 type Props = {
   filteredUserSessions: any[];
@@ -19,15 +18,15 @@ const Stats: React.FC<Props> = ({
   filteredTime,
   sessionCategories,
 }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const [totalTime, setTotalTime] = React.useState<number>(0);
   const [totalDistance, setTotalDistance] = React.useState<number>(0.0);
-  const [mostProductiveTimes, setMostProductiveTimes] = React.useState<
-    string[]
-  >([]);
+  const [mostProductiveTimes, setMostProductiveTimes] = React.useState<string[]>([]);
   const [mostUsedCategory, setMostUsedCategory] = React.useState<string>('');
   const [leastUsedCategory, setLeastUsedCategory] = React.useState<string>('');
-  const [mostProductiveCategory, setMostProductiveCategory] =
-    React.useState<string>('');
+  const [mostProductiveCategory, setMostProductiveCategory] = React.useState<string>('');
 
   React.useEffect(() => {
     getSessionStats(
@@ -49,76 +48,88 @@ const Stats: React.FC<Props> = ({
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.statsContainer}>
           <Text style={styles.statTitle}>Total Focus Time</Text>
-          <Text testID="total-focus-time" style={styles.statValue}>{formatTime(totalTime)}</Text>
+          <Text testID="total-focus-time" style={styles.statValue}>
+            {totalTime === 0 ? 'N/A' : formatTime(totalTime)}
+          </Text>
         </View>
         <View style={styles.statsContainer}>
           <Text style={styles.statTitle}>Total Distance Hiked</Text>
-          <Text testID="total-distance" style={styles.statValue}>{totalDistance.toFixed(2)} miles</Text>
+          <Text testID="total-distance" style={styles.statValue}>
+            {totalDistance.toFixed(2)} miles
+          </Text>
         </View>
-        {filteredCategory === 'All Categories' && (
+        {filteredCategory === 'All Categories' && mostUsedCategory && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Used Category</Text>
-            <Text testID="most-used-category" style={styles.statValue}>{mostUsedCategory}</Text>
+            <Text testID="most-used-category" style={styles.statValue}>
+              {mostUsedCategory}
+            </Text>
           </View>
         )}
-        {filteredCategory === 'All Categories' && (
+
+        {filteredCategory === 'All Categories' && mostProductiveTimes.length > 0 && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Productive Time</Text>
-            <Text testID="most-productive-time" style={styles.statValue}>{mostProductiveTimes[0]}</Text>
+            <Text testID="most-productive-time" style={styles.statValue}>
+              {mostProductiveTimes[0]}
+            </Text>
           </View>
-        )}
+        )}     
       </ScrollView>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'rgb(18, 19, 21)',
-  },
-  header: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-    backgroundColor: 'rgb(31, 33, 35)',
-  },
-  headerText: {
-    color: 'rgb(7, 254, 213)',
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginVertical: 4,
-  },
-  contentContainer: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-  },
-  statsContainer: {
-    marginBottom: 16,
-    backgroundColor: 'rgb(31, 33, 35)',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  statTitle: {
-    color: 'rgba(221, 224, 226, 0.8)',
-    fontSize: 15,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  statValue: {
-    color: 'rgb(221, 224, 226)',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-});
 export default Stats;
+
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      backgroundColor: theme.card,
+    },
+    headerText: {
+      color: theme.button,
+      fontSize: 18,
+      fontWeight: '600',
+      textAlign: 'center',
+      marginVertical: 4,
+    },
+    contentContainer: {
+      paddingVertical: 20,
+      paddingHorizontal: 20,
+    },
+    statsContainer: {
+      marginBottom: 16,
+      backgroundColor: theme.card,
+      paddingVertical: 20,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      elevation: 3,
+    },
+    statTitle: {
+      color: theme.secondaryText,
+      fontSize: 15,
+      fontWeight: '500',
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    statValue: {
+      color: theme.text,
+      fontSize: 24,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+  });
+

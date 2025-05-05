@@ -11,10 +11,14 @@ import {useDatabase} from '@nozbe/watermelondb/react';
 import Config from 'react-native-config';
 import {Cached_Friend} from '../watermelon/models';
 import {Button} from 'react-native-paper';
+import { useTheme } from '../contexts/ThemeProvider';
+
 const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
   //const [cachedFriends, setCachedFriends] = React.useState([]);
   const watermelonDatabase = useDatabase();
   const {isConnected} = useInternetConnection();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [refreshFriends, setRefreshFriends] = React.useState(true);
 
   const cachedFriendsMap = cachedFriends.reduce((acc, friend, idx) => {
@@ -121,10 +125,11 @@ const enhance = withObservables(['user', 'cachedFriends'], ({ user, cachedFriend
 const EnhancedFriendsScreen = enhance(FriendsScreen)
 export default EnhancedFriendsScreen
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: theme.background,
   },
   titleUpdateContainer: {
     padding: 16,
@@ -135,17 +140,18 @@ const styles = StyleSheet.create({
   },
   noFriendsMessage: {
     fontSize: 18,
-    color: 'white',
+    color: theme.secondaryText,
     textAlign: 'center',
   },
   friendsTitle: {
-    color: 'white',
+    color: theme.text,
     fontWeight: 'bold',
     fontSize: 18,
     padding: 18,
   },
   refreshButton: {
-  opacity: 0.8
-  }
+    opacity: 0.8,
+    borderColor: theme.border,
+  },
+});
 
-})

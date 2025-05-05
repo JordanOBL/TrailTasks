@@ -14,6 +14,7 @@ import {useDatabase} from '@nozbe/watermelondb/react';
 import {withObservables} from '@nozbe/watermelondb/react';
 import handleError from "../helpers/ErrorHandler";
 import FullTrailDetails from "../types/fullTrailDetails";
+import {useTheme} from '../contexts/ThemeProvider';
 
 interface Props {
   user: User;
@@ -29,6 +30,8 @@ const ExploreScreen = ({
   userPurchasedTrails,
 }: Props) => {
   const watermelonDatabase = useDatabase();
+  const {theme} = useTheme();
+  const styles = getStyles(theme);
 
   const [trailsCollection, setTrailsCollection] = useState<FullTrailDetails[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("")
@@ -86,7 +89,7 @@ useFocusEffect(
 
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={styles.container}>
       <EnhancedTrailsList
         user={user}
         trailsCollection={trailsCollection}
@@ -108,6 +111,11 @@ const enhance = withObservables(['user', 'completedTrails', 'userPurchasedTrails
 const EnhancedExploreScreen = enhance(ExploreScreen);
 export default EnhancedExploreScreen;
 
-const styles = StyleSheet.create({
-
-});
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) => {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.exploreBackground,
+    },
+  });
+};

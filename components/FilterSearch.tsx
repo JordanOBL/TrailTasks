@@ -1,5 +1,6 @@
 import {Text, TextInput, TouchableOpacity, View, StyleSheet, GestureResponderEvent} from "react-native";
 import React, {SetStateAction} from "react";
+import {useTheme} from "../contexts/ThemeProvider";
 
 interface Props {
     searchQuery?: string;
@@ -15,6 +16,9 @@ interface Props {
 }
 
 const FilterSearch = ({searchQuery,showSearch, setSearchQuery, toggleDropdown, bgColor,  filter, showDropdown, selectFilter, filterParams}:Props) =>{
+    const {theme} = useTheme();
+    const styles = getStyles(theme);
+
     return (
 
     <View style={[styles.filterContainer, {backgroundColor: bgColor ? bgColor :  '#1c1c1c' }]}>
@@ -43,55 +47,57 @@ const FilterSearch = ({searchQuery,showSearch, setSearchQuery, toggleDropdown, b
 }
 export default FilterSearch;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+  StyleSheet.create({
     filterContainer: {
-        position: 'relative',
-        padding: 10,
-         // Dark background for filter container
-        borderBottomWidth: 1,
-        borderColor: '#333',
-        zIndex: 1000, // Ensure dropdown is above other elements
-        elevation: 5,// Darker border color
+      position: 'relative',
+      padding: 10,
+      backgroundColor: theme.card,
+      borderBottomWidth: 1,
+      borderColor: theme.border,
+      zIndex: 1000,
+      elevation: 5,
     },
     searchInput: {
-        borderRadius: 10,
-        borderColor: '#333',
-        borderWidth: 1,
-        padding: 10,
-        marginBottom: 10,
-        backgroundColor: '#222', // Dark input background
-        color: '#fff', // White text color
+      borderRadius: 10,
+      borderColor: theme.border,
+      borderWidth: 1,
+      padding: 10,
+      marginBottom: 10,
+      backgroundColor: theme.inputBackground,
+      color: theme.inputText,
     },
     dropdownButton: {
-        backgroundColor: '#333', // Dark background for dropdown button
-        padding: 10,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        alignSelf: 'center', // Center the button within its container
-        width: 200,
+      backgroundColor: theme.border,
+      padding: 10,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      width: 200,
     },
     dropdownButtonText: {
-        color: '#fff', // White text color for dropdown button
+      color: theme.text,
     },
     dropdown: {
-        position: 'absolute',
-        backgroundColor: '#333', // Dark background for dropdown
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#444', // Darker border color for dropdown
-        marginTop: 5,
-        zIndex: 1000, // Ensure dropdown is above other elements
-        elevation: 5, // Adds shadow for Android
-        alignSelf: 'center', // Center the dropdown under the button
-        width: 200, // Adds shadow for Android// Ensure dropdown is above other elements
+      position: 'absolute',
+      backgroundColor: theme.card,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.border,
+      marginTop: 5,
+      zIndex: 1000,
+      elevation: 5,
+      alignSelf: 'center',
+      width: 200,
     },
     dropdownItem: {
-        padding: 10,
-        borderBottomWidth: 1,
-        borderColor: '#444', // Darker border color for dropdown items
+      padding: 10,
+      borderBottomWidth: 1,
+      borderColor: theme.border,
     },
     dropdownText: {
-        color: '#fff', // White text color for dropdown items
+      color: theme.text,
     },
-})
+  });
+

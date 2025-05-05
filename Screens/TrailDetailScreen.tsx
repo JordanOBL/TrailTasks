@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
+import { useTheme } from '../contexts/ThemeProvider';
 import BuyTrailModal from "../components/Trails/BuyTrailModal";
 import FullTrailDetails from "../types/fullTrailDetails";
 import calculateEstimatedTime from "../helpers/calculateEstimatedTime";
@@ -27,6 +28,8 @@ const {
   userPurchasedTrails,
   completedTrails,
 } = params;
+const { theme } = useTheme();
+const styles = getStyles(theme);
 
 const resolvedTrail = trail ?? {
   id: 0,
@@ -251,153 +254,135 @@ const enhance = withObservables(
 const EnhancedTrailDetailScreen = enhance(TrailDetailScreen);
 export default EnhancedTrailDetailScreen;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+  StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: 'black',
+      flex: 1,
+      backgroundColor: theme.background,
     },
-
     imageContainer: {
-        height: 250,
-        position: 'relative',
+      height: 250,
+      position: 'relative',
     },
     trailImage: {
-        width: '100%',
-        height: '100%',
+      width: '100%',
+      height: '100%',
     },
     overlayButtons: {
-        position: 'absolute',
-        top: 20,
-        left: 20,
-        right: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+      position: 'absolute',
+      top: 20,
+      left: 20,
+      right: 20,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
     backButton: {
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        padding: 5,
-        borderRadius: 50,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      padding: 5,
+      borderRadius: 50,
     },
     backButtonText: {
-        color: '#fff',
-        fontSize: 18,
-    },
-    rightButtons: {
-        flexDirection: 'row',
-    },
-    iconButton: {
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        padding: 10,
-        marginLeft: 10,
-        borderRadius: 20,
-    },
-    iconText: {
-        color: '#fff',
-        fontSize: 18,
+      color: theme.text,
+      fontSize: 18,
     },
     infoContainer: {
-        padding: 20,
+      padding: 20,
     },
     parkName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: 'white',
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: theme.parkNameText,
     },
     trailName: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: 'white',
-    },
-    trailStats: {
-        fontSize: 16,
-        color: '#777',
-        marginVertical: 4,
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: theme.trailHeaderText,
     },
     statsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginBottom: 20,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginBottom: 20,
     },
     statBox: {
-        width: '48%',
-        marginBottom: 10,
-        backgroundColor: 'rgb(18, 19, 21)',
-        padding: 10,
-        borderRadius: 5,
+      width: '48%',
+      marginBottom: 10,
+      backgroundColor: theme.statBoxBackground,
+      padding: 10,
+      borderRadius: 5,
     },
     statValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        color: 'rgb(7, 254, 213)',
+      fontSize: 18,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: theme.statValue,
     },
     statLabel: {
-        fontSize: 14,
-        color: 'white',
-        textAlign: 'center',
+      fontSize: 14,
+      color: theme.statLabel,
+      textAlign: 'center',
     },
     buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
     },
     downloadButton: {
-        backgroundColor: '#4CAF50',
-        padding: 15,
-        borderRadius: 10,
-        flex: 1,
-        marginRight: 10,
-        alignItems: 'center',
+      backgroundColor: '#4CAF50',
+      padding: 15,
+      borderRadius: 10,
+      flex: 1,
+      marginRight: 10,
+      alignItems: 'center',
     },
     navigateButton: {
-        backgroundColor: '#2196F3',
-        padding: 15,
-        borderRadius: 15,
-        flex: 1,
-        marginLeft: 10,
-        alignItems: 'center',
+      backgroundColor: 'rgb(7,254,213)',
+      padding: 15,
+      borderRadius: 15,
+      flex: 1,
+      marginLeft: 10,
+      alignItems: 'center',
     },
     buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
     },
     modalBackground: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)', // Darker modal background
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.trailBackdropOverlay,
     },
     modalContainer: {
-        backgroundColor: '#1c1c1c', // Dark background for modal
-        borderRadius: 10,
-        padding: 20,
-        width: '80%',
+      backgroundColor: theme.trailModalBackground,
+      borderRadius: 10,
+      padding: 20,
+      width: '80%',
     },
     modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
-        color: 'white',
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+      color: theme.modalText,
     },
     modalText: {
-        fontSize: 16,
-        marginBottom: 20,
-        textAlign: 'center',
-        color: 'white',
+      fontSize: 16,
+      marginBottom: 20,
+      textAlign: 'center',
+      color: theme.modalText,
     },
     button: {
-        borderRadius: 5,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        marginHorizontal: 10,
+      borderRadius: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      marginHorizontal: 10,
     },
-
     buttonCancel: {
-        backgroundColor: 'gray',
+      backgroundColor: 'gray',
     },
     buttonConfirm: {
-        backgroundColor: 'green',
+      backgroundColor: 'green',
     },
-});
+  });
+
