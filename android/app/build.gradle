@@ -73,6 +73,14 @@ def enableProguardInReleaseBuilds = false
  * this variant is about 6MiB larger per architecture than default.
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
+def computeVersionCode() {
+    def base = 100  // or whatever base you're starting from
+    def timestamp = new Date().format("yyyyMMddHH").toInteger()
+    return base + (timestamp % 1000000000)
+}
+
+
+
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -84,8 +92,8 @@ android {
         applicationId "com.trailtasks.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1.1
-        versionName "1.1"
+        versionCode computeVersionCode()
+        versionName "1.0.${computeVersionCode()}"
     }
     signingConfigs {
         debug {
