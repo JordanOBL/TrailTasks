@@ -6,45 +6,17 @@ import EnhancedParkPassCard from '../components/ParkPass/ParkPassCard';
 import {Q} from '@nozbe/watermelondb';
 import {CombinedData} from '../types/parkPasses';
 import {Button } from 'react-native-paper';
+import { useTheme } from '../contexts/ThemeProvider';
 
 
 const ParkPassScreen = ({ user, completedTrails, userParks}) => {
    const [combinedData, setCombinedData] = useState<ParkPassCard[]>([]);
     const watermelonDatabase = useDatabase();
 
+const { theme } = useTheme();
 
 
-//    const getParksData = useCallback(async () => {
-//        try {
-//            const parksData: Park[] = await watermelonDatabase.get('parks').query().fetch()
-//          return parksData;
-//
-//        } catch (error) {
-//            console.error('Error fetching park pass data:', error);
-//            return [];
-//        }
-//    }, [user, completedTrails]);
-//
-//    const getTrailsData = useCallback(async () => {
-//        try{
-//            const trailsData : Trail[] = await watermelonDatabase.get('trails').query().fetch();
-//            return trailsData;
-//        } catch (error) {
-//            console.error('Error fetching trails data');
-//            return []
-//        }
-//    }, [user, completedTrails]);
-//
-    //{
-       // parkId: '24',
-        //parkName: 'Grand Canyon',
-        //parkImageUrl: undefined,
-        //totalTrails: 3,
-        //completedTrails: 0,
-        //trails: [ [Trail], [Trail], [Trail] ],
-        //pass: undefined
-      //},
-   useEffect(() => {
+  useEffect(() => {
        if(userParks && user) {
             const fetchParkPassData = async () => {
                 const parks: Park[] = await watermelonDatabase.get('parks').query().fetch()
@@ -58,7 +30,11 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
 
    },[user, userParks, completedTrails]); 
         
-    const combineDataForParks: CombinedData[] = (parks: Park[], trails: Trail[], usersCompletedTrails: User_Completed_Trail[]) => {
+   const combineDataForParks = (
+  parks: Park[],
+  trails: Trail[],
+  usersCompletedTrails: User_Completed_Trail[]
+): CombinedData[] => {
         // Map completed trails for quick lookup
         // Trails only marked as completed if completeion count is greater than users current prestige level allowing park completion progress to be reset upon prestige
         const completedTrailMap:Record<string, boolean> = usersCompletedTrails.reduce((map, completed) => {
@@ -112,12 +88,14 @@ const ParkPassScreen = ({ user, completedTrails, userParks}) => {
 
 
     return (
-        <View testID="park-pass-screen" style={styles.container}>
-            <Text testID='park-pass-count' style={styles.completedPasses}>{userParks.length} / {combinedData.length}</Text>
+        <View testID="park-pass-screen" style={[styles.container, { backgroundColor: theme.background }]}>
+            <Text testID='park-pass-count' style={[styles.completedPasses, { color: theme.text }]}>{userParks.length} / {combinedData.length}</Text>
             {userParks.length === combinedData.length && userParks.every(pass => pass.parkLevel === user.prestigeLevel + 1) && (
-                <View>
-                    <Text> All Park Passes Completed! </Text>
-                    <Text> Prestige to reset and rank up your Park Passes for more rewards. Dont worry, your previous trail completions count towards unlocking/redeeming the next rank of Park Passes!</Text>
+                <View style={{padding: 16, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, margin: 16}}>
+                    <Text style={{color: 'white', fontSize: 16, fontWeight: '600', marginBottom: 8}}>All Park Passes Completed!</Text>
+                    <Text style={{color: 'white', fontSize: 14, marginBottom: 8}}>
+                        Prestige to reset and rank up your Park Passes for more rewards. Your completed trails still count toward the next rank!
+                    </Text>
                     <Button  testID={"prestige-button"}
                         mode="contained"
                         buttonColor="rgb(7,254,213)"
@@ -172,7 +150,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         textAlign: 'center',
-        marginBottom: 20,
+    padding: 16,
         color: "white",
     },
     listContent: {

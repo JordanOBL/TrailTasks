@@ -1,8 +1,8 @@
-import {Pressable, TouchableOpacity, StyleSheet, Text, View} from 'react-native';
-
-import Icon from 'react-native-vector-icons/Ionicons';
 import React from 'react';
-import {User} from '../../watermelon/models';
+import { Pressable, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { User } from '../../watermelon/models';
+import { useTheme } from '../../contexts/ThemeProvider';
 
 interface Props {
   children: any;
@@ -12,6 +12,7 @@ interface Props {
   hasActiveSubscription: boolean;
   needsActiveSubscription: boolean;
 }
+
 const ScreenLink = ({
   children,
   navigation,
@@ -20,40 +21,32 @@ const ScreenLink = ({
   hasActiveSubscription,
   needsActiveSubscription,
 }: Props) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
+  const isLocked = needsActiveSubscription && !hasActiveSubscription;
+  const isPro = needsActiveSubscription && !hasActiveSubscription;
+
+  const handlePress = () => {
+    if (!needsActiveSubscription || hasActiveSubscription) {
+      navigation.navigate(navTo);
+    } else {
+      navigation.navigate('Subscribe');
+    }
+  };
+
   return (
-    
-    <TouchableOpacity
-      style={styles.LinkContainer}
-      onPress={() =>
-        !needsActiveSubscription
-          ? navigation.navigate(navTo)
-          : hasActiveSubscription
-          ? navigation.navigate(navTo)
-          : navigation.navigate('Subscribe')
-      }>
+    <TouchableOpacity style={styles.LinkContainer} onPress={handlePress}>
       <Text
         style={[
           styles.H2,
-          {
-            color:
-              needsActiveSubscription && hasActiveSubscription
-                ? 'rgb(249,253,255)'
-                : needsActiveSubscription && !hasActiveSubscription
-                ? 'rgb(149,153,155)'
-                : 'rgb(249,253,255)',
-          },
+          { color: isLocked ? theme.linkDisabled : theme.linkText },
         ]}>
-        {needsActiveSubscription && !hasActiveSubscription ? (
-          <Icon name="lock-closed" size={18} color="rgb(149,153,155)" />
-        ) : (
-          <></>
+        {isLocked && (
+          <Icon name="lock-closed" size={18} color={theme.linkDisabled} />
         )}
-        { ' ' + children}
-        {needsActiveSubscription && hasActiveSubscription
-          ? ''
-          : needsActiveSubscription && !hasActiveSubscription
-          ? ' - Pro '
-          : ''}
+        {' ' + children}
+        {isPro ? ' - Pro ' : ''}
       </Text>
     </TouchableOpacity>
   );
@@ -61,26 +54,24 @@ const ScreenLink = ({
 
 export default ScreenLink;
 
-const styles = StyleSheet.create({
-  H2: {
-    color: 'rgb(249,253,255)',
-    fontSize: 18,
-    fontWeight: '700',
-    textAlign: 'left',
-  },
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+  StyleSheet.create({
+    H2: {
+      fontSize: 18,
+      fontWeight: '700',
+      textAlign: 'left',
+    },
+    LinkContainer: {
+      borderColor: theme.linkBorder,
+      borderWidth: 1,
+      borderRadius: 10,
+      backgroundColor: theme.linkBackground,
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      marginBottom: 10,
+      padding: 20,
+      flexDirection: 'row',
+    },
+  });
 
-  LinkContainer: {
-    borderColor: 'rgb(31,33,35)',
-    borderWidth: 1,
-    borderRadius: 10,
-    backgroundColor: 'rgb(31,33,35)',
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    color: 'rgb(221,224,226)',
-    fontWeight: '900',
-    marginBottom: 10,
-    padding: 20,
-    flexDirection: 'row',
-  },
-});

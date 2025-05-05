@@ -33,6 +33,7 @@ import isToday from '../helpers/isToday';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import handleError from "../helpers/ErrorHandler";
 import SyncButton from "../components/syncButton"
+import {useTheme} from "../contexts/ThemeProvider";
 
 
 interface Props {
@@ -52,6 +53,7 @@ const HomeScreen: React.FC<Props> = ({
                                          userSessions,
                                      }) => {
     const watermelonDatabase = useDatabase();
+    const {theme} = useTheme();
     const userRankRef = React.useRef<Rank>({
         level: 'loading',
         group: 'loading',
@@ -64,8 +66,9 @@ const HomeScreen: React.FC<Props> = ({
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
     const {logout} = useAuthContext();
+    const styles = getStyles(theme); // dynamically generate styles based on theme
 
- userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
+    userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -294,134 +297,137 @@ const enhance = withObservables(['user'], ({user}) => ({
 const EnhancedHomeScreen = enhance(HomeScreen);
 export default EnhancedHomeScreen;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+  StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: 'rgb(18, 19, 21)',
-        padding: 10,
+      flex: 1,
+      backgroundColor: theme.background,
+      padding: 10,
     },
-  dailyStreak: {
-  fontSize: 13,
-  color: 'rgb(7, 254, 213)',
-  fontWeight: '600',
-  textAlign: 'center',
-},
     loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     loadingText: {
-        color: 'white',
-        fontSize: 18,
+      color: theme.text,
+      fontSize: 18,
     },
-   onlineStatus: {
-  fontSize: 12,
-  fontWeight: '600',
-  marginTop: 2,
-},
+    dailyStreak: {
+      fontSize: 13,
+      color: theme.button, // accent color
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    onlineStatus: {
+      fontSize: 12,
+      fontWeight: '600',
+      marginTop: 2,
+    },
     username: {
-        color: 'rgb(249, 253, 255)',
-        fontSize: 12,
-        fontWeight: '800',
-        paddingHorizontal: 10,
+      color: theme.text,
+      fontSize: 12,
+      fontWeight: '800',
+      paddingHorizontal: 10,
     },
     carouselItem: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-        marginVertical: 10,
-        paddingRight: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1,
+      marginVertical: 10,
+      paddingRight: 20,
     },
-   rankContainer: {
-  borderRadius: 12,
-  backgroundColor: 'rgb(28, 29, 31)',
-  padding: 16,
-  alignItems: 'center',
-  width: '90%',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.2,
-  shadowRadius: 4,
-  elevation: 4,
-},
-rankImage: {
-  width: 72,
-  height: 72,
-  marginBottom: 12,
-},
-rankLevel: {
-  fontSize: 16,
-  fontWeight: '600',
-  color: 'rgb(7, 254, 213)',
-  marginBottom: 2,
-},
-rankTitle: {
-  fontSize: 15,
-  fontWeight: '500',
-  color: 'rgb(221, 224, 226)',
-  marginBottom: 6,
-},
-  currentTrailContainer: {
-  padding: 16,
-  borderRadius: 12,
-  backgroundColor: 'rgb(28, 29, 31)',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.1,
-  shadowRadius: 3,
-  elevation: 3,
-},
-trailText: {
-  fontSize: 14,
-  color: 'rgba(221, 224, 226, .8)',
-  fontWeight: '500',
-  textAlign: 'center',
-  marginBottom: 4,
-},
-trailName: {
-  fontSize: 17,
-  fontWeight: '600',
-  color: 'rgb(7, 254, 213)',
-  textAlign: 'center',
-  marginBottom: 8,
-},
+    rankContainer: {
+      borderRadius: 12,
+      backgroundColor: theme.card,
+      padding: 16,
+      alignItems: 'center',
+      width: '90%',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+    rankImage: {
+      width: 72,
+      height: 72,
+      marginBottom: 12,
+    },
+    rankLevel: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.button,
+      marginBottom: 2,
+    },
+    rankTitle: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: theme.secondaryText,
+      marginBottom: 6,
+    },
+    currentTrailContainer: {
+      padding: 16,
+      borderRadius: 12,
+      backgroundColor: theme.card,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 3,
+    },
+    trailText: {
+      fontSize: 14,
+      color: theme.secondaryText,
+      fontWeight: '500',
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+    trailName: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: theme.button,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
     trailTokens: {
-  fontSize: 13,
-  fontWeight: '600',
-  color: 'rgb(7, 254, 213)',
-},
-   paginationDotsContainer: {
-  flexDirection: 'row',
-  justifyContent: 'center',
-  alignItems: 'center',
-  marginTop: 8,
-},
-paginationDot: {
-  width: 6,
-  height: 6,
-  borderRadius: 3,
-  marginHorizontal: 5,
-  backgroundColor: 'rgba(255,255,255,0.2)',
-},
-activePaginationDot: {
-  backgroundColor: 'rgb(7, 254, 213)',
-},
-    linkContainer: {
-        marginTop: 10,
-        backgroundColor: 'rgb(18, 19, 21)',
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.button,
     },
-  logoutButton: {
-  marginTop: 20,
-  borderRadius: 8,
-  borderColor: 'rgba(255,255,255,0.1)',
-  borderWidth: 1,
-  backgroundColor: 'rgba(255, 0, 0, 0.1)',
-  paddingVertical: 12,
-  alignItems: 'center',
-},
-logoutButtonText: {
-  fontSize: 16,
-  fontWeight: '600',
-  color: 'red',
-},});
+    paginationDotsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    paginationDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      marginHorizontal: 5,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+    },
+    activePaginationDot: {
+      backgroundColor: theme.button,
+    },
+    linkContainer: {
+      marginTop: 10,
+      backgroundColor: theme.background,
+    },
+    logoutButton: {
+      marginTop: 20,
+      borderRadius: 8,
+      borderColor: theme.border,
+      borderWidth: 1,
+      backgroundColor: 'rgba(255, 0, 0, 0.1)',
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    logoutButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: 'red',
+    },
+  });
+

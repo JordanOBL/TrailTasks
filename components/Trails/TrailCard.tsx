@@ -10,63 +10,52 @@ import {
 import { withObservables } from "@nozbe/watermelondb/react";
 import calculateEstimatedTime from "../../helpers/calculateEstimatedTime";
 import FullTrailDetails from "../../types/fullTrailDetails";
+import { useTheme } from '../../contexts/ThemeProvider';
+const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrails }: Props) => {
+  const navigation = useNavigation();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
-const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrails }: {
-    trail: FullTrailDetails,
-    userPurchasedTrails: any[],
-    user: any,
-    park: any,
-    completedTrails: any[]
-}) => {
-    const navigation = useNavigation();
+  const handlePress = () => {
+    navigation.navigate('TrailDetails', {
+      trail,
+      user,
+      userPurchasedTrails,
+      completedTrails,
+    });
+  };
 
-    const handlePress = () => {
-        // @ts-ignore
-        navigation.navigate('TrailDetails', {
-            trail,
-            user,
-            userPurchasedTrails,
-            completedTrails,
-        });
-    };
-
-    return (
-        <TouchableOpacity style={styles.card} onPress={handlePress}>
-            {/* Trail Image */}
-            <Image
-                source={trail.trail_image_url
-                    ? { uri: trail.trail_image_url }
-                    : require('../../assets/LOGO.png')}
-                style={styles.image}
-            />
-            <View style={styles.infoContainer}>
-                <View style={styles.row}>
-                    <Text style={styles.trailName} numberOfLines={1}>{trail?.trail_name}</Text>
-
-                        <View style={[styles.completedBadge, {display: trail.completed_trails ? "flex": "none"}]}>
-                            <Text style={styles.completedBadgeText}>✓ Completed</Text>
-                        </View>
-
-                </View>
-                <Text style={styles.parkName}>{trail?.park_name}</Text>
-                <View style={styles.statsContainer}>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statIcon}>⛰</Text>
-                        <Text style={styles.statText}>{trail?.trail_distance} mi</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statIcon}>🕒</Text>
-                        <Text style={styles.statText}>{calculateEstimatedTime(trail?.trail_distance)}</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statIcon}>🌟</Text>
-                        <Text style={styles.statText}>{trail?.trail_difficulty}</Text>
-                    </View>
-                </View>
-            </View>
-
-        </TouchableOpacity>
-    );
+  return (
+    <TouchableOpacity style={styles.card} onPress={handlePress}>
+      <Image
+        source={trail.trail_image_url ? { uri: trail.trail_image_url } : require('../../assets/LOGO.png')}
+        style={styles.image}
+      />
+      <View style={styles.infoContainer}>
+        <View style={styles.row}>
+          <Text style={styles.trailName} numberOfLines={1}>{trail?.trail_name}</Text>
+          <View style={[styles.completedBadge, { display: trail.completed_trails ? 'flex' : 'none' }]}>
+            <Text style={styles.completedBadgeText}>✓ Completed</Text>
+          </View>
+        </View>
+        <Text style={styles.parkName}>{trail?.park_name}</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statIcon}>⛰</Text>
+            <Text style={styles.statText}>{trail?.trail_distance} mi</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statIcon}>🕒</Text>
+            <Text style={styles.statText}>{calculateEstimatedTime(trail?.trail_distance)}</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statIcon}>🌟</Text>
+            <Text style={styles.statText}>{trail?.trail_difficulty}</Text>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 });
 
 const enhance = withObservables(['user', 'userPurchasedTrails', 'completedTrails'], ({ user }) => ({
@@ -78,89 +67,74 @@ const enhance = withObservables(['user', 'userPurchasedTrails', 'completedTrails
 const EnhancedTrailCard = enhance(TrailCard);
 export default EnhancedTrailCard;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+  StyleSheet.create({
     card: {
-        backgroundColor: 'rgb(25, 27, 31)', // Sleek dark theme
-        borderRadius: 15,
-        overflow: 'hidden',
-        marginVertical: 15,
-        marginHorizontal: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 5,
+      backgroundColor: theme.trailCardBackground,
+      borderRadius: 15,
+      overflow: 'hidden',
+      marginVertical: 15,
+      marginHorizontal: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.2,
+      shadowRadius: 10,
+      elevation: 5,
     },
     image: {
-        width: '100%',
-        height: 180,
+      width: '100%',
+      height: 180,
     },
-    overlay: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Subtle black overlay
-        padding: 10,
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
-        row: {
-            flexDirection: 'row',
-            alignItems: 'center', // Ensures vertical alignment
-            justifyContent: 'space-between', // Space between name and badge
-
-        },
-        trailName: {
-            fontSize: 16,
-            fontWeight: 'bold',
-            color: '#fff',
-            flex: 1, // Allow text to occupy remaining space
-            marginRight: 10, // Add margin to avoid overlapping with the badge
-        },
-        completedBadge: {
-            backgroundColor: '#4caf50', // Green color for "Completed"
-            paddingVertical: 4,
-            paddingHorizontal: 8,
-            borderRadius: 15,
-        },
-        completedBadgeText: {
-            color: '#fff',
-            fontSize: 12,
-            fontWeight: 'bold',
-        },
-
-
-    trailDifficulty: {
-        fontSize: 14,
-        color: '#ffcc00', // Gold-like color for difficulty
+    trailName: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: theme.trailCardText,
+      flex: 1,
+      marginRight: 10,
+    },
+    completedBadge: {
+      backgroundColor: theme.completedBadge,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: 15,
+    },
+    completedBadgeText: {
+      color: theme.completedBadgeText,
+      fontSize: 12,
+      fontWeight: 'bold',
     },
     infoContainer: {
-        padding: 15,
-        backgroundColor: 'rgba(255, 255, 255, 0.05)', // Slight translucent background
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
+      padding: 15,
+      backgroundColor: theme.trailCardOverlay,
+      borderBottomLeftRadius: 15,
+      borderBottomRightRadius: 15,
     },
     parkName: {
-        fontSize: 16,
-        color: '#aaa',
-        marginBottom: 8,
-
+      fontSize: 16,
+      color: theme.trailCardSecondaryText,
+      marginBottom: 8,
     },
-
     statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        marginTop: 10,
+      flexDirection: 'row',
+      justifyContent: 'space-evenly',
+      marginTop: 10,
     },
     statItem: {
-        alignItems: 'center',
+      alignItems: 'center',
     },
     statIcon: {
-        fontSize: 16,
-        color: '#ffcc00', // Accent color for icons
+      fontSize: 16,
+      color: theme.trailIcon,
     },
     statText: {
-        fontSize: 14,
-        color: '#ddd',
-        marginTop: 2,
+      fontSize: 14,
+      color: theme.trailStatText,
+      marginTop: 2,
     },
-});
+  });
+

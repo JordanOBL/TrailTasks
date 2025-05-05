@@ -18,6 +18,7 @@ import SessionList from '../components/Stats/SessionList';
 import Stats from '../components/Stats/Stats';
 import handleError from "../helpers/ErrorHandler";
 import {useDatabase} from '@nozbe/watermelondb/react';
+import {useTheme} from '../contexts/ThemeProvider';
 
 type TimeFrame = {
   label: string;
@@ -42,20 +43,13 @@ type Props = {
 
 const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   const watermelonDatabase = useDatabase();
+  const { theme } = useTheme();
 
-  const [sessionCategories, setSessionCategories] = React.useState<
-    Session_Category[] | []
-  >([]);
-  const [userSessionsWithCategories, setUserSessionsWithCategories] =
-    React.useState<Session_Category[] | []>([]);
-  const [timeFilter, setTimeFilter] = React.useState<string>(
-    timeFrames[0].label
-  );
-  const [categoryFilter, setCategoryFilter] =
-    React.useState<string>('All Categories');
-  const [filteredUserSessions, setFilteredUserSessions] = React.useState<any[]>(
-    userSessionsWithCategories
-  );
+  const [sessionCategories, setSessionCategories] = React.useState<Session_Category[]>([]);
+  const [userSessionsWithCategories, setUserSessionsWithCategories] = React.useState<any[]>([]);
+  const [timeFilter, setTimeFilter] = React.useState<string>('All Time');
+  const [categoryFilter, setCategoryFilter] = React.useState<string>('All Categories');
+  const [filteredUserSessions, setFilteredUserSessions] = React.useState<any[]>([]);
   const [view, setView] = React.useState<'stats' | 'sessions'>('stats');
   const [showFilterMenu, setShowFilterMenu] = React.useState(false);
 
@@ -64,34 +58,29 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   };
 
   const handleCategoryFilterChange = (categoryName: string) => {
-    console.log(categoryName);
     setCategoryFilter(categoryName);
-    setFilteredUserSessions( prev => {
-      if (categoryName === 'All Categories') {
-        return userSessionsWithCategories
-      } else {
-        return userSessionsWithCategories.filter(
-          (session) => session.sessionCategoryName === categoryName
-        )
-      }
-    })
+    setFilteredUserSessions(
+      categoryName === 'All Categories'
+        ? userSessionsWithCategories
+        : userSessionsWithCategories.filter((session) => session.sessionCategoryName === categoryName)
+    );
   };
 
   async function getUserSessionsWithCategories() {
     try {
-      const query = `SELECT users_sessions.*, session_categories.session_category_name 
-      FROM users_sessions 
-      LEFT JOIN session_categories ON users_sessions.session_category_id = session_categories.id 
-      WHERE users_sessions.user_id = ?
-      ORDER BY users_sessions.date_added DESC;`;
-      const userSessionsWithCategories: any[] = await watermelonDatabase
+      const query = `
+        SELECT users_sessions.*, session_categories.session_category_name 
+        FROM users_sessions 
+        LEFT JOIN session_categories ON users_sessions.session_category_id = session_categories.id 
+        WHERE users_sessions.user_id = ?
+        ORDER BY users_sessions.date_added DESC;
+      `;
+      const sessions: any[] = await watermelonDatabase
         .get('users_sessions')
         .query(Q.unsafeSqlQuery(query, [user.id]))
         .unsafeFetchRaw();
-      if (userSessionsWithCategories) {
-        setUserSessionsWithCategories(userSessionsWithCategories);
-        setFilteredUserSessions(userSessionsWithCategories);
-      }
+      setUserSessionsWithCategories(sessions);
+      setFilteredUserSessions(sessions);
     } catch (err) {
       handleError(err, "Stats Screen getUserSessionsWithCategories");
     }
@@ -99,19 +88,12 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 
   async function getSessionCategories() {
     try {
-      const sessionCategories = (await watermelonDatabase
-        .get('session_categories')
-        .query()
-        .fetch()) as Session_Category[];
-      if (sessionCategories) {
-        const sessionCategoriesWithId = sessionCategories.map((category) => {
-        return {
-            sessionCategoryName: category.sessionCategoryName, 
-            sessionCategoryId: category.id
-          }
-        });
-        setSessionCategories(sessionCategoriesWithId);
-      }
+      const categories = await watermelonDatabase.get('session_categories').query().fetch();
+      const mapped = categories.map((cat) => ({
+        sessionCategoryName: cat.sessionCategoryName,
+        sessionCategoryId: cat.id
+      }));
+      setSessionCategories(mapped);
     } catch (err) {
       handleError(err, "getSessionCategories() in Stats Screen");
     }
@@ -120,90 +102,61 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   React.useEffect(() => {
     getSessionCategories();
     getUserSessionsWithCategories();
-
-    return () => {};
   }, [user]);
 
   React.useEffect(() => {
     FilterBy(timeFilter, categoryFilter, userSessionsWithCategories, setFilteredUserSessions);
-    setShowFilterMenu(false)
+    setShowFilterMenu(false);
   }, [timeFilter, categoryFilter]);
 
-
   return (
-    <SafeAreaView style={styles.container} testID="stats-screen">
-      {/* Filter Toggle */}
-      <Pressable
-        style={styles.filterToggle}
-        onPress={() => setShowFilterMenu((prev) => !prev)}>
-        <Text style={styles.filterToggleText}>Filter</Text>
-        <Ionicons
-          name={showFilterMenu ? 'caret-up-outline' : 'caret-down-outline'}
-          size={20}
-          color="rgba(221, 224, 226, 0.5)"
-        />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} testID="stats-screen">
+      <Pressable style={styles.filterToggle} onPress={() => setShowFilterMenu(prev => !prev)}>
+        <Text style={[styles.filterToggleText, { color: theme.text }]}>Filter</Text>
+        <Ionicons name={showFilterMenu ? 'caret-up-outline' : 'caret-down-outline'} size={20} color={theme.secondaryText} />
       </Pressable>
 
-      {/* Filter Menu */}
       {showFilterMenu && (
-        <View style={styles.filterMenu}>
-          {/* Category Filter Dropdown */}
-          { categoryFilter === 'All Categories' ? <Dropdown
-            data={[
-              {sessionCategoryName: 'All Categories', sessionCategoryId: 0},
-              ...sessionCategories,
-            ]}
-            onChange={(selectedItem) =>
-              handleCategoryFilterChange(selectedItem.sessionCategoryName)
-            }
-            testID="session-category-dropdown"
-            itemTestIDField="category-dropdown-selection"
-            style={styles.dropdown}
+        <View style={[styles.filterMenu, { backgroundColor: theme.card }]}>
+          <Dropdown
+            data={[{ sessionCategoryName: 'All Categories', sessionCategoryId: 0 }, ...sessionCategories]}
+            onChange={(item) => handleCategoryFilterChange(item.sessionCategoryName)}
             labelField="sessionCategoryName"
             valueField="sessionCategoryId"
             placeholder="Select a category"
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
+            style={[styles.dropdown, { backgroundColor: theme.inputBackground, color: theme.text }]}
+            placeholderStyle={{ color: theme.secondaryText }}
+            selectedTextStyle={{ color: theme.text }}
             value={categoryFilter}
-          /> : <Text style={styles.selectedTextStyle}>{categoryFilter}</Text> }
+          />
 
-          {/* Time Filter Dropdown */}
-          {timeFilter === 'All Time' ? <Dropdown
-            style={styles.dropdown}
+          <Dropdown
             data={timeFrames}
-            onChange={(selectedItem) =>
-              handleTimeFilterChange(selectedItem.label)
-            }
+            onChange={(item) => handleTimeFilterChange(item.label)}
             labelField="label"
             valueField="value"
             placeholder="Select a time frame"
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
+            style={[styles.dropdown, { backgroundColor: theme.inputBackground, color: theme.text }]}
+            placeholderStyle={{ color: theme.secondaryText }}
+            selectedTextStyle={{ color: theme.text }}
             value={timeFilter}
+          />
 
-          /> : <Text style={styles.selectedTextStyle}>{timeFilter}</Text> }
-
-          {/* Filter Button */}
           <Pressable
-            style={[styles.filterButton, styles.filterApplyButton]}
-            onPress={() =>{
-              setCategoryFilter('All Categories')
-              setTimeFilter('All Time')
-          
-              setShowFilterMenu(false)
-            }
-            }>
-            <Text style={styles.filterApplyButtonText}>Reset</Text>
+            style={[styles.filterButton, { backgroundColor: theme.button }]}
+            onPress={() => {
+              setCategoryFilter('All Categories');
+              setTimeFilter('All Time');
+              setShowFilterMenu(false);
+            }}
+          >
+            <Text style={{ color: theme.buttonText, fontWeight: '600' }}>Reset</Text>
           </Pressable>
         </View>
       )}
 
-      {/* Content */}
       {view === 'sessions' ? (
-        <SessionList
-          filteredUserSessions={filteredUserSessions}
-          sessionCategories={sessionCategories}
-        />
+        <SessionList filteredUserSessions={filteredUserSessions} sessionCategories={sessionCategories} />
       ) : (
         <Stats
           filteredUserSessions={filteredUserSessions}
@@ -213,15 +166,15 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
         />
       )}
 
-      {/* Screen View Toggle */}
       <Pressable
-        style={styles.toggleButton}
+        style={[styles.toggleButton, { backgroundColor: theme.button }]}
         testID="toggle-stats-screen"
-        onPress={() => setView(view === 'stats' ? 'sessions' : 'stats')}>
+        onPress={() => setView(view === 'stats' ? 'sessions' : 'stats')}
+      >
         <Ionicons
           name={view === 'stats' ? 'list-outline' : 'podium-outline'}
           size={24}
-          color="rgb(18, 19, 21)"
+          color={theme.buttonText}
         />
       </Pressable>
     </SafeAreaView>
@@ -229,85 +182,48 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'rgb(18, 19, 21)',
-  },
+  container: { flex: 1 },
   dropdown: {
-    backgroundColor: 'rgb(31, 33, 35)',
-    borderRadius: 5,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  filterToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 10,
-    color: 'rgb(221, 224, 226)',
   },
- filterToggle: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  backgroundColor: '#1C1C1E',
-  borderBottomColor: '#2C2C2E',
-  borderBottomWidth: 1,
-},
-filterToggleText: {
-  color: '#D1D1D6',
-  fontWeight: '600',
-  fontSize: 17,
-},
-filterMenu: {
-  width: '100%',
-  backgroundColor: '#1C1C1E',
-  padding: 16,
-  borderBottomLeftRadius: 12,
-  borderBottomRightRadius: 12,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.15,
-  shadowRadius: 5,
-  elevation: 3,
-},
-filterButton: {
-  backgroundColor: '#2C2C2E',
-  borderRadius: 8,
-  paddingVertical: 10,
-  paddingHorizontal: 20,
-  marginVertical: 6,
-},
-filterApplyButton: {
-  backgroundColor: '#0A84FF', // iOS blue
-  alignItems: 'center',
-},
-filterApplyButtonText: {
-  fontSize: 16,
-  fontWeight: '600',
-  color: 'white',
-},
-selectedTextStyle: {
-  fontSize: 16,
-  fontWeight: '500',
-  color: '#0A84FF',
-  paddingVertical: 4,
-},
-placeholderStyle: {
-  color: '#8E8E93',
-},
-toggleButton: {
-  position: 'absolute',
-  bottom: 20,
-  right: 20,
-  backgroundColor: '#0A84FF',
-  borderRadius: 28,
-  width: 56,
-  height: 56,
-  alignItems: 'center',
-  justifyContent: 'center',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.2,
-  shadowRadius: 4,
-},
+  filterToggleText: {
+    fontWeight: '600',
+    fontSize: 17,
+  },
+  filterMenu: {
+    width: '100%',
+    padding: 16,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+  },
+  filterButton: {
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginVertical: 6,
+    alignItems: 'center',
+  },
+  toggleButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    borderRadius: 28,
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+  },
 });
 
 export default StatsScreen;

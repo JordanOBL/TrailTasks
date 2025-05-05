@@ -26,6 +26,7 @@ import {Database} from '@nozbe/watermelondb';
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import {AuthProvider} from './services/AuthContext';
 import {InternetConnectionProvider} from './contexts/InternetConnectionProvider';
+import {ThemeProvider} from './contexts/ThemeProvider';
 import React from 'react';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import {name as appName} from './app.json';
@@ -71,7 +72,9 @@ export const WrappedApp = () => {
     <DatabaseProvider database={database}>
       <InternetConnectionProvider>
         <AuthProvider>
-          <App />
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
         </AuthProvider>
       </InternetConnectionProvider>
     </DatabaseProvider>

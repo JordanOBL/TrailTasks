@@ -9,6 +9,8 @@ import { User_Completed_Trail, User_Queued_Trail, User, User_Purchased_Trail } f
 import EnhancedTrailCard from './Trails/TrailCard';
 import FullTrailDetails from "../types/fullTrailDetails";
 import FilterSearch from "./FilterSearch";
+import { useTheme } from '../contexts/ThemeProvider';
+
 
 interface Props {
   trailsCollection: FullTrailDetails[];
@@ -28,6 +30,9 @@ const TrailsList = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [showDropdown, setShowDropdown] = useState(false);
+  const { theme } = useTheme();
+const styles = getStyles(theme);
+
 
   // Debounce the search query input
   useEffect(() => {
@@ -125,115 +130,89 @@ const enhance = withObservables(
 const EnhancedTrailsList = enhance(TrailsList);
 export default EnhancedTrailsList;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  trailsContainer: {
-    padding: 10,
-    paddingBottom: 20,
-  },
-  trailCard: {
-    backgroundColor: '#1c1c1c',
-    borderRadius: 15,
-    marginBottom: 10,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-  },
-  trailImage: {
-    width: '100%',
-    height: 150,
-  },
-  trailInfo: {
-    padding: 10,
-  },
-  trailName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  parkName: {
-    color: '#aaa',
-    marginBottom: 5,
-  },
-  trailStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  trailStatText: {
-    fontSize: 14,
-    color: '#ddd',
-  },
-  actionButton: {
-    padding: 10,
-    backgroundColor: '#007AFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10000,
-    elevation: 10,
-  },
-  modalContainer: {
-    backgroundColor: '#1c1c1c',
-    borderRadius: 10,
-    padding: 20,
-    width: '80%',
-    zIndex: 10001,
-    elevation: 10,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    color: 'white',
-  },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: 'white',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  button: {
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginHorizontal: 10,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  buttonCancel: {
-    backgroundColor: 'gray',
-  },
-  buttonConfirm: {
-    backgroundColor: 'green',
-  },
-});
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.exploreBackground,
+    },
+    trailsContainer: {
+      padding: 10,
+      paddingBottom: 20,
+    },
+    trailCard: {
+      backgroundColor: theme.trailCardBackground,
+      borderRadius: 15,
+      marginBottom: 10,
+      overflow: 'hidden',
+      elevation: 3,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.5,
+      shadowRadius: 5,
+    },
+    trailName: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: theme.trailCardText,
+    },
+    parkName: {
+      color: theme.trailCardSecondaryText,
+      marginBottom: 5,
+    },
+    trailStatText: {
+      fontSize: 14,
+      color: theme.trailCardSecondaryText,
+    },
+    actionButton: {
+      padding: 10,
+      backgroundColor: theme.buttonPrimary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actionButtonText: {
+      color: theme.buttonPrimaryText,
+      fontWeight: 'bold',
+    },
+    modalBackground: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.modalBackgroundOverlay,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 10000,
+      elevation: 10,
+    },
+    modalContainer: {
+      backgroundColor: theme.modalBackgroundCard,
+      borderRadius: 10,
+      padding: 20,
+      width: '80%',
+      zIndex: 10001,
+      elevation: 10,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+      color: theme.modalText,
+    },
+    modalText: {
+      fontSize: 16,
+      marginBottom: 20,
+      textAlign: 'center',
+      color: theme.modalText,
+    },
+    buttonCancel: {
+      backgroundColor: 'gray',
+    },
+    buttonConfirm: {
+      backgroundColor: 'green',
+    },
+  });
+
