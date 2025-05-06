@@ -74,10 +74,9 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 def computeVersionCode() {
-    def base = 100  // or whatever base you're starting from
-    def timestamp = new Date().format("yyyyMMddHH").toInteger()
-    return base + (timestamp % 1000000000)
+    return (System.currentTimeMillis() / 1000).toInteger()
 }
+
 
 
 
@@ -125,6 +124,8 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            buildConfigField "String", "ENVFILE", '"production"'
+        resValue "string", "build_config_package", "com.trailtasks.app"
             ext.envFile = ".env.production" // 👈 THIS IS THE KEY
         }
     }
