@@ -29,6 +29,7 @@ export async function sync(database: Database, isConnected: boolean = false, use
         database,
         pullChanges: async ({ lastPulledAt, schemaVersion }) => {
           try {
+      console.debug('[Sync] Pull URL:', Config.DATABASE_PULL_URL);
             const urlParams = userId
               ? `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}&userId=${userId}`
               : `last_pulled_at=${lastPulledAt}&schema_version=${schemaVersion}`;
@@ -49,9 +50,8 @@ export async function sync(database: Database, isConnected: boolean = false, use
 
         pushChanges: async ({ changes, lastPulledAt }) => {
           try {   
-            // Remove any table that your PostgreSQL does NOT support
-            console.log('changes',changes)
             // example
+            console.debug('[Sync] Push URL:', Config.DATABASE_PUSH_URL);
             const response = await fetch(
               `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
               {

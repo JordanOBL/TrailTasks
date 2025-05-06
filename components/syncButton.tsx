@@ -20,10 +20,7 @@ const SyncButton = () => {
       const checkUnsyncedChanges = async () => {
       const unsyncedChanges = await hasUnsyncedChanges({database: watermelonDatabase});
       setShowButton(unsyncedChanges);
-      console.debug('unsynced Changes', unsyncedChanges)
     };
-    console.debug('user', user)
-    console.debug('isConnected', isConnected)
 
  
   useEffect(() => {

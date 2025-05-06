@@ -38,8 +38,6 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
-        console.debug('http or https', HTTP_HTTPS)
-	console.debug('config database url', Config.DATABASE_URL)
 		const response: ExistingUserResponseSuccess | ExistingUserResponseFail = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/users`, {
 			method: 'POST',
 			headers: {
@@ -81,7 +79,6 @@ export async function registerValidation(email: string, username: string) {
 			throw new Error('Network response was not ok');
 		}
 		const responseJson = await response.json();
-		console.log('responseJson', responseJson);
 		return responseJson
 	} catch (err) {
 		handleError(err, "registerValidation");
