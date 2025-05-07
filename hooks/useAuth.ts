@@ -5,6 +5,7 @@ import {useInternetConnection} from './useInternetConnection';
 import handleError from '../helpers/ErrorHandler';
 import { User } from '../watermelon/models';
 import {sync} from '../watermelon/sync';
+import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 
 type UseAuthParams = {
   watermelonDatabase: Database;
@@ -14,7 +15,10 @@ type UseAuthParams = {
 export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParams) {
   const {isConnected} = useInternetConnection();
   const [user, setUser] = useState<any>(initialUser);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const {currentOffering, customerInfo, isProMember } = useRevenueCat({userId: user?.id});
+
 
   // Observe user changes (only if user is a Watermelon model)
 //  useEffect(() => {
@@ -30,6 +34,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
   // Check if there's a user in local DB
   const initUser = useCallback(async () => {
     try {
+      
       if(watermelonDatabase) {
          await checkForLoggedInUser(setUser, watermelonDatabase);
 
@@ -40,16 +45,20 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
   }, [watermelonDatabase]);
 
   useEffect(() => {
-    initUser();
-  }, [initUser]);
+    if(!user){
+      initUser();
+    }
+  }, []);
 
   // Wrap your existing “handleLogin” logic
   const login = useCallback(
     async (email: string, password: string) => {
       try {
         setError('');
+        setLoading(true);
         if (!email.trim() || !password.trim()) {
           setError('All fields are required');
+          setLoading(false);
           return;
         }
 
@@ -65,13 +74,16 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
         }
         if (!localUser) {
           setError('Incorrect Email or Password');
+          setLoading(false);
           return;
         }
 
         //await setSubscriptionStatus(localUser, watermelonDatabase);
         await setLocalStorageUser(localUser, watermelonDatabase);
         setUser(localUser);
+        setLoading(false);
       } catch (err) {
+        setLoading(false);
         handleError(err, 'login in useAuth');
       }
     },
@@ -89,20 +101,23 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
       try {
         setError('');
+        setLoading(true);
 
         // Basic validation
         if (!email || !password || !confirmPassword || !username) {
           setError('All fields are required');
+          setLoading(false);
           return;
         }
         if (password !== confirmPassword) {
           setError('Passwords do not match');
+          setLoading(false);
           return;
         }
         const result = await registerValidation(email.toLowerCase(), username.toLowerCase());
-        console.log(result);
         if (result?.duplicateAttribute != '') {
             setError(result.message);
+            setLoading(false);
             return;
         }
 
@@ -115,7 +130,9 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           setUser(newUser);
           await sync(watermelonDatabase, isConnected, newUser.id);
         }
+        setLoading(false);
       } catch (err) {
+        setLoading(false);
         handleError(err, 'register in useAuth');
       }
     },
@@ -125,11 +142,14 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
   // Optional: logout or remove user from local storage
   const logout = useCallback(async () => {
     try {
+      setLoading(true);
       // Clear local storage items, e.g. user_id, subscription
       await watermelonDatabase.localStorage.remove('user_id');
       await watermelonDatabase.localStorage.remove('username');
       setUser(null);
+      setLoading(false);
     } catch (err) {
+      setLoading(false);
       handleError(err, 'logout in useAuth');
     }
   }, [watermelonDatabase]);
@@ -140,9 +160,13 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
     error,
     initUser,
     login,
+    loading,
     register,
     logout,
-    setError,  // if your UI needs to manually clear or set an error
+    setError,// if your UI needs to manually clear or set an error
+    currentOffering,
+    customerInfo,
+    isProMember
   };
 }
 

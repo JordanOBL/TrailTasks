@@ -56,6 +56,7 @@ progressBorder: '#f7f7f7',
 export const lightTheme = {
   background: '#ffffff',
   card: '#f7f7f7',
+  cardBright:'rgb(7,254,213)',
   text: '#1a1a1a',
   secondaryText: '#4f4f4f',
   border: '#e2e2e2',

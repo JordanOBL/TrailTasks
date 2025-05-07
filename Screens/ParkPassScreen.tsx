@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {Park, Trail, User_Completed_Trail, User, User_Park} from '../watermelon/models';
-import { View, StyleSheet, FlatList, Text} from 'react-native';
+import { View, StyleSheet, FlatList, Text, ActivityIndicator} from 'react-native';
 import { useDatabase, withObservables } from '@nozbe/watermelondb/react';
 import EnhancedParkPassCard from '../components/ParkPass/ParkPassCard';
 import {Q} from '@nozbe/watermelondb';
@@ -82,7 +82,9 @@ const canPrestige = userParks.length > 0 && (userParks.length === combinedData.l
     };
 
     if(!user || !userParks || !combinedData?.length) {
-        return (<View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white', textAlign: 'center'}}>Loading Park Passes...</Text></View>)
+        return (<View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text style={{color: 'white', textAlign: 'center', marginBottom: 16, fontWeight: '600', fontSize: 16}}>Loading Park Passes...</Text>
+        <ActivityIndicator size="large" color={theme.button} />
+        </View>)
         
     }
 

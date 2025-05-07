@@ -1,8 +1,9 @@
 import React from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View, Alert } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import NewSessionHandlers from '../../helpers/Session/newSessionHandlers';
 import timeOptions from '../../helpers/Session/timeOptions';
+import {useAuthContext} from '../../services/AuthContext';
 
 const SettingsModal = ({
                            timer,
@@ -14,6 +15,8 @@ const SettingsModal = ({
                            watermelonDatabase,
                            sessionCategories,
                        }) => {
+
+    const {isProMember} = useAuthContext();
     return (
         <Modal
             animationType="slide"
@@ -78,8 +81,13 @@ const SettingsModal = ({
                                     placeholderStyle={styles.placeholderStyle}
                                     selectedTextStyle={styles.selectedTextStyle}
                                     value={timer.focusTime}
-                                    onChange={(selectedItem) =>
+                                    onChange={(selectedItem) => {
+                                        if (isProMember){
                                         NewSessionHandlers.FocusTimeChange({ setTimer, value: selectedItem.value })
+                                        }else{
+                                            Alert.alert("Upgrade to Pro to change time durations");
+                                        }
+                                    }
                                     }
                                 />
                             </View>
@@ -95,9 +103,13 @@ const SettingsModal = ({
                                     placeholderStyle={styles.placeholderStyle}
                                     selectedTextStyle={styles.selectedTextStyle}
                                     value={timer.shortBreakTime}
-                                    onChange={(selectedItem) =>
+                                    onChange={(selectedItem) => {
+                                        if (isProMember){
                                         NewSessionHandlers.ShortBreakChange({ setTimer, value: selectedItem.value })
-                                    }
+                                        }else{
+                                            Alert.alert("Upgrade to Pro to change time durations");
+                                        }
+                                    }}
                                 />
                             </View>
                             <View style={styles.column}>
@@ -112,8 +124,12 @@ const SettingsModal = ({
                                     placeholderStyle={styles.placeholderStyle}
                                     selectedTextStyle={styles.selectedTextStyle}
                                     value={timer.longBreakTime}
-                                    onChange={(selectedItem) =>
-                                        NewSessionHandlers.LongBreakChange({ setTimer, value: selectedItem.value })
+                                    onChange={(selectedItem) => {
+                                        if (isProMember) {
+                                            NewSessionHandlers.LongBreakChange({ setTimer, value: selectedItem.value })
+                                        }else{
+                                            Alert.alert("Upgrade to Pro to change time durations");
+                                        }}
                                     }
                                 />
                             </View>
@@ -123,16 +139,25 @@ const SettingsModal = ({
                         <View style={styles.row}>
                             <View style={styles.column}>
                                 <Text style={styles.label}>Sets</Text>
-                                <TextInput
-                                    testID="sets-input"
-                                    value={String(timer.sets)}
-                                    onChangeText={(value) =>
-                                        setTimer((prev) => ({ ...prev, sets: parseInt(value, 10) || 1 }))
-                                    }
-                                    keyboardType="numeric"
-                                    style={styles.input}
-                                    placeholderTextColor="rgba(255,255,255,0.3)"
-                                />
+                               <TextInput
+  testID="sets-input"
+  value={String(timer.sets)}
+  onChangeText={(value) => {
+    if (isProMember) {
+      // Allow empty string temporarily
+      if (value === '') {
+        setTimer((prev) => ({ ...prev, sets: '' }));
+      } else if (/^\d+$/.test(value)) { // Only allow digits
+        setTimer((prev) => ({ ...prev, sets: parseInt(value, 10) }));
+      }
+    } else {
+      Alert.alert('Upgrade to Pro to change sets');
+    }
+  }}
+  keyboardType="numeric"
+  style={styles.input}
+  placeholderTextColor="rgba(255,255,255,0.3)"
+/>
                             </View>
                             <View style={styles.column}>
                                 <Text style={styles.label}>Auto-Continue</Text>
@@ -141,8 +166,14 @@ const SettingsModal = ({
                                     trackColor={{ false: '#767577', true: '#81b0ff' }}
                                     thumbColor={timer.autoContinue ? '#f5dd4b' : '#f4f3f4'}
                                     ios_backgroundColor="#3e3e3e"
-                                    onValueChange={() =>
+                                    onValueChange={() =>{
+                                        if (isProMember){
+                                            
                                         setTimer((prev) => ({ ...prev, autoContinue: !timer.autoContinue }))
+                                        }else{
+                                            Alert.alert("Upgrade to Pro to toggle auto-continue");
+                                        }
+                                    }
                                     }
                                     value={timer.autoContinue}
                                 />

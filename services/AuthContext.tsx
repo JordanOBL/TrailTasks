@@ -16,7 +16,7 @@ type AuthContextType = {
       confirmPassword: string,
       username: string) => Promise<void>;
   logout: () => Promise<void>;
-  // etc...
+  
 };
 
 // 2. Create the context

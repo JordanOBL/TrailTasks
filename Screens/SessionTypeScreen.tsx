@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Subscription, User, User_Session } from "../watermelon/models";
+import { useAuthContext } from "../services/AuthContext";
 
 import React from "react";
 import ScreenLink from "../components/HomeScreen/screenLink";
@@ -14,20 +15,21 @@ interface Props {
 }
 
 const SessionTypeScreen = ({navigation, user, setUser}: Props) => {
+  const {isProMember} = useAuthContext();
   return (
     <View style={{height: '100%', width: '100%', padding: 50}}>
           <ScreenLink needsActiveSubscription={true}
                     hasActiveSubscription={
-                        true
+                        isProMember
                     }
                     user={user}
                     navigation={navigation}
               navTo={'Group'}>
               Group
           </ScreenLink>
-          <ScreenLink needsActiveSubscription={true}
+          <ScreenLink needsActiveSubscription={false}
                     hasActiveSubscription={
-                    true
+                    isProMember
                     }
                     user={user}
                     navigation={navigation}

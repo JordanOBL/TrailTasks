@@ -1,7 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
-import EnhancedSubscribeScreen from "./SubscribeScreen";
 import { User } from '../watermelon/models';
 import { sync } from '../watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/react';
@@ -12,9 +11,10 @@ import { lightTheme, darkTheme } from '../theme';
 
 interface Props {
   user: User;
+  navigation: any;
 }
 
-const SettingsScreen = ({ user }: Props) => {
+const SettingsScreen = ({ user, navigation }: Props) => {
   const database = useDatabase();
   const { isConnected } = useInternetConnection();
   const { theme, toggleTheme } = useTheme();
@@ -26,14 +26,16 @@ const SettingsScreen = ({ user }: Props) => {
 
   return (
     <View style={styles.container}>
-      <EnhancedSubscribeScreen user={user} />
+       <TouchableOpacity style={styles.option} onPress={() => navigation.navigate('SubscriptionSettings')}>
+        <Text style={styles.optionText}>Subscription</Text>
+      </TouchableOpacity>
 
-      <Pressable style={styles.button} onPress={() => sync(database, isConnected, user.id)}>
-        <Text style={styles.buttonText}>Sync</Text>
+      <Pressable style={styles.option} onPress={() => sync(database, isConnected, user.id)}>
+        <Text style={styles.optionText}>Sync</Text>
       </Pressable>
 
-      <Pressable style={styles.button} onPress={toggleTheme}>
-        <Text style={styles.buttonText}>
+      <Pressable style={styles.option} onPress={toggleTheme}>
+        <Text style={styles.optionText}>
           Switch to {currentThemeName === 'dark' ? 'Light' : 'Dark'} Mode
         </Text>
       </Pressable>
@@ -79,6 +81,14 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       fontSize: 16,
       fontWeight: '600',
       color: 'red',
+    },option: {
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderColor: theme.border,
+    },
+    optionText: {
+      fontSize: 18,
+      color: theme.text,
     },
   });
 

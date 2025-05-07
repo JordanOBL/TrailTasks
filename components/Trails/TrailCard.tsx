@@ -11,10 +11,13 @@ import { withObservables } from "@nozbe/watermelondb/react";
 import calculateEstimatedTime from "../../helpers/calculateEstimatedTime";
 import FullTrailDetails from "../../types/fullTrailDetails";
 import { useTheme } from '../../contexts/ThemeProvider';
+import {useAuthContext} from "../../services/AuthContext";
 const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrails }: Props) => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const styles = getStyles(theme);
+
+  const { isProMember } = useAuthContext();
 
   const handlePress = () => {
     navigation.navigate('TrailDetails', {
@@ -25,12 +28,14 @@ const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrail
     });
   };
 
+
   return (
     <TouchableOpacity style={styles.card} onPress={handlePress}>
       <Image
         source={trail.trail_image_url ? { uri: trail.trail_image_url } : require('../../assets/LOGO.png')}
         style={styles.image}
       />
+      {!isProMember && <Text style={{color: theme.text, textAlign: 'center', opacity: 0.5}}>{trail.is_free ? 'Free Trail':trail.is_subscribers_only ? 'Pro Subscribers Only'  : 'Available'}</Text>}
       <View style={styles.infoContainer}>
         <View style={styles.row}>
           <Text style={styles.trailName} numberOfLines={1}>{trail?.trail_name}</Text>

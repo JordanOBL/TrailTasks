@@ -1,388 +1,188 @@
-import {User_Completed_Trail, User_Purchased_Trail} from "../watermelon/models";
-import {
-    Image,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
 import React, { useEffect, useState } from 'react';
-
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Modal,
+  Pressable,
+  Linking,
+} from 'react-native';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useTheme } from '../contexts/ThemeProvider';
-import BuyTrailModal from "../components/Trails/BuyTrailModal";
-import FullTrailDetails from "../types/fullTrailDetails";
-import calculateEstimatedTime from "../helpers/calculateEstimatedTime";
-import formatDateTime from "../helpers/formatDateTime";
-import {withObservables} from "@nozbe/watermelondb/react";
-import {useAuthContext} from "../services/AuthContext";
+import { useAuthContext } from '../services/AuthContext';
+import BuyTrailModal from '../components/Trails/BuyTrailModal';
+import formatDateTime from '../helpers/formatDateTime';
+import calculateEstimatedTime from '../helpers/calculateEstimatedTime';
+import {useNavigation} from '@react-navigation/native';
 
-// @ts-ignore
-const TrailDetailScreen = ({ route,user, navigation}) => {
-    const params = route?.params ?? {};
+const TrailDetailScreen = ({ route, user }) => {
+  const { trail, userPurchasedTrails, completedTrails } = route?.params ?? {};
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+  const { isProMember } = useAuthContext();
+  const navigation = useNavigation();
 
-const {
-  trail,
-  userPurchasedTrails,
-  completedTrails,
-} = params;
-const { theme } = useTheme();
-const styles = getStyles(theme);
+  const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
+  const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
+  const [isFreeTrail, setIsFreeTrail] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [isSubscribersOnly, setIsSubscribersOnly] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
-const resolvedTrail = trail ?? {
-  id: 0,
-  trail_name: 'Trail Not Found',
-  trail_description: 'Trail Not Found',
-  trail_distance: 0,
-  trail_of_the_week: false
-};
-
-    const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
-    const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
-    const [isFreeTrail, setIsFreeTrail] = useState(false);
-    const [isPurchased, setIsPurchased] = useState(false);
-    const [isSubscribersOnly, setIsSubscribersOnly] = useState(false);// Assuming this is fetched or calculated elsewhere
-    const [isCompleted, setIsCompleted] = useState(false);
-
-    useEffect(() => {
-        if (trail && userPurchasedTrails && completedTrails) {
-            setIsFreeTrail(trail.is_free);
-            setIsPurchased(userPurchasedTrails?.some((purchasedTrail: User_Purchased_Trail) => purchasedTrail.trailId == trail.id));
-            setIsSubscribersOnly(trail.is_subscribers_only);
-            setIsCompleted(completedTrails.some((completedTrail: User_Completed_Trail) => completedTrail.trailId === trail.id));
-        }
-    }, [user, trail, userPurchasedTrails, completedTrails]);
-
-    const trailDistance = parseInt(trail?.trail_distance)
-    const trailDifficulty = (() => {
-        if (trailDistance > 20) return 'Insane';
-        if (trailDistance > 10) return 'Long';
-        if (trailDistance > 5) return 'Moderate';
-        return 'Short';
-    })();
-
-
-
-    let calculatedReward = Math.ceil(Number(trailDistance));
-    const reward = trail?.trail_of_the_week ? calculatedReward * 10 : calculatedReward * 3 < 5 ? 5 : Math.ceil(calculatedReward * 3)
-
-    const getButtonText = () => {
-        if (user.trailId === trail?.id) {
-            return 'In Progress';
-        }
-
-        if (isFreeTrail || isPurchased) {
-            return 'Start Now';
-        }
-
-        if (isSubscribersOnly && false ) { //!isActiveSubscription
-            return 'Unlock With Subscription';
-        }
-
-        if (trailDistance < 5) {
-            return 'Buy 5';
-        } else if (trailDistance < 10) {
-            return 'Buy 10';
-        } else if (trailDistance < 20) {
-            return 'Buy 25';
-        } else {
-            return 'Buy 100';
-        }
-    };
-
-    const buttonText = getButtonText();
-
-    if (!trail) {
-        return <Text style={{color: 'red'}}>Loading...</Text>;
+  useEffect(() => {
+    if (trail && userPurchasedTrails && completedTrails) {
+      setIsFreeTrail(trail.is_free);
+      setIsPurchased(userPurchasedTrails.some(t => t.trailId == trail.id));
+      setIsSubscribersOnly(trail.is_subscribers_only);
+      setIsCompleted(completedTrails.some(t => t.trailId === trail.id));
     }
+  }, [user, trail, userPurchasedTrails, completedTrails]);
 
-    if (errorMessage) {
-        return <Text>{errorMessage}</Text>;
-    }
+  const trailDistance = parseInt(trail?.trail_distance);
+  const reward = trail?.trail_of_the_week
+    ? Math.ceil(trailDistance) * 10
+    : Math.max(5, Math.ceil(trailDistance * 3));
 
-    const handleReplaceTrail = async () => {
-        // @ts-ignore
-        await user.updateUserTrail({
-            // @ts-ignore
-            trailId: trail.id,
-            trailStartedAt: formatDateTime(new Date()),
-        });
-        setShowReplaceTrailModal(false);
+  const getButtonText = () => {
+    if (user.trailId === trail?.id) return 'In Progress';
+    if (isFreeTrail || isPurchased) return 'Start Now';
+    if (isSubscribersOnly && !isProMember) return 'Unlock With Subscription';
+    return `Buy ${reward}`;
+  };
 
-    };
+  const handleReplaceTrail = async () => {
+    await user.updateUserTrail({
+      trailId: trail.id,
+      trailStartedAt: formatDateTime(new Date()),
+    });
+    setShowReplaceTrailModal(false);
+  };
 
-    const handleBuyTrail = (trail:FullTrailDetails) => {
-        // @ts-ignore
-        setShowBuyTrailModal(true);
-    };
+  const handleBuyTrail = () => setShowBuyTrailModal(true);
 
-    return (
-        <ScrollView style={styles.container}>
-            {/* Modal and Other Components */}
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={showReplaceTrailModal}
-                onRequestClose={() => setShowReplaceTrailModal(false)}>
-                <View style={styles.modalBackground}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Start New Trail</Text>
-                        <Text style={styles.modalText}>
-                            Are you sure you want to replace your current trail? Trail
-                            progress will be RESET. Total miles hiked will be saved.
-                        </Text>
-                        <View style={styles.buttonContainer}>
-                            <Pressable
-                                style={[styles.button, styles.buttonCancel]}
-                                onPress={() => setShowReplaceTrailModal(false)}>
-                                <Text style={styles.buttonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable
-                                style={[styles.button, styles.buttonConfirm]}
-                                onPress={() => handleReplaceTrail()}>
-                                <Text style={styles.buttonText}>Start New</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+  return (
+    <ScrollView style={styles.container}>
+      <Modal transparent visible={showReplaceTrailModal}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Start New Trail</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to replace your current trail?
+            </Text>
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity style={styles.fullButton} onPress={() => setShowReplaceTrailModal(false)}>
+                <Text style={styles.fullButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.fullButton} onPress={handleReplaceTrail}>
+                <Text style={styles.fullButtonText}>Start New</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
-            <BuyTrailModal
-                isVisible={showBuyTrailModal}
-                onClose={() => {
-                    setShowBuyTrailModal(false)
-                    navigation.goBack()
-                }}
-                trail={trail}
-                trailTokens={user.trailTokens}
-                onBuyTrail={async (trail, cost) => {
-                    const result = await user.purchaseTrail(trail, cost);
-                    console.log('Buying trail:', trail);
-                }}
-            />
-            <View style={styles.imageContainer}>
-                <Image
-                    style={styles.trailImage}
-                    source={trail.trail_image_url ? { uri: trail.trail_image_url } : require( '../assets/LOGO.png') }
-                />
-                <View style={styles.overlayButtons}>
+      <BuyTrailModal
+        isVisible={showBuyTrailModal}
+        onClose={() => {
+          setShowBuyTrailModal(false);
+          navigation.goBack();
+        }}
+        trail={trail}
+        trailTokens={user.trailTokens}
+        onBuyTrail={user.purchaseTrail}
+      />
+
+      <Image
+        style={styles.trailImage}
+        source={trail.trail_image_url ? { uri: trail.trail_image_url } : require('../assets/LOGO.png')}
+      />
+
+      <View style={styles.infoContainer}>
+        <Text style={styles.trailName}>{trail.trail_name}</Text>
+        <Text style={styles.parkName}>{trail.park_name}, {trail?.state_code}</Text>
+        <Text style={styles.statusText}>{isCompleted ? '✅ Completed' : 'Not Completed'}</Text>
+
+        <View style={styles.statsGrid}>
+          <View style={styles.statBox}><Text style={styles.statValue}>{trail.trail_distance} mi</Text><Text style={styles.statLabel}>Distance</Text></View>
+          <View style={styles.statBox}><Text style={styles.statValue}>{trail.trail_elevation} ft</Text><Text style={styles.statLabel}>Elevation</Text></View>
+          <View style={styles.statBox}><Text style={styles.statValue}>{calculateEstimatedTime(trail.trail_distance)}</Text><Text style={styles.statLabel}>Est. Time</Text></View>
+          <View style={styles.statBox}><Text style={styles.statValue}>{reward}</Text><Text style={styles.statLabel}>Reward</Text></View>
+        </View>
+
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity
+            disabled={user.trailId === trail.id || (!isFreeTrail && !isPurchased)}
+            style={[styles.fullButton, { backgroundColor: isFreeTrail || isPurchased ? '#4CAF50' : 'gray' }]}
+          >
+                        <Text style={styles.fullButtonText}>Add to Queue</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}
-                    >
-                        <Text style={styles.backButtonText}>←</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+                        onPress={() => {
+                            if (isFreeTrail || isPurchased) {
+                                setShowReplaceTrailModal(true)
 
-            <View style={styles.infoContainer}>
-                <Text style={styles.trailName}>{trail.trail_name}</Text>
-                <Text style={styles.parkName}>{trail.park_name} National Park, {trail?.state_code}</Text>
-                <Text style={{ color: isCompleted ? 'green' : 'grey', fontSize: 12, marginVertical: 8 }}>
-                    {isCompleted ? 'Completed' : 'Not Completed'}
-                </Text>
-                <View style={styles.statsGrid}>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statValue}>{trail.trail_distance} mi</Text>
-                        <Text style={styles.statLabel}>Trail length</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statValue}>{trail.trail_elevation} ft</Text>
-                        <Text style={styles.statLabel}>Elevation gain</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statValue}>
-                            {calculateEstimatedTime(trail.trail_distance)}
-                        </Text>
-                        <Text style={styles.statLabel}>Est. time</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statValue}>{reward}</Text>
-                        <Text style={styles.statLabel}>Reward</Text>
-                    </View>
-                </View>
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity disabled={user.trailId === trail.id || !isFreeTrail || !isPurchased} style={[styles.downloadButton, {
-                        backgroundColor:
-                            user.trailId === trail.id
-                                ? 'grey'
-                                : isFreeTrail || isPurchased
-                                    ?  '#4CAF50'
-                                        : 'grey'
-                    }]}>
-                        <Text style={styles.buttonText}>Add</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {
-                        if (isFreeTrail || isPurchased) {
-                            setShowReplaceTrailModal(true);
-                        } else if (true || !isSubscribersOnly) { //SUBSCTIPTION
-                            handleBuyTrail(trail);
-                        }
-                    }} style={[styles.navigateButton, {
-                        backgroundColor:
-                            user.trailId === trail.id
-                                ? 'grey'
-                                : isFreeTrail || isPurchased
-                                    ? 'rgb(7,254,213)'
-                                    : true //!isActiveSubscription
-                                        ? '#2196F3'
-                                        : isSubscribersOnly
-                                            ? 'grey'
-                                            : 'rgb(7,254,13)'
-                    }]}>
-                        <Text style={[styles.buttonText]}>{buttonText}</Text>
+                            }else if(isSubscribersOnly && !isProMember) {
+                                navigation.navigate('Basecamp', {
+                                    screen: 'Subscribe',
+                                });
+
+                                return
+                            }else {
+                                handleBuyTrail()
+                            }
+                        }}
+                        style={[styles.fullButton, { backgroundColor: isFreeTrail || isPurchased ||  isProMember || !isSubscribersOnly  ? '#2196F3' : 'gray' }]}
+                    >
+                        <Text style={styles.fullButtonText}>{getButtonText()}</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
-        </ScrollView>
-    );
+
+        {(trail.nps_url || trail.all_trails_url || trail.hiking_project_url) && (
+          <View style={styles.linksContainer}>
+            <Text style={styles.sectionTitle}>🌐 Explore This Trail</Text>
+            {trail.nps_url && <TouchableOpacity style={styles.linkButton} onPress={() => Linking.openURL(trail.nps_url)}><Text style={styles.linkText}>NPS Website</Text></TouchableOpacity>}
+            {trail.all_trails_url && <TouchableOpacity style={styles.linkButton} onPress={() => Linking.openURL(trail.all_trails_url)}><Text style={styles.linkText}>AllTrails</Text></TouchableOpacity>}
+            {trail.hiking_project_url && <TouchableOpacity style={styles.linkButton} onPress={() => Linking.openURL(trail.hiking_project_url)}><Text style={styles.linkText}>Hiking Project</Text></TouchableOpacity>}
+          </View>
+        )}
+      </View>
+    </ScrollView>
+  );
 };
 
-const enhance = withObservables(
-    ['user'],
-    ({ user }) => ({
-        user,
-        completedTrails: user.usersCompletedTrails.observe(),
-        queuedTrails: user.usersQueuedTrails.observe(),
-        userPurchasedTrails: user.usersPurchasedTrails.observe()
-    })
-);
+const getStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.background },
+  trailImage: { width: '100%', height: 240 },
+  infoContainer: { padding: 20 },
+  trailName: { fontSize: 24, fontWeight: 'bold', color: theme.trailHeaderText },
+  parkName: { fontSize: 16, fontWeight: '500', color: theme.parkNameText },
+  statusText: { fontSize: 12, color: 'gray', marginVertical: 4 },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  statBox: { width: '48%', backgroundColor: theme.card, padding: 10, borderRadius: 10, marginBottom: 12 },
+  statValue: { fontSize: 18, fontWeight: 'bold', color: theme.text, textAlign: 'center' },
+  statLabel: { fontSize: 12, color: theme.secondaryText, textAlign: 'center' },
+  buttonGroup: { marginTop: 20, gap: 10 },
+  fullButton: { borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  fullButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  modalBackground: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000aa' },
+  modalContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 12, width: '85%' },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+  modalText: { fontSize: 14, marginBottom: 20, textAlign: 'center' },
+  linksContainer: { marginTop: 30 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 10, color: theme.text },
+  linkButton: { backgroundColor: theme.button, padding: 10, borderRadius: 10, marginBottom: 8, alignItems: 'center' },
+  linkText: { color: theme.buttonText, fontWeight: '500' },
+});
 
-const EnhancedTrailDetailScreen = enhance(TrailDetailScreen);
-export default EnhancedTrailDetailScreen;
+const enhance = withObservables(['user'], ({ user }) => ({
+  user,
+  completedTrails: user.usersCompletedTrails.observe(),
+  userPurchasedTrails: user.usersPurchasedTrails.observe(),
+}));
 
-const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
-    imageContainer: {
-      height: 250,
-      position: 'relative',
-    },
-    trailImage: {
-      width: '100%',
-      height: '100%',
-    },
-    overlayButtons: {
-      position: 'absolute',
-      top: 20,
-      left: 20,
-      right: 20,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    backButton: {
-      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      padding: 5,
-      borderRadius: 50,
-    },
-    backButtonText: {
-      color: theme.text,
-      fontSize: 18,
-    },
-    infoContainer: {
-      padding: 20,
-    },
-    parkName: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: theme.parkNameText,
-    },
-    trailName: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: theme.trailHeaderText,
-    },
-    statsGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      marginBottom: 20,
-    },
-    statBox: {
-      width: '48%',
-      marginBottom: 10,
-      backgroundColor: theme.statBoxBackground,
-      padding: 10,
-      borderRadius: 5,
-    },
-    statValue: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      color: theme.statValue,
-    },
-    statLabel: {
-      fontSize: 14,
-      color: theme.statLabel,
-      textAlign: 'center',
-    },
-    buttonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    downloadButton: {
-      backgroundColor: '#4CAF50',
-      padding: 15,
-      borderRadius: 10,
-      flex: 1,
-      marginRight: 10,
-      alignItems: 'center',
-    },
-    navigateButton: {
-      backgroundColor: 'rgb(7,254,213)',
-      padding: 15,
-      borderRadius: 15,
-      flex: 1,
-      marginLeft: 10,
-      alignItems: 'center',
-    },
-    buttonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    modalBackground: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: theme.trailBackdropOverlay,
-    },
-    modalContainer: {
-      backgroundColor: theme.trailModalBackground,
-      borderRadius: 10,
-      padding: 20,
-      width: '80%',
-    },
-    modalTitle: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
-      textAlign: 'center',
-      color: theme.modalText,
-    },
-    modalText: {
-      fontSize: 16,
-      marginBottom: 20,
-      textAlign: 'center',
-      color: theme.modalText,
-    },
-    button: {
-      borderRadius: 5,
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      marginHorizontal: 10,
-    },
-    buttonCancel: {
-      backgroundColor: 'gray',
-    },
-    buttonConfirm: {
-      backgroundColor: 'green',
-    },
-  });
+export default enhance(TrailDetailScreen);
 

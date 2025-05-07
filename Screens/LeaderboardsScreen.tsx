@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { User } from '../watermelon/models';
 
 import EnhancedLeaderboard from '../components/Leaderboards/Leaderboard';
@@ -10,6 +10,7 @@ import {withObservables} from '@nozbe/watermelondb/react'
 import { useInternetConnection } from "../hooks/useInternetConnection";
 import RefreshConnection from "../components/RefreshConnection";
 import handleError from "../helpers/ErrorHandler";
+import {useTheme} from "../contexts/ThemeProvider";
 
 import FetchGlobalLeaderboards, {Leaderboard} from "../components/Leaderboards/FetchGlobalLeaderboards";
 import FilterSearch from "../components/FilterSearch";
@@ -21,6 +22,9 @@ interface Props {
 const LeaderboardsScreen = ({ user }: Props) => {
   const watermelonDatabase = useDatabase();
   const {isConnected, refreshConnectionStatus} = useInternetConnection();
+
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [filter, setFilter] = useState('Top 100');
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -75,9 +79,10 @@ const LeaderboardsScreen = ({ user }: Props) => {
 
   if (loading) {
     return (
-        <View>
-          <Text>Loading...</Text>
-        </View>
+      <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}> 
+          <ActivityIndicator size="large" color={theme.button} />
+      </View>
+
     );
   }
 
@@ -110,7 +115,7 @@ const enhance = withObservables(['user'], ({ user }) => ({
 const EnhancedLeaderboardsScreen = enhance(LeaderboardsScreen);
 export default EnhancedLeaderboardsScreen;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

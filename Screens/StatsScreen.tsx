@@ -12,6 +12,8 @@ import {Session_Category, User, User_Session} from '../watermelon/models';
 
 import {FilterBy} from '../helpers/Stats/FilterFunction';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import Icon from 'react-native-vector-icons/Ionicons';
 import {Q} from '@nozbe/watermelondb';
 import { Dropdown } from 'react-native-element-dropdown';
 import SessionList from '../components/Stats/SessionList';
@@ -19,6 +21,7 @@ import Stats from '../components/Stats/Stats';
 import handleError from "../helpers/ErrorHandler";
 import {useDatabase} from '@nozbe/watermelondb/react';
 import {useTheme} from '../contexts/ThemeProvider';
+import {useAuthContext} from '../services/AuthContext';
 
 type TimeFrame = {
   label: string;
@@ -44,6 +47,8 @@ type Props = {
 const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   const watermelonDatabase = useDatabase();
   const { theme } = useTheme();
+  const styles = getStyles(theme);
+  const {isProMember} = useAuthContext();
 
   const [sessionCategories, setSessionCategories] = React.useState<Session_Category[]>([]);
   const [userSessionsWithCategories, setUserSessionsWithCategories] = React.useState<any[]>([]);
@@ -111,9 +116,11 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} testID="stats-screen">
-      <Pressable style={styles.filterToggle} onPress={() => setShowFilterMenu(prev => !prev)}>
-        <Text style={[styles.filterToggleText, { color: theme.text }]}>Filter</Text>
-        <Ionicons name={showFilterMenu ? 'caret-up-outline' : 'caret-down-outline'} size={20} color={theme.secondaryText} />
+      <Pressable style={styles.filterToggle} disabled={!isProMember} onPress={() => setShowFilterMenu(prev => !prev)}>
+        <Text style={[styles.filterToggleText, { color: isProMember ? theme.text : theme.linkDisabled }]}>Filter</Text>
+        {isProMember && <Ionicons name={showFilterMenu ? 'caret-up-outline' : 'caret-down-outline'} size={20} color={theme.secondaryText} />}
+        {!isProMember && <View style={{ flexDirection: 'row', alignItems: 'center' }}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.filterToggleText, { color: theme.linkDisabled }]}>Pro</Text></View>}
+     
       </Pressable>
 
       {showFilterMenu && (
@@ -181,7 +188,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) =>  StyleSheet.create({
   container: { flex: 1 },
   dropdown: {
     borderRadius: 8,
