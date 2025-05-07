@@ -117,30 +117,29 @@ const TrailDetailScreen = ({ route, user }) => {
             disabled={user.trailId === trail.id || (!isFreeTrail && !isPurchased)}
             style={[styles.fullButton, { backgroundColor: isFreeTrail || isPurchased ? '#4CAF50' : 'gray' }]}
           >
-            <Text style={styles.fullButtonText}>Add to Queue</Text>
-          </TouchableOpacity>
+                        <Text style={styles.fullButtonText}>Add to Queue</Text>
+                    </TouchableOpacity>
 
-          <TouchableOpacity
+                    <TouchableOpacity
                         onPress={() => {
-                            if(isSubscribersOnly && !isProMember) {
-                                navigation.navigate('Basecamp', {
-  screen: 'Subscribe',
-});
-
-                                return
-                            } else if (isFreeTrail || isPurchased) {
+                            if (isFreeTrail || isPurchased) {
                                 setShowReplaceTrailModal(true)
 
-                            }
-                            else {
+                            }else if(isSubscribersOnly && !isProMember) {
+                                navigation.navigate('Basecamp', {
+                                    screen: 'Subscribe',
+                                });
+
+                                return
+                            }else {
                                 handleBuyTrail()
                             }
                         }}
-            style={[styles.fullButton, { backgroundColor: isProMember ? '#2196F3' : 'gray' }]}
-          >
-            <Text style={styles.fullButtonText}>{getButtonText()}</Text>
-          </TouchableOpacity>
-        </View>
+                        style={[styles.fullButton, { backgroundColor: isFreeTrail || isPurchased ||  isProMember || !isSubscribersOnly  ? '#2196F3' : 'gray' }]}
+                    >
+                        <Text style={styles.fullButtonText}>{getButtonText()}</Text>
+                    </TouchableOpacity>
+                </View>
 
         {(trail.nps_url || trail.all_trails_url || trail.hiking_project_url) && (
           <View style={styles.linksContainer}>
