@@ -1,26 +1,34 @@
-import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, Text, View, ActivityIndicator} from 'react-native';
 import LoginForm from '../components/Auth/LoginForm';
 import React from 'react';
 import NationalParksInfiniteScroll from "../components/NationalParksInfiniteScroll";
 import {useDatabase} from '@nozbe/watermelondb/react';
 import {withObservables} from '@nozbe/watermelondb/react';
 import {useAuthContext} from '../services/AuthContext';
+
+
 interface Props {
   onChangeForm: () => void;
 }
 
 const LoginScreen = ({ handleFormChange }: Props) => {
   const watermelonDatabase = useDatabase();
-  const {login, error}  = useAuthContext();
+  const {login, error, loading}  = useAuthContext();
   //state
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleLogin = async () => {
-    await login(email, password);
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color='#13B3AC' />
+      </View>
+    );
   }
 
-  return (
+   return (
+    
       <SafeAreaView testID="login-screen" style={styles.container}>
         <View style={styles.imageContainer}>
           <Image source={require('../assets/LOGO.png')} style={styles.image} />
@@ -35,7 +43,7 @@ const LoginScreen = ({ handleFormChange }: Props) => {
           onPasswordChange={setPassword}
           onFormChange={handleFormChange}
           error={error}
-          onLoginPress={handleLogin}          
+          onLoginPress={() => login(email, password)}          
         />
         </View>
       </SafeAreaView>

@@ -76,9 +76,9 @@ useFocusEffect(
 
   if (!trailsCollection) {
     return (
-      <SafeAreaView>
-        <Text style={{color: 'blue'}}>Loading...</Text>
-      </SafeAreaView>
+        
+          <ActivityIndicator size="large" color={theme.button} />
+      
     );
   }
   if (errorMessage) {
@@ -96,6 +96,7 @@ useFocusEffect(
         queuedTrails={queuedTrails}
         completedTrails={completedTrails}
         userPurchasedTrails={userPurchasedTrails}
+        subscribe={() => navigation.navigate('SubscribeScreen')}
       />
     </SafeAreaView>
   );

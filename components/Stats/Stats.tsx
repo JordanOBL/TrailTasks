@@ -4,6 +4,8 @@ import { Session_Category } from '../../watermelon/models';
 import formatTime from '../../helpers/formatTime';
 import { getSessionStats } from '../../helpers/Stats/GetSessionStats';
 import { useTheme } from '../../contexts/ThemeProvider';
+import { useAuthContext } from '../../services/AuthContext';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 type Props = {
   filteredUserSessions: any[];
@@ -19,6 +21,7 @@ const Stats: React.FC<Props> = ({
   sessionCategories,
 }) => {
   const { theme } = useTheme();
+  const {isProMember} = useAuthContext();
   const styles = getStyles(theme);
 
   const [totalTime, setTotalTime] = React.useState<number>(0);
@@ -61,8 +64,8 @@ const Stats: React.FC<Props> = ({
         {filteredCategory === 'All Categories' && mostUsedCategory && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Used Category</Text>
-            <Text testID="most-used-category" style={styles.statValue}>
-              {mostUsedCategory}
+            <Text testID="most-used-category" style={ isProMember ? styles.statValue : [styles.statValue, {opacity: .5}]}>
+              {isProMember ? mostUsedCategory : <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.statValue, {opacity: .5, marginLeft: 4}]}>Pro</Text></View>}
             </Text>
           </View>
         )}
@@ -70,8 +73,8 @@ const Stats: React.FC<Props> = ({
         {filteredCategory === 'All Categories' && mostProductiveTimes.length > 0 && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Productive Time</Text>
-            <Text testID="most-productive-time" style={styles.statValue}>
-              {mostProductiveTimes[0]}
+             <Text testID="most-productive-time" style={ isProMember ? styles.statValue : [styles.statValue, {opacity: .5}]}>
+              {isProMember ? mostUsedCategory : <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.statValue, {opacity: .5, marginLeft: 4}]}>Pro</Text></View>}
             </Text>
           </View>
         )}     

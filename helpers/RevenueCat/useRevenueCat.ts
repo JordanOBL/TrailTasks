@@ -1,22 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
+import { Config } from 'react-native-config';
 import Purchases, {
   CustomerInfo,
   PurchasesOffering,
 } from 'react-native-purchases';
 
-const APIKeys = {
-  apple: 'appl_lUErcJwyCLTUHuBLXxzHcbsgLdm',
-  google: 'goog_QpLqbTzTPpaMLprBaGAhxbhpiwt',
-};
-const typesOfMemberships = {
-  monthly: 'proMonthly',
-  annually: 'proAnnual'
-};
-
 interface Props {
   userId: string;
 }
+
+const ENTITLEMENT_ID = 'pro';
 
 const useRevenueCat = ({ userId }: Props) => {
   const [currentOffering, setCurrentOffering] = useState<PurchasesOffering | null>(null);
@@ -24,66 +18,65 @@ const useRevenueCat = ({ userId }: Props) => {
   const [isProMember, setIsProMember] = useState<boolean>(false);
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
 
+  // 1. Configure Purchases
   useEffect(() => {
     const configurePurchases = async () => {
       try {
         await Purchases.setDebugLogsEnabled(true);
         await Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
 
-        const apiKey = Platform.OS === 'android' ? APIKeys.google : APIKeys.apple;
-        Purchases.configure({apiKey, appUserID: userId});
+        const apiKey = Platform.OS === 'android' ? Config.REVCAT_GOOGLE : Config.REVCAT_APPLE;
+        await Purchases.configure({ apiKey, appUserID: userId });
 
-        setIsConfigured(true); // Set configuration as complete
+        setIsConfigured(true);
       } catch (error) {
-        console.error('Error configuring Purchases:', error);
+        console.error('❌ Error configuring Purchases:', error);
       }
     };
 
-    configurePurchases().catch(e => console.error('error in revcat se effect for config purchases', e));
+    if (userId) {
+      configurePurchases();
+    }
   }, [userId]);
 
+  // 2. Fetch Offerings and Customer Info
   useEffect(() => {
     const fetchData = async () => {
-      if (!isConfigured) return; // Ensure SDK is configured before proceeding
+      if (!isConfigured) return;
 
       try {
         const offerings = await Purchases.getOfferings();
         setCurrentOffering(offerings.current);
 
-        const customerInfo = await Purchases.getCustomerInfo();
-        setCustomerInfo(customerInfo);
-
-        const proMember =
-          customerInfo?.activeSubscriptions.includes(typesOfMemberships.monthly) ||
-          customerInfo?.activeSubscriptions.includes(typesOfMemberships.annually);
-        setIsProMember(proMember);
+        const info = await Purchases.getCustomerInfo();
+        setCustomerInfo(info);
+        setIsProMember(!!info.entitlements.active[ENTITLEMENT_ID]);
       } catch (error) {
-        console.error('Error fetching data in useRevenueCat:', error);
+        console.error('❌ Error fetching RevenueCat data:', error);
       }
     };
 
-    fetchData().catch(e => console.error('Error in revcat use effect for fetchdata', e));
+    fetchData();
   }, [isConfigured]);
 
+  // 3. Listen for subscription changes
   useEffect(() => {
-    const customerInfoUpdated = async (purchaserInfo: CustomerInfo) => {
-      setCustomerInfo(purchaserInfo);
-
-      const proMember =
-        purchaserInfo?.activeSubscriptions.includes(typesOfMemberships.monthly) ||
-        purchaserInfo?.activeSubscriptions.includes(typesOfMemberships.annually);
-      setIsProMember(proMember);
-    };
-
-    const removeListener = Purchases.addCustomerInfoUpdateListener(customerInfoUpdated);
+    const listener = Purchases.addCustomerInfoUpdateListener(async (updatedInfo) => {
+      setCustomerInfo(updatedInfo);
+      setIsProMember(!!updatedInfo.entitlements.active[ENTITLEMENT_ID]);
+    });
 
     return () => {
       // @ts-ignore
-      removeListener();
+      listener(); // remove listener
     };
   }, []);
 
-  return { currentOffering, customerInfo, isProMember };
+  return {
+    currentOffering,
+    customerInfo,
+    isProMember,
+  };
 };
 
 export default useRevenueCat;

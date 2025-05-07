@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View, ActivityIndicator} from 'react-native';
 import {
   Queued_Trail,
   Session_Category,
@@ -25,6 +25,7 @@ import { useInternetConnection  } from '../hooks/useInternetConnection';
 import Rewards from '../helpers/Session/Rewards';
 import SoloResultsScreen from './SoloResultsScreen';
 import {sync} from '../watermelon/sync';
+import {useTheme} from '../contexts/ThemeProvider';
 interface Props {
   user: User;
   setUser: any;
@@ -48,6 +49,8 @@ const SessionScreen = ({
   //@ts-ignore
   const navigation = useNavigation();
   const watermelonDatabase = useDatabase();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [achievementsWithCompletion, setAchievementsWithCompletion] =
     React.useState<AchievementsWithCompletion[]>();
   const [userSession, setUserSession] = React.useState<any>();
@@ -100,6 +103,7 @@ const SessionScreen = ({
   })
   async function handleEndSession () {
     try {
+      setSessionDetails({ ...sessionDetails, isLoading: true });
       await endSession({ user, setTimer, setSessionDetails, sessionDetails });
       await sync(watermelonDatabase, isConnected, user.id);
       setShowResultsScreen(false);
@@ -200,7 +204,7 @@ const SessionScreen = ({
   return (
     <SafeAreaView style={styles.container} testID="session-screen">
       {sessionDetails.isLoading ? (
-        <Text style={styles.loading}>Loading...</Text>
+          <ActivityIndicator size="large" color={theme.button} />
       ) : !sessionDetails.startTime && !timer.isRunning && !showResultsScreen ? (
         <EnhancedNewSessionOptions
           sessionDetails={sessionDetails}
@@ -239,7 +243,7 @@ const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
 const EnhancedSessionScreen = enhance(SessionScreen);
 export default EnhancedSessionScreen;
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {flex: 1},
   loading: {color: 'white', alignSelf: 'center', marginTop: 20},
   returnButton: {

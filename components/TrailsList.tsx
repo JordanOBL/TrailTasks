@@ -24,7 +24,7 @@ const TrailsList = ({
                       trailsCollection,
                       user,
                       userPurchasedTrails,
-    completedTrails
+    completedTrails, subscribe
                     }: Props) => {
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,7 +59,6 @@ const styles = getStyles(theme);
       //@ts-ignore
       filtered = trailsCollection.filter(trail => trail.trail_of_the_week === true || trail.trail_of_the_week == 1);
     } else if (filter === 'Completed'){
-      console.log(completedTrails)
       filtered = trailsCollection.filter(trail =>
           completedTrails.some(completedTrail => trail.id == completedTrail.trailId))
     }
@@ -85,7 +84,7 @@ const styles = getStyles(theme);
   };
 //@ts-ignore
   const renderTrailItem = ({ item }) => (
-      <EnhancedTrailCard trail={item} key={item.id} user={user} />
+      <EnhancedTrailCard trail={item} key={item.id} user={user} subscribe={subscribe} />
   );
 
   return (

@@ -8,6 +8,8 @@ import EnhancedStatsScreen from '../../Screens/StatsScreen';
 import EnhancedSubscribeScreen from '../../Screens/SubscribeScreen';
 import EnhancedFriendsScreen from '../../Screens/FriendsScreen';
 import EnhancedParkPassScreen from "../../Screens/ParkPassScreen";
+import SubscriptionSettingsScreen from '../../Screens/SubscriptionSettingsScreen';
+
 import SettingsScreen from '../../Screens/SettingsScreen';
 import {User} from '../../watermelon/models';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -68,6 +70,13 @@ export function HomeStackNavigator() {
       <Home.Screen name="Settings" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
         {(props: any) => <SettingsScreen {...props} user={user} />}
       </Home.Screen>
+      <Home.Screen
+        name="SubscriptionSettings"
+        options={{ headerTitleAlign: "center", headerBackButtonDisplayMode: "minimal" }}
+      >
+        {(props: any) => <SubscriptionSettingsScreen {...props} user={user} />}
+      </Home.Screen>
+
       <Home.Screen name="Shop" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}} >
         {(props: any) => <AddOnStoreScreen {...props} user={user} />}
       </Home.Screen>

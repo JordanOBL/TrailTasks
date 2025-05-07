@@ -25,7 +25,7 @@ import getUserRank from '../helpers/Ranks/getUserRank';
 import {sync} from '../watermelon/sync';
 import {useDatabase} from '@nozbe/watermelondb/react';
 import {useInternetConnection} from '../hooks/useInternetConnection';
-//import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
+import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 import {withObservables} from '@nozbe/watermelondb/react';
 import isYesterday from '../helpers/isYesterday';
 import isToday from '../helpers/isToday';
@@ -33,6 +33,8 @@ import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import handleError from "../helpers/ErrorHandler";
 import SyncButton from "../components/syncButton"
 import {useTheme} from "../contexts/ThemeProvider";
+import {useAuthContext} from "../services/AuthContext";
+import {Rank} from "../types";
 
 
 interface Props {
@@ -65,7 +67,7 @@ const HomeScreen: React.FC<Props> = ({
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
     const styles = getStyles(theme); // dynamically generate styles based on theme
-
+    const {currentOffering, customerInfo, isProMember } = useAuthContext() ;
     userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
 
     const handleTutorialClose = () => {
@@ -85,6 +87,7 @@ const HomeScreen: React.FC<Props> = ({
        //Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
            // Check if the user has any miles hiked
+        console.debug(currentOffering, customerInfo, isProMember);
         
         if (user?.totalMiles <= 0.00) {
             setShowTutorial(true); // Show the tutorial if the user has no miles hiked
@@ -221,7 +224,7 @@ const HomeScreen: React.FC<Props> = ({
                         user={user}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                       false
+                       isProMember
                     }
                     navigation={navigation}
                     navTo={'HikingQueue'}>
@@ -231,7 +234,7 @@ const HomeScreen: React.FC<Props> = ({
                         user={user}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                        true
+                        isProMember
                     }
                     navigation={navigation}
                     navTo={'Friends'}>
@@ -241,7 +244,7 @@ const HomeScreen: React.FC<Props> = ({
                         user={user}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
-                        true
+                        isProMember
                     }
                     navigation={navigation}
                     navTo={'Park Passes'}>
@@ -251,7 +254,7 @@ const HomeScreen: React.FC<Props> = ({
                         user={user}
                     needsActiveSubscription={false}
                     hasActiveSubscription={
-                        true
+                        isProMember
                     }
                     navigation={navigation}
                     navTo={'Achievements'}>
@@ -263,7 +266,7 @@ const HomeScreen: React.FC<Props> = ({
                     navTo={'Leaderboards'}
                     needsActiveSubscription={true}
                     hasActiveSubscription={
-                        true
+                        isProMember
                     }>
                     Leaderboards
                 </ScreenLink>
