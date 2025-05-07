@@ -4,33 +4,34 @@ import { useTheme } from '../contexts/ThemeProvider';
 import RestorePurchasesButton from '../components/RevenueCat/RestorePurchasesButton';
 import { Platform, Linking, TouchableOpacity, View, StyleSheet, Text } from 'react-native';
 
-
-const SubscriptionSettingsScreen = ({navigation}) => {
+const SubscriptionSettingsScreen = ({ navigation }) => {
   const { customerInfo, currentOffering, isProMember } = useAuthContext();
-
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Subscription Status</Text>
-      <Text style={styles.status}>
-        {isProMember ? '✅ You are a Trail Tasks Pro Member' : '🔒 You are currently on the free plan'}
+      <Text style={styles.header}>Your Subscription</Text>
+      <Text style={styles.subHeader}>
+        {isProMember
+          ? '✅ Trail Tasks Pro is active on your account.'
+          : '🔒 Upgrade to Trail Tasks Pro to unlock all features.'}
       </Text>
+
       <View style={styles.card}>
-        <Text style={styles.heading}>Current Plan</Text>
+        <Text style={styles.sectionTitle}>Plan Details</Text>
+
         {isProMember ? (
           <>
-            <Text style={styles.detail}>✅ Active</Text>
+            <Text style={styles.detail}>Status: ✅ Active</Text>
+            <Text style={styles.detail}>Plan: {customerInfo?.activeSubscriptions[0]}</Text>
             <Text style={styles.detail}>
-              {customerInfo?.activeSubscriptions[0]} 
-            </Text>
-            <Text style={styles.detail}>
-              {currentOffering?.monthly?.product.priceString || ''} / month
+              Price: {currentOffering?.monthly?.product.priceString || ''} / month
             </Text>
             <Text style={styles.detail}>
               Renews: {new Date(customerInfo?.latestExpirationDate || '').toDateString()}
-            </Text> 
+            </Text>
+
             <RestorePurchasesButton />
 
             {customerInfo?.managementURL && (
@@ -43,100 +44,88 @@ const SubscriptionSettingsScreen = ({navigation}) => {
                 </Text>
               </TouchableOpacity>
             )}
-
           </>
         ) : (
-            <>
-              <Text style={styles.detail}>You don’t have an active subscription.</Text>
-
-              <TouchableOpacity
-                style={styles.subscribeButton}
-                onPress={() => navigation.navigate('Subscribe')}
-              >
-                <Text style={styles.subscribeButtonText}>Subscribe to Trail Tasks Pro</Text>
-              </TouchableOpacity>
-            </>
-          )}
+          <>
+            <Text style={styles.detail}>No active subscription.</Text>
+            <TouchableOpacity
+              style={styles.subscribeButton}
+              onPress={() => navigation.navigate('Subscribe')}
+            >
+              <Text style={styles.subscribeButtonText}>Subscribe to Trail Tasks Pro</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </View>
   );
 };
+
+export default SubscriptionSettingsScreen;
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({
-   container: {
+    container: {
       flex: 1,
       backgroundColor: theme.background,
-      padding: 20,
-      alignItems: 'center',
+      padding: 24,
     },
-    title: {
-      fontSize: 22,
+    header: {
+      fontSize: 24,
       fontWeight: 'bold',
       color: theme.text,
-      marginBottom: 10,
+      marginBottom: 8,
+      textAlign: 'center',
     },
-    status: {
+    subHeader: {
       fontSize: 16,
       color: theme.secondaryText,
-      marginBottom: 20,
-    },    
-    card: {
-      padding: 16,
-      borderRadius: 12,
-      backgroundColor: theme.card,
-      marginBottom: 20,
+      marginBottom: 24,
+      textAlign: 'center',
     },
-    heading: {
+    card: {
+      backgroundColor: theme.card,
+      borderRadius: 16,
+      padding: 20,
+      shadowColor: theme.shadow || '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    sectionTitle: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: '600',
       color: theme.text,
-      marginBottom: 8,
+      marginBottom: 12,
     },
     detail: {
-      fontSize: 16,
+      fontSize: 15,
       color: theme.secondaryText,
-      marginBottom: 4,
+      marginBottom: 6,
     },
     manageButton: {
+      marginTop: 16,
       backgroundColor: theme.button,
-      padding: 12,
+      paddingVertical: 12,
       borderRadius: 8,
       alignItems: 'center',
     },
     manageButtonText: {
       color: theme.buttonText,
       fontWeight: '600',
+      fontSize: 15,
     },
-    badge: {
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      backgroundColor: 'gold',
-      borderRadius: 6,
-      alignSelf: 'flex-start',
+    subscribeButton: {
+      marginTop: 16,
+      backgroundColor: '#008080',
+      paddingVertical: 14,
+      borderRadius: 10,
+      alignItems: 'center',
     },
-    badgeText: {
-      fontWeight: 'bold',
-      color: 'black',
-    },subscribeButton: {
-  marginTop: 12,
-  backgroundColor: '#008080', // or theme.button
-  paddingVertical: 12,
-  paddingHorizontal: 24,
-  borderRadius: 10,
-  alignItems: 'center',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.2,
-  shadowRadius: 3,
-  elevation: 3,
-},
-subscribeButtonText: {
-  color: 'white',
-  fontWeight: '600',
-  fontSize: 16,
-},
+    subscribeButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
   });
-
-
-export default SubscriptionSettingsScreen;
 

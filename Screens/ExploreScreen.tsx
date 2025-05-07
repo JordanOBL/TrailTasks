@@ -96,7 +96,6 @@ useFocusEffect(
         queuedTrails={queuedTrails}
         completedTrails={completedTrails}
         userPurchasedTrails={userPurchasedTrails}
-        subscribe={() => navigation.navigate('SubscribeScreen')}
       />
     </SafeAreaView>
   );
