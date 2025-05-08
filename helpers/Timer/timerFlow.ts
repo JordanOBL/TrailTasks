@@ -5,6 +5,7 @@ import {
   Trail,
   User,
   User_Session,
+  User_Purchased_Trail,
 } from '../../watermelon/models';
 //creating a new session
 import {Database} from '@nozbe/watermelondb';
@@ -148,17 +149,26 @@ export async function updateUsersTrailAndQueue({
   watermelonDatabase,
   user,
   queuedTrails,
+  freeTrails,
+  userPurchasedTrails,
+  isProMember
 }: {
     watermelonDatabase: Database;
     user: User;
     queuedTrails: User_Queued_Trail[];
+    freeTrails: Trail[];
+    userPurchasedTrails: User_Purchased_Trail[]
+    isProMember: boolean
   }) {
   try {
     const currentDate = formatDateTime(new Date());
     //!check if user is subscribed. If so make all trails random, else only make basic subscription trails random
-    const randomTrailId = Math.floor(Math.random() * 188 + 1).toString();
+const allAvailableTrails = [...queuedTrails, ...freeTrails, ...userPurchasedTrails];
+const randomIndex = Math.floor(Math.random() * allAvailableTrails.length);
+const randomTrail = allAvailableTrails[randomIndex];
+const randomTrailId = randomTrail?.id?.toString();
     //if user has set their own trails to be up next
-    if (queuedTrails.length)
+    if (isProMember && queuedTrails.length)
   {
       //@writer
       //update user in database
@@ -386,6 +396,9 @@ export async function isTrailCompleted({
   achievementsWithCompletion,
   onAchievementEarned,
   onCompletedTrail,
+  isProMember,
+  freeTrails,
+  userPurchasedTrails,
 }: {
     user: User;
     watermelonDatabase: Database;
@@ -395,6 +408,9 @@ export async function isTrailCompleted({
     achievementsWithCompletion: AchievementsWithCompletion[];
     onAchievementEarned: (achievements: Achievement[]) => void;
     onCompletedTrail: (trail: Trail) => void;
+    isProMember: boolean;
+    freeTrails: Trail[];
+    userPurchasedTrails: User_Purchased_Trail[]
   }) {
   try {
     if (user.trailProgress  >= Number(currentTrail.trailDistance)) {
@@ -445,6 +461,9 @@ export async function isTrailCompleted({
             user,
             queuedTrails,
             watermelonDatabase,
+            isProMember,
+            userPurchasedTrails,
+            freeTrails,
           });
         }
       } else if (!existingCompletedTrail) {
@@ -485,6 +504,7 @@ export async function isTrailCompleted({
 export async function updateSession({
   watermelonDatabase,
   user,
+  isProMember,
   userSession,
   setSessionDetails,
   sessionDetails,
@@ -492,6 +512,8 @@ export async function updateSession({
   setTimer,
   currentTrail,
   queuedTrails,
+  freeTrails,
+  userPurchasedTrails,
   completedTrails,
   achievementsWithCompletion,
   onAchievementEarned,
@@ -510,6 +532,9 @@ export async function updateSession({
     achievementsWithCompletion: AchievementsWithCompletion[];
     onAchievementEarned: (achievements: Achievement[]) => void;
     onCompletedTrail: (trail: Trail) => void;
+    freeTrails: Trail[];
+    userPurchasedTrails: User_Purchased_Trail[];
+    isProMember: boolean;
   }) {
   try {
     if(!timer.isBreak){
@@ -523,7 +548,10 @@ export async function updateSession({
         queuedTrails,
         achievementsWithCompletion,
         onAchievementEarned,
-        onCompletedTrail
+        onCompletedTrail,
+        userPurchasedTrails,
+        isProMember,
+        freeTrails,
       });
       //modify Distance  & Session Time
       await increaseDistanceHiked({

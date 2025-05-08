@@ -31,7 +31,7 @@ const SearchAddFriend = ({ user, cachedFriendUsernames, isConnected, database })
     }
 
     try {
-      const result = await fetch(`http://${Config.DATABASE_URL}/api/searchFriends?username=${search}`);
+      const result = await fetch(`${Config.NODE_ENV === 'production' ? 'https' : 'http'}://${Config.DATABASE_URL}/api/searchFriends?username=${search}`);
       const { friend } = await result.json();
 
       const normalizedFriend = friend

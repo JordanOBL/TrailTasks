@@ -26,6 +26,7 @@ import Rewards from '../helpers/Session/Rewards';
 import SoloResultsScreen from './SoloResultsScreen';
 import {sync} from '../watermelon/sync';
 import {useTheme} from '../contexts/ThemeProvider';
+import {useAuthContext} from '../services/AuthContext';
 interface Props {
   user: User;
   setUser: any;
@@ -49,6 +50,7 @@ const SessionScreen = ({
   //@ts-ignore
   const navigation = useNavigation();
   const watermelonDatabase = useDatabase();
+  const {isProMember} = useAuthContext();
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [achievementsWithCompletion, setAchievementsWithCompletion] =
@@ -59,6 +61,7 @@ const SessionScreen = ({
   const [sessionCategories, setSessionCategories] = React.useState<
     Session_Category[] | []
   >([]);
+  const [freeTrails, setFreeTrails] = React.useState<Trail[] | []>([]);
   const [showResultsScreen, setShowResultsScreen] = React.useState(false);
   const [sessionDetails, setSessionDetails] = React.useState<SessionDetails>(initialSessionDetails || {
     startTime: null,
@@ -101,21 +104,38 @@ const SessionScreen = ({
     elapsedTime: 0
 
   })
-  async function handleEndSession () {
-    try {
-      setSessionDetails({ ...sessionDetails, isLoading: true });
-      await endSession({ user, setTimer, setSessionDetails, sessionDetails });
-      await sync(watermelonDatabase, isConnected, user.id);
-      setShowResultsScreen(false);
-    } catch (err) {
-      handleError(err, 'onEndSession');
-    }
-  };
+const handleEndSession = React.useCallback(async () => {
+  try {
+    setSessionDetails({ ...sessionDetails, isLoading: true });
+    await endSession({ user, setTimer, setSessionDetails, sessionDetails });
+    await sync(watermelonDatabase, isConnected, user.id);
+    setShowResultsScreen(false);
+  } catch (err) {
+    handleError(err, 'onEndSession');
+  }
+}, [sessionDetails, user, isConnected, watermelonDatabase]);
 
-  async function handleShowResultsScreen() {
-    const sessionTokensReward = await Rewards.calculateSessionTokens({setSessionDetails, sessionDetails, timer})
-    await Rewards.rewardFinalTokens( {sessionDetails, sessionTokensReward, user} )
-    setShowResultsScreen(true);
+
+const handleShowResultsScreen = React.useCallback(async () => {
+  const sessionTokensReward = await Rewards.calculateSessionTokens({ setSessionDetails, sessionDetails, timer });
+  await Rewards.rewardFinalTokens({ sessionDetails, sessionTokensReward, user });
+  setShowResultsScreen(true);
+}, [sessionDetails, timer, user]);
+async function getFreeTrails(){
+    try {
+      const freeTrails = (await watermelonDatabase
+        .get('trails')
+        .query(Q.where('is_free', 1))
+        .fetch()) as Trail[];
+console.log(freeTrails)
+      if (freeTrails) {
+        
+        setFreeTrails(freeTrails);
+        return;
+      }
+    } catch (err) {
+      handleError(err, 'getFreeTrails');
+    }
   }
 
   async function getAchievementsWithCompletion() {
@@ -201,6 +221,10 @@ const SessionScreen = ({
     }
   }, [sessionDetails.sessionCategoryId]);
 
+  React.useEffect(() => {
+    getFreeTrails();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container} testID="session-screen">
       {sessionDetails.isLoading ? (
@@ -228,6 +252,8 @@ const SessionScreen = ({
           user={user}
           showResultsScreen={handleShowResultsScreen}
           endSession={handleEndSession}
+          freeTrails={freeTrails}
+          isProMember={isProMember}
         />
       )}
     </SafeAreaView>

@@ -73,10 +73,10 @@ const TrailDetailScreen = ({ route, user }) => {
               Are you sure you want to replace your current trail?
             </Text>
             <View style={styles.buttonGroup}>
-              <TouchableOpacity style={styles.fullButton} onPress={() => setShowReplaceTrailModal(false)}>
+              <TouchableOpacity style={styles.linkButton} onPress={() => setShowReplaceTrailModal(false)}>
                 <Text style={styles.fullButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.fullButton} onPress={handleReplaceTrail}>
+              <TouchableOpacity style={styles.linkButton} onPress={handleReplaceTrail}>
                 <Text style={styles.fullButtonText}>Start New</Text>
               </TouchableOpacity>
             </View>
@@ -92,7 +92,9 @@ const TrailDetailScreen = ({ route, user }) => {
         }}
         trail={trail}
         trailTokens={user.trailTokens}
-        onBuyTrail={user.purchaseTrail}
+        onBuyTrail={async () => {
+          await user.purchaseTrail(trail, reward)
+        }}
       />
 
       <Image
@@ -114,32 +116,33 @@ const TrailDetailScreen = ({ route, user }) => {
 
         <View style={styles.buttonGroup}>
           <TouchableOpacity
-            disabled={user.trailId === trail.id || (!isFreeTrail && !isPurchased)}
+            disabled={!isProMember || user.trailId === trail.id || (!isFreeTrail && !isPurchased)}
             style={[styles.fullButton, { backgroundColor: isFreeTrail || isPurchased ? '#4CAF50' : 'gray' }]}
           >
-                        <Text style={styles.fullButtonText}>Add to Queue</Text>
-                    </TouchableOpacity>
+            <Text style={styles.fullButtonText}>Add to Queue</Text>
+          </TouchableOpacity>
 
-                    <TouchableOpacity
-                        onPress={() => {
-                            if (isFreeTrail || isPurchased) {
-                                setShowReplaceTrailModal(true)
+          <TouchableOpacity 
+            disabled={user.trailId === trail.id}
+            onPress={() => {
+              if (isFreeTrail || isPurchased) {
+                setShowReplaceTrailModal(true)
 
-                            }else if(isSubscribersOnly && !isProMember) {
-                                navigation.navigate('Basecamp', {
-                                    screen: 'Subscribe',
-                                });
+              }else if(isSubscribersOnly && !isProMember) {
+                navigation.navigate('Basecamp', {
+                  screen: 'Subscribe',
+                });
 
-                                return
-                            }else {
-                                handleBuyTrail()
-                            }
-                        }}
-                        style={[styles.fullButton, { backgroundColor: isFreeTrail || isPurchased ||  isProMember || !isSubscribersOnly  ? '#2196F3' : 'gray' }]}
-                    >
-                        <Text style={styles.fullButtonText}>{getButtonText()}</Text>
-                    </TouchableOpacity>
-                </View>
+                return
+              }else {
+                handleBuyTrail()
+              }
+            }}
+            style={[styles.fullButton, { backgroundColor:  user.trailId == trail.id ? 'gray' : isFreeTrail || isPurchased  || !isSubscribersOnly    ? '#2196F3' :  'gray' }]}
+          >
+            <Text style={styles.fullButtonText}>{getButtonText()}</Text>
+          </TouchableOpacity>
+        </View>
 
         {(trail.nps_url || trail.all_trails_url || trail.hiking_project_url) && (
           <View style={styles.linksContainer}>
@@ -167,7 +170,7 @@ const getStyles = (theme) => StyleSheet.create({
   statLabel: { fontSize: 12, color: theme.secondaryText, textAlign: 'center' },
   buttonGroup: { marginTop: 20, gap: 10 },
   fullButton: { borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
-  fullButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  fullButtonText: { color: theme.buttonText, fontSize: 16, fontWeight: '600' },
   modalBackground: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000aa' },
   modalContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 12, width: '85%' },
   modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },

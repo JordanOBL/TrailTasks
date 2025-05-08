@@ -55,6 +55,8 @@ interface Props {
 	currentSessionCategory: string;
 	showResultsScreen: boolean;
 	endSession: () => void;
+	userPurchasedTrails:User_Purchased_Trail[];
+	freeTrails:Trail[];
 }
 
 const ActiveSession = ({
@@ -71,7 +73,14 @@ const ActiveSession = ({
 	currentSessionCategory,
 	endSession,
 	showResultsScreen,
+	userPurchasedTrails,
+	freeTrails,
+	isProMember
 }: Props) => {
+	console.debug('isProMember', isProMember)
+	console.debug('userPurchasedTrails', userPurchasedTrails)
+	console.debug('freeTrails', freeTrails)
+
 	const watermelonDatabase = useDatabase();
 	const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);
 	const [appState, setAppState] = useState(AppState.currentState);
@@ -125,6 +134,9 @@ const ActiveSession = ({
 					achievementsWithCompletion,
 					onAchievementEarned,
 					onCompletedTrail,
+					userPurchasedTrails,
+					freeTrails,
+					isProMember
 				});
 			}, sessionUpdateFrequency * 1000);
 		}
@@ -440,13 +452,14 @@ const styles = StyleSheet.create({
 	},
 });
 
-const enhance = withObservables(['user', 'currentTrail', 'completedTrails', 'queuedTrails', 'userSession', 'usersAchievements'], ({ user, userSession }) => ({
+const enhance = withObservables(['user', 'currentTrail', 'completedTrails', 'queuedTrails', 'userSession', 'usersAchievements', 'userPurchasedTrails'], ({ user, userSession }) => ({
 	user: user.observe(),
 	currentTrail: user.trail.observe(),
 	completedTrails: user.usersCompletedTrails.observe(),
 	queuedTrails: user.usersQueuedTrails.observe(),
 	userSession,
 	userAchievements: user.usersAchievements.observe(),
+	userPurchasedTrails: user.usersPurchasedTrails.observe(),
 }));
 
 const EnhancedActiveSession = enhance(ActiveSession);
