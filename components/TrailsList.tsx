@@ -17,14 +17,15 @@ interface Props {
   user: User;
   completedTrails: User_Completed_Trail[];
   queuedTrails: User_Queued_Trail[];
-  userPurchasedTrails: User_Purchased_Trail[];
+  userPurchasedTrails: User_Purchased_Trail[]
+  queuedTrailMap: Map<string, string>;
 }
 
 const TrailsList = ({
                       trailsCollection,
                       user,
                       userPurchasedTrails,
-    completedTrails, subscribe
+    completedTrails, queuedTrailMap
                     }: Props) => {
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -84,7 +85,7 @@ const styles = getStyles(theme);
   };
 //@ts-ignore
   const renderTrailItem = ({ item }) => (
-      <EnhancedTrailCard trail={item} key={item.id} user={user} subscribe={subscribe} />
+      <EnhancedTrailCard trail={item} key={item.id} user={user} isQueued={queuedTrailMap && item?.id in queuedTrailMap ? queuedTrailMap[item.id] : false} />
   );
 
   return (

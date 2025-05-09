@@ -32,6 +32,10 @@ const ExploreScreen = ({
   const watermelonDatabase = useDatabase();
   const {theme} = useTheme();
   const styles = getStyles(theme);
+  const queuedTrailMap = React.useMemo(() => queuedTrails.reduce((map, queuedTrail) => {
+    map[queuedTrail.trailId] = true
+    return map;
+  }, {}), [queuedTrails]);
 
   const [trailsCollection, setTrailsCollection] = useState<FullTrailDetails[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("")
@@ -65,7 +69,8 @@ const ExploreScreen = ({
         } catch (err) {
           handleError(err, "getFullTrailInfo");
         }
-      }, [userPurchasedTrails, user ]);
+      }, [userPurchasedTrails, user, queuedTrails, completedTrails]);
+
 
 
 useFocusEffect(
@@ -96,6 +101,7 @@ useFocusEffect(
         queuedTrails={queuedTrails}
         completedTrails={completedTrails}
         userPurchasedTrails={userPurchasedTrails}
+        queuedTrailMap={queuedTrailMap}
       />
     </SafeAreaView>
   );

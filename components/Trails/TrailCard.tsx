@@ -12,19 +12,19 @@ import calculateEstimatedTime from "../../helpers/calculateEstimatedTime";
 import FullTrailDetails from "../../types/fullTrailDetails";
 import { useTheme } from '../../contexts/ThemeProvider';
 import {useAuthContext} from "../../services/AuthContext";
-const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrails }: Props) => {
+const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrails, isQueued }: Props) => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const currentTrail = user.trailId == trail?.id
   const { isProMember } = useAuthContext();
 
+
   const handlePress = () => {
     navigation.navigate('TrailDetails', {
       trail,
       user,
-      userPurchasedTrails,
-      completedTrails,
+      
     });
   };
 
@@ -41,6 +41,9 @@ const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrail
           <Text style={styles.trailName} numberOfLines={1}>{trail?.trail_name}</Text>
           <View style={[styles.completedBadge, { display: trail.completed_trails ? 'flex' : 'none' }]}>
             <Text style={styles.completedBadgeText}>✓ Completed</Text>
+          </View>
+          <View style={[styles.completedBadge, { display: isQueued ? 'flex' : 'none' }]}>
+            <Text style={styles.completedBadgeText}>In-Queue</Text>
           </View>
         </View>
         <Text style={styles.parkName}>{trail?.park_name}</Text>

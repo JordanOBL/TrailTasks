@@ -127,7 +127,6 @@ async function getFreeTrails(){
         .get('trails')
         .query(Q.where('is_free', 1))
         .fetch()) as Trail[];
-console.log(freeTrails)
       if (freeTrails) {
         
         setFreeTrails(freeTrails);
@@ -238,6 +237,7 @@ console.log(freeTrails)
           setUserSession={setUserSession}
           sessionCategories={sessionCategories}
           user={user}
+          currentTrail={currentTrail}
         />
       ) : showResultsScreen ?
       (<SoloResultsScreen user={user} sessionDetails={sessionDetails} timer={timer} endSession={handleEndSession} />): (
@@ -260,9 +260,10 @@ console.log(freeTrails)
   );
 };
 
-const enhance = withObservables(['user', 'userAchievements'], ({user}) => ({
+const enhance = withObservables(['user', 'userAchievements', 'currentTrail'], ({user}) => ({
   user: user.observe(),
   userAchievements: user.usersAchievements.observe(),
+  currentTrail: user.trail,
 
 }));
 

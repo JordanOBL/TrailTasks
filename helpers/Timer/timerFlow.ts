@@ -56,7 +56,6 @@ export async function increaseDistanceHiked({
       sessionDetails
     });
     setSessionDetails(prev => ( {...prev, totalDistanceHiked: prev.totalDistanceHiked + .01} ));
-    console.log("updated user distance on database");
     //Check for any achievements that would unlock at the users current total miles hiked
     //return array of achievements {achievementId, achievementName}[]
     const achievementsEarned =
@@ -68,9 +67,7 @@ export async function increaseDistanceHiked({
     //check if any achievements earned
     //if so, update the Current sessions achievements list to display on the screen for user
     if (achievementsEarned && achievementsEarned.length > 0) {
-      console.debug('calling on achievements increase Distance Hiked', {
-        achievementsEarned,
-      });
+     
       onAchievementEarned(achievementsEarned);
     }
   } catch (err) {
@@ -163,12 +160,12 @@ export async function updateUsersTrailAndQueue({
   try {
     const currentDate = formatDateTime(new Date());
     //!check if user is subscribed. If so make all trails random, else only make basic subscription trails random
-const allAvailableTrails = [...queuedTrails, ...freeTrails, ...userPurchasedTrails];
+const allAvailableTrails = [...freeTrails, ...userPurchasedTrails];
 const randomIndex = Math.floor(Math.random() * allAvailableTrails.length);
 const randomTrail = allAvailableTrails[randomIndex];
 const randomTrailId = randomTrail?.id?.toString();
     //if user has set their own trails to be up next
-    if (isProMember && queuedTrails.length)
+    if (isProMember && queuedTrails.length > 0)
   {
       //@writer
       //update user in database

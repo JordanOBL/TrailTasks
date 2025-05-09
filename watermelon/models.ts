@@ -66,24 +66,6 @@ export class Trail extends Model {
   @children('users_queued_trails') usersQueuedTrails;
   @children('users_purchased_trails') usersPurchasedTrails;
 
-  //Add To Hiking Queue
-  @writer async addToQueuedTrails({userId}) {
-    const addedHike = await this.collections
-      .get('users_queued_trails')
-      .create((hike) => {
-        hike.trailId = this.id;
-        hike.userId = userId;
-      });
-    return addedHike;
-  }
-
-  @writer async deleteFromQueuedTrails({userId}) {
-    const deleteThisHike = await this.collections
-      .get('users_queued_trails')
-      .query(Q.and(Q.where('trail_id', this.id), Q.where('user_id', userId)));
-    console.log('in queued Trails');
-    await deleteThisHike[0].markAsDeleted();
-  }
 }
 export class User extends Model {
   static table = 'users';
@@ -183,6 +165,26 @@ export class User extends Model {
       return {success: false}
     }
   }
+
+  //Add To Hiking Queue
+  @writer async addToQueuedTrails({trailId}) {
+    const addedHike = await this.collections
+      .get('users_queued_trails')
+      .create((hike) => {
+        hike.trailId = trailId;
+        hike.userId = this.id;
+      });
+    return addedHike;
+  }
+
+  @writer async deleteFromQueuedTrails({trailId}) {
+    const deleteThisHike = await this.collections
+      .get('users_queued_trails')
+      .query(Q.and(Q.where('trail_id', trailId), Q.where('user_id', this.id)));
+    console.log('in queued Trails');
+    await deleteThisHike[0].markAsDeleted();
+  }
+
 
   @writer
   async purchaseTrail(trail, cost) {
@@ -361,12 +363,17 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   //update User Trail
   @writer
   async updateUserTrail({trailId, trailStartedAt}) {
-    await this.update(() => {
+    try {
+      await this.update(() => {
       this.trailId = trailId;
       this.trailProgress = '0.00';
       this.trailStartedAt = trailStartedAt;
     });
-    return;
+    return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
   }
 
   @writer
@@ -407,21 +414,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     console.debug('Watermelon User Model', newUser[0]);
     return newUser[0];
   }
-
-//  @writer
-//  async addUserSubscription() {
-//    const subscription = await this.collections
-//        .get('users_subscriptions')
-//        .create((user_subscription) => {
-//          //@ts-ignore
-//          user_subscription.userId = this.id;
-//          //@ts-ignore
-//          user_subscription.isActive = false;
-//          user_subscription.expiresAt = formatDateTime(new Date());
-//        });
-//
-//    return subscription[0];
-//  }
 
 @writer
 async buyAddon(addOn) {

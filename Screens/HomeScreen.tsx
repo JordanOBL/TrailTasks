@@ -227,8 +227,8 @@ const HomeScreen: React.FC<Props> = ({
                        isProMember
                     }
                     navigation={navigation}
-                    navTo={'HikingQueue'}>
-                    Hiking Queue
+                    navTo={'Trail Queue'}>
+                    Upcoming Trails
                 </ScreenLink>
                 <ScreenLink
                         user={user}

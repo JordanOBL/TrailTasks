@@ -77,9 +77,7 @@ const ActiveSession = ({
 	freeTrails,
 	isProMember
 }: Props) => {
-	console.debug('isProMember', isProMember)
-	console.debug('userPurchasedTrails', userPurchasedTrails)
-	console.debug('freeTrails', freeTrails)
+
 
 	const watermelonDatabase = useDatabase();
 	const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);

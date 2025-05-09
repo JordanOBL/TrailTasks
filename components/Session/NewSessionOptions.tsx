@@ -6,7 +6,7 @@ import {
     Text,
     View,
 } from 'react-native';
-import { Trail, User, User_Addon } from '../../watermelon/models';
+import { Trail, User, User_Addon, Park } from '../../watermelon/models';
 import { useDatabase } from '@nozbe/watermelondb/react';
 import { useNavigation } from '@react-navigation/native';
 import BackpackModal from "./BackpackModal";
@@ -30,6 +30,7 @@ interface Props {
     user: User;
     usersAddons: User_Addon[];
     currentTrail: Trail;
+    currentPark: Park;
 }
 
 const NewSessionOptions = ({
@@ -42,6 +43,7 @@ const NewSessionOptions = ({
                                user,
                                usersAddons,
                                currentTrail,
+    currentPark,
                            }: Props) => {
     const watermelonDatabase = useDatabase();
     const navigation = useNavigation();
@@ -134,6 +136,7 @@ const NewSessionOptions = ({
             {/* Trail Info and Progress Bar */}
             <View style={styles.middleContainer}>
                 <Text style={styles.trailName}>{currentTrail.trailName}</Text>
+                <Text style={styles.parkName}>{currentPark.parkName} National Park</Text>
                 <EnhancedDistanceProgressBar
                     timer={timer}
                     sessionDetails={sessionDetails}
@@ -215,10 +218,10 @@ const NewSessionOptions = ({
     );
 };
 
-const enhance = withObservables(['usersAddons', 'currentTrail', 'user'], ({ user }) => ({
+const enhance = withObservables(['usersAddons', 'currentPark', 'user'], ({ user, currentTrail }) => ({
     user,
     usersAddons: user.usersAddons,
-    currentTrail: user.trail,
+    currentPark: currentTrail.park,
 }));
 
 export default enhance(NewSessionOptions);
@@ -235,6 +238,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
+        textAlign: 'center',
     },
     sessionName: {
         color: 'rgb(7,254,213)',
@@ -251,12 +255,22 @@ const styles = StyleSheet.create({
     middleContainer: {
         flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     trailName: {
         color: 'white',
         fontSize: 24,
         fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    parkName: {
+        color: 'white',
+        opacity: 0.5,
+        fontSize: 14,
         marginBottom: 15,
+        letterSpacing: 1,
+        fontWeight: 'thin',
+        textAlign: 'center',
     },
     buttonsContainer: {
         bottom: 0,

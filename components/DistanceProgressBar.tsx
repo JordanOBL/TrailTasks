@@ -47,7 +47,7 @@ const DistanceProgressBar = ({
         style={{
           color: theme.progressText,
           alignSelf: 'center',
-          fontWeight: 'bold',
+          fontWeight: 'thin',
           fontSize: 14,
           marginVertical: 5,
         }}

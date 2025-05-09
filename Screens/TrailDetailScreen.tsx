@@ -18,35 +18,26 @@ import formatDateTime from '../helpers/formatDateTime';
 import calculateEstimatedTime from '../helpers/calculateEstimatedTime';
 import {useNavigation} from '@react-navigation/native';
 
-const TrailDetailScreen = ({ route, user }) => {
-  const { trail, userPurchasedTrails, completedTrails } = route?.params ?? {};
+const TrailDetailScreen = ({ route, user, queuedTrails, userPurchasedTrails, completedTrails, }) => {
+  const { trail} = route?.params ?? {};
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const { isProMember } = useAuthContext();
   const navigation = useNavigation();
-
   const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
   const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
-  const [isFreeTrail, setIsFreeTrail] = useState(false);
-  const [isPurchased, setIsPurchased] = useState(false);
-  const [isSubscribersOnly, setIsSubscribersOnly] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-
-  useEffect(() => {
-    if (trail && userPurchasedTrails && completedTrails) {
-      setIsFreeTrail(trail.is_free);
-      setIsPurchased(userPurchasedTrails.some(t => t.trailId == trail.id));
-      setIsSubscribersOnly(trail.is_subscribers_only);
-      setIsCompleted(completedTrails.some(t => t.trailId === trail.id));
-    }
-  }, [user, trail, userPurchasedTrails, completedTrails]);
+  const isFreeTrail = trail?.is_free;
+  const isPurchased = userPurchasedTrails?.some(t => t.trailId == trail.id);
+  const isSubscribersOnly = trail?.is_subscribers_only;
+  const isCompleted = completedTrails?.some(t => t.trailId == trail.id);
+  const isQueued = queuedTrails?.some(t => t.trailId == trail.id);
 
   const trailDistance = parseInt(trail?.trail_distance);
   const reward = trail?.trail_of_the_week
     ? Math.ceil(trailDistance) * 10
     : Math.max(5, Math.ceil(trailDistance * 3));
 
-  const getButtonText = () => {
+  const getPurchaseButtonText = () => {
     if (user.trailId === trail?.id) return 'In Progress';
     if (isFreeTrail || isPurchased) return 'Start Now';
     if (isSubscribersOnly && !isProMember) return 'Unlock With Subscription';
@@ -116,10 +107,26 @@ const TrailDetailScreen = ({ route, user }) => {
 
         <View style={styles.buttonGroup}>
           <TouchableOpacity
-            disabled={!isProMember || user.trailId === trail.id || (!isFreeTrail && !isPurchased)}
-            style={[styles.fullButton, { backgroundColor: isFreeTrail || isPurchased ? '#4CAF50' : 'gray' }]}
+            onPress={async () => {
+              if (isQueued) {
+                const result = await user.deleteFromQueuedTrails({trailId: trail.id});
+                if(!result){
+                  Alert.alert('Error', 'Could not remove from queue. Please try again later.');
+                }
+                
+
+              } else {
+                const result = await user.addToQueuedTrails({trailId: trail.id});
+                if(!result){
+                  Alert.alert('Error', 'Could not add to queue. Please try again later.');
+                }
+              }
+              
+            }}
+            disabled={!isProMember || user.trailId === trail.id}
+            style={[styles.fullButton, { backgroundColor: isQueued ? 'red' : !isProMember ? 'gray' : 'green' }]}
           >
-            <Text style={styles.fullButtonText}>Add to Queue</Text>
+            <Text style={styles.fullButtonText}>{isQueued ? 'Remove from Queue' : 'Add to Queue'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -140,7 +147,7 @@ const TrailDetailScreen = ({ route, user }) => {
             }}
             style={[styles.fullButton, { backgroundColor:  user.trailId == trail.id ? 'gray' : isFreeTrail || isPurchased  || !isSubscribersOnly    ? '#2196F3' :  'gray' }]}
           >
-            <Text style={styles.fullButtonText}>{getButtonText()}</Text>
+            <Text style={styles.fullButtonText}>{getPurchaseButtonText()}</Text>
           </TouchableOpacity>
         </View>
 
@@ -185,6 +192,7 @@ const enhance = withObservables(['user'], ({ user }) => ({
   user,
   completedTrails: user.usersCompletedTrails.observe(),
   userPurchasedTrails: user.usersPurchasedTrails.observe(),
+  queuedTrails: user.usersQueuedTrails.observe(),
 }));
 
 export default enhance(TrailDetailScreen);

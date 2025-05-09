@@ -1,7 +1,7 @@
 import AddOnStoreScreen from '../../Screens/AddOnStoreScreen';
 import EnhancedAchievementsScreen from '../../Screens/AchievementsScreen';
 import EnhancedCompletedTrailsScreen from '../../Screens/CompletedTrailsScreen';
-import EnhancedHikingQueueScreen from '../../Screens/HikingQueueScreen';
+import EnhancedTrailQueueScreen from '../../Screens/TrailQueueScreen';
 import EnhancedHomeScreen from '../../Screens/HomeScreen';
 import EnhancedLeaderboardsScreen from '../../Screens/LeaderboardsScreen';
 import EnhancedStatsScreen from '../../Screens/StatsScreen';
@@ -41,7 +41,11 @@ export function HomeStackNavigator() {
           <EnhancedParkPassScreen {...props}  user={user}/>
         )}
       </Home.Screen>
-
+<Home.Screen name="Trail Queue" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
+        {(props: any) => (
+          <EnhancedTrailQueueScreen {...props} user={user}  />
+        )}
+      </Home.Screen>
 
 
       <Home.Screen name="Stats" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
