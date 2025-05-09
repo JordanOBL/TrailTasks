@@ -35,7 +35,7 @@ const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrail
         source={trail.trail_image_url ? { uri: trail.trail_image_url } : require('../../assets/LOGO.png')}
         style={styles.image}
       />
-      {!isProMember && <Text style={{color: theme.text, textAlign: 'center', opacity: 0.5}}>{currentTrail ? 'Currently Hiking' : trail.is_free ? 'Free Trail':trail.is_subscribers_only ? 'Pro Subscribers Only'  : 'Available'}</Text>}
+     <Text style={{color: theme.text, textAlign: 'center', opacity: 0.5}}>{currentTrail ? 'Currently Hiking' : trail.is_free ? 'Free Trail' : isProMember ? '' : !isProMember && trail.is_subscribers_only ? 'Pro Subscribers Only'  : 'Available'}</Text>
       <View style={styles.infoContainer}>
         <View style={styles.row}>
           <Text style={styles.trailName} numberOfLines={1}>{trail?.trail_name}</Text>

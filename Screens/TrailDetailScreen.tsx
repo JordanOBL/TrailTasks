@@ -107,6 +107,7 @@ const TrailDetailScreen = ({ route, user, queuedTrails, userPurchasedTrails, com
 
         <View style={styles.buttonGroup}>
           <TouchableOpacity
+
             onPress={async () => {
               if (isQueued) {
                 const result = await user.deleteFromQueuedTrails({trailId: trail.id});
@@ -123,8 +124,9 @@ const TrailDetailScreen = ({ route, user, queuedTrails, userPurchasedTrails, com
               }
               
             }}
-            disabled={!isProMember || user.trailId === trail.id}
-            style={[styles.fullButton, { backgroundColor: isQueued ? 'red' : !isProMember ? 'gray' : 'green' }]}
+            disabled={!isProMember || user.trailId === trail.id || (!isPurchased && !isFreeTrail)}
+            style={[styles.fullButton, { backgroundColor: isQueued ? 'red' : !isProMember 
+              || (!isPurchased && !isFreeTrail) ? 'gray' : 'green' }]}
           >
             <Text style={styles.fullButtonText}>{isQueued ? 'Remove from Queue' : 'Add to Queue'}</Text>
           </TouchableOpacity>
@@ -145,7 +147,7 @@ const TrailDetailScreen = ({ route, user, queuedTrails, userPurchasedTrails, com
                 handleBuyTrail()
               }
             }}
-            style={[styles.fullButton, { backgroundColor:  user.trailId == trail.id ? 'gray' : isFreeTrail || isPurchased  || !isSubscribersOnly    ? '#2196F3' :  'gray' }]}
+            style={[styles.fullButton, { backgroundColor:  user.trailId == trail.id ? 'gray' : isProMember || isFreeTrail || isPurchased  || !isSubscribersOnly    ? '#2196F3' :  'gray' }]}
           >
             <Text style={styles.fullButtonText}>{getPurchaseButtonText()}</Text>
           </TouchableOpacity>

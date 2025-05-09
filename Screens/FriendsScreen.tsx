@@ -20,7 +20,7 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [refreshFriends, setRefreshFriends] = React.useState(true);
-
+ const HTTP_HTTPS = Config.NODE_ENV === 'production' ? 'https' : 'http';
   const cachedFriendsMap = cachedFriends.reduce((acc, friend, idx) => {
     acc.set(friend.friendId, idx);
     return acc;
@@ -34,7 +34,7 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
 
     async function fetchOnlineFriends() {
       //fetch friends joined on friends user_id from server
-      const latestCachedFriends = await fetch(`http://${Config.DATABASE_URL}/api/cachedFriends?userId=${user.id}`)
+      const latestCachedFriends = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/cachedFriends?userId=${user.id}`)
       const { friends: recentFriendsFromServerMap } = await latestCachedFriends.json()
   
       if (Object.keys(recentFriendsFromServerMap).length === 0) {
