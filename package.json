@@ -1,0 +1,11 @@
+{
+  "name": "trailtasks-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test-server": "concurrently \"npm run start:test --prefix api-server\" \"go run -C websockets-server ./cmd/server\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
