@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "start": "react-native start",
     "start:test": "ENVFILE=.env.test npx react-native start",
-    "test": " NODE_ENV=test ENVFILE=.env.test jest --runInBand",
+    "jest": "NODE_ENV=test ENVFILE=.env.test jest --runInBand",
+    "test": "npx concurrently \"npm run test-server --prefix ..\" \"npm run jest --silent\"",
     "test:coverage": "NODE_ENV=test ENVFILE=.env.test jest --runInBand --coverage"
   },
   "dependencies": {

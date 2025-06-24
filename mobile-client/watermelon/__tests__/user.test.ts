@@ -14,7 +14,7 @@ describe('users writers', () => {
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
@@ -51,7 +51,7 @@ describe('users writers', () => {
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
@@ -75,7 +75,7 @@ describe('users writers', () => {
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
@@ -155,7 +155,7 @@ describe('users writers', () => {
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
@@ -203,7 +203,7 @@ describe('users writers', () => {
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
@@ -258,7 +258,7 @@ expect(session.id).toEqual(newSession.id)
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
@@ -279,7 +279,7 @@ expect(session.id).toEqual(newSession.id)
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
@@ -331,7 +331,7 @@ expect(session.id).toEqual(newSession.id)
       await testDb.write(async () => {
         await testDb.unsafeResetDatabase();
       })
-      //test server needs to be running (trailTasksServer -> npm run test-server)
+      //test server needs to be running (repo root -> npm run test-server)
       await sync(testDb, true)
       //create user
       await createUser(testDb, mockUser)
