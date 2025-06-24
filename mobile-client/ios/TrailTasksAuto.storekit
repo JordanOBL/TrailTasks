@@ -1,0 +1,150 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "E6FCA2C3",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6745723347",
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "4FQ75A9W5P",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 768711013.08455896,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21684045",
+      "localizations" : [
+
+      ],
+      "name" : "pro_subscription",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6745723501",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock all features with Trail Tasks Pro",
+              "displayName" : "Trail Tasks Pro - Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "pro_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Trail Tasks Pro - Monthly",
+          "subscriptionGroupID" : "21684045",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6745723651",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlock all features Trail Tasks Pro - Yearly",
+              "displayName" : "Trail Tasks Pro - Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "pro_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Trail Tasks Pro - Yearly",
+          "subscriptionGroupID" : "21684045",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "subscriptionOffersKeyPair" : {
+    "id" : "AE0C1931",
+    "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgvb8E4t3ex5wZ3P2Bw8zL/A9gyfKOLcoF1gr8Mp31bFygCgYIKoZIzj0DAQehRANCAARGygYo6vBNBozK7YZbm+l1Zx3MM78+yIQ4PA8GZ5eMNlmMLc26F1ydR0lwr/FAXkLon20o83V+q1+Sb1Z8Gl98"
+  },
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
