@@ -1,6 +1,7 @@
 import 'whatwg-fetch'
 import dotenv from 'dotenv';
 import { TextEncoder, TextDecoder } from 'util';
+import {darkTheme, lightTheme} from './theme';
 dotenv.config({ path: '.env.test' });
 // Polyfill for TextEncoder and TextDecoder for pg
 global.TextEncoder = TextEncoder;
@@ -162,3 +163,89 @@ jest.mock('@react-navigation/native', () => {
     }),
   };
 });
+
+//react-native purchases
+jest.mock('react-native-purchases', () => ({
+  configure: jest.fn(),
+  getCustomerInfo: jest.fn().mockResolvedValue({
+    activeSubscriptions: ['pro'],
+    entitlements: {
+      active: {
+        pro: {
+          identifier: 'pro',
+          isActive: true,
+        },
+      },
+    },
+  }),
+  getOfferings: jest.fn().mockResolvedValue({
+    current: {
+      availablePackages: [],
+    },
+  }),
+  addCustomerInfoUpdateListener: jest.fn().mockImplementation((cb) => {
+    // You could optionally simulate a call here:
+    // setTimeout(() => cb({ entitlements: ... }), 0)
+    return () => {}; // cleanup function
+  }),
+  setDebugLogsEnabled: jest.fn(),
+  setLogLevel: jest.fn(),
+  LOG_LEVEL:{
+    DEBUG: 'debug'
+  },
+  purchaseProduct: jest.fn().mockResolvedValue({
+    transactionId: '123',
+    customerInfo: {
+      activeSubscriptions: ['pro'],
+      entitlements: {
+        active: {
+          pro: {
+            identifier: 'pro',
+            isActive: true,
+          },
+        },
+      },
+    },
+  }),
+}));
+
+jest.mock('./helpers/RevenueCat/useRevenueCat', () => ({
+  __esModule: true, // ← required to make "default" work in CommonJS Jest
+  default: () => ({
+    isProMember: true,
+    currentOffering: {
+      identifier: 'pro_monthly',
+      description: 'Main offering for Trail Tasks',
+      packages: [
+        {
+          identifier: 'pro_monthly',
+          platform_product_identifier: 'com.trailtasks.monthly',
+        },
+        {
+          identifier: 'pro_annual',
+          platform_product_identifier: 'com.trailtasks.annual',
+        },
+      ],
+    },
+    customerInfo: {
+      activeSubscriptions: ['pro'],
+      entitlements: {
+        active: {
+          pro: {
+            identifier: 'pro',
+            isActive: true,
+          },
+        },
+      },
+    },
+  }),
+}));
+
+//theme
+jest.mock('./contexts/ThemeProvider', () => ({
+  useTheme: () => ({
+    theme: 'lightTheme',
+    toggleTheme: jest.fn(), // noop
+  }),
+}));
+

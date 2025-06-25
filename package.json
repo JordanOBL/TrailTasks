@@ -1,0 +1,47 @@
+{
+  "scripts": {
+    "//":"-- START MOBILE , API, WEBSOCKET SERVERS INDIVIDUALLY: DEV, TEST, PROD -- ",
+    "//start:api":" starts the api server",
+    "//start:ws":" starts the websocket server",
+    "//start:mobile":" starts the mobile client",
+    "start:api:dev": "npm run --prefix ./api-server start:dev",
+    "start:api:test": "npm run --prefix ./api-server start:test",
+    "start:api:prod": "npm run --prefix ./api-server start:prod",
+    "start:ws": "cd websockets-server && go run ./cmd/server", 
+    "start:android:dev": "npm run --prefix ./mobile-client android:dev",
+    "start:android:test": "npm run --prefix ./mobile-client android:test",
+    "start:android:prod": "npm run --prefix ./mobile-client android:prod",
+    "start:ios:dev": "npm run --prefix ./mobile-client ios:dev",
+    "start:ios:test": "npm run --prefix ./mobile-client ios:test",
+    "start:ios:prod": "npm run --prefix ./mobile-client ios:prod",
+
+    "//":"-- BUILD MOBILE APP -- ",
+    "//build:android":" builds the android app",
+    "//build:ios":" builds the ios app",
+    "build:android": "npm run --prefix ./mobile-client build-android-prod",
+    "build:ios": "npm run --prefix ./mobile-client build-ios-prod",
+
+
+    "//":"-- TEST SERVERS INDIVIDUALLY -- ",
+    "//test:api":" tests the api server",
+    "//test:ws":" tests the websocket server",
+    "//test:mobile":" tests the mobile client",
+    "test:api": "npm --prefix ./api-server test",
+    "test:ws": "cd websockets-server && go test ./...",
+    "test:mobile": "npm --prefix ./mobile-client test",
+    
+    "//":"-- START API AND WEBSOCKET SERVERS TOGETHER -- ",
+    "//start:servers":" starts both api and websocket servers",
+    "start:servers:dev": "concurrently \"npm run start:api:dev\" \"npm run start:ws\"",
+    "start:servers:test": "concurrently \"npm run start:api:test\" \"npm run start:ws\"",
+    "start:servers:prod": "concurrently \"npm run start:api:prod\" \"npm run start:ws\"",
+
+    "//":"-- INTEGRATION TEST MOBILE APP WITH API AND WEBSOCKET SERVERS -- ",
+    "//test:app:integration":" tests the mobile client with the api and websocket servers started",
+    "test:app:integration": "concurrently \"npm run start:servers:test\" \"npm run test:mobile\""
+  },
+  "devDependencies": {
+    "//concurrently":"runs multiple commands concurrently",
+    "concurrently": "^9.2.0"
+  }
+}

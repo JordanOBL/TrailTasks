@@ -67,6 +67,7 @@ TrailTasks.db
 
 # testing
 /coverage
+coverage/
 
 # Yarn
 .yarn/*

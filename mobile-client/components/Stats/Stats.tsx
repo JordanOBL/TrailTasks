@@ -74,7 +74,7 @@ const Stats: React.FC<Props> = ({
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Productive Time</Text>
              <Text testID="most-productive-time" style={ isProMember ? styles.statValue : [styles.statValue, {opacity: .5}]}>
-              {isProMember ? mostUsedCategory : <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.statValue, {opacity: .5, marginLeft: 4}]}>Pro</Text></View>}
+              {isProMember ? mostProductiveTimes[0] : <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.statValue, {opacity: .5, marginLeft: 4}]}>Pro</Text></View>}
             </Text>
           </View>
         )}     

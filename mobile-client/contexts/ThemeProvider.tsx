@@ -21,8 +21,6 @@ export const ThemeProvider = ({ children }) => {
 
   async function toggleTheme() {
     const newTheme = themeName === 'light' ? 'dark' : 'light';
-    console.log('newTheme', newTheme)
-    console.log('user theme', user.themePreference)
 
     if (!user || user.themePreference === newTheme) return;
 
