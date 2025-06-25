@@ -7,7 +7,7 @@
     "android:test": "ENVFILE=.env.test react-native run-android",
     "android:prod": "ENVFILE=.env.production NODE_ENV=production react-native run-android",
     "build-android-prod": "export ENVFILE=.env.production && cd android && ./gradlew bundleRelease && cd ..",
-    "ios:dev": "ENVFILE=.env.development react-native run-ios  --port=8081",
+    "ios:dev": "ENVFILE=.env.development react-native run-ios --scheme=\"Copy of TrailTasks\" --port=8081",
     "ios:test": "ENVFILE=.env.test react-native run-ios",
     "ios:prod": "NODE_ENV=production react-native run-ios",
     "lint": "eslint .",

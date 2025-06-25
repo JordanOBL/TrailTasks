@@ -31,7 +31,7 @@ const ScreenLink = ({
     if (!needsActiveSubscription || hasActiveSubscription) {
       navigation.navigate(navTo);
     } else {
-      navigation.navigate('Subscribe');
+      navigation.navigate('Basecamp', { screen: 'Subscribe' });
     }
   };
 

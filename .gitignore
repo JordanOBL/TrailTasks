@@ -76,3 +76,8 @@ coverage/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+SubscriptionKey_AE0C1931.p8
+*.xcarchive/
+ios/build/
+build/
+
