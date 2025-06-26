@@ -92,7 +92,7 @@
          referenceType = "1">
       </LocationScenarioReference>
       <StoreKitConfigurationFileReference
-         identifier = "../../Trail Tasks.storekit">
+         identifier = "../TrailTasksAuto.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

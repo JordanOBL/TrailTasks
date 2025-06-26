@@ -163,7 +163,7 @@ export async function updateUsersTrailAndQueue({
 const allAvailableTrails = [...freeTrails, ...userPurchasedTrails];
 const randomIndex = Math.floor(Math.random() * allAvailableTrails.length);
 const randomTrail = allAvailableTrails[randomIndex];
-const randomTrailId = randomTrail?.id?.toString();
+const randomTrailId = randomTrail?.trail_id ? randomTrail.trail_id.toString() : randomTrail.id.toString();
     //if user has set their own trails to be up next
     if (isProMember && queuedTrails.length > 0)
   {
@@ -475,9 +475,12 @@ export async function isTrailCompleted({
         if (addedHike) {
           console.debug('completed trail added...')
           await updateUsersTrailAndQueue({
-            watermelonDatabase,
-            user,
-            queuedTrails,
+  watermelonDatabase,
+  user,
+  queuedTrails,
+  freeTrails,
+  userPurchasedTrails,
+  isProMember
           });
         }
         const updatedCompletedTrails = await user.usersCompletedTrails;
