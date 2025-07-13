@@ -1,57 +1,55 @@
 import * as React from 'react';
-import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync'
+
 import {
     Dimensions,
     Image,
+    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     View,
-    SafeAreaView,
 } from 'react-native';
-import {
-    Subscription,
-    User,
-    User_Session,
-} from '../watermelon/models';
-import {useFocusEffect} from '@react-navigation/native';
+import { darkTheme, lightTheme } from '../theme';
+
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
 import {Pressable} from 'react-native';
+import {Rank} from "../types";
 import ScreenLink from '../components/HomeScreen/screenLink';
+import SyncButton from "../components/syncButton"
 import SyncIndicator from '../components/SyncIndicator';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
+import {
+   User,
+} from '../watermelon/models';
+import checkDailyStreak from '../helpers/Session/checkDailyStreak';
+import companion from '../companions/scout/images/fly.png';
 import getUserRank from '../helpers/Ranks/getUserRank';
+import handleError from "../helpers/ErrorHandler";
+import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync'
+import isToday from '../helpers/isToday';
+import isYesterday from '../helpers/isYesterday';
 import {sync} from '../watermelon/sync';
+import {useAuthContext} from "../services/AuthContext";
 import {useDatabase} from '@nozbe/watermelondb/react';
+import {useFocusEffect} from '@react-navigation/native';
 import {useInternetConnection} from '../hooks/useInternetConnection';
 import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
-import {withObservables} from '@nozbe/watermelondb/react';
-import isYesterday from '../helpers/isYesterday';
-import isToday from '../helpers/isToday';
-import checkDailyStreak from '../helpers/Session/checkDailyStreak';
-import handleError from "../helpers/ErrorHandler";
-import SyncButton from "../components/syncButton"
 import {useTheme} from "../contexts/ThemeProvider";
-import {useAuthContext} from "../services/AuthContext";
-import {Rank} from "../types";
-
+import { withObservables } from '@nozbe/watermelondb/react';
 
 interface Props {
     user: User;
     currentTrail?: any;
     navigation: any;
     setUser: any;
-    userSubscription: Subscription;
-    userSessions: User_Session[];
+   
 }
 
 const HomeScreen: React.FC<Props> = ({
                                          user,
                                          navigation,
                                          currentTrail,
-                                         userSubscription,
-                                         userSessions,
                                      }) => {
     const watermelonDatabase = useDatabase();
     const {theme} = useTheme();
@@ -163,15 +161,19 @@ const HomeScreen: React.FC<Props> = ({
                         {userRankRef.current && index === 0 ? (
                             <View style={styles.rankContainer}>
                                 <Image
-                                    source={userRankRef.current?.image}
+                                    source={companion}
                                     style={styles.rankImage}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.rankLevel}>Rank {userRankRef.current?.level}</Text>
+                                <View style={{
+                                    position: "absolute", left: 20, top: 20
+                                }}>
+                                <Text style={styles.rankLevel}>LVL {userRankRef.current?.level}</Text>
                                 <Text style={styles.rankTitle}>
                                     {userRankRef.current?.group} {userRankRef.current?.title}
                                 </Text>
-                                <Text style={styles.username}>{user.username}</Text>
+                               
+                                </View>
                             </View>
                         ) : (
                             <View style={styles.currentTrailContainer}>
@@ -337,9 +339,10 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       marginVertical: 10,
       paddingRight: 20,
     },
-    rankContainer: {
+      rankContainer: {
+        position:'relative',
       borderRadius: 12,
-      backgroundColor: theme.card,
+   
       padding: 16,
       alignItems: 'center',
       width: '90%',
@@ -350,9 +353,8 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       elevation: 4,
     },
     rankImage: {
-      width: 72,
-      height: 72,
-      marginBottom: 12,
+      width: 128,
+      height: 192,
     },
     rankLevel: {
       fontSize: 16,
@@ -361,7 +363,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       marginBottom: 2,
     },
     rankTitle: {
-      fontSize: 15,
+      fontSize: 10,
       fontWeight: '500',
       color: theme.secondaryText,
       marginBottom: 6,
@@ -414,7 +416,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     linkContainer: {
       marginTop: 10,
       backgroundColor: theme.background,
-    },
- 
+    }
+
   });
 
