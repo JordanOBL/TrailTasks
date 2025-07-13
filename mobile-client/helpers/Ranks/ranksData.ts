@@ -1,4 +1,4 @@
-interface Rank {
+export interface Rank {
   level: string;
   group: string;
   image?: any;

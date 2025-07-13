@@ -1,0 +1,68 @@
+[
+    {
+      "id": "scout",
+      "name": "Scout",
+      "species": "Owl",
+      "perk_name": "Night Owl",
+      "perk_type": "xp_boost",
+      "perk_description": "Earn 2x XP for any session completed between 6pm and 6am.",
+      "perk_scaling": {
+        "type": "multiplier",
+        "value": 2.0,
+        "time_window": "18:00-06:00"
+      },
+      "max_level": 100,
+      "starting_level": 1,
+      "image_base": "scout_still.png",
+      "is_active": true,
+      "rarity": "common"
+    },
+    {
+      "id": "buckey",
+      "name": "Buckey",
+      "species": "Deer",
+      "perk_name": "Pathfinder",
+      "perk_type": "trail_discount",
+      "perk_description": "Get discounts on trail purchases in the shop.",
+      "perk_scaling": {
+        "type": "percentage_discount",
+        "levels": [
+          { "level": 1, "discount": 5 },
+          { "level": 25, "discount": 10 },
+          { "level": 50, "discount": 15 },
+          { "level": 75, "discount": 20 },
+          { "level": 100, "discount": 25 }
+        ]
+      },
+      "max_level": 100,
+      "starting_level": 1,
+      "image_base": "buckey_still.png",
+      "is_active": false,
+      "rarity": "rare"
+    },
+    {
+      "id": "ember",
+      "name": "Ember",
+      "species": "Fox",
+      "perk_name": "Clever Barter",
+      "perk_type": "free_addon_chance",
+      "perk_description": "At the start of a session, get a chance to choose one free addon.",
+      "perk_scaling": {
+        "type": "percent_chance",
+        "levels": [
+          { "level": 1, "chance": 10 },
+          { "level": 10, "chance": 15 },
+          { "level": 25, "chance": 25 },
+          { "level": 50, "chance": 35 },
+          { "level": 75, "chance": 45 },
+          { "level": 100, "chance": 60 }
+        ]
+      },
+      "max_level": 100,
+      "starting_level": 1,
+      "image_base": "ember_still.png",
+      "is_active": false,
+      "rarity": "epic"
+    }
+  ]
+  

@@ -1,8 +1,8 @@
+/* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
 
 import {
     Dimensions,
-    Image,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -13,29 +13,25 @@ import { darkTheme, lightTheme } from '../theme';
 
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
-import {Pressable} from 'react-native';
-import {Rank} from "../types";
+import { Rank } from '../helpers/Ranks/ranksData'
 import ScreenLink from '../components/HomeScreen/screenLink';
-import SyncButton from "../components/syncButton"
-import SyncIndicator from '../components/SyncIndicator';
+import SyncButton from '../components/syncButton';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
 import {
    User,
 } from '../watermelon/models';
+import WildAvatar from '../components/Wilds/WildAvatar';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
-import companion from '../companions/scout/images/fly.png';
 import getUserRank from '../helpers/Ranks/getUserRank';
-import handleError from "../helpers/ErrorHandler";
-import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync'
-import isToday from '../helpers/isToday';
-import isYesterday from '../helpers/isYesterday';
+import handleError from '../helpers/ErrorHandler';
+import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
 import {sync} from '../watermelon/sync';
-import {useAuthContext} from "../services/AuthContext";
+import {useAuthContext} from '../services/AuthContext';
 import {useDatabase} from '@nozbe/watermelondb/react';
 import {useFocusEffect} from '@react-navigation/native';
 import {useInternetConnection} from '../hooks/useInternetConnection';
 import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
-import {useTheme} from "../contexts/ThemeProvider";
+import {useTheme} from '../contexts/ThemeProvider';
 import { withObservables } from '@nozbe/watermelondb/react';
 
 interface Props {
@@ -43,7 +39,7 @@ interface Props {
     currentTrail?: any;
     navigation: any;
     setUser: any;
-   
+
 }
 
 const HomeScreen: React.FC<Props> = ({
@@ -53,7 +49,7 @@ const HomeScreen: React.FC<Props> = ({
                                      }) => {
     const watermelonDatabase = useDatabase();
     const {theme} = useTheme();
-    const userRankRef = React.useRef<Rank>({
+    const userRankRef = React.useRef<Rank | undefined>({
         level: 'loading',
         group: 'loading',
         image: null,
@@ -65,28 +61,24 @@ const HomeScreen: React.FC<Props> = ({
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
     const styles = getStyles(theme); // dynamically generate styles based on theme
-    const {currentOffering, customerInfo, isProMember } = useAuthContext() ;
+    const {currentOffering, customerInfo, isProMember } = useAuthContext();
     userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
     };
 
-    async function checkUnsyncedChanges() {
-        const results = await hasUnsyncedChanges({database: watermelonDatabase} )
-        return results;
-    }
+
 
     //this useEffect checks daily streak and resets if needed
     React.useEffect(() => {
         if(user){
-         checkDailyStreak(user)
+         checkDailyStreak(user);
         }
        //Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
            // Check if the user has any miles hiked
-        console.debug(currentOffering, customerInfo, isProMember);
-        
+
         if (user?.totalMiles <= 0.00) {
             setShowTutorial(true); // Show the tutorial if the user has no miles hiked
         }else{
@@ -96,20 +88,26 @@ const HomeScreen: React.FC<Props> = ({
     }, [user]);
 
 
-    
+
 
     //this useEffect gets the correct Rank based on  the users miles
     useFocusEffect(
         React.useCallback(() => {
+            async function checkUnsyncedChanges() {
+              const results = await hasUnsyncedChanges({
+                database: watermelonDatabase,
+              });
+              return results;
+            }
             if (!user) {
                 return;
             }
-            
+
             checkUnsyncedChanges().then(result => {
                 if (result) {
                      sync(watermelonDatabase,isConnected, user.id).catch(err =>handleError(err, 'useCallback sync HomeScreen'));
                 }
-            })
+            });
 
 
             return async () => {
@@ -117,175 +115,166 @@ const HomeScreen: React.FC<Props> = ({
             };
 
 
-        }, [watermelonDatabase, user])
+        }, [user, watermelonDatabase, isConnected])
     );
-    return !user || !currentTrail  ? (
-        <View testID="homescreen-loading" style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading Your Data...</Text>
-        </View>
+    return !user || !currentTrail ? (
+      <View testID="homescreen-loading" style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading Your Data...</Text>
+      </View>
     ) : (
-            <SafeAreaView testID="homescreen" style={styles.container}>
-                {/* <SyncIndicator delay={3000} /> */}
-               {showTutorial && <TutorialModal  onClose={handleTutorialClose} />} 
-                <View
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                    }}>
-                    <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
-                    <Text style={[ styles.onlineStatus, {color: isConnected ? 'green' : 'red'} ]}>
-                        {isConnected ? 'Online' : 'Offline'}
-                    </Text>
-                    <View>
-                        <Text style={styles.dailyStreak} testID="daily-streak">
-                            Daily Streak: {user?.dailyStreak}
-                        </Text>
-                        <SyncButton />
-                    </View>
-
-                </View>
-                <View style={{height: 200}}>
-                    <Carousel
-                        loop
-                        pagingEnabled={true}
-                        snapEnabled={true}
-                        width={width}
-                height={width / 2}
-                autoPlay={false}
-                data={[...new Array(2).keys()]}
-                scrollAnimationDuration={1000}
-                onSnapToItem={(index) => setActiveIndex(index)}
-                renderItem={({index}) => (
-                    <View style={styles.carouselItem}>
-                        {userRankRef.current && index === 0 ? (
-                            <View style={styles.rankContainer}>
-                                <Image
-                                    source={companion}
-                                    style={styles.rankImage}
-                                    resizeMode="contain"
-                                />
-                                <View style={{
-                                    position: "absolute", left: 20, top: 20
-                                }}>
-                                <Text style={styles.rankLevel}>LVL {userRankRef.current?.level}</Text>
-                                <Text style={styles.rankTitle}>
-                                    {userRankRef.current?.group} {userRankRef.current?.title}
-                                </Text>
-                               
-                                </View>
-                            </View>
-                        ) : (
-                            <View style={styles.currentTrailContainer}>
-                                <Text style={styles.trailText}>Current Trail:</Text>
-                                <Text style={styles.trailName}>{currentTrail.trailName}</Text>
-                                 <DistanceProgressBar user={user} trail={currentTrail} />
-                            </View>
-                        )}
-                    </View>
-                )}
-            />
-            </View>
-            <View style={styles.paginationDotsContainer}>
-                {data.map((item, index) => (
+      <SafeAreaView testID="homescreen" style={styles.container}>
+        {/* <SyncIndicator delay={3000} /> */}
+        {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <Text style={styles.trailTokens}>
+            Trail Tokens: {user?.trailTokens}
+          </Text>
+          <Text
+            style={[
+              styles.onlineStatus,
+              {color: isConnected ? 'green' : 'red'},
+            ]}>
+            {isConnected ? 'Online' : 'Offline'}
+          </Text>
+          <View>
+            <Text style={styles.dailyStreak} testID="daily-streak">
+              Daily Streak: {user?.dailyStreak}
+            </Text>
+            <SyncButton />
+          </View>
+        </View>
+        <View style={{height: 200}}>
+          <Carousel
+            loop
+            pagingEnabled={true}
+            snapEnabled={true}
+            width={width}
+            height={width / 2}
+            autoPlay={false}
+            data={[...new Array(2).keys()]}
+            scrollAnimationDuration={1000}
+            onSnapToItem={index => setActiveIndex(index)}
+            renderItem={({index}) => (
+              <View style={styles.carouselItem}>
+                { index === 0 ? (
+                  <View style={styles.rankContainer}>
+                    <WildAvatar id="scout" pose="cheer" />
                     <View
-                        key={index}
-                        style={[
-                            styles.paginationDot,
-                            activeIndex === index && styles.activePaginationDot,
-                        ]}
-                    />
-                ))}
-            </View>
-            <ScrollView style={styles.linkContainer}
-  contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} // adjust for safety
-  keyboardShouldPersistTaps="handled">
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        true
-                    }
-                    navigation={navigation}
-                    navTo={'Stats'}>
-                    Stats
-                </ScreenLink>
-                <ScreenLink
+                      style={{
+                      
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                        width: '100%',
+                      }}>
 
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        true
-                    }
-                    navigation={navigation}
-                    navTo={'Shop'}>
-                    Shop
-                </ScreenLink>
+                      <View style={{flexDirection: 'row'}}>
+                        <Text style={styles.wildInfo}>
+                          LVL 2: Scout -  {userRankRef.current?.group}{' '}
+                          {userRankRef.current?.title}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.currentTrailContainer}>
+                    <Text style={styles.trailText}>Current Trail:</Text>
+                    <Text style={styles.trailName}>
+                      {currentTrail.trailName}
+                    </Text>
+                    <DistanceProgressBar user={user} trail={currentTrail} />
+                  </View>
+                )}
+              </View>
+            )}
+          />
+        </View>
+        <View style={styles.paginationDotsContainer}>
+          {data.map((item, index) => (
+            <View
+              key={index}
+              style={[
+                styles.paginationDot,
+                activeIndex === index && styles.activePaginationDot,
+              ]}
+            />
+          ))}
+        </View>
+        <ScrollView
+          style={styles.linkContainer}
+          contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // adjust for safety
+          keyboardShouldPersistTaps="handled">
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={false}
+            hasActiveSubscription={true}
+            navigation={navigation}
+            navTo={'Stats'}>
+            Stats
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={false}
+            hasActiveSubscription={true}
+            navigation={navigation}
+            navTo={'Shop'}>
+            Shop
+          </ScreenLink>
 
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={true}
-                    hasActiveSubscription={
-                       isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Trail Queue'}>
-                    Upcoming Trails
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={true}
-                    hasActiveSubscription={
-                        isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Friends'}>
-                    Friends
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Park Passes'}>
-                    Park Passes
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Achievements'}>
-                    Achievements
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    navigation={navigation}
-                    navTo={'Leaderboards'}
-                    needsActiveSubscription={true}
-                    hasActiveSubscription={
-                        isProMember
-                    }>
-                    Leaderboards
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    navigation={navigation}
-                    navTo={'Settings'}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        false
-                    }>
-                    Settings
-                </ScreenLink>
-
-                
-            </ScrollView>
-        </SafeAreaView>
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={true}
+            hasActiveSubscription={isProMember}
+            navigation={navigation}
+            navTo={'Trail Queue'}>
+            Upcoming Trails
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={true}
+            hasActiveSubscription={isProMember}
+            navigation={navigation}
+            navTo={'Friends'}>
+            Friends
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={false}
+            hasActiveSubscription={isProMember}
+            navigation={navigation}
+            navTo={'Park Passes'}>
+            Park Passes
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={false}
+            hasActiveSubscription={isProMember}
+            navigation={navigation}
+            navTo={'Achievements'}>
+            Achievements
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'Leaderboards'}
+            needsActiveSubscription={true}
+            hasActiveSubscription={isProMember}>
+            Leaderboards
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'Settings'}
+            needsActiveSubscription={false}
+            hasActiveSubscription={false}>
+            Settings
+          </ScreenLink>
+        </ScrollView>
+      </SafeAreaView>
     );
 };
 
@@ -329,7 +318,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     username: {
       color: theme.text,
       fontSize: 12,
-      fontWeight: '1800',
+      fontWeight: '800',
       paddingHorizontal: 10,
     },
     carouselItem: {
@@ -340,27 +329,25 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       paddingRight: 20,
     },
       rankContainer: {
-        position:'relative',
+      position: 'relative',
       borderRadius: 12,
-   
-      padding: 16,
       alignItems: 'center',
-      width: '90%',
+      width: '100%',
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
       shadowRadius: 4,
-      elevation: 4,
+          elevation: 4,
+
     },
     rankImage: {
-      width: 128,
-      height: 192,
+        width: 256,
+        height: '100%',
     },
     rankLevel: {
       fontSize: 16,
       fontWeight: '600',
       color: theme.button,
-      marginBottom: 2,
     },
     rankTitle: {
       fontSize: 10,
@@ -416,7 +403,11 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     linkContainer: {
       marginTop: 10,
       backgroundColor: theme.background,
-    }
+      },
+      wildInfo: {
+          color: 'white',
+          fontSize: 12,
+    },
 
   });
 
