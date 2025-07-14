@@ -5,7 +5,7 @@ import React from 'react';
 import WildCard from '../components/Wilds/WildCard'; // adjust path
 import wildData from '../assets/wilds/mock_data.json'; // your JSON array
 
-const usersWilds = new Set([ 'scout', 'ember']);
+const usersWilds = new Set(['scout', 'ember']);
 
 export default function WildsScreen()
 {
@@ -15,6 +15,10 @@ export default function WildsScreen()
     // navigation.navigate('WildDetail', { id });
   };
 
+  const createHiddenText = React.useCallback((text: string) =>
+  {
+    return Array.from(text).map(_ => '?').join('');
+  }, []);
   return (
     <FlatList
       contentContainerStyle={styles.container}
@@ -34,7 +38,8 @@ export default function WildsScreen()
           rarity={item.rarity as any}
                       isLocked={!usersWilds.has(item.id)} // example lock logic
             isActive={item.is_active}
-          onPress={() => handlePress(item.id)}
+                onPress={() => handlePress(item.id)}
+                createHiddenText={createHiddenText}
                   />
                   </View>
       )}

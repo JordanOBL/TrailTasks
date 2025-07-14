@@ -163,7 +163,7 @@ const HomeScreen: React.FC<Props> = ({
               <View style={styles.carouselItem}>
                 { index === 0 ? (
                   <View style={styles.rankContainer}>
-                    <WildAvatar id="scout" pose="cheer" />
+                    <WildAvatar id="scout" pose="cheer" size={200} />
                     <View
                       style={{
                       
@@ -404,9 +404,9 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       marginTop: 10,
       backgroundColor: theme.background,
       },
-      wildInfo: {
+    wildInfo: {
           color: 'white',
-          fontSize: 12,
+          fontSize: 10,
     },
 
   });

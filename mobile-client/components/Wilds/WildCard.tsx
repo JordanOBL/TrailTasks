@@ -1,12 +1,10 @@
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 
 import React from 'react';
 import WildAvatar from './WildAvatar';
-import {WildImages} from '../../assets/wilds';
 
-export interface WildCardProps
-{
-    usersWilds: string[];
+export interface WildCardProps {
+  usersWilds: string[];
   id: 'scout' | 'buckey' | 'ember';
   name: string;
   level: number;
@@ -15,12 +13,13 @@ export interface WildCardProps
   perkDescription: string;
   rarity: 'common' | 'rare' | 'epic';
   isLocked: boolean;
-    onPress?: () => void;
-    isActive: boolean;
+  onPress?: () => void;
+  isActive: boolean;
+  createHiddenText: (text: string) => string;
 }
 
 const WildCard = ({
-    usersWilds,
+  usersWilds,
   id,
   name,
   level,
@@ -28,24 +27,35 @@ const WildCard = ({
   perkName,
   perkDescription,
   rarity,
-    isLocked,
-    onPress,
+  isLocked,
+  onPress,
   isActive,
+  createHiddenText,
 }: WildCardProps) => {
   return (
     <Pressable
       onPress={onPress}
       disabled={isLocked}
-      style={[styles.card, isLocked && styles.locked]}>
-    <WildAvatar id={id} pose={isLocked ? 'rest' : isActive ? 'wave' : 'still'} />
-    <View style={styles.info}>
-        <Text style={styles.name}>{name}</Text>
+      style={[
+        styles.card,
+        isLocked && styles.locked,
+        isActive && styles.activeWild,
+        !isActive && !isLocked && styles.inactive,
+      ]}>
+      <WildAvatar
+        id={id}
+        pose={isLocked ? 'hidden' : isActive ? 'wave' : 'rest'}
+      />
+      <View style={styles.info}>
+        <Text style={styles.name}>
+          {isLocked ? createHiddenText(name) : name}
+        </Text>
         <Text style={styles.level}>Level {level}</Text>
         <View style={styles.progressContainer}>
           <View style={[styles.progressFill, {width: `${xpPercent * 100}%`}]} />
         </View>
-        <Text style={styles.perkTitle}>{perkName}</Text>
-        <Text style={styles.perkDesc}>{perkDescription}</Text>
+        <Text style={styles.perkTitle}>{isLocked ? '' : perkName}</Text>
+        <Text style={styles.perkDesc}>{isLocked ? '' : perkDescription}</Text>
         {isLocked && <Text style={styles.lockedText}>Locked</Text>}
       </View>
     </Pressable>
@@ -53,9 +63,13 @@ const WildCard = ({
 };
 
 const styles = StyleSheet.create({
+  activeWild: {
+    borderWidth: 2,
+    borderColor: 'rgb(7,254,213)',
+  },
   card: {
-        width: 180,
-      height: 300,
+    width: 180,
+    height: 300,
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 12,
@@ -67,7 +81,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   locked: {
-    opacity: 0.4,
+    opacity: 0.6,
+  },
+  inactive: {
+    opacity: 0.8,
   },
   image: {
     width: '100%',
@@ -79,10 +96,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   level: {
     fontSize: 14,
     color: '#666',
+    textAlign: 'center',
   },
   progressContainer: {
     height: 6,
@@ -99,15 +118,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 13,
     marginTop: 6,
+    textAlign: 'center',
   },
   perkDesc: {
     fontSize: 12,
     color: '#444',
+    textAlign: 'center',
   },
   lockedText: {
     fontSize: 12,
     color: '#c00',
     marginTop: 4,
+    textAlign: 'center'
   },
 });
 

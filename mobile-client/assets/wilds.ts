@@ -1,6 +1,6 @@
 // assets/wilds.ts
 export type WildId = 'scout' | 'buckey' | 'ember';
-export type Pose   = 'still' | 'walk' | 'run' | 'wave' | 'cheer' | 'rest';
+export type Pose   = 'still' | 'walk' | 'run' | 'wave' | 'cheer' | 'rest' | 'hidden';
 
 type PoseMap = Record<Pose, any>;   // ReactNative image source
 
@@ -11,15 +11,17 @@ export const WildImages: Record<WildId, PoseMap> = {
     run  : require('./wilds/scout/images/run.png'),
     wave : require('./wilds/scout/images/wave.png'),
     cheer: require('./wilds/scout/images/cheer.png'),
-    rest : require('./wilds/scout/images/rest.png'),
+    rest: require('./wilds/scout/images/rest.png'),
+    hidden: require('./wilds/scout/images/hidden.png'),
   },
   buckey: {
     still: require('./wilds/buckey/images/still.png'),
-    walk : require('./wilds/buckey/images/walk.png'),
-    run  : require('./wilds/buckey/images/run.png'),
-    wave : require('./wilds/buckey/images/wave.png'),
+    walk: require('./wilds/buckey/images/walk.png'),
+    run: require('./wilds/buckey/images/run.png'),
+    wave: require('./wilds/buckey/images/wave.png'),
     cheer: require('./wilds/buckey/images/cheer.png'),
-    rest : require('./wilds/buckey/images/rest.png'),
+    rest: require('./wilds/buckey/images/rest.png'),
+    hidden: require('./wilds/buckey/images/hidden.png'),
   },
   ember: {
     still: require('./wilds/ember/images/still.png'),
@@ -27,6 +29,7 @@ export const WildImages: Record<WildId, PoseMap> = {
     run  : require('./wilds/ember/images/run.png'),
     wave : require('./wilds/ember/images/wave.png'),
     cheer: require('./wilds/ember/images/cheer.png'),
-    rest : require('./wilds/ember/images/rest.png'),
+    rest: require('./wilds/ember/images/rest.png'),
+    hidden: require('./wilds/ember/images/hidden.png'),
   },
 };
