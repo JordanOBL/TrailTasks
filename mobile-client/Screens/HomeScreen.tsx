@@ -1,6 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
-import * as React from 'react';
-
 import {
     Dimensions,
     SafeAreaView,
@@ -9,11 +6,14 @@ import {
     Text,
     View,
 } from 'react-native';
+import Rive, { RiveRef } from 'rive-react-native';
 import { darkTheme, lightTheme } from '../theme';
 
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
-import { Rank } from '../helpers/Ranks/ranksData'
+import { Rank } from '../helpers/Ranks/ranksData';
+/* eslint-disable react-native/no-inline-styles */
+import React from 'react';
 import ScreenLink from '../components/HomeScreen/screenLink';
 import SyncButton from '../components/syncButton';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
@@ -67,26 +67,59 @@ const HomeScreen: React.FC<Props> = ({
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
     };
+     const riveRef = React.useRef<RiveRef>(null);
+
+  function wave()
+  {
+       console.log(riveRef)
+       riveRef.current?.fireState('State Machine 1', 'wave');
+     }
+     function getRandom() {
+       return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
+     }
+
+    
 
 
 
     //this useEffect checks daily streak and resets if needed
     React.useEffect(() => {
-        if(user){
-         checkDailyStreak(user);
-        }
-       //Check to see if user is new to the app by checking if theyve hiked any miles
-    //if not, show the tutorial Modal
-           // Check if the user has any miles hiked
+      if (user) {
+        checkDailyStreak(user);
+      }
+      //Check to see if user is new to the app by checking if theyve hiked any miles
+      //if not, show the tutorial Modal
+      // Check if the user has any miles hiked
 
-        if (user?.totalMiles <= 0.00) {
-            setShowTutorial(true); // Show the tutorial if the user has no miles hiked
-        }else{
-            setShowTutorial(false);
-        }
-
+      if (user?.totalMiles <= 0.0) {
+        setShowTutorial(true); // Show the tutorial if the user has no miles hiked
+      } else {
+        setShowTutorial(false);
+      }
     }, [user]);
+    React.useEffect(() => {
+      let timeout: string | number | NodeJS.Timeout | null | undefined = null;
 
+      function scheduleWave() {
+        const delay = getRandom();
+
+        console.log(delay)
+        timeout = setTimeout(() => {
+          if (riveRef.current)
+          {
+            console.log('hi')
+            wave();
+          }
+          scheduleWave(); // Recurse to schedule the next blink
+        }, delay);
+      }
+
+      scheduleWave(); // Start the blinking loop
+
+      return () => {
+        clearTimeout(timeout); // Clean up on unmount
+      };
+    }, [riveRef]);
 
 
 
@@ -161,20 +194,24 @@ const HomeScreen: React.FC<Props> = ({
             onSnapToItem={index => setActiveIndex(index)}
             renderItem={({index}) => (
               <View style={styles.carouselItem}>
-                { index === 0 ? (
+                {index === 0 ? (
                   <View style={styles.rankContainer}>
-                    <WildAvatar id="scout" pose="cheer" size={200} />
+                    <Rive
+                      ref={riveRef}
+                      resourceName="scout"
+                      artboardName="Artboard"
+                      stateMachineName="State Machine 1"
+                      style={{width: 150, height: 150}}
+                    />
                     <View
                       style={{
-                      
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
                         width: '100%',
                       }}>
-
                       <View style={{flexDirection: 'row'}}>
                         <Text style={styles.wildInfo}>
-                          LVL 2: Scout -  {userRankRef.current?.group}{' '}
+                          LVL 2: Scout - {userRankRef.current?.group}{' '}
                           {userRankRef.current?.title}
                         </Text>
                       </View>

@@ -1,4 +1,5 @@
 import {Pressable, StyleSheet, Text, View} from 'react-native';
+import Rive, {RiveRef} from 'rive-react-native';
 
 import React from 'react';
 import WildAvatar from './WildAvatar';
@@ -31,7 +32,35 @@ const WildCard = ({
   onPress,
   isActive,
   createHiddenText,
-}: WildCardProps) => {
+}: WildCardProps) =>
+{
+  
+     const riveRef = React.useRef<RiveRef>(null);
+
+     function wave() {
+       riveRef.current?.fireState('State Machine 1', 'wave');
+     }
+     function getRandom() {
+       return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
+     }
+
+     React.useEffect(() => {
+       let timeout = null;
+
+       function scheduleWave() {
+         const delay = getRandom();
+         timeout = setTimeout(() => {
+           if (riveRef.current) wave();
+           scheduleWave(); // Recurse to schedule the next blink
+         }, delay);
+       }
+
+       scheduleWave(); // Start the blinking loop
+
+       return () => {
+         clearTimeout(timeout); // Clean up on unmount
+       };
+     }, [riveRef]);
   return (
     <Pressable
       onPress={onPress}
@@ -42,10 +71,20 @@ const WildCard = ({
         isActive && styles.activeWild,
         !isActive && !isLocked && styles.inactive,
       ]}>
-      <WildAvatar
-        id={id}
-        pose={isLocked ? 'hidden' : isActive ? 'wave' : 'rest'}
-      />
+      {id === 'scout' ? (
+        <Rive
+          ref={riveRef}
+          resourceName={id}
+          artboardName="Artboard"
+          stateMachineName="State Machine 1"
+          style={{width: 150, height: 150}}
+        />
+      ) : (
+        <WildAvatar
+          id={id}
+          pose={isLocked ? 'hidden' : isActive ? 'wave' : 'rest'}
+        />
+      )}
       <View style={styles.info}>
         <Text style={styles.name}>
           {isLocked ? createHiddenText(name) : name}
@@ -129,7 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#c00',
     marginTop: 4,
-    textAlign: 'center'
+    textAlign: 'center',
   },
 });
 

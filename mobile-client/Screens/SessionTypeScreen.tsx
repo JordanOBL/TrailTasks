@@ -1,4 +1,5 @@
-import {Pressable, StyleSheet, Switch, Text, View} from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import Rive, { RiveRef }  from 'rive-react-native';
 
 import React from 'react';
 import ScreenLink from '../components/HomeScreen/screenLink';
@@ -17,6 +18,36 @@ const SessionTypeScreen = ({navigation, user, setUser}: Props) => {
   const {isProMember} = useAuthContext();
   const [selection, setSelection] = React.useState('solo');
   const currentWild = 'scout';
+
+   const riveRef = React.useRef<RiveRef>(null);
+
+  function blink()
+  {
+     riveRef.current?.fireState('State Machine 1', 'blink');
+
+  }
+function getRandom() {
+  return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
+}
+
+React.useEffect(() => {
+  let timeout = null;
+
+  function scheduleBlink() {
+    const delay = getRandom();
+    timeout = setTimeout(() => {
+      if (riveRef.current) blink();
+      scheduleBlink(); // Recurse to schedule the next blink
+    }, delay);
+  }
+
+  scheduleBlink(); // Start the blinking loop
+
+  return () => {
+    clearTimeout(timeout); // Clean up on unmount
+  };
+}, [riveRef]);
+
   async function toggleSwitch() {
     setSelection(previousState =>
       previousState === 'solo' ? 'group' : 'solo',
@@ -47,7 +78,14 @@ const SessionTypeScreen = ({navigation, user, setUser}: Props) => {
       <View style={{width: '100%', alignItems: 'center'}}>
         <View style={{width: '100%', alignItems: 'center'}}>
           {selection === 'solo' ? (
-            <WildAvatar id={currentWild} pose="wave" size={200} />
+            /* <WildAvatar id={currentWild} pose="wave" size={200} />*/
+            <Rive
+              ref={riveRef}
+     resourceName={currentWild}
+      artboardName="Artboard"
+      stateMachineName="State Machine 1"
+      style={{width: 250, height: 250}}
+  />
           ) : (
             <View style={styles.groupWildsContainer}>
               <WildAvatar key={0} id={'ember'} pose="wave" size={200} />
