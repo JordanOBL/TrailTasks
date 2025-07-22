@@ -1,68 +1,1313 @@
 [
-    {
-      "id": "scout",
-      "name": "Scout",
-      "species": "Owl",
-      "perk_name": "Night Owl",
-      "perk_type": "xp_boost",
-      "perk_description": "Earn 2x XP for any session completed between 6pm and 6am.",
-      "perk_scaling": {
-        "type": "multiplier",
-        "value": 2.0,
-        "time_window": "18:00-06:00"
-      },
-      "max_level": 100,
-      "starting_level": 1,
-      "image_base": "scout_still.png",
-      "is_active": true,
-      "rarity": "common"
+  {
+    "id": "ember",
+    "name": "Ember",
+    "species": "Fox",
+    "park_id":"Acadia",
+    "perk_name": "Clever Barter",
+    "perk_type": "free_addon_chance",
+    "perk_description": "At the start of a session, get a chance to choose one free addon.",
+    "perk_scaling": {
+      "type": "percent_chance",
+      "levels": [
+        { "level": 1, "chance": 10 },
+        { "level": 10, "chance": 15 },
+        { "level": 25, "chance": 25 },
+        { "level": 50, "chance": 35 },
+        { "level": 75, "chance": 45 },
+        { "level": 100, "chance": 60 }
+      ]
     },
-    {
-      "id": "buckey",
-      "name": "Buckey",
-      "species": "Deer",
-      "perk_name": "Pathfinder",
-      "perk_type": "trail_discount",
-      "perk_description": "Get discounts on trail purchases in the shop.",
-      "perk_scaling": {
-        "type": "percentage_discount",
-        "levels": [
-          { "level": 1, "discount": 5 },
-          { "level": 25, "discount": 10 },
-          { "level": 50, "discount": 15 },
-          { "level": 75, "discount": 20 },
-          { "level": 100, "discount": 25 }
-        ]
-      },
-      "max_level": 100,
-      "starting_level": 1,
-      "image_base": "buckey_still.png",
-      "is_active": false,
-      "rarity": "rare"
+    "is_active": false,
+    "rarity": "epic"
+  },
+  {
+    "id": "echo",
+    "name": "Echo",
+    "species": "Flying Fox Bat",
+    "park_id": "American Samoa",
+    "perk_name": "Twilight Surge",
+    "perk_type": "xp_boost",
+    "perk_description": "Gain bonus XP during evening and nighttime trail sessions.",
+    "perk_scaling": {
+      "type": "multiplier",
+      "levels": [
+        { "level": 1, "value": 1.1 },
+        { "level": 10, "value": 1.15 },
+        { "level": 25, "value": 1.2 },
+        { "level": 50, "value": 1.25 },
+        { "level": 75, "value": 1.3 },
+        { "level": 100, "value": 1.35 }
+      ]
     },
-    {
-      "id": "ember",
-      "name": "Ember",
-      "species": "Fox",
-      "perk_name": "Clever Barter",
-      "perk_type": "free_addon_chance",
-      "perk_description": "At the start of a session, get a chance to choose one free addon.",
-      "perk_scaling": {
-        "type": "percent_chance",
-        "levels": [
-          { "level": 1, "chance": 10 },
-          { "level": 10, "chance": 15 },
-          { "level": 25, "chance": 25 },
-          { "level": 50, "chance": 35 },
-          { "level": 75, "chance": 45 },
-          { "level": 100, "chance": 60 }
-        ]
-      },
-      "max_level": 100,
-      "starting_level": 1,
-      "image_base": "ember_still.png",
-      "is_active": false,
-      "rarity": "epic"
+    "rarity": "epic"
+  },
+  {
+    "id": "rubi",
+    "name": "Rubi",
+    "species": "Rabbit",
+    "perk_name": "Momentum Hop",
+    "park_id": "Arches",
+    "perk_type": "speed_boost",
+    "perk_description": "Earn distance faster every 15-minute interval without breaking focus.",
+    "perk_scaling": {
+      "type": "interval_multiplier",
+      "levels": [
+        { "level": 1, "multiplier": 1.1 },
+        { "level": 10, "multiplier": 1.15 },
+        { "level": 25, "multiplier": 1.25 },
+        { "level": 50, "multiplier": 1.35 },
+        { "level": 75, "multiplier": 1.45 },
+        { "level": 100, "multiplier": 1.6 }
+      ]
     }
+  },
+    {
+    "id": "bramble",
+    "name": "Bramble",
+    "species": "Bison",
+    "park_id": "Badlands",
+    "perk_name": "Enduring Spirit",
+    "perk_type": "bonus_tokens",
+    "perk_description": "Earn extra Trail Tokens for completing longer sessions without strikes.",
+    "perk_scaling": {
+      "type": "flat_bonus",
+      "levels": [
+        { "level": 1, "value": 1 },
+        { "level": 10, "value": 2 },
+        { "level": 25, "value": 3 },
+        { "level": 50, "value": 4 },
+        { "level": 75, "value": 5 },
+        { "level": 100, "value": 6 }
+      ]
+    },
+    "rarity": "rare"
+  },
+  {
+    "id": "gruff",
+    "name": "Gruff",
+    "species": "Javelina",
+    "park_id": "Big Bend",
+    "perk_name": "Trail Tough",
+    "perk_type": "strike_protection",
+    "perk_description": "Gain immunity from one strike per session, allowing uninterrupted streaks and bonuses.",
+    "perk_scaling": {
+      "type": "strike_shield",
+      "levels": [
+        { "level": 1, "shields": 1 },
+        { "level": 25, "shields": 1 },
+        { "level": 50, "shields": 2 },
+        { "level": 75, "shields": 2 },
+        { "level": 100, "shields": 3 }
+      ]
+    },
+    "rarity": "rare"
+  },
+  {
+    "id": "ripple",
+    "name": "Ripple",
+    "species": "Raccoon",
+    "park_id": "Biscayne",
+    "perk_name": "Tide Tracker",
+    "perk_type": "token_bonus",
+    "perk_description": "Earn extra Trail Tokens when completing water-adjacent or coastal trails.",
+    "perk_scaling": {
+      "type": "multiplier",
+      "levels": [
+        { "level": 1, "value": 1.1 },
+        { "level": 10, "value": 1.2 },
+        { "level": 25, "value": 1.3 },
+        { "level": 50, "value": 1.4 },
+        { "level": 75, "value": 1.5 },
+        { "level": 100, "value": 1.6 }
+      ]
+    },
+    "rarity": "rare"
+  },
+  {
+    "id": "scoria",
+    "name": "Scoria",
+    "species": "Short-horned Lizard",
+    "park_id": "Black Canyon of the Gunnison",
+    "perk_name": "Stone Still",
+    "perk_type": "focus_speed_boost",
+    "perk_description": "Gain extra mileage boost for every 15-minute interval completed without interacting with your phone.",
+    "perk_scaling": {
+      "type": "speed_multiplier",
+      "levels": [
+        { "level": 1, "value": 1.05 },
+        { "level": 10, "value": 1.1 },
+        { "level": 25, "value": 1.15 },
+        { "level": 50, "value": 1.2 },
+        { "level": 75, "value": 1.25 },
+        { "level": 100, "value": 1.3 }
+      ]
+    },
+    "rarity": "epic"
+  },
+  {
+    "id": "burrow",
+    "name": "Burrow",
+    "species": "Prairie Dog",
+    "park_id": "Bryce Canyon",
+    "perk_name": "Tunnel Vision",
+    "perk_type": "focus_streak_bonus",
+    "perk_description": "Gain bonus Trail Tokens for every completed streak of 3 distraction-free sessions.",
+    "perk_scaling": {
+      "type": "token_bonus_streak",
+      "levels": [
+        { "level": 1, "bonus": 5 },
+        { "level": 10, "bonus": 8 },
+        { "level": 25, "bonus": 12 },
+        { "level": 50, "bonus": 18 },
+        { "level": 75, "bonus": 25 },
+        { "level": 100, "bonus": 35 }
+      ]
+    },
+    "rarity": "rare"
+  },
+  {
+    "id": "clutch",
+    "name": "Clutch",
+    "species": "Collared Lizard",
+    "park_id": "Canyonlands",
+    "perk_name": "Quickstep",
+    "perk_type": "speed_boost",
+    "perk_description": "Earn extra distance every 15 minutes if no strikes are incurred during focus sessions.",
+    "perk_scaling": {
+      "type": "percent_distance_bonus",
+      "levels": [
+        { "level": 1, "bonus": 5 },
+        { "level": 10, "bonus": 8 },
+        { "level": 25, "bonus": 12 },
+        { "level": 50, "bonus": 16 },
+        { "level": 75, "bonus": 20 },
+        { "level": 100, "bonus": 25 }
+      ]
+    },
+    "rarity": "epic"
+  },
+  {
+    "id": "puff",
+    "name": "Puff",
+    "species": "Striped Skunk",
+    "park_id": "Capitol Reef",
+    "perk_name": "Bold Retreat",
+    "perk_type": "strike_protection",
+    "perk_description": "Avoid the first strike of each session, staying on track even after a brief distraction.",
+    "perk_scaling": {
+      "type": "strike_immunity",
+      "levels": [
+        { "level": 1, "value": 1 },
+        { "level": 25, "value": 1 },
+        { "level": 50, "value": 2 },
+        { "level": 75, "value": 2 },
+        { "level": 100, "value": 3 }
+      ]
+    },
+    "rarity": "rare"
+  },
+
+  {
+    "id": "vela",
+    "name": "Vela",
+    "species": "Ringtail",
+    "park_id": "Carlsbad Caverns",
+    "perk_name": "Shadowstep",
+    "perk_type": "distraction_immunity",
+    "perk_description": "First strike from distractions is ignored once per session.",
+    "perk_scaling": {
+      "type": "uses_per_session",
+      "levels": [
+        { "level": 1, "value": 1 },
+        { "level": 20, "value": 2 },
+        { "level": 50, "value": 2 },
+        { "level": 75, "value": 3 },
+        { "level": 100, "value": 3 }
+      ]
+    },
+    "rarity": "epic",
+    "image_base": "ripple_still.png"
+  },
+  {
+    "id": "tidbit",
+    "name": "Tidbit",
+    "species": "Duck",
+    "park_id": "Channel Islands",
+    "perk_name": "Rippling Start",
+    "perk_type": "early_session_bonus",
+    "perk_description": "Gain bonus Trail Tokens if your session starts within 5 minutes of opening the app.",
+    "perk_scaling": {
+      "type": "token_bonus",
+      "levels": [
+        { "level": 1, "tokens": 2 },
+        { "level": 10, "tokens": 4 },
+        { "level": 25, "tokens": 6 },
+        { "level": 50, "tokens": 8 },
+        { "level": 75, "tokens": 10 },
+        { "level": 100, "tokens": 12 }
+      ]
+    },
+    "rarity": "rare"
+  },
+  {
+    "id": "scout",
+    "name": "Scout",
+    "species": "Owl",
+    "park_id": "Congaree",
+    "perk_name": "Night Owl",
+    "perk_type": "night_session_bonus",
+    "perk_description": "Gain bonus Trail Tokens if your session is between 8pm and 8am.",
+    "perk_scaling": {
+      "type": "token_bonus",
+      "levels": [
+        { "level": 1, "tokens": 2 },
+        { "level": 10, "tokens": 4 },
+        { "level": 25, "tokens": 6 },
+        { "level": 50, "tokens": 8 },
+        { "level": 75, "tokens": 10 },
+        { "level": 100, "tokens": 12 }
+      ]
+    },
+    "rarity": "rare"
+  },
+
+{
+  "id": "cascade",
+  "name": "Cascade",
+  "species": "Cougar",
+  "park_id": "Crater Lake",
+  "perk_name": "Surefooted",
+  "perk_type": "strike_tolerance",
+  "perk_description": "You can receive an extra strike before losing your session streak.",
+  "perk_scaling": {
+    "type": "extra_strike",
+    "levels": [
+      { "level": 1, "value": 1 },
+      { "level": 25, "value": 1 },
+      { "level": 50, "value": 2 },
+      { "level": 75, "value": 2 },
+      { "level": 100, "value": 3 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "chuck",
+  "name": "Chuck",
+  "species": "Groundhog",
+  "park_id": "Cuyahoga Valley",
+  "perk_name": "Tunnel Vision",
+  "perk_type": "focus_streak_boost",
+  "perk_description": "Gain bonus XP for completing multiple focus sessions in a row without breaks.",
+  "perk_scaling": {
+    "type": "streak_multiplier",
+    "levels": [
+      { "level": 1, "value": 1.1 },
+      { "level": 10, "value": 1.2 },
+      { "level": 25, "value": 1.35 },
+      { "level": 50, "value": 1.5 },
+      { "level": 75, "value": 1.75 },
+      { "level": 100, "value": 2.0 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "sizzle",
+  "name": "Sizzle",
+  "species": "Rattlesnake",
+  "park_id": "Death Valley",
+  "perk_name": "Heat Zone",
+  "perk_type": "focus_streak_bonus",
+  "perk_description": "Gain bonus tokens for completing long focus streaks without distractions.",
+  "perk_scaling": {
+    "type": "milestone_bonus",
+    "milestones": [
+      { "minutes": 15, "bonus_tokens": 1 },
+      { "minutes": 30, "bonus_tokens": 2 },
+      { "minutes": 45, "bonus_tokens": 3 },
+      { "minutes": 60, "bonus_tokens": 5 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "glint",
+  "name": "Glint",
+  "species": "Canadian Lynx",
+  "park_id": "Denali",
+  "perk_name": "Froststep",
+  "perk_type": "cold_focus_bonus",
+  "perk_description": "Gain bonus XP for completing sessions in cold or early morning hours.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "time_window": "04:00-09:00",
+    "value": 2.0
+  },
+  "rarity": "epic",
+  "image_base": "bramble_still.png"
+},
+{
+  "id": "coral",
+  "name": "Coral",
+  "species": "Red Corn Snake",
+  "park_id": "Dry Tortugas",
+  "perk_name": "Sunbaked Sprint",
+  "perk_type": "speed_boost",
+  "perk_description": "Earn bonus distance every 15 minutes if no strikes occur during a session.",
+  "perk_scaling": {
+    "type": "bonus_distance",
+    "interval": "15min",
+    "levels": [
+      { "level": 1, "value": 0.05 },
+      { "level": 10, "value": 0.1 },
+      { "level": 25, "value": 0.15 },
+      { "level": 50, "value": 0.2 },
+      { "level": 75, "value": 0.25 },
+      { "level": 100, "value": 0.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "snap",
+  "name": "Snap",
+  "species": "Crocodile",
+  "park_id": "Everglades",
+  "perk_name": "Swamp Tactician",
+  "perk_type": "defense_boost",
+  "perk_description": "Reduce stamina drain during wet or muddy trail conditions.",
+  "perk_scaling": {
+    "type": "percentage_reduction",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 8 },
+      { "level": 25, "value": 12 },
+      { "level": 50, "value": 16 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "baelie",
+  "name": "Baelie",
+  "species": "Dall Sheep",
+  "park_id": "Gates of the Arctic",
+  "perk_name": "Peak Focus",
+  "perk_type": "focus_boost",
+  "perk_description": "Maintain higher focus in tough conditions, earning bonus XP when sessions are completed in cold or remote environments.",
+  "perk_scaling": {
+    "type": "percent_bonus",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 10 },
+      { "level": 25, "value": 15 },
+      { "level": 50, "value": 20 },
+      { "level": 75, "value": 25 },
+      { "level": 100, "value": 30 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "tunnel",
+  "name": "Tunnel",
+  "species": "Mole",
+  "park_id": "Gateway Arch",
+  "perk_name": "Deep Digger",
+  "perk_type": "hidden_bonus",
+  "perk_description": "Discover hidden bonuses and shortcuts on trails.",
+  "perk_scaling": {
+    "type": "percent_chance",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 10 },
+      { "level": 25, "value": 15 },
+      { "level": 50, "value": 20 },
+      { "level": 75, "value": 25 },
+      { "level": 100, "value": 30 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "crag",
+  "name": "Crag",
+  "species": "Mountain Goat",
+  "park_id": "Glacier",
+  "perk_name": "Surefooted",
+  "perk_type": "stability_bonus",
+  "perk_description": "Reduces penalties from difficult terrain or unstable conditions during sessions.",
+  "perk_scaling": {
+    "type": "percentage_reduction",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 10 },
+      { "level": 25, "value": 15 },
+      { "level": 50, "value": 20 },
+      { "level": 75, "value": 25 },
+      { "level": 100, "value": 30 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id":"porra",
+  "name":"Porra",
+  "species":"Porcupine",
+  "park_id":"Glacier Bay",
+  "perk_name":"Needle Guard",
+  "Perk_type":"damage_reduction",
+  "perk_description":"Take reduced damage from environmental hazards during hikes.",
+  "perk_scaling": {
+    "type":"percentage_reduction",
+    "Levels":[{"level":1,"value":5},{"level":10,"value":8},{"level":25,"value":12},{"level":50,"value":16},{"level":75,"value":20},{"level":100,"value":25}]
+  }
+  ,"rarity":"rare"
+},
+{
+  "id": "nibble",
+  "name": "Nibble",
+  "species": "Kaibab Squirrel",
+  "park_id": "Grand Canyon",
+  "perk_name": "Treetop Advantage",
+  "perk_type": "scouting_bonus",
+  "perk_description": "Reveal hidden rewards and optimal paths at the beginning of each hike.",
+  "perk_scaling": {
+    "type": "percent_chance",
+    "levels": [
+      { "level": 1, "value": 10 },
+      { "level": 10, "value": 15 },
+      { "level": 25, "value": 20 },
+      { "level": 50, "value": 25 },
+      { "level": 75, "value": 30 },
+      { "level": 100, "value": 40 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "clarion",
+  "name": "Clarion",
+  "species": "Trumpeter Swan",
+  "park_id": "Grand Teton",
+  "perk_name": "Harmonic Focus",
+  "perk_type": "focus_boost",
+  "perk_description": "Extend focus duration during sessions by staying calm and undistracted.",
+  "perk_scaling": {
+    "type": "duration_bonus",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 10 },
+      { "level": 25, "value": 15 },
+      { "level": 50, "value": 20 },
+      { "level": 75, "value": 25 },
+      { "level": 100, "value": 30 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "marlow",
+  "name": "Marlow",
+  "species": "Opossum",
+  "park_id": "Great Basin",
+  "perk_name": "Feign Finesse",
+  "perk_type": "revive_bonus",
+  "perk_description": "Once per day, recover from a missed check-in without losing your streak.",
+  "perk_scaling": {
+    "type": "daily_uses",
+    "levels": [
+      { "level": 1, "value": 1 },
+      { "level": 25, "value": 2 },
+      { "level": 50, "value": 3 },
+      { "level": 75, "value": 4 },
+      { "level": 100, "value": 5 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "pip",
+  "name": "Pip",
+  "species": "Kangaroo Mouse",
+  "park_id": "Great Sand Dunes",
+  "perk_name": "Dust Dash",
+  "perk_type": "token_boost",
+  "perk_description": "Earns bonus tokens when finishing sessions quickly—desert speed meets focus.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "gobbit",
+  "name": "Gobbit",
+  "species": "Wild Turkey",
+  "park_id": "Great Smoky Mountains",
+  "perk_name": "Flock Focus",
+  "perk_type": "group_boost",
+  "perk_description": "Earn bonus XP when hiking in a group session.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.1 },
+      { "level": 10, "value": 1.15 },
+      { "level": 25, "value": 1.2 },
+      { "level": 50, "value": 1.25 },
+      { "level": 75, "value": 1.3 },
+      { "level": 100, "value": 1.4 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "silt",
+  "name": "Silt",
+  "species": "Banded Gecko",
+  "park_id": "Guadalupe Mountains",
+  "perk_name": "Nocturnal Navigator",
+  "perk_type": "night_vision_bonus",
+  "perk_description": "Increased trail clarity and reduced navigation penalties during nighttime sessions.",
+  "perk_scaling": {
+    "type": "percent_effectiveness",
+    "levels": [
+      { "level": 1, "value": 10 },
+      { "level": 10, "value": 15 },
+      { "level": 25, "value": 20 },
+      { "level": 50, "value": 25 },
+      { "level": 75, "value": 30 },
+      { "level": 100, "value": 35 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "nani",
+  "name": "Nani",
+  "species": "Hawaiian Goose",
+  "park_id": "Haleakala",
+  "perk_name": "Island Resilience",
+  "perk_type": "energy_refill_boost",
+  "perk_description": "Refill energy faster when completing sessions near water sources or in coastal regions.",
+  "perk_scaling": {
+    "type": "percent_increase",
+    "levels": [
+      { "level": 1, "value": 10 },
+      { "level": 15, "value": 15 },
+      { "level": 35, "value": 20 },
+      { "level": 60, "value": 25 },
+      { "level": 85, "value": 30 },
+      { "level": 100, "value": 40 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "ula",
+  "name": "ʻUla",
+  "species": "ʻApapane",
+  "park_id": "Hawaiʻi Volcanoes",
+  "perk_name": "Crimson Chorus",
+  "perk_type": "xp_aura",
+  "perk_description": "Boosts XP gain for all nearby wilds during group sessions.",
+  "perk_scaling": {
+    "type": "percent_boost",
+    "levels": [
+      { "level": 1, "value": 3 },
+      { "level": 10, "value": 6 },
+      { "level": 25, "value": 10 },
+      { "level": 50, "value": 15 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "rollo",
+  "name": "Rollo",
+  "species": "Armadillo",
+  "park_id": "Hot Springs",
+  "perk_name": "Defensive Curl",
+  "perk_type": "damage_resist",
+  "perk_description": "Reduce time penalties from trail hazards by shielding with a roll.",
+  "perk_scaling": {
+    "type": "percent_reduction",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 8 },
+      { "level": 25, "value": 12 },
+      { "level": 50, "value": 16 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "puddle",
+  "name": "Puddle",
+  "species": "Fowler's Toad",
+  "park_id": "Indiana Dunes",
+  "perk_name": "Mud Mask",
+  "perk_type": "cooldown_reduction",
+  "perk_description": "Reduces cooldown between hikes by spending time near water.",
+  "perk_scaling": {
+    "type": "time_reduction",
+    "levels": [
+      { "level": 1, "value": 1 },
+      { "level": 10, "value": 2 },
+      { "level": 25, "value": 3 },
+      { "level": 50, "value": 4 },
+      { "level": 75, "value": 5 },
+      { "level": 100, "value": 6 }
+    ]
+  },
+  "rarity": "common"
+},
+{
+  "id": "lodge",
+  "name": "Lodge",
+  "species": "Moose",
+  "park_id": "Isle Royale",
+  "perk_name": "Trail Titan",
+  "perk_type": "focus_streak_bonus",
+  "perk_description": "Earn extra Trail Tokens for maintaining long focus streaks.",
+  "perk_scaling": {
+    "type": "token_bonus_per_streak",
+    "levels": [
+      { "level": 1, "bonus_per_streak": 1 },
+      { "level": 10, "bonus_per_streak": 2 },
+      { "level": 25, "bonus_per_streak": 3 },
+      { "level": 50, "bonus_per_streak": 4 },
+      { "level": 75, "bonus_per_streak": 5 },
+      { "level": 100, "bonus_per_streak": 6 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "speed",
+  "name": "ʻSpeed",
+  "species": "Desert Tortoise",
+  "park_id": "Joshua Tree",
+  "perk_name": "Lava Glide",
+  "perk_type": "travel_efficiency",
+  "perk_description": "Move across trails faster with less fatigue during volcanic terrain sessions.",
+  "perk_scaling": {
+    "type": "percentage_bonus",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 8 },
+      { "level": 25, "value": 12 },
+      { "level": 50, "value": 16 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "shade",
+  "name": "Shade",
+  "species": "Raven",
+  "park_id": "Katmai",
+  "perk_name": "Echo Recall",
+  "perk_type": "xp_memory_bonus",
+  "perk_description": "Earn bonus XP when revisiting previously completed trails.",
+  "perk_scaling": {
+    "type": "flat_bonus",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 10 },
+      { "level": 25, "value": 15 },
+      { "level": 50, "value": 20 },
+      { "level": 75, "value": 25 },
+      { "level": 100, "value": 30 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "aurik",
+  "name": "Aurik",
+  "species": "Polar Bear",
+  "park_id": "Kenai Fjords",
+  "perk_name": "Glacial Calm",
+  "perk_type": "focus_boost",
+  "perk_description": "Grants increased XP during long, uninterrupted deep-focus sessions.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.1 },
+      { "level": 10, "value": 1.15 },
+      { "level": 25, "value": 1.2 },
+      { "level": 50, "value": 1.25 },
+      { "level": 75, "value": 1.3 },
+      { "level": 100, "value": 1.35 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "tizzy",
+  "name": "Tizzy",
+  "species": "Chipmunk",
+  "park_id": "Kings Canyon",
+  "perk_name": "Trail Stash",
+  "perk_type": "item_boost",
+  "perk_description": "Increases the chance of finding free items during sessions—small but mighty gains.",
+  "perk_scaling": {
+    "type": "percent_chance",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 8 },
+      { "level": 25, "value": 12 },
+      { "level": 50, "value": 16 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "koda",
+  "name": "Koda",
+  "species": "Caribou",
+  "park_id": "Kobuk Valley",
+  "perk_name": "Frostline Resilience",
+  "perk_type": "streak_protection",
+  "perk_description": "Prevents streak loss once per week from a missed session—strong, steady momentum.",
+  "perk_scaling": {
+    "type": "percentage_chance",
+    "levels": [
+      { "level": 1, "value": 10 },
+      { "level": 10, "value": 15 },
+      { "level": 25, "value": 20 },
+      { "level": 50, "value": 25 },
+      { "level": 75, "value": 30 },
+      { "level": 100, "value": 35 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "keel",
+  "name": "Keel",
+  "species": "Bald Eagle",
+  "park_id": "Lake Clark",
+  "perk_name": "Skyline Sweep",
+  "perk_type": "overview_bonus",
+  "perk_description": "Boosts XP when reviewing or organizing task lists before a session begins.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "forge",
+  "name": "Forge",
+  "species": "Grizzly Bear",
+  "park_id": "Lassen Volcano",
+  "perk_name": "Magma Drive",
+  "perk_type": "xp_boost",
+  "perk_description": "Grants bonus XP when powering through long sessions without pause—eruptive focus.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.1 },
+      { "level": 10, "value": 1.15 },
+      { "level": 25, "value": 1.2 },
+      { "level": 50, "value": 1.25 },
+      { "level": 75, "value": 1.3 },
+      { "level": 100, "value": 1.35 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "ink",
+  "name": "Ink",
+  "species": "River Otter",
+  "park_id": "Mammoth Cave",
+  "perk_name": "Flowstate Dive",
+  "perk_type": "session_extension",
+  "perk_description": "Extends session time slightly when deep focus is maintained for more than 20 minutes.",
+  "perk_scaling": {
+    "type": "time_extension",
+    "levels": [
+      { "level": 1, "value": 2 },
+      { "level": 10, "value": 3 },
+      { "level": 25, "value": 4 },
+      { "level": 50, "value": 5 },
+      { "level": 75, "value": 6 },
+      { "level": 100, "value": 8 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "roam",
+  "name": "Roam",
+  "species": "Wild Mustang",
+  "park_id": "Mesa Verde",
+  "perk_name": "Momentum Surge",
+  "perk_type": "focus_chain",
+  "perk_description": "Builds up bonus XP when completing two or more full-focus sessions in a row.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "sprig",
+  "name": "Sprig",
+  "species": "Pacific Tree Frog",
+  "park_id": "Mount Rainier",
+  "perk_name": "Echo Jump",
+  "perk_type": "combo_bonus",
+  "perk_description": "Grants bonus XP for chaining short tasks with minimal break time in between.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "zip",
+  "name": "Zip",
+  "species": "Weasel",
+  "park_id": "New River Gorge",
+  "perk_name": "Quickstream Bonus",
+  "perk_type": "burst_xp",
+  "perk_description": "Grants small bursts of XP for completing quick tasks during a session—ideal for momentum stacking.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "flicker",
+  "name": "Flicker",
+  "species": "Coyote",
+  "park_id": "North Cascades",
+  "perk_name": "Trail Trick",
+  "perk_type": "adaptive_bonus",
+  "perk_description": "Randomly boosts one reward type (XP, tokens, or items) each session—coy and clever payoff.",
+  "perk_scaling": {
+    "type": "percent_chance",
+    "levels": [
+      { "level": 1, "value": 10 },
+      { "level": 10, "value": 14 },
+      { "level": 25, "value": 18 },
+      { "level": 50, "value": 22 },
+      { "level": 75, "value": 26 },
+      { "level": 100, "value": 30 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "crest",
+  "name": "Crest",
+  "species": "Elk",
+  "park_id": "Olympic",
+  "perk_name": "Evergreen Rhythm",
+  "perk_type": "consistency_bonus",
+  "perk_description": "Earns extra XP for maintaining a regular session schedule across multiple days.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "mesa",
+  "name": "Mesa",
+  "species": "Gila Monster",
+  "park_id": "Petrified Forest",
+  "perk_name": "Focus Venom",
+  "perk_type": "distraction_block",
+  "perk_description": "Delivers a sharp XP bonus for distraction-free deep focus streaks of 30 minutes or longer.",
+  "perk_scaling": {
+    "type": "percent_chance",
+    "levels": [
+      { "level": 1, "value": 10 },
+      { "level": 10, "value": 15 },
+      { "level": 25, "value": 20 },
+      { "level": 50, "value": 25 },
+      { "level": 75, "value": 30 },
+      { "level": 100, "value": 35 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "vault",
+  "name": "Vault",
+  "species": "California Condor",
+  "park_id": "Pinnacles",
+  "perk_name": "Thermal Surge",
+  "perk_type": "burst_xp",
+  "perk_description": "Grants a surge of XP at the end of a session when finishing strong in the final minutes.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.1 },
+      { "level": 10, "value": 1.15 },
+      { "level": 25, "value": 1.2 },
+      { "level": 50, "value": 1.25 },
+      { "level": 75, "value": 1.3 },
+      { "level": 100, "value": 1.35 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "drift",
+  "name": "Drift",
+  "species": "Banana Slug",
+  "park_id": "Redwood",
+  "perk_name": "Mosslane Flow",
+  "perk_type": "slow_session_bonus",
+  "perk_description": "Earns bonus XP during slower-paced or low-distraction sessions—perfect for mindful focus.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "tuft",
+  "name": "Tuft",
+  "species": "Alpaca",
+  "park_id": "Rocky Mountain",
+  "perk_name": "Altitude Adapt",
+  "perk_type": "streak_boost",
+  "perk_description": "Grants streak bonuses faster when completing sessions in varied task types or durations.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "nudge",
+  "name": "Nudge",
+  "species": "Coati",
+  "park_id": "Saguaro",
+  "perk_name": "Curious Sweep",
+  "perk_type": "item_find",
+  "perk_description": "Increases the chance of discovering hidden items while completing multi-task sessions.",
+  "perk_scaling": {
+    "type": "percent_chance",
+    "levels": [
+      { "level": 1, "value": 6 },
+      { "level": 10, "value": 10 },
+      { "level": 25, "value": 14 },
+      { "level": 50, "value": 18 },
+      { "level": 75, "value": 22 },
+      { "level": 100, "value": 28 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "hitch",
+  "name": "Hitch",
+  "species": "Mule",
+  "park_id": "Sequoia",
+  "perk_name": "Trail Haul",
+  "perk_type": "carryover_bonus",
+  "perk_description": "Carries a portion of unused energy or XP from one session into the next.",
+  "perk_scaling": {
+    "type": "percentage_carryover",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 8 },
+      { "level": 25, "value": 12 },
+      { "level": 50, "value": 16 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "mottle",
+  "name": "Mottle",
+  "species": "Spotted Salamander",
+  "park_id": "Shenandoah",
+  "perk_name": "Stillstream Mode",
+  "perk_type": "session_extension",
+  "perk_description": "Gently extends session time after a focus streak, allowing more XP to be earned before cooldown kicks in.",
+  "perk_scaling": {
+    "type": "time_extension",
+    "levels": [
+      { "level": 1, "value": 2 },
+      { "level": 10, "value": 3 },
+      { "level": 25, "value": 4 },
+      { "level": 50, "value": 5 },
+      { "level": 75, "value": 6 },
+      { "level": 100, "value": 8 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "grit",
+  "name": "Grit",
+  "species": "Badger",
+  "park_id": "Theodore Roosevelt",
+  "perk_name": "Burrow In",
+  "perk_type": "focus_boost",
+  "perk_description": "Reduces distractions and focus penalties during back-to-back sessions.",
+  "perk_scaling": {
+    "type": "percentage_reduction",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 8 },
+      { "level": 25, "value": 12 },
+      { "level": 50, "value": 16 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "sundash",
+  "name": "Sundash",
+  "species": "Iguana",
+  "park_id": "Virgin Islands",
+  "perk_name": "Solar Glide",
+  "perk_type": "token_boost",
+  "perk_description": "Earn bonus tokens during daytime sessions, especially when completing tasks in quick bursts.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "cedar",
+  "name": "Cedar",
+  "species": "Beaver",
+  "park_id": "Voyageurs",
+  "perk_name": "Builder’s Focus",
+  "perk_type": "efficiency_boost",
+  "perk_description": "Increases XP gain from structured task lists and organized session plans.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "common"
+},
+{
+  "id": "shale",
+  "name": "Shale",
+  "species": "Oryx",
+  "park_id": "White Sands",
+  "perk_name": "Dune Balance",
+  "perk_type": "focus_boost",
+  "perk_description": "Gives a small XP bonus when you balance session duration evenly across the week.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "swift",
+  "name": "Swift",
+  "species": "Pronghorn Antelope",
+  "park_id": "Wind Cave",
+  "perk_name": "Momentum Burst",
+  "perk_type": "speed_boost",
+  "perk_description": "Increases XP and distance gains for fast starts and consistent early focus.",
+  "perk_scaling": {
+    "type": "interval_multiplier",
+    "levels": [
+      { "level": 1, "multiplier": 1.05 },
+      { "level": 10, "multiplier": 1.1 },
+      { "level": 25, "multiplier": 1.15 },
+      { "level": 50, "multiplier": 1.2 },
+      { "level": 75, "multiplier": 1.25 },
+      { "level": 100, "multiplier": 1.3 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "rime",
+  "name": "Rime",
+  "species": "Wolverine",
+  "park_id": "Wrangell-St. Elias",
+  "perk_name": "Frostbound Reserve",
+  "perk_type": "recovery_boost",
+  "perk_description": "Recover energy faster between tough sessions—ideal for tackling streaks without burnout.",
+  "perk_scaling": {
+    "type": "percentage_reduction",
+    "levels": [
+      { "level": 1, "value": 5 },
+      { "level": 10, "value": 8 },
+      { "level": 25, "value": 12 },
+      { "level": 50, "value": 16 },
+      { "level": 75, "value": 20 },
+      { "level": 100, "value": 25 }
+    ]
+  },
+  "rarity": "rare"
+},
+{
+  "id": "howl",
+  "name": "Howl",
+  "species": "Wolf",
+  "park_id": "Yellowstone",
+  "perk_name": "Pack Pulse",
+  "perk_type": "group_boost",
+  "perk_description": "Grants a bonus to XP and item finds when sessions overlap with others—stronger in community runs.",
+  "perk_scaling": {
+    "type": "multiplier",
+    "levels": [
+      { "level": 1, "value": 1.05 },
+      { "level": 10, "value": 1.1 },
+      { "level": 25, "value": 1.15 },
+      { "level": 50, "value": 1.2 },
+      { "level": 75, "value": 1.25 },
+      { "level": 100, "value": 1.3 }
+    ]
+  },
+  "rarity": "epic"
+},
+{
+  "id": "whisk",
+  "name": "Whisk",
+  "species": "Bobcat",
+  "park_id": "Yosemite",
+  "perk_name": "Silent Streak",
+  "perk_type": "stealth_bonus",
+  "perk_description": "Gain extra XP and items for completing sessions without any distractions or breaks.",
+  "perk_scaling": {
+    "type": "percent_chance",
+    "levels": [
+      { "level": 1, "value": 10 },
+      { "level": 10, "value": 15 },
+      { "level": 25, "value": 20 },
+      { "level": 50, "value": 25 },
+      { "level": 75, "value": 30 },
+      { "level": 100, "value": 35 }
+    ]
+  },
+  "rarity": "epic"
+},
+
+
+{
+"id": "summit",
+"name": "Summit",
+"species": "Bighorn Sheep",
+"park_id": "zion",
+"perk_name": "Climber's Grit",
+"perk_type": "focus_shield",
+"perk_description": "Reduces XP loss or streak breaks from brief distractions during sessions.",
+"perk_scaling": {
+  "type": "percentage_reduction",
+  "levels": [
+    { "level": 1, "value": 10 },
+    { "level": 10, "value": 15 },
+    { "level": 25, "value": 20 },
+    { "level": 50, "value": 25 },
+    { "level": 75, "value": 30 },
+    { "level": 100, "value": 35 }
   ]
-  
+},
+"rarity": "rare"
+     }
+  ]
+

@@ -16,34 +16,34 @@ export default function WildsScreen()
     // navigation.navigate('WildDetail', { id });
   };
 
-  const createHiddenText = React.useCallback((text: string) =>
-  {
-    return Array.from(text).map(_ => '?').join('');
+  const createHiddenText = React.useCallback((text: string) => {
+    return Array.from(text)
+      .map(_ => '?')
+      .join('');
   }, []);
+
+  const rItem = React.useCallback(({ item }) =>
+  {
+    return (
+   <View style={{margin: 10}}>
+     <WildCard
+       usersWilds={usersWilds}
+       item={item}
+       //isLocked={!usersWilds.has(item.id)} // example lock logic
+       isLocked={false}
+       isActive={item?.is_active}
+       onPress={() => handlePress(item.id)}
+       createHiddenText={createHiddenText}
+     />
+   </View>)
+  }, [createHiddenText])
   return (
     <FlatList
       contentContainerStyle={styles.container}
       data={wildData}
       keyExtractor={item => item.id}
       numColumns={2} // 2-column card grid
-          renderItem={({ item }) => (
-          <View style={{margin:10}}>
-                  <WildCard
-                      usersWilds={usersWilds}
-          id={item.id as any}
-          name={item.name}
-          level={item.starting_level}
-          xpPercent={0}
-          perkName={item.perk_name}
-          perkDescription={item.perk_description}
-          rarity={item.rarity as any}
-                      isLocked={!usersWilds.has(item.id)} // example lock logic
-            isActive={item.is_active}
-                onPress={() => handlePress(item.id)}
-                createHiddenText={createHiddenText}
-                  />
-                  </View>
-      )}
+      renderItem={rItem}
     />
   );
 }

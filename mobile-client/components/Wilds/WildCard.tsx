@@ -5,29 +5,17 @@ import React from 'react';
 import WildAvatar from './WildAvatar';
 
 export interface WildCardProps {
-  usersWilds: string[];
-  id: 'scout' | 'buckey' | 'ember';
-  name: string;
-  level: number;
-  xpPercent: number; // 0 to 1
-  perkName: string;
-  perkDescription: string;
-  rarity: 'common' | 'rare' | 'epic';
-  isLocked: boolean;
+  usersWilds?: string[];
+ item: any,
+  isLocked?: boolean;
   onPress?: () => void;
-  isActive: boolean;
+  isActive?: boolean;
   createHiddenText: (text: string) => string;
 }
 
-const WildCard = ({
+const WildCard = React.memo(({
   usersWilds,
-  id,
-  name,
-  level,
-  xpPercent,
-  perkName,
-  perkDescription,
-  rarity,
+ item, 
   isLocked,
   onPress,
   isActive,
@@ -64,42 +52,50 @@ const WildCard = ({
   return (
     <Pressable
       onPress={onPress}
-      disabled={isLocked}
+      disabled={false}
       style={[
         styles.card,
         isLocked && styles.locked,
         isActive && styles.activeWild,
         !isActive && !isLocked && styles.inactive,
       ]}>
-      {id === 'scout' ? (
+      {item.id === 'scout' ? (
         <Rive
           ref={riveRef}
-          resourceName={id}
+          resourceName={item.id}
           artboardName="Artboard"
           stateMachineName="State Machine 1"
-          style={{width: 150, height: 150}}
+          style={{ width: 100, height: 100 }}
+          key={item.id}
         />
       ) : (
         <WildAvatar
-          id={id}
-          pose={isLocked ? 'hidden' : isActive ? 'wave' : 'rest'}
+            id={item.id}
+            key={item.id}
+          // pose={isLocked ? 'hidden' : isActive ? 'wave' : 'rest'}
+          pose={'still'}
         />
       )}
       <View style={styles.info}>
         <Text style={styles.name}>
-          {isLocked ? createHiddenText(name) : name}
+          {isLocked ? createHiddenText(item.name) : item.name}
         </Text>
-        <Text style={styles.level}>Level {level}</Text>
+        <Text style={styles.level}>{item.species}</Text>
+        <Text style={styles.level}>Level {item.level ? item.level : 1}</Text>
         <View style={styles.progressContainer}>
-          <View style={[styles.progressFill, {width: `${xpPercent * 100}%`}]} />
+          <View
+            style={[styles.progressFill, {width: `${Math.random() * 100}%`}]}
+          />
         </View>
-        <Text style={styles.perkTitle}>{isLocked ? '' : perkName}</Text>
-        <Text style={styles.perkDesc}>{isLocked ? '' : perkDescription}</Text>
+        <Text style={styles.perkTitle}>{isLocked ? '' : item.perk_name}</Text>
+        <Text style={styles.perkDesc}>
+          {isLocked ? '' : item.perk_description}
+        </Text>
         {isLocked && <Text style={styles.lockedText}>Locked</Text>}
       </View>
     </Pressable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   activeWild: {
@@ -118,6 +114,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     marginBottom: 4,
+    alignItems:'center',
   },
   locked: {
     opacity: 0.6,
