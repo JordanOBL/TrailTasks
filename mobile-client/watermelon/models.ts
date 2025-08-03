@@ -27,6 +27,10 @@ export class Park extends Model {
   @field('park_name') parkName;
   @field('park_type') parkType;
   @field('park_image_url') parkImageUrl;
+  @field('terrain_type') terrainType;
+  @field('climate') climate;
+  @field('wild_id') wildId;
+
 
   @children('trails') trails;
   @children('users_parks') usersParks; // Track users' progress in this park
@@ -81,6 +85,7 @@ export class User extends Model {
     users_parks: {type: 'has_many', foreignKey: 'user_id'}, // Added for park-level tracking
     users_friends: {type: 'has_many', foreignKey: 'user_id'},
     cached_friends: {type: 'has_many', foreignKey: 'user_id'},
+    users_wilds: {type: 'has_many', foreignKey: 'user_id'},
 
   };
 
@@ -96,11 +101,10 @@ export class User extends Model {
   @field('trail_progress') trailProgress;
   @field('trail_started_at') trailStartedAt;
   @field('trail_tokens') trailTokens;
-  @field('is_subscribed') isSubscribed;
   @field('prestige_level') prestigeLevel;
   @field('room_id') roomId;
-@date('created_at') createdAt;
- @date('updated_at') updatedAt;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 
   @relation('trails', 'trail_id') trail;
 
@@ -110,19 +114,20 @@ export class User extends Model {
   @children('users_queued_trails') usersQueuedTrails;
   @children('users_purchased_trails') usersPurchasedTrails;
   @children('users_addons') usersAddons;
-  @children('users_parks') usersParks; // Added to track user progress in parks
+  @children('users_parks') usersParks;
+  @children('users_wilds') usersWilds; // Added to track user progress in parks
   @children('users_friends') friends;
- @children('cached_friends') cachedFriends; 
+  @children('cached_friends') cachedFriends;
 
   //@relation('users_subscriptions', 'subscription_id') userSubscription;
   @writer
   async addRoomId(roomId){
     try{
       await this.update(() => {
-        this.roomId = roomId
-      })
+        this.roomId = roomId;
+      });
     }catch(err){
-      handleError('user.updateRoomId()', err)
+      handleError('user.updateRoomId()', err);
     }
   }
 
@@ -130,16 +135,16 @@ export class User extends Model {
   async removeRoomId(){
     try{
       await this.update(() => {
-        this.roomId = null
-      })
+        this.roomId = null;
+      });
     }catch(err){
-      handleError('user.removeRoomId()', err)
+      handleError('user.removeRoomId()', err);
     }
   }
 
   @writer
   async addFriend(friend){
-    console.log('in addFriend', friend)
+    console.log('in addFriend', friend);
     try{
       await this.batch(
         this.collections.get('users_friends').prepareCreate((userFriend) =>{
@@ -150,19 +155,19 @@ export class User extends Model {
         this.collections.get('cached_friends').prepareCreate((cachedFriend) =>{
           cachedFriend.userId = this.id;
           cachedFriend.friendId = friend.friendId;
-          cachedFriend.username = friend.username
-          cachedFriend.totalMiles = friend.totalMiles
-          cachedFriend.currentTrail = friend.currentTrail
-          cachedFriend.trailProgress = friend.trailProgress
-          cachedFriend.roomId = friend.roomId
+          cachedFriend.username = friend.username;
+          cachedFriend.totalMiles = friend.totalMiles;
+          cachedFriend.currentTrail = friend.currentTrail;
+          cachedFriend.trailProgress = friend.trailProgress;
+          cachedFriend.roomId = friend.roomId;
 
         })
-      )
-      return {success: true} 
+      );
+      return {success: true};
 
     }catch(err){
-      handleError('user.addFriend()', err)
-      return {success: false}
+      handleError('user.addFriend()', err);
+      return {success: false};
     }
   }
 
@@ -224,49 +229,49 @@ export class User extends Model {
       const newSession = this.collections
       .get('users_sessions')
       .prepareCreate((userSession) => {
-        userSession.userId = this.id
-        userSession.sessionName = sessionDetails.sessionName
-        userSession.sessionDescription = sessionDetails.sessionDescription || ''
-        userSession.sessionCategoryId = sessionDetails.sessionCategoryId
-        userSession.totalSessionTime = '0'
-        userSession.totalDistanceHiked = '0.00'
-        userSession.dateAdded = formatDateTime(new Date())
-      })
+        userSession.userId = this.id;
+        userSession.sessionName = sessionDetails.sessionName;
+        userSession.sessionDescription = sessionDetails.sessionDescription || '';
+        userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
+        userSession.totalSessionTime = '0';
+        userSession.totalDistanceHiked = '0.00';
+        userSession.dateAdded = formatDateTime(new Date());
+      });
 
-      const sessionAddonsPrepares = []
-      const consumePrepares = []
+      const sessionAddonsPrepares = [];
+      const consumePrepares = [];
 
       for (const slot of sessionDetails.backpack) {
-        if (!slot.addon) continue
+        if (!slot.addon) {continue;}
 
         // create a session_addons record
         const sessionAddonPrepared = this.collections
         .get('sessions_addons')
         .prepareCreate((sa) => {
-          sa.sessionId = newSession.id
-          sa.addonId = slot.addon.id
-        })
-        sessionAddonsPrepares.push(sessionAddonPrepared)
+          sa.sessionId = newSession.id;
+          sa.addonId = slot.addon.id;
+        });
+        sessionAddonsPrepares.push(sessionAddonPrepared);
 
-        const [addonRecord] = await this.usersAddons.extend(Q.where('addon_id', slot.addon.id))
+        const [addonRecord] = await this.usersAddons.extend(Q.where('addon_id', slot.addon.id));
 
         if (!addonRecord) {
-          // handle "user doesn't actually have this addon"? 
+          // handle "user doesn't actually have this addon"?
           // or skip, or throw an error
-          continue
+          continue;
         }
 
-        const consumePrepared = this.prepareConsumeUserAddons(addonRecord)
-        consumePrepares.push(consumePrepared)
+        const consumePrepared = this.prepareConsumeUserAddons(addonRecord);
+        consumePrepares.push(consumePrepared);
       }
 
       // 3) batch everything
-      await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares)
+      await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares);
 
-      return { newSession, status: true }    
+      return { newSession, status: true };
     } catch (e) {
-      handleError(e, 'Error user.startNewSession()')
-      return { data: null, status: false }
+      handleError(e, 'Error user.startNewSession()');
+      return { data: null, status: false };
     }
   }
 
@@ -466,9 +471,9 @@ async buyAddon(addOn) {
     );
 
     // 5. Notify success
-    return `You purchased ${addOn.name}`
+    return `You purchased ${addOn.name}`;
   } catch (err) {
-    console.error("Error in buyAddon:", err);
+    console.error('Error in buyAddon:', err);
     // Rethrow to handle it at a higher level if needed
     throw err;
   }
@@ -577,7 +582,7 @@ async buyAddon(addOn) {
     const completedTrail = await this.collections
         .get('users_completed_trails')
         .find(completedTrailId);
-    // eslint-disable-next-line no-shadow
+
     return await completedTrail.update((existingTrail) => {
       existingTrail.bestCompletedTime = bestCompletedTime;
       existingTrail.lastCompletedAt = lastCompletedAt;
@@ -597,7 +602,9 @@ async buyAddon(addOn) {
   @writer
   async redeemParkPass(parkId:string) {
     const reward = ( this.prestigeLevel * 100 ) + 200;
-    let newUserPark
+    let newUserPark;
+    let createUserWild;
+    let parkWild;
     const [ existingParkPass ] = await this.collections
         .get('users_parks')
         .query(Q.and(Q.where('user_id', this.id), Q.where('park_id', parkId)))
@@ -612,26 +619,40 @@ async buyAddon(addOn) {
         parkPass.parkLevel = 1;
         parkPass.isRewardRedeemed = true;
       });
+      [parkWild] = await this.collections.get('wilds').query(Q.where('park_id', parkId)).fetch();
+      createUserWild = this.collections.get('users_wilds').prepareCreate((wild) => {
+        wild.userId = this.id;
+        wild.wildId = parkWild.id; // Assuming '1' is a default wild ID
+        wild.isActive = true;
+        wild.unlockedAt = new Date().toISOString();
+      });
 
     } else if (this.prestigeLevel === existingParkPass.parkLevel) {
        newUserPark = existingParkPass.prepareUpdate((pass) => {
           pass.parkLevel += 1;
           pass.lastCompleted = new Date().toISOString();
           pass.isRewardRedeemed = true;
-        })
+        });
     }
   await this.database.batch(
       this.prepareUpdate((user) => {
         user.trailTokens += reward;
       }),
       newUserPark,
-    )
+      createUserWild,
+      this.database.get('users_wilds').prepareCreate((userWild) => {
+        userWild.userId = this.id;
+        userWild.wildId = parkWild.id; // Assuming wild.id is the ID of the wild created earlier
+        userWild.isActive = true;
+        userWild.unlockedAt = new Date().toISOString();
+      })
+    );
 
   }
 
   @writer
   async prestigeParkPasses() {
-    const reward = ( (this.prestigeLevel + 1) * 1000 ) ;
+    const reward = ( (this.prestigeLevel + 1) * 1000 );
     await this.update((user) => {
       user.prestigeLevel += 1;
       user.trailTokens += reward;
@@ -683,6 +704,35 @@ export class Cached_Friend extends Model {
   @immutableRelation('users', 'user_id') user;
 }
 
+export class Wild extends Model
+{
+   static table = 'wilds';
+
+  @field('wild_name') wildName;
+  @field('species') species;
+  @field('park_id') parkId;
+  @field('perk_id') perkId;
+  @field('rarity') rarity;
+}
+
+export class User_Wild extends Model
+{
+   static table = 'users_wilds';
+  static associations = {
+    users: { type: 'has_many', foreignKey: 'user_id' },
+    wilds: {type: 'has_many', foreignKey: 'wild_id'},
+  };
+
+  @field('user_id') userId;
+  @field('wild_id') wildId;
+  @field('is_active') isActive;
+  @date('unlocked_at') unlockedAt;
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
+  @immutableRelation('users', 'user_id') user;
+  @immutableRelation('wilds', 'wild_id') wild;
+}
+
 
 export class Achievement extends Model {
   static table = 'achievements';
@@ -716,6 +766,7 @@ export class User_Achievement extends Model {
   @field('completed_at') completedAt;
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;
+
 
   @immutableRelation('users', 'user_id') user;
   @immutableRelation('achievements', 'achievement_id') achievement;
@@ -843,22 +894,6 @@ export class User_Session extends Model {
   }
 }
 
-//// @ts-ignore
-//export class Subscription extends Model {
-//  static table = 'users_subscriptions';
-//  static associations = {
-//    users: {type: 'belongs_to', key: 'user_id'},
-//  };
-//  @field('user_id') userId;
-//  @field('is_active') isActive;
-//  @field('expires_at') expiresAt;
-//  @date('created_at') createdAt;
-//  @date('updated_at') updatedAt;
-//
-//  @relation('users', 'user_id') user;
-//
-//  @children('users') users;
-//}
 
 // @ts-ignore
 export class Addon extends Model {
@@ -876,7 +911,7 @@ export class Addon extends Model {
   @field('required_total_miles') requiredTotalMiles;
   @field('effect_type') effectType;
   @field('effect_value') effectValue;
-   @date('created_at') createdAt;
+  @date('created_at') createdAt;
   @date('updated_at') updatedAt;
 }
 
@@ -930,5 +965,22 @@ export class User_Park extends Model {
 
   @immutableRelation('parks', 'park_id') park;
   //@immutableRelation('badges', 'badge_id') badge;
+}
+
+export class Park_Wild extends Model {
+  static table = 'parks_wilds';
+  static associations = {
+    parks: { type: 'belongs_to', foreignKey: 'park_id' }, // Links to specific parks
+    wilds: { type: 'belongs_to', foreignKey: 'wild_id' }, // Links to specific wilds
+  };
+
+  @field('park_id') parkId;
+  @field('wild_id') wildId;
+
+  @immutableRelation('parks', 'park_id') park;
+  @immutableRelation('wilds', 'wild_id') wild;
+
+  @date('created_at') createdAt;
+  @date('updated_at') updatedAt;
 }
 

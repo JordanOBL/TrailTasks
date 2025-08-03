@@ -5,38 +5,44 @@ import {
     Achievement,
     Addon,
     Park,
-    User_Completed_Trail,
     Park_State,
+    Park_Wild,
     SYNC,
+    Session_Addon,
     Session_Category,
-    //Subscription,
     Trail,
     User,
-    User_Addon,
     User_Achievement,
+    User_Addon,
+    User_Completed_Trail,
+    User_Friend,
+    User_Park,
     User_Purchased_Trail,
     User_Session,
-    Session_Addon,
-    User_Park,
-    User_Friend
+    User_Wild,
+    Wild
 } from './db/sequelizeModel.js';
-// import pool from "./db/config.js";
+import {Op, QueryTypes, Sequelize} from 'sequelize';
 
-import {Sequelize, Op, QueryTypes} from 'sequelize';
+import InitialAddons from "./helpers/Addons/InitialAddons.js";
+import InitialParkStates from "./helpers/ParkState/InitialParkStates.js";
+import InitialParks from "./helpers/Parks/InitialParks.js";
+import InitialParksWilds from './helpers/ParksWilds/InitialParksWilds.js';
+import InitialSessionCategories from "./helpers/Session/InitialSessionCategories.js";
+import InitialTrails from "./helpers/Trails/InitialTrails.js";
+import InitialWilds from './helpers/Wild/InitialWilds.js'
 import achievementsWithIds from './assets/Achievements/addAchievementIds.js';
 import bodyparser from 'body-parser';
 import cors from 'cors';
+import cron from 'node-cron';
+import dotenv from 'dotenv';
+import {exec} from 'child_process';
 import express from 'express';
 import masterAchievementList from './assets/Achievements/masterAchievementList.js';
-import dotenv from 'dotenv';
-import cron from 'node-cron';
-import {exec} from 'child_process';
-import InitialParks from "./helpers/Parks/InitialParks.js";
-import InitialParkStates from "./helpers/ParkState/InitialParkStates.js";
-import InitialAddons from "./helpers/Addons/InitialAddons.js";
-import InitialSessionCategories from "./helpers/Session/InitialSessionCategories.js";
-import InitialTrails from "./helpers/Trails/InitialTrails.js";
 import res from "express/lib/response.js";
+
+// import pool from "./db/config.js";
+
 // Load environment variables from the correct file based on the environment
 dotenv.config({
     path: process.env.NODE_ENV === 'production' ? '.env.production' : process.env.NODE_ENV === 'development' ? '.env.development' : '.env.test'
@@ -395,7 +401,10 @@ app.get('/pull', async (req, res) => {
 
             const createdParkStates = await Park_State.findAll({});
 
+            const createdWilds = await Wild.findAll({});
+
             const createdSessionCategories = await Session_Category.findAll({});
+            const createdParksWilds = await Park_Wild.findAll({});
 
             const responseData = {
                 changes: {
@@ -429,6 +438,17 @@ app.get('/pull', async (req, res) => {
                         updated:  createdSessionCategories,
                         deleted: [],
                     },
+                    wilds: {
+                       created: [],
+                        updated:  createdWilds,
+                        deleted: [], 
+                    },
+                    parks_wilds: {
+                        created: [],
+                        updated: createdParksWilds,
+                        deleted: [],
+                    },
+
 
                 },
                 timestamp: Date.now(),
@@ -468,14 +488,7 @@ app.get('/pull', async (req, res) => {
                     id:{[Sequelize.Op.eq]: userId},
                 },
             });
-//            const createdSubscriptions = await Subscription.findAll({
-//                where: {
-//                    createdAt: {
-//                        [Sequelize.Op.gt]: lastPulledAt,
-//                    },
-//                },
-//            });
-//
+
             const createdTrails = await Trail.findAll({
                 where: {
                     createdAt: {
@@ -548,15 +561,6 @@ app.get('/pull', async (req, res) => {
                 },
             })
 
-//            const updatedSubscriptions = await Subscription.findAll({
-//                where: {
-//                    updatedAt: {
-//                        [Sequelize.Op.gt]: lastPulledAt,
-//                    },
-//                    user_id: userId,
-//                },
-//            });
-
             const updatedParks = await Park.findAll({
                 where: {
                     updatedAt: {
@@ -587,7 +591,7 @@ app.get('/pull', async (req, res) => {
                     user_id: userId,
                 },
             })
-              const updatedUserParks = await User_Park.findAll({
+            const updatedUserParks = await User_Park.findAll({
                 where: {
                     updatedAt: {
                         [Sequelize.Op.gt]: lastPulledAt,
@@ -619,6 +623,23 @@ app.get('/pull', async (req, res) => {
                     user_id: userId,
                 },
             });
+
+            const createdWilds = await Wild.findAll({
+                where: {
+                    updatedAt: {
+                        [Sequelize.Op.gt]: lastPulledAt,
+                    }
+                },
+            });
+
+            const updatedUserWilds = await User_Wild.findAll({
+                where: {
+                    updatedAt: {
+                        [Sequelize.Op.gt]: lastPulledAt,
+                    },
+                    user_id: userId,
+                },
+            });
             const updatedFriends = await User_Friend.findAll({
                 where: {
                     updatedAt: {
@@ -627,6 +648,14 @@ app.get('/pull', async (req, res) => {
                     user_id: userId,
                 },
             })
+
+            const updatedParksWilds = await Park_Wild.findAll({
+                where: {
+                    updatedAt: {
+                        [Sequelize.Op.gt]: lastPulledAt,
+                    },
+                },
+            });
             //!Removed createdusers, createdUsersSubscriptinos, and created UsersMiles arrays. This removed the fail to update error.
             const responseData = {
                 changes: {
@@ -660,11 +689,7 @@ app.get('/pull', async (req, res) => {
                         updated: createdUserParks.length ? createdUserParks : [],
                         deleted: [],
                     },
-//                    users_subscriptions: {
-//                        created: [],
-//                        updated: updatedSubscriptions.length ? updatedSubscriptions : [],
-//                        deleted: [],
-//                    },
+
                     users_achievements: {
                         created: [],
                         updated: createdUserAchievements,
@@ -705,6 +730,22 @@ app.get('/pull', async (req, res) => {
                         updated: createdSessionCategories,
                         deleted: [],
                     },
+                    wilds: {
+                        created: [],
+                        updated: createdWilds,
+                        deleted: [],
+                    },
+                    users_wilds:{
+                        created: [],
+                        updated: updatedUserWilds,
+                        deleted: [],
+                    },
+                    parks_wilds: {
+                        created: [],
+                        updated: updatedParksWilds,
+                        deleted: [],
+                    },
+                    
                 },
                 timestamp: Date.now(),
             };
@@ -762,14 +803,15 @@ app.post('/push', async (req, res) => {
                     changes.users_friends.created, {updateOnDuplicate: ['id']}
                 );
             }
-//            if (changes?.users_subscriptions?.created[0] !== undefined) {
-//                const users_subscriptions = await Subscription.bulkCreate(
-//                    changes.users_subscriptions.created, {updateOnDuplicate: ['id']}
-//                );
-//            }
+
             if (changes?.users_completed_trails?.created[0] !== undefined) {
                 const users_completed_trails = await User_Completed_Trail.bulkCreate(
                     changes.users_completed_trails.created, {updateOnDuplicate: ['id']}
+                );
+            }
+            if (changes?.users_wilds?.created[0] !== undefined) {
+                const users_wilds = await User_Wild.bulkCreate(
+                    changes.users_wilds.created, {updateOnDuplicate: ['id']}
                 );
             }
             //updates to created rows in pg database
@@ -779,6 +821,19 @@ app.post('/push', async (req, res) => {
                     return User.update({...remoteEntry}, {
                         where: {
                             id: remoteEntry.id,
+                        },
+                    });
+                });
+                await Promise.all(updateQueries);
+            }
+
+            if (changes?.users_wilds?.updated[0] !== undefined) {
+                const updateQueries = changes.users_wilds.updated.map((remoteEntry) => {
+                    //console.log({remoteEntry});
+                    return User.update({...remoteEntry}, {
+                        where: {
+                            user_id: remoteEntry.user_id,
+                            wild_id: remoteEntry.wild_id,
                         },
                     });
                 });
@@ -869,22 +924,7 @@ app.post('/push', async (req, res) => {
                 );
                 await Promise.all(updateQueries);
             }
-//            if (changes?.users_subscriptions?.updated[0] !== undefined) {
-//                const updateQueries = changes.users_subscriptions.updated.map(
-//                    (remoteEntry) => {
-//                        // console.log({remoteEntry});
-//                        return Subscription.update(
-//                            {...remoteEntry},
-//                            {
-//                                where: {
-//                                    id: remoteEntry.id,
-//                                },
-//                            }
-//                        );
-//                    }
-//                );
-//                await Promise.all(updateQueries);
-//            }
+
             if (changes?.users_completed_trails?.updated[0] !== undefined) {
                 const updateQueries = changes.users_completed_trails.updated.map(
                     (remoteEntry) => {
@@ -924,14 +964,8 @@ app.post('/push', async (req, res) => {
     }});
 async function seedDatabase(){
     try {
-        // Query the database for the user
-        const trails = await Trail.findAll()
+      
 
-        // Set userId in res.locals
-//        if (trails.length > 0) {
-//            console.log("initial Database  already loaded")
-//            return
-//        }
         console.log('seeding postgres table...');
         try {
             await Park.bulkCreate(
@@ -956,7 +990,13 @@ async function seedDatabase(){
             await Addon.bulkCreate(
                 InitialAddons,{ignoreDuplicates: true}
             )
-
+            await Wild.bulkCreate(
+                InitialWilds, {ignoreDuplicates: true}
+            )
+            await Park_Wild.bulkCreate(
+                InitialParksWilds, {ignoreDuplicates: true}
+            )
+            
             console.log('Seeding Server Successful');
         } catch (err) {
             console.log('Error in server seeding pgdb', err);

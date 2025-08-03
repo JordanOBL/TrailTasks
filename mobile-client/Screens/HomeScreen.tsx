@@ -39,6 +39,7 @@ interface Props {
     currentTrail?: any;
     navigation: any;
     setUser: any;
+    userWilds:any;
 
 }
 
@@ -46,6 +47,7 @@ const HomeScreen: React.FC<Props> = ({
                                          user,
                                          navigation,
                                          currentTrail,
+                                         userWilds,
                                      }) => {
     const watermelonDatabase = useDatabase();
     const {theme} = useTheme();
@@ -63,6 +65,7 @@ const HomeScreen: React.FC<Props> = ({
     const styles = getStyles(theme); // dynamically generate styles based on theme
     const {currentOffering, customerInfo, isProMember } = useAuthContext();
     userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
+    
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
@@ -78,12 +81,9 @@ const HomeScreen: React.FC<Props> = ({
        return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
      }
 
-    
-
-
-
     //this useEffect checks daily streak and resets if needed
     React.useEffect(() => {
+      console.log('userWilds', userWilds)
       if (user) {
         checkDailyStreak(user);
       }
@@ -96,30 +96,29 @@ const HomeScreen: React.FC<Props> = ({
       } else {
         setShowTutorial(false);
       }
-    }, [user]);
-    React.useEffect(() => {
-      let timeout: string | number | NodeJS.Timeout | null | undefined = null;
+    }, [user, userWilds]);
+    // React.useEffect(() => {
+    //   let timeout: string | number | NodeJS.Timeout | null | undefined = null;
 
-      function scheduleWave() {
-        const delay = getRandom();
+    //   function scheduleWave() {
+    //     const delay = getRandom();
 
-        console.log(delay)
-        timeout = setTimeout(() => {
-          if (riveRef.current)
-          {
-            console.log('hi')
-            wave();
-          }
-          scheduleWave(); // Recurse to schedule the next blink
-        }, delay);
-      }
+    //     console.log(delay)
+    //     timeout = setTimeout(() => {
+    //       if (riveRef.current)
+    //       {
+    //         wave();
+    //       }
+    //       scheduleWave(); // Recurse to schedule the next blink
+    //     }, delay);
+    //   }
 
-      scheduleWave(); // Start the blinking loop
+    //   scheduleWave(); // Start the blinking loop
 
-      return () => {
-        clearTimeout(timeout); // Clean up on unmount
-      };
-    }, [riveRef]);
+    //   return () => {
+    //     clearTimeout(timeout); // Clean up on unmount
+    //   };
+    // }, [riveRef]);
 
 
 
@@ -196,25 +195,22 @@ const HomeScreen: React.FC<Props> = ({
               <View style={styles.carouselItem}>
                 {index === 0 ? (
                   <View style={styles.rankContainer}>
+{ userWilds.length ? 
                     <Rive
                       ref={riveRef}
                       resourceName="scout"
                       artboardName="Artboard"
                       stateMachineName="State Machine 1"
                       style={{width: 150, height: 150}}
-                    />
+                    /> : <Text style={{color: 'white'}}>No Wild Selected</Text>
+ }
                     <View
                       style={{
                         flexDirection: 'row',
                         justifyContent: 'center',
                         width: '100%',
                       }}>
-                      <View style={{flexDirection: 'row'}}>
-                        <Text style={styles.wildInfo}>
-                          LVL 2: Scout - {userRankRef.current?.group}{' '}
-                          {userRankRef.current?.title}
-                        </Text>
-                      </View>
+                   
                     </View>
                   </View>
                 ) : (
@@ -319,6 +315,7 @@ const enhance = withObservables(['user'], ({user}) => ({
     user: user.observe(),
     currentTrail: user.trail.observe(),
     userSessions: user.usersSessions.observe(),
+    userWilds: user.usersWilds.observe()
 }));
 
 const EnhancedHomeScreen = enhance(HomeScreen);

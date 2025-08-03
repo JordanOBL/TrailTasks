@@ -1,4 +1,5 @@
-[
+
+const InitialWilds = [
   {
     "id": "ember",
     "wild_name": "Ember",
@@ -572,3 +573,5 @@
     "rarity": "rare"
 }]
 
+
+export default InitialWilds;

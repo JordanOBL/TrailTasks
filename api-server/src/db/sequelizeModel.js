@@ -1,6 +1,5 @@
 import {DataTypes, Sequelize} from 'sequelize';
 
-
 //const PGUSER = 'jordan';
 //const PGHOST = '192.168.1.208';
 //const PGHOST = 'localhost';
@@ -14,6 +13,7 @@ import {DataTypes, Sequelize} from 'sequelize';
 // const PGPORT = 47370;
 // const PGPASSWORD = 'SpFDCqoKArXHeXwSrLruWVzRcZQNcuwL';
 import dotenv from 'dotenv'
+
 dotenv.config({
   path: process.env.NODE_ENV === 'production' ? '.env.production' : process.env.NODE_ENV === 'development' ? '.env.development' : '.env.test'
 });
@@ -32,24 +32,26 @@ const sequelize = new Sequelize(process.env.PGDBNAME, process.env.PGUSER, proces
 });
 
 export const Park = sequelize.define(
-  'Park',
-  {
-    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-    park_name: {type: DataTypes.STRING, allowNull: false},
-    park_type: {type: DataTypes.STRING, allowNull: false},
-    park_image_url: {type: DataTypes.STRING},
-  },
-  {
-    tableName: 'parks',
-    underscored: true,
-    indexes: [
-      // Create a unique index on field
-      {
-        unique: true,
-        fields: ['park_name'],
-      },
-    ],
-  }
+	'Park',
+	{
+		id: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
+		park_name: { type: DataTypes.STRING, allowNull: false },
+		park_type: { type: DataTypes.STRING, allowNull: false },
+		park_image_url: { type: DataTypes.STRING },
+		terrain_type: { type: DataTypes.STRING },
+		climate: { type: DataTypes.STRING },
+	},
+	{
+		tableName: 'parks',
+		underscored: true,
+		indexes: [
+			// Create a unique index on field
+			{
+				unique: true,
+				fields: ['park_name'],
+			},
+		],
+	}
 );
 export const Trail = sequelize.define(
   'Trail',
@@ -152,6 +154,46 @@ export const Park_State = sequelize.define(
   },
   {tableName: 'park_states', underscored: true}
 );
+
+export const Wild = sequelize.define(
+  'Wild',
+  {
+    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    wild_name: {type: DataTypes.STRING, allowNull: false},
+    species: {type: DataTypes.STRING, allowNull: false},
+    park_id: {type: DataTypes.STRING, allowNull: false},
+    perk_id: {type: DataTypes.STRING, allowNull: true},
+    rarity: {type: DataTypes.STRING, allowNull: false},
+  },
+  {tableName: 'wilds', underscored: true, indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['id', 'wild_name']
+      }
+    ]
+  }
+);
+
+export const User_Wild = sequelize.define(
+  'User_Wild',
+  {
+    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+    user_id: {type: DataTypes.STRING, allowNull: false},
+    wild_id: {type: DataTypes.STRING, allowNull: false},
+    is_active: {type: DataTypes.BOOLEAN, allowNull: false},
+    unlocked_at: {type: DataTypes.DATE, allowNull: true},
+  },
+  {tableName: 'users_wilds', underscored: true, indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['user_id', 'wild_id']
+      }
+    ]
+  }
+);
+
 export const Achievement = sequelize.define(
   'Achievement',
   {
@@ -308,21 +350,6 @@ export const Session_Addon = sequelize.define(
   {tableName: 'sessions_addons', underscored: true}
 )
 
-//export const Subscription = sequelize.define(
-//  'Subscription',
-//  {
-//    id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
-//    user_id: {type: DataTypes.STRING, allowNull: false},
-//    is_active: {
-//      type: DataTypes.BOOLEAN,
-//      allowNull: false,
-//      defaultValue: false,
-//    },
-//    expires_at: {type: DataTypes.STRING, allowNull: true},
-//  },
-//  {tableName: 'users_subscriptions'}
-//);
-
 export const Addon = sequelize.define(
   'Addon',
   {
@@ -395,6 +422,36 @@ export const User_Friend = sequelize.define(
   }
 )
 
+export const Park_Wild = sequelize.define(
+  'Park_Wild',
+  {
+    //id: {type: DataTypes.STRING, allowNull: false, primaryKey: true},
+      id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true, // This will be converted to SERIAL in PostgreSQL
+  },
+    park_id: {type: DataTypes.STRING, allowNull: false},
+    wild_id: {type: DataTypes.STRING, allowNull: false},
+  },
+  {
+    tableName: 'parks_wilds',
+    underscored: true,
+    indexes: [
+      // Create a unique index on field
+      {
+        unique: true,
+        fields: ['park_id', 'wild_id'],
+      },
+    ],
+  }
+);
+
+// Define associations
+Park.hasMany(Wild, {foreignKey: 'park_id'});
+Wild.belongsTo(Park, {foreignKey: 'park_id'});
+
+
 User.belongsTo(Trail, {foreignKey: 'trail_id'});
 Trail.hasMany(User, {foreignKey: 'trail_id'});
 
@@ -407,10 +464,10 @@ Park_State.belongsTo(Park);
 Park.hasMany(Trail, {foreignKey: 'park_id'});
 Trail.belongsTo(Park, {foreignKey: 'park_id'});
 
-User.hasMany(User_Achievement, {foriegnKey: 'user_id'});
+User.hasMany(User_Achievement, {foreignKey: 'user_id'});
 User_Achievement.belongsTo(User);
 
-Achievement.hasMany(User_Achievement, {foriegnKey: 'achievement_id'});
+Achievement.hasMany(User_Achievement, {foreignKey: 'achievement_id'});
 User_Achievement.belongsTo(Achievement);
 
 // Achievement.belongsToMany(User, {through: 'users_achievements'});
@@ -465,9 +522,11 @@ User.hasMany(User_Friend, { foreignKey: 'user_id' });
 User_Friend.belongsTo(User, { foreignKey: 'friend_id' });
 User.hasMany(User_Friend, { foreignKey: 'friend_id' });
 
+User_Wild.belongsTo(User, {foreignKey: 'user_id'});
+User.hasMany(User_Wild, {foreignKey: 'user_id'})
 
-//Subscription.hasOne(User, {foreignKey: 'user_id'});
-//User.belongsTo(Subscription, {key: 'id'});
+User_Wild.belongsTo(Wild, {foreginKey: 'wild_id'})
+Wild.hasMany(User_Wild, {foreginKey:'wild_id'})
 
 export const SYNC = async (cb) => {
   await sequelize.sync({...cb});

@@ -1,38 +1,42 @@
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
+
 import {
   Achievement,
-  User_Completed_Trail,
+  Addon,
+  Cached_Friend,
   Park,
   Park_State,
-  User_Queued_Trail,
+  Park_Wild,
+  Session_Addon,
   Session_Category,
   Trail,
   User,
   User_Achievement,
-  User_Purchased_Trail,
-  User_Session,
-  Addon,
   User_Addon,
-  Session_Addon,
+  User_Completed_Trail,
+  User_Friend,
   User_Park,
-  User_Friend, 
-  Cached_Friend
+  User_Purchased_Trail,
+  User_Queued_Trail,
+  User_Session,
+  User_Wild,
+  Wild,
 } from './watermelon/models';
 
 import App from './App';
 import {AppRegistry} from 'react-native';
+import {AuthProvider} from './services/AuthContext';
 import {Database} from '@nozbe/watermelondb';
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
-import {AuthProvider} from './services/AuthContext';
 import {InternetConnectionProvider} from './contexts/InternetConnectionProvider';
-import {ThemeProvider} from './contexts/ThemeProvider';
 import React from 'react';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import {ThemeProvider} from './contexts/ThemeProvider';
 import {name as appName} from './app.json';
+import migrations from './watermelon/migrations';
 import schema from './watermelon/schema';
 import {testDb} from './watermelon/testDB';
-import migrations from './watermelon/migrations';
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -57,9 +61,12 @@ export const watermelonDatabase = new Database({
     User_Purchased_Trail,
     Addon,
     User_Addon,
-    Session_Addon, 
-    User_Friend, 
-    Cached_Friend
+    Session_Addon,
+    User_Friend,
+    Cached_Friend,
+    Wild,
+    User_Wild,
+    Park_Wild,
   ],
 });
 

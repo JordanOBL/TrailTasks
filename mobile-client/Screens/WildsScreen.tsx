@@ -1,15 +1,18 @@
 import {Alert, FlatList, StyleSheet, View} from 'react-native';
 
-// screens/WildsScreen.tsx
 import React from 'react';
 import Rive from 'rive-react-native'
 import WildCard from '../components/Wilds/WildCard'; // adjust path
+// screens/WildsScreen.tsx
+import { useDatabase } from '@nozbe/watermelondb/react';
 import wildData from '../assets/wilds/mock_data.json'; // your JSON arrary
+import { withObservables } from '@nozbe/watermelondb/react';
 
-const usersWilds = new Set(['scout', 'ember']);
+//const usersWilds = new Set(['scout', 'ember']);
 
-export default function WildsScreen()
+const  WildsScreen = ({user, usersWilds}) =>
 {
+  const database = useDatabase()
   // Example handler (replace with navigation logic)
   const handlePress = (id: string) => {
     Alert.alert('Wild selected', `Open details for ${id}`);
@@ -36,7 +39,17 @@ export default function WildsScreen()
        createHiddenText={createHiddenText}
      />
    </View>)
-  }, [createHiddenText])
+  }, [createHiddenText, usersWilds])
+
+  React.useEffect(() => {
+
+    async function getWilds(){
+     const results = await database.get('wilds').query().fetch();
+    console.log(results)
+    }
+   getWilds()
+  })
+
   return (
     <FlatList
       contentContainerStyle={styles.container}
@@ -47,6 +60,15 @@ export default function WildsScreen()
     />
   );
 }
+
+const enhance = withObservables(['user'], ({user}) => ({
+    user: user.observe(),
+    usersWilds: user.usersWilds.observe()
+}));
+
+const EnhancedWildsScreen = enhance(WildsScreen);
+export default EnhancedWildsScreen;
+
 
 const styles = StyleSheet.create({
   container: {
