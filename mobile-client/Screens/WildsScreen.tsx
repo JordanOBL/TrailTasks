@@ -1,19 +1,21 @@
-import {Alert, FlatList, StyleSheet, View} from 'react-native';
+import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
 
 import React from 'react';
 import Rive from 'rive-react-native'
 import WildCard from '../components/Wilds/WildCard'; // adjust path
 // screens/WildsScreen.tsx
-import { useDatabase } from '@nozbe/watermelondb/react';
 import wildData from '../assets/wilds/mock_data.json'; // your JSON arrary
 import { withObservables } from '@nozbe/watermelondb/react';
 
 //const usersWilds = new Set(['scout', 'ember']);
 
-const  WildsScreen = ({user, usersWilds}) =>
+const  WildsScreen = ({user, route}) =>
 {
-  const database = useDatabase()
+
   // Example handler (replace with navigation logic)
+  const {userWilds} = route.params || {};
+  
+  console.log('WildsScreen userWilds:', userWilds);
   const handlePress = (id: string) => {
     Alert.alert('Wild selected', `Open details for ${id}`);
     // navigation.navigate('WildDetail', { id });
@@ -30,8 +32,7 @@ const  WildsScreen = ({user, usersWilds}) =>
     return (
    <View style={{margin: 10}}>
      <WildCard
-       usersWilds={usersWilds}
-       item={item}
+       wild={item}
        //isLocked={!usersWilds.has(item.id)} // example lock logic
        isLocked={false}
        isActive={item?.is_active}
@@ -39,21 +40,30 @@ const  WildsScreen = ({user, usersWilds}) =>
        createHiddenText={createHiddenText}
      />
    </View>)
-  }, [createHiddenText, usersWilds])
+  }, [createHiddenText])
 
-  React.useEffect(() => {
+  // React.useEffect(() => {
 
-    async function getWilds(){
-     const results = await database.get('wilds').query().fetch();
-    console.log(results)
-    }
-   getWilds()
-  })
+  //   async function getWilds(){
+  //    const results = await database.get('wilds').query().fetch();
+  //   console.log(results)
+  //   }
+  //  getWilds()
+  // })
+
+  if (!userWilds || userWilds.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={{color: 'white'}}>No Wilds Found</Text>
+        <Text style={{color: 'white'}}>Complete All Trails in a Park To Unlock a Wild</Text>
+      </View>
+    );
+  }
 
   return (
     <FlatList
       contentContainerStyle={styles.container}
-      data={wildData}
+      data={userWilds}
       keyExtractor={item => item.id}
       numColumns={2} // 2-column card grid
       renderItem={rItem}
@@ -63,7 +73,7 @@ const  WildsScreen = ({user, usersWilds}) =>
 
 const enhance = withObservables(['user'], ({user}) => ({
     user: user.observe(),
-    usersWilds: user.usersWilds.observe()
+    usersWilds: user.usersWilds.observe(),
 }));
 
 const EnhancedWildsScreen = enhance(WildsScreen);

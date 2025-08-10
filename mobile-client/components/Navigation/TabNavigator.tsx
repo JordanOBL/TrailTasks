@@ -1,9 +1,9 @@
 import ExploreStackNavigator from './ExploreStackNavigator';
 import { HomeStackNavigator } from './HomeStackNavigator';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import LogbookStackNavigator from './LogbookStackNavigator';
 import React from 'react';
 import { SessionStackNavigator } from './SessionStackNavigator';
-import WildsStackNavigator from './WildsStackNavigator'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../../contexts/ThemeProvider'; // import your theme context
 
@@ -45,7 +45,7 @@ const TabNavigator = () => {
       <Tab.Screen name="Basecamp" children={() => <HomeStackNavigator />} />
       <Tab.Screen name="Explore" children={() => <ExploreStackNavigator />} />
       <Tab.Screen name="Timer" children={() => <SessionStackNavigator />} />
-      <Tab.Screen name="Wilds" children={() => <WildsStackNavigator />} />
+      <Tab.Screen name="Logbook" children={() => <LogbookStackNavigator />} />
     </Tab.Navigator>
   );
 };

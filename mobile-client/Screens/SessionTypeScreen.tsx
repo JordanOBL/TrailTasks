@@ -108,7 +108,7 @@ React.useEffect(() => {
             ios_backgroundColor="#3e3e3e"
             onValueChange={toggleSwitch}
             value={!(selection === 'solo')}
-          />{' '}
+          />
           <Text
             style={[
               styles.switchLabel,

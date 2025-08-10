@@ -3,10 +3,11 @@ import Rive, {RiveRef} from 'rive-react-native';
 
 import React from 'react';
 import WildAvatar from './WildAvatar';
+import {useTheme} from '../../contexts/ThemeProvider';
 
 export interface WildCardProps {
   usersWilds?: string[];
- item: any,
+wild: any,
   isLocked?: boolean;
   onPress?: () => void;
   isActive?: boolean;
@@ -14,15 +15,19 @@ export interface WildCardProps {
 }
 
 const WildCard = React.memo(({
-  usersWilds,
- item, 
+  
+wild,
   isLocked,
   onPress,
   isActive,
   createHiddenText,
 }: WildCardProps) =>
 {
-  
+  const { theme } = useTheme();
+
+
+const styles = getStyles(theme);
+
      const riveRef = React.useRef<RiveRef>(null);
 
      function wave() {
@@ -38,7 +43,7 @@ const WildCard = React.memo(({
        function scheduleWave() {
          const delay = getRandom();
          timeout = setTimeout(() => {
-           if (riveRef.current) wave();
+           if (riveRef.current) {wave();}
            scheduleWave(); // Recurse to schedule the next blink
          }, delay);
        }
@@ -59,37 +64,37 @@ const WildCard = React.memo(({
         isActive && styles.activeWild,
         !isActive && !isLocked && styles.inactive,
       ]}>
-      {item.id === 'scout' ? (
+      {wild.id === 'scout' ? (
         <Rive
           ref={riveRef}
-          resourceName={item.id}
+          resourceName={wild.id}
           artboardName="Artboard"
           stateMachineName="State Machine 1"
           style={{ width: 100, height: 100 }}
-          key={item.id}
+          key={wild.id}
         />
       ) : (
         <WildAvatar
-            id={item.id}
-            key={item.id}
+            id={wild.id}
+            key={wild.id}
           // pose={isLocked ? 'hidden' : isActive ? 'wave' : 'rest'}
           pose={'still'}
         />
       )}
       <View style={styles.info}>
         <Text style={styles.name}>
-          {isLocked ? createHiddenText(item.name) : item.name}
+          {isLocked ? createHiddenText(wild.name) : wild.name}
         </Text>
-        <Text style={styles.level}>{item.species}</Text>
-        <Text style={styles.level}>Level {item.level ? item.level : 1}</Text>
+        <Text style={styles.level}>{wild.species}</Text>
+        <Text style={styles.level}>Level {wild.level ? wild.level : 1}</Text>
         <View style={styles.progressContainer}>
           <View
             style={[styles.progressFill, {width: `${Math.random() * 100}%`}]}
           />
         </View>
-        <Text style={styles.perkTitle}>{isLocked ? '' : item.perk_name}</Text>
+        <Text style={styles.perkTitle}>{isLocked ? '' : wild.perk_name}</Text>
         <Text style={styles.perkDesc}>
-          {isLocked ? '' : item.perk_description}
+          {isLocked ? '' : wild.perk_description}
         </Text>
         {isLocked && <Text style={styles.lockedText}>Locked</Text>}
       </View>
@@ -97,7 +102,9 @@ const WildCard = React.memo(({
   );
 });
 
-const styles = StyleSheet.create({
+const  getStyles = (theme) => {
+
+return  StyleSheet.create({
   activeWild: {
     borderWidth: 2,
     borderColor: 'rgb(7,254,213)',
@@ -105,7 +112,7 @@ const styles = StyleSheet.create({
   card: {
     width: 180,
     height: 300,
-    backgroundColor: '#fff',
+    backgroundColor: theme.cardBackground,
     borderRadius: 16,
     padding: 12,
     shadowColor: '#000',
@@ -168,5 +175,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+};
 
 export default WildCard;

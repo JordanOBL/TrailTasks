@@ -14,7 +14,7 @@ import DistanceProgressBar from '../components/DistanceProgressBar';
 import { Rank } from '../helpers/Ranks/ranksData';
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import ScreenLink from '../components/HomeScreen/screenLink';
+import ScreenLink from '../components/screenLink';
 import SyncButton from '../components/syncButton';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
 import {
@@ -51,6 +51,7 @@ const HomeScreen: React.FC<Props> = ({
                                      }) => {
     const watermelonDatabase = useDatabase();
     const {theme} = useTheme();
+
     const userRankRef = React.useRef<Rank | undefined>({
         level: 'loading',
         group: 'loading',
@@ -241,14 +242,15 @@ const HomeScreen: React.FC<Props> = ({
           style={styles.linkContainer}
           contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // adjust for safety
           keyboardShouldPersistTaps="handled">
-          <ScreenLink
+            <ScreenLink
             user={user}
             needsActiveSubscription={false}
             hasActiveSubscription={true}
             navigation={navigation}
-            navTo={'Stats'}>
-            Stats
+            navTo={'Profile'}>
+            Profile
           </ScreenLink>
+ 
           <ScreenLink
             user={user}
             needsActiveSubscription={false}
@@ -258,38 +260,10 @@ const HomeScreen: React.FC<Props> = ({
             Shop
           </ScreenLink>
 
-          <ScreenLink
-            user={user}
-            needsActiveSubscription={true}
-            hasActiveSubscription={isProMember}
-            navigation={navigation}
-            navTo={'Trail Queue'}>
-            Upcoming Trails
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            needsActiveSubscription={true}
-            hasActiveSubscription={isProMember}
-            navigation={navigation}
-            navTo={'Friends'}>
-            Friends
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            needsActiveSubscription={false}
-            hasActiveSubscription={isProMember}
-            navigation={navigation}
-            navTo={'Park Passes'}>
-            Park Passes
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            needsActiveSubscription={false}
-            hasActiveSubscription={isProMember}
-            navigation={navigation}
-            navTo={'Achievements'}>
-            Achievements
-          </ScreenLink>
+       
+         
+     
+    
           <ScreenLink
             user={user}
             navigation={navigation}

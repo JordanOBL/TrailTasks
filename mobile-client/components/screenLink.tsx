@@ -1,8 +1,9 @@
-import React from 'react';
-import { Pressable, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import Icon from 'react-native-vector-icons/Ionicons';
-import { User } from '../../watermelon/models';
-import { useTheme } from '../../contexts/ThemeProvider';
+import React from 'react';
+import { User } from '../watermelon/models';
+import { useTheme } from '../contexts/ThemeProvider';
 
 interface Props {
   children: any;
@@ -24,11 +25,11 @@ const ScreenLink = ({
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
-  const isLocked = needsActiveSubscription && !hasActiveSubscription;
-  const isPro = needsActiveSubscription && !hasActiveSubscription;
+  const isLocked = needsActiveSubscription;
+  const isPro = hasActiveSubscription;
 
   const handlePress = () => {
-    if (!needsActiveSubscription || hasActiveSubscription) {
+    if (!isLocked || isPro) {
       navigation.navigate(navTo);
     } else {
       navigation.navigate('Basecamp', { screen: 'Subscribe' });
