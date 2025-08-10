@@ -2,7 +2,7 @@ import * as Progress from 'react-native-progress';
 import * as React from 'react';
 
 import { Button, Card, Text } from 'react-native-paper';
-import {Park_Wild, User} from "../../watermelon/models";
+import {Park_Wild, User, User_Wild} from "../../watermelon/models";
 import { StyleSheet, View } from 'react-native';
 
 import WildAvatar from '../Wilds/WildAvatar';
@@ -15,14 +15,17 @@ interface Props {
     user: User;
     park: any; // Assuming park is an object with park details
     wild: any; // Assuming wild is an object with wild details
+    usersWilds: any
 }
-
-const ParkCard = ({ parkWild, user, park, wild }: Props) => {
-  const { theme } = useTheme();
+ 
+const ParkCard = ({ parkWild, user,usersWilds,  park, wild }: Props) => {
+  const { theme }  = useTheme();
   const styles = getStyles(theme);
   //const progress = data?.completedTrails / data?.totalTrails;
   console.log(park.id);
   console.log(wild.id);
+
+const isLocked = !usersWilds.some((uw: User_Wild) => uw.wildId === wild.id)
 
 
   return (
@@ -37,8 +40,8 @@ const ParkCard = ({ parkWild, user, park, wild }: Props) => {
          {wild.id ? <WildAvatar
             id={wild.id}
             key={wild.id}
-            // pose={isLocked ? 'hidden' : isActive ? 'wave' : 'rest'}
-            pose={'still'}
+            pose={isLocked ?  'hidden' : 'still'}
+            //pose={'still'}
             size={100}
           /> : <Text style={{color: 'white'}}>No Image</Text>}
         </View>
@@ -82,8 +85,10 @@ const ParkCard = ({ parkWild, user, park, wild }: Props) => {
 
 const enhance = withObservables(['user', 'parkWild'], ({ user, parkWild }) => ({
     user: user.observe(),
+    usersWilds: user.usersWilds,
     park: parkWild.park.observe(),
     wild: parkWild.wild.observe(),
+    
 }));
 
 

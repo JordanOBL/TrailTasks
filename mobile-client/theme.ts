@@ -1,4 +1,5 @@
 export const darkTheme = {
+  themeName:"darkTheme",
   background: '#000000',
   card: '#121212',
   text: '#ffffff',
@@ -53,6 +54,7 @@ progressBorder: '#f7f7f7',
 };
 
 export const lightTheme = {
+  themeName:'lightTheme',
   background: '#ffffff',
   card: '#f7f7f7',
   cardBright:'rgb(7,254,213)',
