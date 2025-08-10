@@ -1593,6 +1593,10 @@ PODS:
     - React-perflogger (= 0.76.3)
     - React-utils (= 0.76.3)
   - RevenueCat (5.22.2)
+  - rive-react-native (9.3.4):
+    - React-Core
+    - RiveRuntime (= 6.9.4)
+  - RiveRuntime (6.9.4)
   - RNBootSplash (6.3.2):
     - DoubleConversion
     - glog
@@ -1869,6 +1873,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - rive-react-native (from `../node_modules/rive-react-native`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -1885,6 +1890,7 @@ SPEC REPOS:
     - PurchasesHybridCommon
     - React-Codegen
     - RevenueCat
+    - RiveRuntime
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2021,6 +2027,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  rive-react-native:
+    :path: "../node_modules/rive-react-native"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
   RNFS:
@@ -2112,6 +2120,8 @@ SPEC CHECKSUMS:
   ReactCodegen: 5148a0102fc8f0a1f9b05d955da886b44447679d
   ReactCommon: b8485556b596ef2f44f59bc586113bda138fb804
   RevenueCat: 234d2361e453ce1282cee7e18449d01aba45ebbf
+  rive-react-native: 9c7100fec9480d23dc69b4f4fb321de6bb742c4a
+  RiveRuntime: 56c2133fa5c5c570dd93818d8c2772ae6f126806
   RNBootSplash: b699ef992152e6f85403e9c308f690a7baf384a6
   RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNGestureHandler: e1dcb274c17ca0680a04d7ff357e35e37c384185

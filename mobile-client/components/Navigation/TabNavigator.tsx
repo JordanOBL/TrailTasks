@@ -1,8 +1,9 @@
-import { HomeStackNavigator } from './HomeStackNavigator';
-import { SessionStackNavigator } from './SessionStackNavigator';
 import ExploreStackNavigator from './ExploreStackNavigator';
+import { HomeStackNavigator } from './HomeStackNavigator';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import LogbookStackNavigator from './LogbookStackNavigator';
 import React from 'react';
+import { SessionStackNavigator } from './SessionStackNavigator';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../../contexts/ThemeProvider'; // import your theme context
 
@@ -27,7 +28,10 @@ const TabNavigator = () => {
           } else if (route.name === 'Explore') {
             iconName = 'earth';
           } else if (route.name === 'Basecamp') {
-            iconName = 'home';
+            iconName = 'home'; 
+          } else
+          {
+            iconName = 'paw';
           }
 
           return <Ionicons name={iconName!} size={26} color={color} />;
@@ -41,6 +45,7 @@ const TabNavigator = () => {
       <Tab.Screen name="Basecamp" children={() => <HomeStackNavigator />} />
       <Tab.Screen name="Explore" children={() => <ExploreStackNavigator />} />
       <Tab.Screen name="Timer" children={() => <SessionStackNavigator />} />
+      <Tab.Screen name="Logbook" children={() => <LogbookStackNavigator />} />
     </Tab.Navigator>
   );
 };

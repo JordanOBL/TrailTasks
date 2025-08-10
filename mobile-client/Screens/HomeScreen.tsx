@@ -1,61 +1,58 @@
-import * as React from 'react';
-import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync'
 import {
     Dimensions,
-    Image,
+    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     View,
-    SafeAreaView,
 } from 'react-native';
-import {
-    Subscription,
-    User,
-    User_Session,
-} from '../watermelon/models';
-import {useFocusEffect} from '@react-navigation/native';
+import Rive, { RiveRef } from 'rive-react-native';
+import { darkTheme, lightTheme } from '../theme';
+
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
-import {Pressable} from 'react-native';
-import ScreenLink from '../components/HomeScreen/screenLink';
-import SyncIndicator from '../components/SyncIndicator';
+import { Rank } from '../helpers/Ranks/ranksData';
+/* eslint-disable react-native/no-inline-styles */
+import React from 'react';
+import ScreenLink from '../components/screenLink';
+import SyncButton from '../components/syncButton';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
+import {
+   User,
+} from '../watermelon/models';
+import WildAvatar from '../components/Wilds/WildAvatar';
+import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import getUserRank from '../helpers/Ranks/getUserRank';
+import handleError from '../helpers/ErrorHandler';
+import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
 import {sync} from '../watermelon/sync';
+import {useAuthContext} from '../services/AuthContext';
 import {useDatabase} from '@nozbe/watermelondb/react';
+import {useFocusEffect} from '@react-navigation/native';
 import {useInternetConnection} from '../hooks/useInternetConnection';
 import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
-import {withObservables} from '@nozbe/watermelondb/react';
-import isYesterday from '../helpers/isYesterday';
-import isToday from '../helpers/isToday';
-import checkDailyStreak from '../helpers/Session/checkDailyStreak';
-import handleError from "../helpers/ErrorHandler";
-import SyncButton from "../components/syncButton"
-import {useTheme} from "../contexts/ThemeProvider";
-import {useAuthContext} from "../services/AuthContext";
-import {Rank} from "../types";
-
+import {useTheme} from '../contexts/ThemeProvider';
+import { withObservables } from '@nozbe/watermelondb/react';
 
 interface Props {
     user: User;
     currentTrail?: any;
     navigation: any;
     setUser: any;
-    userSubscription: Subscription;
-    userSessions: User_Session[];
+    userWilds:any;
+
 }
 
 const HomeScreen: React.FC<Props> = ({
                                          user,
                                          navigation,
                                          currentTrail,
-                                         userSubscription,
-                                         userSessions,
+                                         userWilds,
                                      }) => {
     const watermelonDatabase = useDatabase();
     const {theme} = useTheme();
-    const userRankRef = React.useRef<Rank>({
+
+    const userRankRef = React.useRef<Rank | undefined>({
         level: 'loading',
         group: 'loading',
         image: null,
@@ -67,51 +64,83 @@ const HomeScreen: React.FC<Props> = ({
     const width = Dimensions.get('window').width;
     const [showTutorial, setShowTutorial] = React.useState(false);
     const styles = getStyles(theme); // dynamically generate styles based on theme
-    const {currentOffering, customerInfo, isProMember } = useAuthContext() ;
+    const {currentOffering, customerInfo, isProMember } = useAuthContext();
     userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
+    
 
     const handleTutorialClose = () => {
         setShowTutorial(false); // Close the tutorial modal
     };
+     const riveRef = React.useRef<RiveRef>(null);
 
-    async function checkUnsyncedChanges() {
-        const results = await hasUnsyncedChanges({database: watermelonDatabase} )
-        return results;
-    }
+  function wave()
+  {
+       console.log(riveRef)
+       riveRef.current?.fireState('State Machine 1', 'wave');
+     }
+     function getRandom() {
+       return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
+     }
 
     //this useEffect checks daily streak and resets if needed
     React.useEffect(() => {
-        if(user){
-         checkDailyStreak(user)
-        }
-       //Check to see if user is new to the app by checking if theyve hiked any miles
-    //if not, show the tutorial Modal
-           // Check if the user has any miles hiked
-        console.debug(currentOffering, customerInfo, isProMember);
-        
-        if (user?.totalMiles <= 0.00) {
-            setShowTutorial(true); // Show the tutorial if the user has no miles hiked
-        }else{
-            setShowTutorial(false);
-        }
+      console.log('userWilds', userWilds)
+      if (user) {
+        checkDailyStreak(user);
+      }
+      //Check to see if user is new to the app by checking if theyve hiked any miles
+      //if not, show the tutorial Modal
+      // Check if the user has any miles hiked
 
-    }, [user]);
+      if (user?.totalMiles <= 0.0) {
+        setShowTutorial(true); // Show the tutorial if the user has no miles hiked
+      } else {
+        setShowTutorial(false);
+      }
+    }, [user, userWilds]);
+    // React.useEffect(() => {
+    //   let timeout: string | number | NodeJS.Timeout | null | undefined = null;
+
+    //   function scheduleWave() {
+    //     const delay = getRandom();
+
+    //     console.log(delay)
+    //     timeout = setTimeout(() => {
+    //       if (riveRef.current)
+    //       {
+    //         wave();
+    //       }
+    //       scheduleWave(); // Recurse to schedule the next blink
+    //     }, delay);
+    //   }
+
+    //   scheduleWave(); // Start the blinking loop
+
+    //   return () => {
+    //     clearTimeout(timeout); // Clean up on unmount
+    //   };
+    // }, [riveRef]);
 
 
-    
 
     //this useEffect gets the correct Rank based on  the users miles
     useFocusEffect(
         React.useCallback(() => {
+            async function checkUnsyncedChanges() {
+              const results = await hasUnsyncedChanges({
+                database: watermelonDatabase,
+              });
+              return results;
+            }
             if (!user) {
                 return;
             }
-            
+
             checkUnsyncedChanges().then(result => {
                 if (result) {
                      sync(watermelonDatabase,isConnected, user.id).catch(err =>handleError(err, 'useCallback sync HomeScreen'));
                 }
-            })
+            });
 
 
             return async () => {
@@ -119,171 +148,140 @@ const HomeScreen: React.FC<Props> = ({
             };
 
 
-        }, [watermelonDatabase, user])
+        }, [user, watermelonDatabase, isConnected])
     );
-    return !user || !currentTrail  ? (
-        <View testID="homescreen-loading" style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading Your Data...</Text>
-        </View>
+    return !user || !currentTrail ? (
+      <View testID="homescreen-loading" style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading Your Data...</Text>
+      </View>
     ) : (
-            <SafeAreaView testID="homescreen" style={styles.container}>
-                {/* <SyncIndicator delay={3000} /> */}
-               {showTutorial && <TutorialModal  onClose={handleTutorialClose} />} 
-                <View
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                    }}>
-                    <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
-                    <Text style={[ styles.onlineStatus, {color: isConnected ? 'green' : 'red'} ]}>
-                        {isConnected ? 'Online' : 'Offline'}
-                    </Text>
-                    <View>
-                        <Text style={styles.dailyStreak} testID="daily-streak">
-                            Daily Streak: {user?.dailyStreak}
-                        </Text>
-                        <SyncButton />
-                    </View>
-
-                </View>
-                <View style={{height: 200}}>
-                    <Carousel
-                        loop
-                        pagingEnabled={true}
-                        snapEnabled={true}
-                        width={width}
-                height={width / 2}
-                autoPlay={false}
-                data={[...new Array(2).keys()]}
-                scrollAnimationDuration={1000}
-                onSnapToItem={(index) => setActiveIndex(index)}
-                renderItem={({index}) => (
-                    <View style={styles.carouselItem}>
-                        {userRankRef.current && index === 0 ? (
-                            <View style={styles.rankContainer}>
-                                <Image
-                                    source={userRankRef.current?.image}
-                                    style={styles.rankImage}
-                                    resizeMode="contain"
-                                />
-                                <Text style={styles.rankLevel}>Rank {userRankRef.current?.level}</Text>
-                                <Text style={styles.rankTitle}>
-                                    {userRankRef.current?.group} {userRankRef.current?.title}
-                                </Text>
-                                <Text style={styles.username}>{user.username}</Text>
-                            </View>
-                        ) : (
-                            <View style={styles.currentTrailContainer}>
-                                <Text style={styles.trailText}>Current Trail:</Text>
-                                <Text style={styles.trailName}>{currentTrail.trailName}</Text>
-                                 <DistanceProgressBar user={user} trail={currentTrail} />
-                            </View>
-                        )}
-                    </View>
-                )}
-            />
-            </View>
-            <View style={styles.paginationDotsContainer}>
-                {data.map((item, index) => (
+      <SafeAreaView testID="homescreen" style={styles.container}>
+        {/* <SyncIndicator delay={3000} /> */}
+        {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <Text style={styles.trailTokens}>
+            Trail Tokens: {user?.trailTokens}
+          </Text>
+          <Text
+            style={[
+              styles.onlineStatus,
+              {color: isConnected ? 'green' : 'red'},
+            ]}>
+            {isConnected ? 'Online' : 'Offline'}
+          </Text>
+          <View>
+            <Text style={styles.dailyStreak} testID="daily-streak">
+              Daily Streak: {user?.dailyStreak}
+            </Text>
+            <SyncButton />
+          </View>
+        </View>
+        <View style={{height: 200}}>
+          <Carousel
+            loop
+            pagingEnabled={true}
+            snapEnabled={true}
+            width={width}
+            height={width / 2}
+            autoPlay={false}
+            data={[...new Array(2).keys()]}
+            scrollAnimationDuration={1000}
+            onSnapToItem={index => setActiveIndex(index)}
+            renderItem={({index}) => (
+              <View style={styles.carouselItem}>
+                {index === 0 ? (
+                  <View style={styles.rankContainer}>
+{ userWilds.length ? 
+                    <Rive
+                      ref={riveRef}
+                      resourceName="scout"
+                      artboardName="Artboard"
+                      stateMachineName="State Machine 1"
+                      style={{width: 150, height: 150}}
+                    /> : <Text style={{color: 'white'}}>No Wild Selected</Text>
+ }
                     <View
-                        key={index}
-                        style={[
-                            styles.paginationDot,
-                            activeIndex === index && styles.activePaginationDot,
-                        ]}
-                    />
-                ))}
-            </View>
-            <ScrollView style={styles.linkContainer}
-  contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} // adjust for safety
-  keyboardShouldPersistTaps="handled">
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        true
-                    }
-                    navigation={navigation}
-                    navTo={'Stats'}>
-                    Stats
-                </ScreenLink>
-                <ScreenLink
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        width: '100%',
+                      }}>
+                   
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.currentTrailContainer}>
+                    <Text style={styles.trailText}>Current Trail:</Text>
+                    <Text style={styles.trailName}>
+                      {currentTrail.trailName}
+                    </Text>
+                    <DistanceProgressBar user={user} trail={currentTrail} />
+                  </View>
+                )}
+              </View>
+            )}
+          />
+        </View>
+        <View style={styles.paginationDotsContainer}>
+          {data.map((item, index) => (
+            <View
+              key={index}
+              style={[
+                styles.paginationDot,
+                activeIndex === index && styles.activePaginationDot,
+              ]}
+            />
+          ))}
+        </View>
+        <ScrollView
+          style={styles.linkContainer}
+          contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // adjust for safety
+          keyboardShouldPersistTaps="handled">
+            <ScreenLink
+            user={user}
+            needsActiveSubscription={false}
+            hasActiveSubscription={true}
+            navigation={navigation}
+            navTo={'Profile'}>
+            Profile
+          </ScreenLink>
+ 
+          <ScreenLink
+            user={user}
+            needsActiveSubscription={false}
+            hasActiveSubscription={true}
+            navigation={navigation}
+            navTo={'Shop'}>
+            Shop
+          </ScreenLink>
 
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        true
-                    }
-                    navigation={navigation}
-                    navTo={'Shop'}>
-                    Shop
-                </ScreenLink>
-
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={true}
-                    hasActiveSubscription={
-                       isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Trail Queue'}>
-                    Upcoming Trails
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={true}
-                    hasActiveSubscription={
-                        isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Friends'}>
-                    Friends
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Park Passes'}>
-                    Park Passes
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        isProMember
-                    }
-                    navigation={navigation}
-                    navTo={'Achievements'}>
-                    Achievements
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    navigation={navigation}
-                    navTo={'Leaderboards'}
-                    needsActiveSubscription={true}
-                    hasActiveSubscription={
-                        isProMember
-                    }>
-                    Leaderboards
-                </ScreenLink>
-                <ScreenLink
-                        user={user}
-                    navigation={navigation}
-                    navTo={'Settings'}
-                    needsActiveSubscription={false}
-                    hasActiveSubscription={
-                        false
-                    }>
-                    Settings
-                </ScreenLink>
-
-                
-            </ScrollView>
-        </SafeAreaView>
+       
+         
+     
+    
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'Leaderboards'}
+            needsActiveSubscription={true}
+            hasActiveSubscription={isProMember}>
+            Leaderboards
+          </ScreenLink>
+          <ScreenLink
+            user={user}
+            navigation={navigation}
+            navTo={'Settings'}
+            needsActiveSubscription={false}
+            hasActiveSubscription={false}>
+            Settings
+          </ScreenLink>
+        </ScrollView>
+      </SafeAreaView>
     );
 };
 
@@ -291,6 +289,7 @@ const enhance = withObservables(['user'], ({user}) => ({
     user: user.observe(),
     currentTrail: user.trail.observe(),
     userSessions: user.usersSessions.observe(),
+    userWilds: user.usersWilds.observe()
 }));
 
 const EnhancedHomeScreen = enhance(HomeScreen);
@@ -327,7 +326,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     username: {
       color: theme.text,
       fontSize: 12,
-      fontWeight: '1800',
+      fontWeight: '800',
       paddingHorizontal: 10,
     },
     carouselItem: {
@@ -337,31 +336,29 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       marginVertical: 10,
       paddingRight: 20,
     },
-    rankContainer: {
+      rankContainer: {
+      position: 'relative',
       borderRadius: 12,
-      backgroundColor: theme.card,
-      padding: 16,
       alignItems: 'center',
-      width: '90%',
+      width: '100%',
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
       shadowRadius: 4,
-      elevation: 4,
+          elevation: 4,
+
     },
     rankImage: {
-      width: 72,
-      height: 72,
-      marginBottom: 12,
+        width: 256,
+        height: '100%',
     },
     rankLevel: {
       fontSize: 16,
       fontWeight: '600',
       color: theme.button,
-      marginBottom: 2,
     },
     rankTitle: {
-      fontSize: 15,
+      fontSize: 10,
       fontWeight: '500',
       color: theme.secondaryText,
       marginBottom: 6,
@@ -414,7 +411,11 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     linkContainer: {
       marginTop: 10,
       backgroundColor: theme.background,
+      },
+    wildInfo: {
+          color: 'white',
+          fontSize: 10,
     },
- 
+
   });
 

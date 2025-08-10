@@ -1,14 +1,17 @@
 import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 const schema = appSchema({
-  version: 3,
+  version: 1,
   tables: [
     tableSchema({
       name: 'parks',
       columns: [
         {name: 'park_name', type: 'string', isIndexed: true},
         {name: 'park_type', type: 'string'},
-        {name: 'park_image_url', type: 'string', isOptional: true},
+        { name: 'park_image_url', type: 'string', isOptional: true },
+        { name: 'terrain_type', type: 'string', isIndexed: true }, 
+        { name: 'climate', type: 'string', isIndexed: true },
+
       ],
     }),
     tableSchema({
@@ -63,7 +66,7 @@ const schema = appSchema({
         {name: 'prestige_level', type: 'number'},
         {name: 'total_miles', type: 'string'},
         {name: 'room_id', type: 'string', isOptional: true },
-        {name: 'created_at', type: 'number'},
+        {name: 'created_at', type: 'number'},  
         {name: 'updated_at', type: 'number'},
       ],
     }),
@@ -76,15 +79,29 @@ const schema = appSchema({
       ],
     }),
     tableSchema({
-      name: 'badges',
+      name: 'wilds',
       columns: [
+        {name: 'wild_name', type: 'string', isIndexed: true},
+        {name: 'species', type: 'string'},
+        {name: 'perk_id', type: 'string'},
         {name: 'park_id', type: 'string'},
-        {name: 'badge_type', type: 'string'},
-        {name: 'badge_name', type: 'string', is_Indexed: true},
-        {name: 'badge_description', type: 'string'},
-        {name: 'badge_image_url', type: 'string', isOptional: true},
+        {name: 'rarity', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
+    tableSchema({
+      name: 'users_wilds',
+      columns: [
+        {name: 'user_id', type: 'string'},
+        {name: 'wild_id', type: 'string'},
+        {name: 'is_active', type:'boolean'},
+        {name: 'unlocked_at', type: 'number', is_Indexed: true},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
+      ],
+    }),
+  
     tableSchema({
       name: 'achievements',
       columns: [
@@ -237,7 +254,16 @@ const schema = appSchema({
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],
-    })
+    }),
+    tableSchema({
+      name: 'parks_wilds',
+      columns: [
+        { name: 'park_id', type: 'string', isIndexed: true }, // Reference to parks table
+        { name: 'wild_id', type: 'string', isIndexed: true }, // Reference to wilds table
+        { name: 'created_at', type: 'number' }, // Timestamp for creation
+        { name: 'updated_at', type: 'number' }, // Timestamp for last update
+      ],
+    }),
   ],
 });
 

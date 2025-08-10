@@ -1,27 +1,30 @@
-import {Database} from '@nozbe/watermelondb';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
-
-import migrations from './migrations';
-import mySchema from './schema';
 import {
   Achievement,
-  User_Completed_Trail,
+  Addon,
+  Cached_Friend,
   Park,
   Park_State,
-  User_Queued_Trail,
+  Park_Wild,
+  Session_Addon,
   Session_Category,
   Trail,
   User,
   User_Achievement,
-  User_Purchased_Trail,
-  User_Session,
-  Addon,
   User_Addon,
-  Session_Addon,
+  User_Completed_Trail,
+  User_Friend,
   User_Park,
-  Cached_Friend,
-  User_Friend
+  User_Purchased_Trail,
+  User_Queued_Trail,
+  User_Session,
+  User_Wild,
+  Wild,
 } from './models';
+
+import {Database} from '@nozbe/watermelondb';
+import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
+import migrations from './migrations';
+import mySchema from './schema';
 
 // Create the Node-based SQLite adapter
 const adapter = new SQLiteAdapter({
@@ -53,6 +56,10 @@ export const testDb = new Database({
   Session_Addon,
   User_Park,
   Cached_Friend,
-  User_Friend
-  ],actionsEnabled: true,
+  User_Friend,
+  Wild,
+  User_Wild,
+  Park_Wild, // Ensure this is included in the model classes
+  ],
+  actionsEnabled: true,
 });

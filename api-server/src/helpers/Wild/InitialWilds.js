@@ -1,0 +1,577 @@
+
+const InitialWilds = [
+  {
+    "id": "ember",
+    "wild_name": "Ember",
+    "species": "Fox",
+    "park_id":"1",
+    "perk_id": "1",
+    "is_active": false,
+    "rarity": "common"
+  },
+  {
+    "id": "echo",
+    "wild_name": "Echo",
+    "species": "Flying Fox Bat",
+    "park_id": "2",
+    "perk_id": "2",
+    "is_active": false,
+    "rarity": "rare"
+  },
+  {
+    "id": "rubi",
+    "wild_name": "Rubi",
+    "species": "Rabbit",
+    "perk_name": "Momentum Hop",
+    "park_id":"3",
+    "perk_id": "3",
+    "is_active": false,
+    "rarity": "common"
+  },
+    {
+    "id": "bramble",
+    "wild_name": "Bramble",
+    "species": "Bison",
+    "park_id":"4",
+    "perk_id": "4",
+    "is_active": false,
+    "rarity": "rare"
+  },
+  {
+    "id": "gruff",
+    "wild_name": "Gruff",
+    "species": "Javelina",
+    "park_id":"5",
+    "perk_id": "5",
+    "is_active": false,
+    "rarity": "epic"
+  },
+  {
+    "id": "ripple",
+    "wild_name": "Ripple",
+    "species": "Raccoon",
+    "park_id":"6",
+    "perk_id": "6",
+    "is_active": false,
+    "rarity": "common"
+  },
+  {
+    "id": "scoria",
+    "wild_name": "Scoria",
+    "species": "Short-horned Lizard",
+    "park_id":"7",
+    "perk_id": "7",
+    "is_active": false,
+    "rarity": "common"
+  },
+  {
+    "id": "burrow",
+    "wild_name": "Burrow",
+    "species": "Prairie Dog",
+    "park_id":"8",
+    "perk_id": "8",
+    "is_active": false,
+    "rarity": "rare"
+  },
+  {
+    "id": "clutch",
+    "wild_name": "Clutch",
+    "species": "Collared Lizard",
+    "park_id":"9",
+    "perk_id": "9",
+    "is_active": false,
+    "rarity": "common"
+  },
+  {
+    "id": "puff",
+    "wild_name": "Puff",
+    "species": "Striped Skunk",
+    "park_id":"10",
+    "perk_id": "10",
+    "is_active": false,
+    "rarity": "common"
+  },
+
+  {
+    "id": "vela",
+    "wild_name": "Vela",
+    "species": "Ringtail",
+    "park_id":"11",
+    "perk_id": "11",
+    "is_active": false,
+    "rarity": "common"
+  },
+  {
+    "id": "tidbit",
+    "wild_name": "Tidbit",
+    "species": "Duck",
+    "park_id":"12",
+    "perk_id": "12",
+    "is_active": false,
+    "rarity": "rare"
+  },
+  {
+    "id": "scout",
+    "wild_name": "Scout",
+    "species": "Owl",
+    "park_id":"13",
+    "perk_id": "13",
+    "is_active": false,
+    "rarity": "rare"
+  },
+
+{
+  "id": "cascade",
+  "wild_name": "Cascade",
+  "species": "Cougar",
+  "park_id":"14",
+    "perk_id": "14",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "chuck",
+  "wild_name": "Chuck",
+  "species": "Groundhog",
+  "park_id":"15",
+    "perk_id": "15",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "sizzle",
+  "wild_name": "Sizzle",
+  "species": "Rattlesnake",
+ "park_id":"16",
+    "perk_id": "16",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "glint",
+  "wild_name": "Glint",
+  "species": "Canadian Lynx",
+ "park_id":"17",
+    "perk_id": "17",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "coral",
+  "wild_name": "Coral",
+  "species": "Red Corn Snake",
+ "park_id":"18",
+    "perk_id": "18",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "snap",
+  "wild_name": "Snap",
+  "species": "Crocodile",
+  "park_id":"19",
+    "perk_id": "19",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "baelie",
+  "wild_name": "Baelie",
+  "species": "Dall Sheep",
+  "park_id":"20",
+    "perk_id": "20",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "tunnel",
+  "wild_name": "Tunnel",
+  "species": "Mole",
+ "park_id":"21",
+    "perk_id": "21",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "crag",
+  "wild_name": "Crag",
+  "species": "Mountain Goat",
+ "park_id":"22",
+    "perk_id": "22",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id":"porra",
+  "wild_name":"Porra",
+  "species":"Porcupine",
+  "park_id":"23",
+    "perk_id": "23",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "nibble",
+  "wild_name": "Nibble",
+  "species": "Kaibab Squirrel",
+ "park_id":"24",
+    "perk_id": "24",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "clarion",
+  "wild_name": "Clarion",
+  "species": "Trumpeter Swan",
+  "park_id":"25",
+    "perk_id": "25",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "marlow",
+  "wild_name": "Marlow",
+  "species": "Opossum",
+ "park_id":"26",
+    "perk_id": "26",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "pip",
+  "wild_name": "Pip",
+  "species": "Kangaroo Mouse",
+  "park_id":"27",
+    "perk_id": "27",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "gobbit",
+  "wild_name": "Gobbit",
+  "species": "Wild Turkey",
+  "park_id":"28",
+    "perk_id":"28",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "silt",
+  "wild_name": "Silt",
+  "species": "Banded Gecko",
+  "park_id":"29",
+    "perk_id": "29",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "nani",
+  "wild_name": "Nani",
+  "species": "Hawaiian Goose",
+ "park_id":"30",
+    "perk_id": "30",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "ula",
+  "wild_name": "Ula",
+  "species": "ʻApapane",
+  "park_id":"31",
+    "perk_id": "31",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "rollo",
+  "wild_name": "Rollo",
+  "species": "Armadillo",
+  "park_id":"32",
+    "perk_id": "32",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "puddle",
+  "wild_name": "Puddle",
+  "species": "Fowler's Toad",
+ "park_id":"33",
+    "perk_id": "33",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "lodge",
+  "wild_name": "Lodge",
+  "species": "Moose",
+  "park_id":"34",
+    "perk_id": "34",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "speed",
+  "wild_name": "ʻSpeed",
+  "species": "Desert Tortoise",
+ "park_id":"35",
+    "perk_id": "35",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "shade",
+  "wild_name": "Shade",
+  "species": "Raven",
+ "park_id":"36",
+    "perk_id": "36",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "aurik",
+  "wild_name": "Aurik",
+  "species": "Polar Bear",
+ "park_id":"37",
+    "perk_id": "37",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "tizzy",
+  "wild_name": "Tizzy",
+  "species": "Chipmunk",
+ "park_id":"38",
+    "perk_id": "38",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "koda",
+  "wild_name": "Koda",
+  "species": "Caribou",
+  "park_id":"39",
+    "perk_id": "39",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "keel",
+  "wild_name": "Keel",
+  "species": "Bald Eagle",
+ "park_id":"40",
+    "perk_id": "40",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "forge",
+  "wild_name": "Forge",
+  "species": "Grizzly Bear",
+  "park_id":"41",
+    "perk_id": "41",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "ink",
+  "wild_name": "Ink",
+  "species": "River Otter",
+ "park_id":"42",
+    "perk_id": "42",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "roam",
+  "wild_name": "Roam",
+  "species": "Wild Mustang",
+  "park_id":"43",
+    "perk_id": "43",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "sprig",
+  "wild_name": "Sprig",
+  "species": "Pacific Tree Frog",
+ "park_id":"44",
+    "perk_id": "44",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "zip",
+  "wild_name": "Zip",
+  "species": "Weasel",
+"park_id":"45",
+    "perk_id": "45",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "flicker",
+  "wild_name": "Flicker",
+  "species": "Coyote",
+ "park_id":"46",
+    "perk_id": "46",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "crest",
+  "wild_name": "Crest",
+  "species": "Elk",
+ "park_id":"47",
+    "perk_id": "47",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "mesa",
+  "wild_name": "Mesa",
+  "species": "Gila Monster",
+ "park_id":"48",
+    "perk_id": "48",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "vault",
+  "wild_name": "Vault",
+  "species": "California Condor",
+  "park_id":"49",
+    "perk_id": "49",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "drift",
+  "wild_name": "Drift",
+  "species": "Banana Slug",
+  "park_id":"50",
+    "perk_id": "50",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "tuft",
+  "wild_name": "Tuft",
+  "species": "Alpaca",
+  "park_id":"51",
+    "perk_id": "51",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "nudge",
+  "wild_name": "Nudge",
+  "species": "Coati",
+  "park_id":"52",
+    "perk_id": "52",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "hitch",
+  "wild_name": "Hitch",
+  "species": "Mule",
+  "park_id":"53",
+    "perk_id": "53",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "mottle",
+  "wild_name": "Mottle",
+  "species": "Spotted Salamander",
+  "park_id":"54",
+    "perk_id": "54",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "grit",
+  "wild_name": "Grit",
+  "species": "Badger",
+  "park_id":"55",
+    "perk_id": "55",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "sundash",
+  "wild_name": "Sundash",
+  "species": "Iguana",
+  "park_id":"56",
+    "perk_id": "56",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "cedar",
+  "wild_name": "Cedar",
+  "species": "Beaver",
+  "park_id":"57",
+    "perk_id": "57",
+    "is_active": false,
+    "rarity": "epic"
+},
+{
+  "id": "shale",
+  "wild_name": "Shale",
+  "species": "Oryx",
+  "park_id":"58",
+    "perk_id": "58",
+    "is_active": false,
+    "rarity": "common"
+},
+{
+  "id": "swift",
+  "wild_name": "Swift",
+  "species": "Pronghorn Antelope",
+  "park_id":"59",
+    "perk_id": "59",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "rime",
+  "wild_name": "Rime",
+  "species": "Wolverine",
+  "park_id":"60",
+    "perk_id": "60",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "howl",
+  "wild_name": "Howl",
+  "species": "Wolf",
+  "park_id":"61",
+    "perk_id": "61",
+    "is_active": false,
+    "rarity": "rare"
+},
+{
+  "id": "whisk",
+  "wild_name": "Whisk",
+  "species": "Bobcat",
+  "park_id":"62",
+    "perk_id": "62",
+    "is_active": false,
+    "rarity": "epic"
+},
+
+
+{
+"id": "summit",
+"wild_name": "Summit",
+"species": "Bighorn Sheep",
+"park_id":"63",
+    "perk_id": "63",
+    "is_active": false,
+    "rarity": "rare"
+}]
+
+
+export default InitialWilds;
