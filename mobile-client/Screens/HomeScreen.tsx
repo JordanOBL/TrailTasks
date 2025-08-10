@@ -11,10 +11,10 @@ import { darkTheme, lightTheme } from '../theme';
 
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
+import HomeScreenLinks from '../components/HomeScreen/HomeScreenLinks'
 import { Rank } from '../helpers/Ranks/ranksData';
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import ScreenLink from '../components/screenLink';
 import SyncButton from '../components/syncButton';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
 import {
@@ -238,49 +238,7 @@ const HomeScreen: React.FC<Props> = ({
             />
           ))}
         </View>
-        <ScrollView
-          style={styles.linkContainer}
-          contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // adjust for safety
-          keyboardShouldPersistTaps="handled">
-            <ScreenLink
-            user={user}
-            needsActiveSubscription={false}
-            hasActiveSubscription={true}
-            navigation={navigation}
-            navTo={'Profile'}>
-            Profile
-          </ScreenLink>
- 
-          <ScreenLink
-            user={user}
-            needsActiveSubscription={false}
-            hasActiveSubscription={true}
-            navigation={navigation}
-            navTo={'Shop'}>
-            Shop
-          </ScreenLink>
-
-       
-         
-     
-    
-          <ScreenLink
-            user={user}
-            navigation={navigation}
-            navTo={'Leaderboards'}
-            needsActiveSubscription={true}
-            hasActiveSubscription={isProMember}>
-            Leaderboards
-          </ScreenLink>
-          <ScreenLink
-            user={user}
-            navigation={navigation}
-            navTo={'Settings'}
-            needsActiveSubscription={false}
-            hasActiveSubscription={false}>
-            Settings
-          </ScreenLink>
-        </ScrollView>
+      <HomeScreenLinks user={user} navigation={navigation}/>  
       </SafeAreaView>
     );
 };

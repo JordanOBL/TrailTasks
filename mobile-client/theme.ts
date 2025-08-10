@@ -39,7 +39,6 @@ completedBadgeText: '#ffffff',
   // shared across both
 trailBackdropOverlay: 'rgba(0,0,0,0.8)',
 trailModalBackground: '#1c1c1c',
-modalText: '#ffffff',
 trailHeaderText: '#ffffff',
 parkNameText: '#aaaaaa',
 statBoxBackground: '#121212',
@@ -95,13 +94,11 @@ completedBadgeText: '#ffffff',
 trailBackdropOverlay: 'rgba(0,0,0,0.8)',
 statValue: 'rgb(7, 254, 213)',
   trailModalBackground: '#ffffff',
-modalText: '#1a1a1a',
 trailHeaderText: '#1a1a1a',
 parkNameText: '#444444',
 statBoxBackground: '#f0f0f0',
 statLabel: '#333333',
 progressBorder: '#f7f7f7',
-  
 
 
 
