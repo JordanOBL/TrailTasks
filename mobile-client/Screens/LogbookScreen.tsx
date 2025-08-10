@@ -1,17 +1,19 @@
-import { Button, Card, useTheme } from 'react-native-paper';
+import { Button, Card } from 'react-native-paper';
 import { Park_Wild, User } from '../watermelon/models';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import React from 'react';
 import { useDatabase } from '@nozbe/watermelondb/react';
+import { useTheme } from '../contexts/ThemeProvider';
 import { withObservables } from '@nozbe/watermelondb/react';
 
 const LogbookScreen = ({ user, userWilds, completedTrails, parkPasses, navigation }) => {
   const db = useDatabase();
-  const theme = useTheme();
   const [parksWildsData, setParksWildsData] = React.useState<Park_Wild[]>([]);
   const [parks, setParks] = React.useState([]);
-
+const theme  = useTheme()
+console.log(theme)
+const styles = getStyles(theme)
   React.useEffect(() => {
     const fetchLogbookData = async () => {
       const parksWilds: Park_Wild[] = await db.get('parks_wilds').query().fetch();
@@ -60,16 +62,17 @@ const enhance = withObservables(['user'], ({ user }) => ({
 const EnhancedLogbookScreen = enhance(LogbookScreen);
 export default EnhancedLogbookScreen;
 
-const styles = StyleSheet.create({
+const getStyles = (theme)=> {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F4EF', // soft green-gray background
+    backgroundColor:theme.background, // soft green-gray background
     padding: 20,
   },
   header: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#3A5A40',
+    color: 'white',
     marginBottom: 20,
   },
   card: {
@@ -94,3 +97,4 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+};
