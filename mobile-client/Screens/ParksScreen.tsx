@@ -3,49 +3,42 @@ import {Park, Park_Wild, Trail, User, User_Completed_Trail, User_Park} from '../
 import React, {useCallback, useEffect, useState} from 'react';
 import { useDatabase, withObservables } from '@nozbe/watermelondb/react';
 
-import {Button} from 'react-native-paper';
 import {CombinedData} from '../types/parkPasses';
 import EnhancedParkCard from '../components/Parks/ParkCard';
 import {Q} from '@nozbe/watermelondb';
 import { useTheme } from '../contexts/ThemeProvider';
 
-const ParksScreen = ({user, completedTrails, userParks, navigation, parks, parksWilds}) => {
+const ParksScreen = ({user, navigation, route, userParks}) => {
   const [combinedData, setCombinedData] = useState<ParkPassCard[]>([]);
-  const watermelonDatabase = useDatabase();
-  const [parksWildsData, setParksWildsData] = useState<Park_Wild[]>([]);
 
+const {parks, parkPasses, completedTrails, userWilds, parksWilds} = route.params
 
   const {theme} = useTheme();
-console.log(parks, parksWilds)
+
 
   useEffect(() => {
     if (userParks && user) {
       const fetchParkPassData = async () => {
-        const parks: Park[] = await watermelonDatabase
-          .get('parks')
-          .query()
-          .fetch();
-        const trails: Trail[] = await watermelonDatabase
-          .get('trails')
-          .query()
-          .fetch();
-        const parksWilds: Park_Wild[] = await watermelonDatabase
-          .get('parks_wilds')
-          .query()
-          .fetch();
-        console.log(
-          'Fetched Parks and Trails',
-          parks.length,
-          trails.length,
-          parksWilds.length,
-        );
+        // const parks: Park[] = await watermelonDatabase
+        //   .get('parks')
+        //   .query()
+        //   .fetch();
+        // const trails: Trail[] = await watermelonDatabase
+        //   .get('trails')
+        //   .query()
+        //   .fetch();
+        // const parksWilds: Park_Wild[] = await watermelonDatabase
+        //   .get('parks_wilds')
+        //   .query()
+        //   .fetch();
+     
         const combinedParkPassData = combineDataForParks(
           parks,
           trails,
           completedTrails,
         );
         setCombinedData(combinedParkPassData);
-        setParksWildsData(parksWilds);
+        // setParksWildsData(parksWilds);
       };
 
       fetchParkPassData();
@@ -117,16 +110,14 @@ console.log(parks, parksWilds)
         key={item.parkId}
         testID={`park-pass-${item.parkId}`}
         parkWild={item}
-        user={user}
-        park={item.park}
-        wild={item.wild}
+        user={user} 
         navigation={navigation}
       />
     ),
     [user, navigation],
   );
 
-  if (!user || !userParks || !combinedData?.length) {
+  if (!user || !userParks || !parksWilds) {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <Text
@@ -153,11 +144,11 @@ console.log(parks, parksWilds)
       <Text
         testID="park-pass-count"
         style={[styles.completedPasses, {color: theme.text}]}>
-        {userParks.length} / {combinedData.length}
+        {userParks.length} / {parks.length}
       </Text>
 
       <FlatList
-        data={parksWildsData}
+        data={parksWilds}
         keyExtractor={item => item.parkId}
         numColumns={2}
         initialNumToRender={10}

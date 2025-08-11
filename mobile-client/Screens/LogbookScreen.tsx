@@ -42,7 +42,7 @@ const styles = getStyles(theme)
 
       <Pressable style={styles.card} onPress={() => {
         console.log('Navigate to Parks');
-        navigation.navigate('Parks', {parks, parkPasses, completedTrails, userWilds, parksWildsData});
+        navigation.navigate('Parks', {parks, parkPasses, completedTrails, userWilds, parksWilds:parksWildsData});
         }}>
         <Text style={styles.title}>Parks</Text>
         <Text style={styles.subtitle}>0 Park Rewards Available</Text>

@@ -1,20 +1,20 @@
-import {
-  User_Completed_Trail,
-  User_Queued_Trail,
-  User,
-  User_Purchased_Trail,
-} from '../watermelon/models';
-import {Q} from '@nozbe/watermelondb';
-import {SafeAreaView, StyleSheet, Text} from 'react-native';
 import React, {useCallback, useState} from 'react';
+import {SafeAreaView, StyleSheet, Text} from 'react-native';
+import {
+  User,
+  User_Completed_Trail,
+  User_Purchased_Trail,
+  User_Queued_Trail,
+} from '../watermelon/models';
 
 import EnhancedTrailsList from '../components/TrailsList';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {useDatabase} from '@nozbe/watermelondb/react';
-import {withObservables} from '@nozbe/watermelondb/react';
-import handleError from "../helpers/ErrorHandler";
 import FullTrailDetails from "../types/fullTrailDetails";
+import {Q} from '@nozbe/watermelondb';
+import handleError from "../helpers/ErrorHandler";
+import {useDatabase} from '@nozbe/watermelondb/react';
+import {useFocusEffect} from '@react-navigation/native';
 import {useTheme} from '../contexts/ThemeProvider';
+import {withObservables} from '@nozbe/watermelondb/react';
 
 interface Props {
   user: User;

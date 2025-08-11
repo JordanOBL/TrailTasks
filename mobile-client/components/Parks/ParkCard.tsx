@@ -6,7 +6,6 @@ import {Park_Wild, User, User_Wild} from "../../watermelon/models";
 import { StyleSheet, View } from 'react-native';
 
 import WildAvatar from '../Wilds/WildAvatar';
-import {useEffect} from "react";
 import { useTheme } from '../../contexts/ThemeProvider';
 import {withObservables} from "@nozbe/watermelondb/react";
 
@@ -81,7 +80,7 @@ if(!user || !park ){
         )} */}
         <Button mode="elevated" buttonColor='rgb(7,254,213)' onPress={() => {
           console.log('Redeem button clicked', wild.id);
-          navigation.navigate('ParkDetails', {wild:wild, park:park, user})
+          navigation.navigate('ParkDetails', {wild, parkId: park.id, user})
 
         }}>
           Details

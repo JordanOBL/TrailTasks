@@ -1,7 +1,7 @@
 import EnhancedLogbookScreen from '../../Screens/LogbookScreen';
-import EnhancedParkDetails from '../../components/Parks/ParkDetails'
 import EnhancedParkPassScreen from '../../Screens/ParksScreen';
 import EnhancedWildsScreen from '../../Screens/WildsScreen';
+import ParkDetailsScreen from '../../Screens/ParkDetailsScreen'
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {useAuthContext} from '../../services/AuthContext';
@@ -21,7 +21,7 @@ export default function LogbookStackNavigator() {
         {(props: any) => <EnhancedParkPassScreen user={user} {...props} />}
       </Logbook.Screen>
      <Logbook.Screen name="ParkDetails" options={{}}>
-        {(props: any) => <EnhancedParkDetails user={user} {...props} />}
+        {(props: any) => <ParkDetailsScreen user={user} {...props} />}
       </Logbook.Screen> 
     </Logbook.Navigator>
   );
