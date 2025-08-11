@@ -7,7 +7,6 @@ import {
   field,
   immutableRelation,
   lazy,
-  readonly,
   relation,
   text,
   writer,
