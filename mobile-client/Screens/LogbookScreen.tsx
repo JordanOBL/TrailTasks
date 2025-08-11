@@ -19,7 +19,7 @@ const styles = getStyles(theme)
       const parksWilds: Park_Wild[] = await db.get('parks_wilds').query().fetch();
       console.log('Fetched Parks Wilds', parksWilds.length);
       const parksData = await db.get('parks').query().fetch();
-      console.log('Fetched Parks', parksData.length);
+      console.log('Fetched Parks', parksData);
       setParks(parksData);
       setParksWildsData(parksWilds);
     }
@@ -42,8 +42,7 @@ const styles = getStyles(theme)
 
       <Pressable style={styles.card} onPress={() => {
         console.log('Navigate to Parks');
-        navigation.navigate('Parks', {parks, parkPasses, completedTrails, userWilds});
-
+        navigation.navigate('Parks', {parks, parkPasses, completedTrails, userWilds, parksWildsData});
         }}>
         <Text style={styles.title}>Parks</Text>
         <Text style={styles.subtitle}>0 Park Rewards Available</Text>

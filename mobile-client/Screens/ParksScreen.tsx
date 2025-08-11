@@ -9,14 +9,14 @@ import EnhancedParkCard from '../components/Parks/ParkCard';
 import {Q} from '@nozbe/watermelondb';
 import { useTheme } from '../contexts/ThemeProvider';
 
-const ParksScreen = ({user, completedTrails, userParks}) => {
+const ParksScreen = ({user, completedTrails, userParks, navigation, parks, parksWilds}) => {
   const [combinedData, setCombinedData] = useState<ParkPassCard[]>([]);
   const watermelonDatabase = useDatabase();
   const [parksWildsData, setParksWildsData] = useState<Park_Wild[]>([]);
 
 
   const {theme} = useTheme();
-
+console.log(parks, parksWilds)
 
   useEffect(() => {
     if (userParks && user) {
@@ -120,9 +120,10 @@ const ParksScreen = ({user, completedTrails, userParks}) => {
         user={user}
         park={item.park}
         wild={item.wild}
+        navigation={navigation}
       />
     ),
-    [user],
+    [user, navigation],
   );
 
   if (!user || !userParks || !combinedData?.length) {
@@ -168,10 +169,11 @@ const ParksScreen = ({user, completedTrails, userParks}) => {
   );
 };
 
-const enhance = withObservables(['user'], ({ user }) => ({
+const enhance = withObservables(['user'], ({ user}) => ({
     user: user.observe(),
     completedTrails: user.usersCompletedTrails.observe(),
     userParks: user.usersParks,
+    
 }));
 
 const EnhancedParksScreen = enhance(ParksScreen);
