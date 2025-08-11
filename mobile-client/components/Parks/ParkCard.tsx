@@ -16,17 +16,23 @@ interface Props {
     park: any; // Assuming park is an object with park details
     wild: any; // Assuming wild is an object with wild details
     usersWilds: any
+    navigate: any
 }
  
-const ParkCard = ({ parkWild, user,usersWilds,  park, wild }: Props) => {
+const ParkCard = ({ parkWild, user,usersWilds,  park, wild, navigation}: Props) => {
   const { theme }  = useTheme();
   const styles = getStyles(theme);
   //const progress = data?.completedTrails / data?.totalTrails;
-  console.log(park.id);
-  console.log(wild.id);
+console.log(park)
 
 const isLocked = !usersWilds.some((uw: User_Wild) => uw.wildId === wild.id)
-
+if(!user || !park ){
+  return (
+    <View>
+      <Text>Loading..</Text>
+    </View>
+  )
+}
 
   return (
     <Card style={styles.cardContainer}>
@@ -75,6 +81,8 @@ const isLocked = !usersWilds.some((uw: User_Wild) => uw.wildId === wild.id)
         )} */}
         <Button mode="elevated" buttonColor='rgb(7,254,213)' onPress={() => {
           console.log('Redeem button clicked', wild.id);
+          navigation.navigate('ParkDetails', {wild:wild, park:park, user})
+
         }}>
           Details
         </Button>

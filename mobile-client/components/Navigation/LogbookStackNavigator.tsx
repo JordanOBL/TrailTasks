@@ -1,4 +1,5 @@
 import EnhancedLogbookScreen from '../../Screens/LogbookScreen';
+import EnhancedParkDetails from '../../components/Parks/ParkDetails'
 import EnhancedParkPassScreen from '../../Screens/ParksScreen';
 import EnhancedWildsScreen from '../../Screens/WildsScreen';
 import React from 'react';
@@ -19,6 +20,9 @@ export default function LogbookStackNavigator() {
       <Logbook.Screen name="Parks" options={{}}>
         {(props: any) => <EnhancedParkPassScreen user={user} {...props} />}
       </Logbook.Screen>
+     <Logbook.Screen name="ParkDetails" options={{}}>
+        {(props: any) => <EnhancedParkDetails user={user} {...props} />}
+      </Logbook.Screen> 
     </Logbook.Navigator>
   );
 }
