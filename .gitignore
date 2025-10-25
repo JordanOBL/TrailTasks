@@ -48,12 +48,15 @@ yarn-error.log
 # For more information about the recommended setup visit:
 # https://docs.fastlane.tools/best-practices/source-control/
 .env
-.env.*
+.env.development
+.env.test
+.env.production
 TrailTasks.db
 **/fastlane/report.xml
 **/fastlane/Preview.html
 **/fastlane/screenshots
 **/fastlane/test_output
+.watchman-cookie-*
 
 # Bundle artifact
 *.jsbundle
