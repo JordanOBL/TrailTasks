@@ -71,6 +71,7 @@ export class Trail extends Model {
 
 }
 export class User extends Model {
+	[x: string]: any;
   static table = 'users';
   static associations = {
     users_achievements: {type: 'has_many', foreignKey: 'user_id'},
@@ -78,7 +79,6 @@ export class User extends Model {
     trails: {type: 'belongs_to', key: 'trail_id'},
     users_completed_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_queued_trails: {type: 'has_many', foreignKey: 'user_id'},
-    //users_subscriptions: {type: 'has_one', foreignKey: 'user_id'},
     users_purchased_trails: {type: 'has_many', foreignKey: 'user_id'},
     users_addons: {type: 'has_many', foreignKey: 'user_id'},
     users_parks: {type: 'has_many', foreignKey: 'user_id'}, // Added for park-level tracking
@@ -117,8 +117,8 @@ export class User extends Model {
   @children('users_wilds') usersWilds; // Added to track user progress in parks
   @children('users_friends') friends;
   @children('cached_friends') cachedFriends;
+	
 
-  //@relation('users_subscriptions', 'subscription_id') userSubscription;
   @writer
   async addRoomId(roomId){
     try{
@@ -814,6 +814,7 @@ export class User_Completed_Trail extends Model {
 
   @children('users') users;
   @children('trails') trails;
+	completion_count: any;
 
   // @lazy extendedTrail = this.trails.extend(Q.on('parks', 'park_id', 'park_id'));
 }
@@ -877,6 +878,7 @@ export class User_Session extends Model {
   sessionCategory;
 
   @children('users') users;
+
 
   @writer async updateTotalDistanceHiked({miles}) {
     return await this.update(() => {
@@ -963,6 +965,7 @@ export class User_Park extends Model {
   @field('last_completed') lastCompleted; // Timestamp of the last park completion
 
   @immutableRelation('parks', 'park_id') park;
+
   //@immutableRelation('badges', 'badge_id') badge;
 }
 

@@ -1,16 +1,18 @@
-import React, { useMemo, useState, useEffect } from 'react';
 import {
   FlatList,
-  View,
   StyleSheet,
+  View,
 } from 'react-native';
-import {withObservables}from "@nozbe/watermelondb/react";
-import { User_Completed_Trail, User_Queued_Trail, User, User_Purchased_Trail } from "../watermelon/models";
-import EnhancedTrailCard from './Trails/TrailCard';
-import FullTrailDetails from "../types/fullTrailDetails";
-import FilterSearch from "./FilterSearch";
-import { useTheme } from '../contexts/ThemeProvider';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { User, User_Completed_Trail, User_Purchased_Trail, User_Queued_Trail } from "../watermelon/models";
+import { darkTheme, lightTheme } from '../theme';
 
+import FilterSearch from "./FilterSearch";
+import FullTrailDetails from "../types/fullTrailDetails";
+import TrailCard from './Trails/TrailCard';
+import {useNavigation} from "@react-navigation/native";
+import { useTheme } from '../contexts/ThemeProvider';
+import {withObservables}from "@nozbe/watermelondb/react";
 
 interface Props {
   trailsCollection: FullTrailDetails[];
@@ -18,7 +20,7 @@ interface Props {
   completedTrails: User_Completed_Trail[];
   queuedTrails: User_Queued_Trail[];
   userPurchasedTrails: User_Purchased_Trail[]
-  queuedTrailMap: Map<string, string>;
+  queuedTrailMap: Record<string, boolean>;
 }
 
 const TrailsList = ({
@@ -32,7 +34,13 @@ const TrailsList = ({
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [showDropdown, setShowDropdown] = useState(false);
   const { theme } = useTheme();
+  const navigation = useNavigation();
 const styles = getStyles(theme);
+
+const handleTrailPress = useCallback((trail: FullTrailDetails):void => {
+//@ts-ignore
+  navigation.navigate('TrailDetails', { fullTrail: trail, trailId: null });
+}, [trailsCollection, navigation]);
 
 
   // Debounce the search query input
@@ -54,14 +62,14 @@ const styles = getStyles(theme);
           userPurchasedTrails.some(purchasedTrail => trail.id == purchasedTrail.trailId)
       );
     } else if (filter === 'Free') {
-      //@ts-ignore
-      filtered = trailsCollection.filter(trail => trail.is_free === true || trail.is_free == 1);
+      
+      filtered = trailsCollection.filter(trail => trail.is_free == true);
     } else if (filter === 'Trail Of The Week') {
-      //@ts-ignore
-      filtered = trailsCollection.filter(trail => trail.trail_of_the_week === true || trail.trail_of_the_week == 1);
+  
+      filtered = trailsCollection.filter(trail => trail.trail_of_the_week == true);
     } else if (filter === 'Completed'){
       filtered = trailsCollection.filter(trail =>
-          completedTrails.some(completedTrail => trail.id == completedTrail.trailId))
+          completedTrails.some(completedTrail => trail.id == completedTrail.trailId));
     }
 
     if (debouncedSearchQuery) {
@@ -83,10 +91,10 @@ const styles = getStyles(theme);
     setFilter(value);
     setShowDropdown(false);
   };
-//@ts-ignore
-  const renderTrailItem = ({ item }) => (
-      <EnhancedTrailCard trail={item} key={item.id} user={user} isQueued={queuedTrailMap && item?.id in queuedTrailMap ? queuedTrailMap[item.id] : false} />
-  );
+
+  const renderTrailItem = useCallback(({ item }: {item: FullTrailDetails}) => (
+      <TrailCard trail={item} key={item.id} isQueued={queuedTrailMap && item?.id in queuedTrailMap ? queuedTrailMap[item.id] : false} handleTrailPress={handleTrailPress} />
+  ), [user, queuedTrailMap]);
 
   return (
       <View style={styles.container}>
@@ -117,18 +125,7 @@ const styles = getStyles(theme);
   );
 };
 
-const enhance = withObservables(
-    ['user'],
-    ({ user }) => ({
-      user,
-      completedTrails: user.usersCompletedTrails.observe(),
-      queuedTrails: user.usersQueuedTrails.observe(),
-      userPurchasedTrails: user.usersPurchasedTrails.observe(),
-    })
-);
-
-const EnhancedTrailsList = enhance(TrailsList);
-export default EnhancedTrailsList;
+export default TrailsList;
 
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({

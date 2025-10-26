@@ -7,6 +7,8 @@ interface FullTrailDetails {
     id: string
     is_free: boolean
     is_subscribers_only: boolean
+    is_purchased?: boolean,
+    is_completed?: boolean,
     nps_url?: string
     park_id: string
     park_image_url?: string | null

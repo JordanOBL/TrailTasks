@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { GlobalExistingUserResponseFail, GlobalExistingUserResponseSuccess } from '../types/api';
+import { checkForLoggedInUser, checkGlobalUserExists, checkLocalUserExists, createNewUser, registerValidation, saveUserToLocalDB, setLocalStorageUser } from '../services/auth';
+import { useCallback, useEffect, useState } from 'react';
+
 import { Database } from '@nozbe/watermelondb';
-import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists,  setLocalStorageUser, createNewUser , registerValidation, saveUserToLocalDB} from '../services/auth';
-import {useInternetConnection} from './useInternetConnection';
-import handleError from '../helpers/ErrorHandler';
 import { User } from '../watermelon/models';
+import handleError from '../helpers/ErrorHandler';
 import {sync} from '../watermelon/sync';
+import {useInternetConnection} from './useInternetConnection';
 import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 
 type UseAuthParams = {
@@ -13,7 +15,7 @@ type UseAuthParams = {
 };
 
 export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParams) {
-  const {isConnected} = useInternetConnection();
+  const {isConnected} : any = useInternetConnection();
   const [user, setUser] = useState<any>(initialUser);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -65,7 +67,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
         let localUser = await checkLocalUserExists(email.toLowerCase(), password, watermelonDatabase);
         if (!localUser && isConnected) {
           // Attempt remote login
-          const remoteUser = await checkGlobalUserExists(email.toLowerCase(), password);
+          const remoteUser = await checkGlobalUserExists(email.toLowerCase(), password) as User & GlobalExistingUserResponseSuccess;
           if (remoteUser) {
             // Write remote data to local DB (this is your large block that creates user, sessions, etc.)
             await saveUserToLocalDB(remoteUser, watermelonDatabase);

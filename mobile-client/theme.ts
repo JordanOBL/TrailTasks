@@ -1,5 +1,5 @@
 export const darkTheme = {
-  themeName:"darkTheme",
+  themeName:'darkTheme',
   background: '#000000',
   card: '#121212',
   text: '#ffffff',
