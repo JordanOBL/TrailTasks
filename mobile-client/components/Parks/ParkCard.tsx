@@ -2,50 +2,49 @@ import * as Progress from 'react-native-progress';
 import * as React from 'react';
 
 import { Button, Card, Text } from 'react-native-paper';
-import {Park_Wild, User, User_Wild} from "../../watermelon/models";
+import {Park_Wild, User, User_Wild} from '../../watermelon/models';
 import { StyleSheet, View } from 'react-native';
 
 import WildAvatar from '../Wilds/WildAvatar';
 import { useTheme } from '../../contexts/ThemeProvider';
-import {withObservables} from "@nozbe/watermelondb/react";
+import {withObservables} from '@nozbe/watermelondb/react';
 
 interface Props {
-    parkWild: Park_Wild[];
-    user: User;
-    park: any; // Assuming park is an object with park details
-    wild: any; // Assuming wild is an object with wild details
-    usersWilds: any
-    navigate: any
+  parkId: string;
+  navigation: any;
+    user: User | null;
+    parkName?: string;
+    isParkPassCompleted?: boolean;
+    isWildUnlocked?: boolean;
+    wildId?: string;
+    
 }
- 
-const ParkCard = ({ parkWild, user,usersWilds,  park, wild, navigation}: Props) => {
+
+const ParkCard = React.memo(({ user,parkId, parkName, isParkPassCompleted,isWildUnlocked, wildId , navigation}: Props) => {
   const { theme }  = useTheme();
   const styles = getStyles(theme);
   //const progress = data?.completedTrails / data?.totalTrails;
-console.log(park)
-
-const isLocked = !usersWilds.some((uw: User_Wild) => uw.wildId === wild.id)
-if(!user || !park ){
+if(!user ){
   return (
     <View>
       <Text>Loading..</Text>
     </View>
-  )
+  );
 }
 
   return (
     <Card style={styles.cardContainer}>
       <View style={[styles.content]}>
-        <Text style={styles.title}>{park.parkName}</Text>
+        <Text style={styles.title}>{parkName}</Text>
 
         {/* <Text testID={`park-${park.parkId}-level`} style={styles.levelBadge}>
             Level: {data?.pass?.parkLevel || 0}
           </Text> */}
       <View style={styles.imageContainer}>
-         {wild.id ? <WildAvatar
-            id={wild.id}
-            key={wild.id}
-            pose={isLocked ?  'hidden' : 'still'}
+         {wildId ? <WildAvatar
+            id={wildId}
+            key={wildId}
+            pose={isWildUnlocked ?  'still' : 'hidden'}
             //pose={'still'}
             size={100}
           /> : <Text style={{color: 'white'}}>No Image</Text>}
@@ -78,9 +77,8 @@ if(!user || !park ){
             Redeem
           </Button>
         )} */}
-        <Button mode="elevated" buttonColor='rgb(7,254,213)' onPress={() => {
-          console.log('Redeem button clicked', wild.id);
-          navigation.navigate('ParkDetails', {wild, parkId: park.id, user})
+        <Button mode="elevated" buttonColor="rgb(7,254,213)" onPress={() => {
+          navigation.navigate('ParkDetails', {wildId, parkId});
 
         }}>
           Details
@@ -88,19 +86,19 @@ if(!user || !park ){
       </View>
     </Card>
   );
-};
+});
 
-const enhance = withObservables(['user', 'parkWild'], ({ user, parkWild }) => ({
-    user: user.observe(),
-    usersWilds: user.usersWilds,
-    park: parkWild.park.observe(),
-    wild: parkWild.wild.observe(),
-    
-}));
+// const enhance = withObservables(['user', 'parkWild'], ({ user, parkWild }) => ({
+//     user: user.observe(),
+//     usersWilds: user.usersWilds,
+//     park: parkWild.park.observe(),
+//     wild: parkWild.wild.observe(),
+
+// }));
 
 
-const EnhancedParkCard = enhance(ParkCard);
-export default EnhancedParkCard;
+// const EnhancedParkCard = enhance(ParkCard);
+export default ParkCard;
 
 
 const getStyles = (theme: any) =>

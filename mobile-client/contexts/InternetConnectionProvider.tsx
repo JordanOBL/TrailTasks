@@ -1,13 +1,36 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo, { NetInfoConnectedStates, NetInfoStateType, NetInfoUnknownState } from '@react-native-community/netinfo';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-const InternetConnectionContext = createContext();
+interface InternetConnectionContextProps {
+  isConnected: boolean;
+  ipAddress: string | null;
+  refreshConnectionStatus: () => Promise<void>;
+}
 
-export const InternetConnectionProvider = ({ children }) => {
+interface NetInfoState {
+  isConnected: boolean;
+  details: {
+    bssid?: string;
+    frequency?: number;
+    ipAddress?: string;
+    isConnectionExpensive?: boolean;
+    linkSpeed?: number;
+    rxLinkSpeed?: number;
+    strength?: number;
+    subnet?: string;
+    txLinkSpeed?: number;
+
+  };
+  isInternetReachable?: boolean;
+  type: string;
+}
+const InternetConnectionContext = createContext<InternetConnectionContextProps | null>(null);
+
+export const InternetConnectionProvider = ({ children }: any) => {
   const [isConnected, setIsConnected] = useState(true);
-  const [ipAddress, setIpAddress] = useState(null);
+  const [ipAddress, setIpAddress] = useState<string | null>(null);
 
-  const updateConnectionStatus = (state) => {
+  const updateConnectionStatus = (state:any) => {
     setIsConnected(state.isConnected);
     if (state.details && state.details.ipAddress) {
       setIpAddress(state.details.ipAddress);
@@ -19,6 +42,7 @@ export const InternetConnectionProvider = ({ children }) => {
   // Fetch connection state manually
   const refreshConnectionStatus = async () => {
     const state = await NetInfo.fetch();
+    console.log(state)
     updateConnectionStatus(state);
   };
 

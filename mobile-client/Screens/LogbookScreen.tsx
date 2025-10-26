@@ -1,48 +1,67 @@
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, Card } from 'react-native-paper';
-import { Park_Wild, User } from '../watermelon/models';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Park, Park_Wild, Trail, User, User_Wild } from '../watermelon/models';
+import React, { useCallback } from 'react';
+import { darkTheme, lightTheme } from '../theme';
 
-import React from 'react';
+import { Model } from '@nozbe/watermelondb';
+import { useAuthContext } from '../services/AuthContext';
 import { useDatabase } from '@nozbe/watermelondb/react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../contexts/ThemeProvider';
 import { withObservables } from '@nozbe/watermelondb/react';
 
-const LogbookScreen = ({ user, userWilds, completedTrails, parkPasses, navigation }) => {
-  const db = useDatabase();
-  const [parksWildsData, setParksWildsData] = React.useState<Park_Wild[]>([]);
-  const [parks, setParks] = React.useState([]);
-const theme  = useTheme()
-console.log(theme)
-const styles = getStyles(theme)
-  React.useEffect(() => {
-    const fetchLogbookData = async () => {
-      const parksWilds: Park_Wild[] = await db.get('parks_wilds').query().fetch();
-      console.log('Fetched Parks Wilds', parksWilds.length);
-      const parksData = await db.get('parks').query().fetch();
-      console.log('Fetched Parks', parksData);
-      setParks(parksData);
-      setParksWildsData(parksWilds);
-    }
+interface Props {
+  navigation: any;
+}
+type theme = typeof lightTheme | typeof darkTheme;
 
-    fetchLogbookData();
-  }, [db]);
+
+const LogbookScreen = ({  navigation } : Props) => {
+  const {user} = useAuthContext();
+  const db = useDatabase();
+
+  const [parksCount, setParksCount] = React.useState<Park[]>([]);
+  const [userWildsCount, setUserWildsCount] = React.useState<number | null>(null);
+const {theme} = useTheme()
+const styles = getStyles(theme)
+const load = useCallback(async() => {
+  const [parksCount, parksWilds, userWildCount] = await Promise.all([
+    db.get<Park>('parks').query().fetch(),
+    db.get<Park_Wild>('parks_wilds').query().fetchCount(),
+    db.get<User_Wild>('users_wilds').query().fetchCount(),
+  ]); 
+  setParksCount(parksCount);
+  setUserWildsCount(userWildCount);
+}, [db])
+useFocusEffect(useCallback(() => {
+  load();
+}, [load]))
+
+if (!user || userWildsCount === null || parksCount === null) {
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#0000ff" />
+    </View>
+  );
+}
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Logbook</Text>
       <Pressable style={styles.card} onPress={() => {
         console.log('Navigate to Wilds');
-        navigation.navigate('MyWilds', { userWilds });
+        navigation.navigate('MyWilds');
         }}>
         <Text style={styles.title}>My Wilds</Text>
         <Text style={styles.subtitle}>
-          {userWilds ? `${userWilds.length} / 63` : '0'} wilds unlocked
+          {userWildsCount ? `${userWildsCount} / 63` : '0'} wilds unlocked
         </Text>
       </Pressable>
 
       <Pressable style={styles.card} onPress={() => {
         console.log('Navigate to Parks');
-        navigation.navigate('Parks', {parks, parkPasses, completedTrails, userWilds, parksWilds:parksWildsData});
+        navigation.navigate('Parks');
         }}>
         <Text style={styles.title}>Parks</Text>
         <Text style={styles.subtitle}>0 Park Rewards Available</Text>
@@ -51,17 +70,17 @@ const styles = getStyles(theme)
   );
 };
 
-const enhance = withObservables(['user'], ({ user }) => ({
-  user: user.observe(),
-  userWilds: user.usersWilds.observe(),
-  completedTrails: user.usersCompletedTrails.observe(),
-  parkPasses: user.usersParks.observe(),
-}));
+// const enhance = withObservables(['user'], ({ user }) => ({
+//   user: user.observe(),
+//   userWilds: user.usersWilds.observe(),
+//   completedTrails: user.usersCompletedTrails.observe(),
+//   parkPasses: user.usersParks.observe(),
+// }));
 
-const EnhancedLogbookScreen = enhance(LogbookScreen);
-export default EnhancedLogbookScreen;
+// const EnhancedLogbookScreen = enhance(LogbookScreen);
+export default LogbookScreen;
 
-const getStyles = (theme)=> {
+const getStyles = (theme: theme)=> {
   return StyleSheet.create({
   container: {
     flex: 1,

@@ -1,45 +1,47 @@
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
 import {
-    View,
-    Text,
-    TouchableOpacity,
     Image,
     StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { withObservables } from "@nozbe/watermelondb/react";
-import calculateEstimatedTime from "../../helpers/calculateEstimatedTime";
+import { darkTheme, lightTheme } from '../../theme';
+
 import FullTrailDetails from "../../types/fullTrailDetails";
-import { useTheme } from '../../contexts/ThemeProvider';
+import React from 'react';
+import calculateEstimatedTime from "../../helpers/calculateEstimatedTime";
 import {useAuthContext} from "../../services/AuthContext";
-const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrails, isQueued }: Props) => {
-  const navigation = useNavigation();
+import { useTheme } from '../../contexts/ThemeProvider';
+
+interface Props {
+  trail: FullTrailDetails;
+  isQueued: boolean;
+  handleTrailPress: (trail: FullTrailDetails) => void;
+}
+const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
   const { theme } = useTheme();
+  const {user, isProMember} = useAuthContext();
   const styles = getStyles(theme);
-  const currentTrail = user.trailId == trail?.id
-  const { isProMember } = useAuthContext();
-
-
-  const handlePress = () => {
-    navigation.navigate('TrailDetails', {
-      trail,
-      user,
-      
-    });
-  };
-
+  const currentTrail = user?.trailId == trail?.id
+  const getTrailStatusText = () => {
+  if (currentTrail) return "Currently Hiking";
+  if (trail.is_free) return "Available (Free Trail)";
+  if (trail.is_purchased) return "Available (Purchased)";
+  if (trail.is_subscribers_only && !isProMember) return "Pro Subscribers Only";
+  return "Buy to Unlock";
+};
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress}>
+    <TouchableOpacity style={styles.card} onPress={() => handleTrailPress(trail)}>
       <Image
         source={trail.trail_image_url ? { uri: trail.trail_image_url } : require('../../assets/LOGO.png')}
         style={styles.image}
       />
-     <Text style={{color: theme.text, textAlign: 'center', opacity: 0.5}}>{currentTrail ? 'Currently Hiking' : trail.is_free ? 'Free Trail' : isProMember ? '' : !isProMember && trail.is_subscribers_only ? 'Pro Subscribers Only'  : 'Available'}</Text>
+     <Text style={{color: theme.text, textAlign: 'center', opacity: 0.5}}>{getTrailStatusText()}</Text>
       <View style={styles.infoContainer}>
         <View style={styles.row}>
           <Text style={styles.trailName} numberOfLines={1}>{trail?.trail_name}</Text>
-          <View style={[styles.completedBadge, { display: trail.completed_trails ? 'flex' : 'none' }]}>
+          <View style={[styles.completedBadge, { display: trail.is_completed ? 'flex' : 'none' }]}>
             <Text style={styles.completedBadgeText}>✓ Completed</Text>
           </View>
           <View style={[styles.completedBadge, { display: isQueued ? 'flex' : 'none' }]}>
@@ -66,14 +68,7 @@ const TrailCard = React.memo(({ trail, completedTrails, user, userPurchasedTrail
   );
 });
 
-const enhance = withObservables(['user', 'userPurchasedTrails', 'completedTrails'], ({ user }) => ({
-    user,
-    completedTrails: user.usersCompletedTrails.observe(),
-    userPurchasedTrails: user.usersPurchasedTrails.observe(),
-}));
-
-const EnhancedTrailCard = enhance(TrailCard);
-export default EnhancedTrailCard;
+export default TrailCard;
 
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({

@@ -1,49 +1,90 @@
-import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, {useMemo} from 'react';
+import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Park, Trail, User, User_Completed_Trail, User_Park, User_Purchased_Trail, Wild } from "../../watermelon/models";
+import React, { useCallback, useMemo, useState } from "react";
+import { darkTheme, lightTheme } from "../../theme";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 
-import WildAvatar from '../../components/Wilds/WildAvatar'
-import {useTheme} from '../../contexts/ThemeProvider';
-import {withObservables} from '@nozbe/watermelondb/react';
+import { Q } from "@nozbe/watermelondb";
+import WildAvatar from "../Wilds/WildAvatar";
+import { useAuthContext } from "../../services/AuthContext";
+import { useDatabase } from "@nozbe/watermelondb/react";
+import { useTheme } from "../../contexts/ThemeProvider";
 
-const ParkDetails = ({park, wild, user,purchasedTrails, completedTrails, trails, userParks}) => {
-    const {theme } = useTheme();
-    const styles = getStyles(theme);
-  // quick lookups
-  const purchasedIds = useMemo(
-    () => new Set(purchasedTrails.map((pt) => pt.trailId)),
-    [purchasedTrails]
-  );
-  const completedIds = useMemo(
-    () => new Set(completedTrails.map((ct) => ct.trailId)),
-    [completedTrails]
-  );
+type RouteParams = { parkId: string; wildId?: string };
+
+const ParkDetails = () => {
+  const { params } = useRoute<any>() as { params: RouteParams };
+  const navigation = useNavigation<any>();
+  const { parkId, wildId } = params;
+
+ const { user } = useAuthContext();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+  const db = useDatabase();
+
+  const [park, setPark] = useState<Park | null>(null);
+  const [wild, setWild] = useState<Wild | null>(null);
+  const [trails, setTrails] = useState<Trail[]>([]);
+  const [purchasedTrails, setPurchasedTrails] = useState<User_Purchased_Trail[]>([]);
+  const [completedTrails, setCompletedTrails] = useState<User_Completed_Trail[]>([]);
+  const [userParks, setUserParks] = useState<User_Park[]>([]);
+
+  const load = useCallback(async () => {
+    // Fetch in parallel; relations use .query().fetch()
+    if (!user) return;
+    try{
+      const [p, w, t, pt, ct, up] = await Promise.all([
+        db.get<Park>("parks").find(parkId),
+        wildId ? db.get<Wild>("wilds").find(wildId) : Promise.resolve(null),
+        db.get<Trail>("trails").query(Q.where("park_id", parkId)).fetch(),
+        user.usersPurchasedTrails,
+        user.usersCompletedTrails,
+        user.usersParks,
+      ]);
+      setPark(p);
+      setWild(w);
+      setTrails(t);
+      setPurchasedTrails(pt);
+      setCompletedTrails(ct);
+      setUserParks(up);
+    } catch (error) {
+      console.error("Error loading park details:", error);  
+    }
+  }, [db, parkId, wildId, user]);
+
+  // Fetch when the screen is focused (and on return)
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  // Quick lookups
+  const purchasedIds = useMemo(() => new Set(purchasedTrails.map(pt => pt.trailId)), [purchasedTrails]);
+  const completedIds = useMemo(() => new Set(completedTrails.map(ct => ct.trailId)), [completedTrails]);
 
   const totalTrails = trails.length;
-  const completedCount = useMemo(
-    () => trails.filter((t) => completedIds.has(t.id)).length,
-    [trails, completedIds]
-  );
-  const purchasedCount = useMemo(
-    () => trails.filter((t) => purchasedIds.has(t.id)).length,
-    [trails, purchasedIds]
-  );
+  const completedCount = useMemo(() => trails.filter(t => completedIds.has(t.id)).length, [trails, completedIds]);
+  const purchasedCount = useMemo(() => trails.filter(t => purchasedIds.has(t.id)).length, [trails, purchasedIds]);
   const completionPct = totalTrails ? Math.round((completedCount / totalTrails) * 100) : 0;
 
-const wildPose = useMemo(() => {
-  console.log(wild, userParks, theme);
+  const wildPose = useMemo(() => {
+    if (!wild) return theme.themeName === "darkTheme" ? "hidden_dark" : "hidden_light";
+    const hasThisPark = userParks.some(up => up.parkId === parkId);
+    return hasThisPark ? "still" : theme.themeName === "darkTheme" ? "hidden_dark" : "hidden_light";
+  }, [wild, userParks, parkId, theme.themeName]);
 
-  const hasThisPark = userParks?.some((uw) => uw.wildId === wild.id);
-  if (hasThisPark) return 'still';
+  const onPressTrail = useCallback((trail: Trail) => {
+    // navigate to trail detail by id; no models in params
+    navigation.navigate("Explore", {
+      screen: "TrailDetails",
+      params: { fullTrail: null, trailId: trail.id },
+    });
+  }, []);
 
-  return theme.themeName === 'darkTheme'
-    ? 'hidden_dark'
-    : 'hidden_light';
-
-}, [wild?.id, userParks, theme.themeName]);
-
-
-
-
+  if (!park) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: theme.text }}>Loading park…</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -80,29 +121,26 @@ const wildPose = useMemo(() => {
         </View>
       </View>
 
-      
-{/* Wild */}
-<View style={styles.card}>
-  <Text style={styles.sectionTitle}>Wild</Text>
-  {wild ? (
-    <View style={styles.wildRow}>
-      <WildAvatar
-        id={wild.id}
-        pose={wildPose}
-        size={150}
-      />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.wildName}>{wild.wildName}</Text>
-        <View style={styles.tagRow}>
-          {wild.species && userParks.includes(up => up.park_id === park.id) ? <Tag theme={theme} label={wild.species} /> : null}
-          {wild.rarity ? <Tag theme={theme} label={`Rarity: ${wild.rarity}`} /> : null}
-        </View>
+      {/* Wild */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Wild</Text>
+        {wild ? (
+          <View style={styles.wildRow}>
+            <WildAvatar id={wild.id} pose={wildPose} size={150} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.wildName}>{wild.wildName}</Text>
+              <View style={styles.tagRow}>
+                {wild.species && userParks.some(up => up.parkId === park.id) ? (
+                  <Tag theme={theme} label={wild.species} />
+                ) : null}
+                {wild.rarity ? <Tag theme={theme} label={`Rarity: ${wild.rarity}`} /> : null}
+              </View>
+            </View>
+          </View>
+        ) : (
+          <EmptyLine theme={theme} text="No wild assigned to this park yet." />
+        )}
       </View>
-    </View>
-  ) : (
-    <EmptyLine theme={theme} text="No wild assigned to this park yet." />
-  )}
-</View>
 
       {/* Trails */}
       <View style={styles.card}>
@@ -112,19 +150,14 @@ const wildPose = useMemo(() => {
         ) : (
           <FlatList
             data={trails}
-            keyExtractor={(t) => t.id}
+            keyExtractor={t => t.id}
             scrollEnabled={false}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             renderItem={({ item: trail }) => {
               const isCompleted = completedIds.has(trail.id);
               const isPurchased = purchasedIds.has(trail.id);
-
               return (
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  style={styles.trailRow}
-                  onPress={() => onPressTrail?.(trail)}
-                >
+                <TouchableOpacity activeOpacity={0.85} style={styles.trailRow} onPress={() => onPressTrail(trail)}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.trailName}>{trail.trailName}</Text>
                     <View style={styles.trailMetaRow}>
@@ -135,14 +168,9 @@ const wildPose = useMemo(() => {
                       {trail.isSubscribersOnly ? <Meta theme={theme} label="Subscribers" /> : null}
                     </View>
                   </View>
-
                   <View style={styles.badgeCol}>
-                    {isCompleted ? (
-                      <Badge theme={theme} text="Completed" tone="success" />
-                    ) : null}
-                    {isPurchased ? (
-                      <Badge theme={theme} text="Purchased" tone="primary" />
-                    ) : null}
+                    {isCompleted ? <Badge theme={theme} text="Completed" tone="success" /> : null}
+                    {isPurchased ? <Badge theme={theme} text="Purchased" tone="primary" /> : null}
                   </View>
                 </TouchableOpacity>
               );
@@ -153,9 +181,12 @@ const wildPose = useMemo(() => {
     </ScrollView>
   );
 };
+
+
 /* ————— Small UI bits (theme-aware) ————— */
 
-const Tag = ({ label, theme }) => (
+const Tag = ({ label, theme }: {label: string, theme: typeof lightTheme | typeof darkTheme }) => (
+
   <View
     style={{
       backgroundColor:
@@ -179,7 +210,7 @@ const Tag = ({ label, theme }) => (
   </View>
 );
 
-const Meta = ({ label, theme }) => (
+const Meta = ({ label, theme } :{label: string, theme: typeof lightTheme | typeof darkTheme }) => (
   <View
     style={{
       backgroundColor:
@@ -202,7 +233,7 @@ const Meta = ({ label, theme }) => (
   </View>
 );
 
-const Stat = ({ label, value, theme }) => (
+const Stat = ({ label, value, theme }: {label: string, value: string, theme: typeof lightTheme | typeof darkTheme }) => (
   <View style={{ alignItems: 'center', flex: 1, paddingVertical: 8 }}>
     <Text
       style={{
@@ -224,16 +255,12 @@ const Stat = ({ label, value, theme }) => (
     </Text>
   </View>
 );
-//  {
-//   text: string;
-//   tone?: "primary" | "success" | "warning" | "neutral";
-//   theme: Theme;}
 
 const Badge = ({
   text,
   tone,
   theme,
-}) => {
+}: {text: string, tone: string, theme: typeof lightTheme | typeof darkTheme }) => {
   let bg = theme.card;
   if (tone === 'success') {bg = theme.completedBadge;} // green from theme
   else if (tone === 'primary') {bg = theme.buttonPrimary;}
@@ -263,7 +290,7 @@ const Badge = ({
   );
 };
 
-const EmptyLine = ({ text, theme }) => (
+const EmptyLine = ({ text, theme }: {text: string, theme: typeof lightTheme | typeof darkTheme }) => (
   <Text
     style={{
       color: theme.secondaryText,
@@ -277,7 +304,7 @@ const EmptyLine = ({ text, theme }) => (
 
 /* ————— Styles ————— */
 
-const getStyles = (theme) =>
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({
     container: {
       padding: 16,
@@ -302,7 +329,7 @@ const getStyles = (theme) =>
     parkName: {
       fontSize: 22,
       fontWeight: '700',
-      color: theme.trailHeaderText, // strong title color
+      color: theme.trailHeaderText, 
     },
     tagRow: {
       flexDirection: 'row',
@@ -395,18 +422,6 @@ const getStyles = (theme) =>
     },
   });
 
-
-const enhance = withObservables(['user'], ({ user, park }) => ({
-    user: user,
-    trails: park.trails,
-    completedTrails: user.usersCompletedTrails,
-    purchasedTrails: user.usersPurchasedTrails,
-    userParks: user.usersParks,
+export default ParkDetails;
 
 
-}));
-
-const EnhancedParkDetails = enhance(ParkDetails);
-export default EnhancedParkDetails;
-
-const styles = StyleSheet.create({});
