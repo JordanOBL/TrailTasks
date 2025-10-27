@@ -14,6 +14,7 @@ import {
 
 import formatDateTime from '../helpers/formatDateTime';
 import handleError from '../helpers/ErrorHandler';
+import { write } from 'fs';
 
 export class Park extends Model {
   static table = 'parks';
@@ -598,8 +599,27 @@ async buyAddon(addOn) {
     return completedTrail[0];
   }
 
+  //Check if user completed all trails in the park after completing new trail, 
+  // if "yes" unlock wild and park
   @writer
-  async redeemParkPass(parkId:string) {
+  async redeemParkWildCheck(parkId) {
+    console.log('In redeemParkWildCheck after completing new trail for parkid:', parkId);
+    const p = await this.collections.get<Park>('parks').find(parkId);
+    console.log('Park found in redeemParkWildCheck:', p);
+    const trailsInPark = await p.trails.fetch();
+    console.log('Trails in Park:', trailsInPark);
+    //Check if user has completed all trails in the park
+    const completedTrailsInPark = await this.usersCompletedTrails.extend(
+        Q.where('trail_id', Q.oneOf(trailsInPark.map((t) => t.id)))
+    ).fetch();
+    console.log('Completed Trails in Park by User:', completedTrailsInPark);
+    console.log('returning:', completedTrailsInPark.length === trailsInPark.length);
+
+    return completedTrailsInPark.length === trailsInPark.length
+  }
+
+  @writer
+  async redeemParkPass(parkId:string): Promise<void> {
     const reward = ( this.prestigeLevel * 100 ) + 200;
     let newUserPark;
     let createUserWild;
@@ -611,6 +631,7 @@ async buyAddon(addOn) {
 
     // If park pass does not exist, create it
     if (!existingParkPass) {
+      //create ParkPass
       newUserPark = this.collections.get('users_parks').prepareCreate((parkPass) => {
         parkPass.userId = this.id;
         parkPass.parkId = parkId;
@@ -618,6 +639,7 @@ async buyAddon(addOn) {
         parkPass.parkLevel = 1;
         parkPass.isRewardRedeemed = true;
       });
+      //Unlcok WIld For User
       [parkWild] = await this.collections.get('wilds').query(Q.where('park_id', parkId)).fetch();
       createUserWild = this.collections.get('users_wilds').prepareCreate((wild) => {
         wild.userId = this.id;
@@ -633,19 +655,19 @@ async buyAddon(addOn) {
           pass.isRewardRedeemed = true;
         });
     }
-  await this.database.batch(
+  await this.database.batch([
       this.prepareUpdate((user) => {
         user.trailTokens += reward;
       }),
       newUserPark,
-      createUserWild,
-      this.database.get('users_wilds').prepareCreate((userWild) => {
-        userWild.userId = this.id;
-        userWild.wildId = parkWild.id; // Assuming wild.id is the ID of the wild created earlier
-        userWild.isActive = true;
-        userWild.unlockedAt = new Date().toISOString();
-      })
-    );
+      createUserWild
+    //   this.database.get('users_wilds').prepareCreate((userWild) => {
+    //     userWild.userId = this.id;
+    //     userWild.wildId = parkWild.id; // Assuming wild.id is the ID of the wild created earlier
+    //     userWild.isActive = true;
+    //     userWild.unlockedAt = new Date().toISOString();
+    //   })
+     ]);
 
   }
 
