@@ -31,16 +31,12 @@ const ParksScreen = ({navigation}: Props) => {
 
 
 const load = useCallback(async () => {
-    console.log('Fetching park pass data');
+  if(!user) return;
     const [parksWilds, parks, userParks, userWilds] = await Promise.all([
       db.get<Park_Wild>('parks_wilds').query().fetch(),
       db.get<Park>('parks').query().fetch(),
-      db.get<User_Park>('users_parks').query(
-        Q.where('user_id', user!.id),
-      ).fetch(),
-      db.get<User_Wild>('users_wilds').query(
-        Q.where('user_id', user!.id),
-      ).fetch(),
+      user?.usersParks,
+      user?.usersWilds
     ]);
 
     setParksWilds(parksWilds);
