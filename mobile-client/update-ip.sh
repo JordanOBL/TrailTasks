@@ -17,7 +17,7 @@ update_env_file () {
     fi
     echo "Updated $FILE → LOCAL_IP=$IP"
     if grep -q '^DATABASE_URL=' "$FILE"; then
-      sed -i.bak "s/^DATABASE_URL=.*/DATABASE_URL=http:\/\/$IP:5500/" "$FILE"
+      sed -i.bak "s/^DATABASE_URL=.*/DATABASE_URL=$IP:5500/" "$FILE"
     else
       echo "DATABASE_URL=$IP:5500" >> "$FILE"
     fi
@@ -38,7 +38,7 @@ update_env_file () {
     fi  
   else
     echo "LOCAL_IP=$IP" > "$FILE"
-    echo "DATABASE_URL=http://$IP:5500" >> "$FILE"
+    echo "DATABASE_URL=$IP:5500" >> "$FILE"
     echo "DATABASE_PULL_URL=http://$IP:5500" >> "$FILE"
     echo "DATABASE_PUSH_URL=http://$IP:5500" >> "$FILE"
     echo "NODE_ENV=development" >> "$FILE"
