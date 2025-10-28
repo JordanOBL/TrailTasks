@@ -1,55 +1,85 @@
 import {Alert, FlatList, StyleSheet, Text, View} from 'react-native';
+import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback } from 'react';
+import { User_Wild, Wild } from '../watermelon/models';
+import { darkTheme, lightTheme } from '../theme';
+import { useDatabase, withObservables } from '@nozbe/watermelondb/react';
 
-import React from 'react';
-import Rive from 'rive-react-native'
+import { Q } from '@nozbe/watermelondb';
 import WildCard from '../components/Wilds/WildCard'; // adjust path
-// screens/WildsScreen.tsx
-import wildData from '../assets/wilds/mock_data.json'; // your JSON arrary
-import { withObservables } from '@nozbe/watermelondb/react';
+import { useAuthContext } from '../services/AuthContext';
+import { useTheme } from '../contexts/ThemeProvider';
 
-//const usersWilds = new Set(['scout', 'ember']);
+const  WildsScreen = () => {
 
-const  WildsScreen = ({user, route}) =>
-{
+  const {user} = useAuthContext();
+  const {theme} = useTheme();
+  const db = useDatabase();
+  const styles = getStyles(theme);
 
-  // Example handler (replace with navigation logic)
-  const {userWilds} = route.params || {};
-  
+  const [userWilds, setUserWilds] = React.useState<User_Wild[]>([]);
+  const [wilds, setWilds] = React.useState<Wild[]>([]);
+
+  const load = useCallback(async () => {
+    if(!user) return;
+    const [userWilds, wilds] = await Promise.all([
+      user.usersWilds,
+      db.get<Wild>('wilds').query().fetch(),
+    ]);
+    setWilds(wilds);
+    setUserWilds(userWilds);
+  }, [user]);
+
+  useFocusEffect(useCallback(() => {
+    load();
+  }, [load]))
+    
   console.log('WildsScreen userWilds:', userWilds);
-  const handlePress = (id: string) => {
-    Alert.alert('Wild selected', `Open details for ${id}`);
-    // navigation.navigate('WildDetail', { id });
-  };
+  // const handlePress = useCallback((id: string) => {
+  //   Alert.alert('Wild selected', `Open details for ${id}`);
+  //   //navigation.navigate('WildDetail', { id });
+  // }, []);
 
-  const createHiddenText = React.useCallback((text: string) => {
-    return Array.from(text)
-      .map(_ => '?')
-      .join('');
-  }, []);
+  // const createHiddenText = React.useCallback((text: string) => {
+  //   return Array.from(text)
+  //     .map(_ => '?')
+  //     .join('');
+  // }, []);
 
-  const rItem = React.useCallback(({ item }) =>
+    const switchActiveWild = useCallback(
+      async (newActiveWild: User_Wild): Promise<void> => {
+        if (!user || !newActiveWild) return;
+        if (newActiveWild.isActive) {
+          //riveRef.current?.fireState("State Machine 1", "rest");
+          const [currentActiveWild] = await user?.usersWilds
+            .extend(Q.where("is_active", true))
+            .fetch();
+          await db.write(async () => {
+            await db.batch([
+              newActiveWild.update((w: User_Wild) => {
+                w.isActive = true;
+              }),
+              currentActiveWild.update((w: User_Wild) => {
+                w.isActive = false;
+              }),
+            ]);
+          });
+        }
+      },
+      [user],
+    );
+
+  const rItem = React.useCallback(({ item }: {item: User_Wild}) =>
   {
     return (
    <View style={{margin: 10}}>
      <WildCard
        wild={item}
-       //isLocked={!usersWilds.has(item.id)} // example lock logic
-       isLocked={false}
-       isActive={item?.is_active}
-       onPress={() => handlePress(item.id)}
-       createHiddenText={createHiddenText}
+       switchActiveWild={switchActiveWild}
      />
    </View>)
-  }, [createHiddenText])
+  }, [user])
 
-  // React.useEffect(() => {
-
-  //   async function getWilds(){
-  //    const results = await database.get('wilds').query().fetch();
-  //   console.log(results)
-  //   }
-  //  getWilds()
-  // })
 
   if (!userWilds || userWilds.length === 0) {
     return (
@@ -80,10 +110,11 @@ const EnhancedWildsScreen = enhance(WildsScreen);
 export default EnhancedWildsScreen;
 
 
-const styles = StyleSheet.create({
+const  getStyles = (theme: typeof lightTheme | typeof darkTheme) => { 
+return StyleSheet.create({
   container: {
         padding: 16,
         margin: 0,
         alignItems: 'center',
   },
-});
+})}

@@ -88,16 +88,6 @@ if(!user ){
   );
 });
 
-// const enhance = withObservables(['user', 'parkWild'], ({ user, parkWild }) => ({
-//     user: user.observe(),
-//     usersWilds: user.usersWilds,
-//     park: parkWild.park.observe(),
-//     wild: parkWild.wild.observe(),
-
-// }));
-
-
-// const EnhancedParkCard = enhance(ParkCard);
 export default ParkCard;
 
 

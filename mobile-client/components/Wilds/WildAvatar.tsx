@@ -10,7 +10,7 @@ interface Props {
   pose: Pose;
   size?: number;
 }
-const WildAvatar = ({id, pose, size}: Props) => {
+const WildAvatar = ({id, pose, size = 120}: Props) => {
   const {theme} = useTheme()
   const hiddenTheme = theme.themeName == 'lightTheme' ? 'hidden_light' :'hidden_dark'
   const themedPose = pose == 'hidden' ? hiddenTheme : pose
