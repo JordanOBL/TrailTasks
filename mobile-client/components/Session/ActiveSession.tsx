@@ -1,19 +1,12 @@
 import {
 	Achievement,
-	User_Completed_Trail,
-	User_Queued_Trail,
 	Trail,
 	User,
+	User_Completed_Trail,
+	User_Purchased_Trail,
+	User_Queued_Trail,
 	User_Session,
 } from '../../watermelon/models';
-import {
-	updateSession,
-	endSession,
-	pauseSession,
-	resumeSession,
-	shortBreak,
-	skipBreak,
-} from '../../helpers/Timer/timerFlow';
 import {
 	AppState,
 	Pressable,
@@ -23,23 +16,31 @@ import {
 	Text,
 	View,
 } from 'react-native';
-import ContinueSessionModal from './ContinueSessionModal';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import ActiveSessionBackpack from './ActiveSessionBackpack';
-import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
+import {
+	pauseSession,
+	resumeSession,
+	skipBreak,
+	updateSession,
+} from '../../helpers/Timer/timerFlow';
+
 import { AchievementsWithCompletion } from '../../types/achievements';
+import ActiveSessionBackpack from './ActiveSessionBackpack';
+import ContinueSessionModal from './ContinueSessionModal';
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
-import { SessionDetails } from '../../types/session';
-import formatTime from '../../helpers/formatTime';
-import { useDatabase } from '@nozbe/watermelondb/react';
-import {withObservables} from '@nozbe/watermelondb/react';
-import SessionTimer from '../Timer/SessionTimer';
+import Icon from 'react-native-vector-icons/Ionicons';
 import NextHundredthMileSeconds from '../../helpers/Timer/nextHundredthMileSeconds';
 import QuitSessionModal from './QuitSessionModal';
 import Rewards from '../../helpers/Session/Rewards';
+import { SessionDetails } from '../../types/session';
+import SessionTimer from '../Timer/SessionTimer';
+import Timer from '../../types/timer';
+import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
+import formatTime from '../../helpers/formatTime';
 import handleError from '../../helpers/ErrorHandler';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { useDatabase } from '@nozbe/watermelondb/react';
 import {useFocusEffect} from '@react-navigation/native'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
+import {withObservables} from '@nozbe/watermelondb/react';
 
 interface Props {
 	sessionDetails: SessionDetails;
@@ -57,6 +58,7 @@ interface Props {
 	endSession: () => void;
 	userPurchasedTrails:User_Purchased_Trail[];
 	freeTrails:Trail[];
+	isProMember: boolean;
 }
 
 const ActiveSession = ({

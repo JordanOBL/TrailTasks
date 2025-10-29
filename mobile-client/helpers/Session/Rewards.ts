@@ -1,9 +1,30 @@
 import React from 'react';
 import {User} from '../../watermelon/models';
 import {SessionDetails} from '../../types/session';
-import {Timer} from '../../types/timer';
+import Timer from '../../types/timer';
 import handleError from '../ErrorHandler';
-const Rewards = {}
+interface RewardsHelper {
+  completedTrail: ({setSessionDetails, reward}: {setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>, reward: number}) => void;
+  calculateSessionTokens: ({
+    setSessionDetails,
+    sessionDetails,
+    timer,
+  }: {
+    setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
+    sessionDetails: SessionDetails;
+    timer: Timer;
+  }) => number;
+  rewardFinalTokens: ({
+    sessionDetails,
+    sessionTokensReward,
+    user,
+  }: {
+    sessionDetails: SessionDetails;
+    sessionTokensReward: number;
+    user: User;
+  }) => Promise<void>;
+}
+const Rewards = <RewardsHelper>{}
 
 Rewards.completedTrail = ({setSessionDetails, reward}: {setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>, reward: number}) => {
   setSessionDetails((prevSessionDetails) => ({

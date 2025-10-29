@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import {Pressable, StyleSheet, Text, View, ActivityIndicator} from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet, Text, View} from 'react-native';
 import {
   Queued_Trail,
   Session_Category,
@@ -8,25 +8,27 @@ import {
   User,
   User_Achievement,
 } from '../watermelon/models';
+
 import {AchievementsWithCompletion} from '../types/achievements';
 import EnhancedActiveSession from '../components/Session/ActiveSession';
 import EnhancedNewSessionOptions from '../components/Session/NewSessionOptions';
 import {Q} from '@nozbe/watermelondb';
+import Rewards from '../helpers/Session/Rewards';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {SessionDetails} from '../types/session';
+import SoloResultsScreen from './SoloResultsScreen';
 import Timer from '../types/timer';
+import {endSession} from '../helpers/Timer/timerFlow';
 import handleError from "../helpers/ErrorHandler";
+import {sync} from '../watermelon/sync';
+import {useAuthContext} from '../services/AuthContext';
 import {useDatabase} from '@nozbe/watermelondb/react';
+import { useInternetConnection } from '../hooks/useInternetConnection';
 import { useKeepAwake } from '@sayem314/react-native-keep-awake';
 import {useNavigation} from '@react-navigation/native';
-import {withObservables} from '@nozbe/watermelondb/react';
-import {endSession} from '../helpers/Timer/timerFlow';
-import { useInternetConnection  } from '../hooks/useInternetConnection';
-import Rewards from '../helpers/Session/Rewards';
-import SoloResultsScreen from './SoloResultsScreen';
-import {sync} from '../watermelon/sync';
 import {useTheme} from '../contexts/ThemeProvider';
-import {useAuthContext} from '../services/AuthContext';
+import {withObservables} from '@nozbe/watermelondb/react';
+
 interface Props {
   user: User;
   setUser: any;
@@ -117,7 +119,7 @@ const handleEndSession = React.useCallback(async () => {
 
 
 const handleShowResultsScreen = React.useCallback(async () => {
-  const sessionTokensReward = await Rewards.calculateSessionTokens({ setSessionDetails, sessionDetails, timer });
+  const sessionTokensReward = Rewards.calculateSessionTokens({ setSessionDetails, sessionDetails, timer });
   await Rewards.rewardFinalTokens({ sessionDetails, sessionTokensReward, user });
   setShowResultsScreen(true);
 }, [sessionDetails, timer, user]);
