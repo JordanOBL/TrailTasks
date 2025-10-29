@@ -183,6 +183,9 @@ export const User_Wild = sequelize.define(
     wild_id: {type: DataTypes.STRING, allowNull: false},
     is_active: {type: DataTypes.BOOLEAN, allowNull: false},
     unlocked_at: {type: DataTypes.DATE, allowNull: true},
+    level: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 1},
+    xp: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
+    xp_to_next: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 100},
   },
   {tableName: 'users_wilds', underscored: true, indexes: [
       // Create a unique index on field

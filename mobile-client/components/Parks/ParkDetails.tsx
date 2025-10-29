@@ -1,5 +1,5 @@
 import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Park, Trail, User, User_Completed_Trail, User_Park, User_Purchased_Trail, Wild } from "../../watermelon/models";
+import { Park, Trail, User, User_Completed_Trail, User_Park, User_Purchased_Trail, User_Wild, Wild } from "../../watermelon/models";
 import React, { useCallback, useMemo, useState } from "react";
 import { darkTheme, lightTheme } from "../../theme";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
@@ -28,18 +28,20 @@ const ParkDetails = () => {
   const [purchasedTrails, setPurchasedTrails] = useState<User_Purchased_Trail[]>([]);
   const [completedTrails, setCompletedTrails] = useState<User_Completed_Trail[]>([]);
   const [userParks, setUserParks] = useState<User_Park[]>([]);
+  const [userWild, setUserWild] = useState<User_Wild | null>(null);
 
   const load = useCallback(async () => {
     // Fetch in parallel; relations use .query().fetch()
     if (!user) return;
     try{
-      const [p, w, t, pt, ct, up] = await Promise.all([
+      const [p, w, t, pt, ct, up, [uw]] = await Promise.all([
         db.get<Park>("parks").find(parkId),
         wildId ? db.get<Wild>("wilds").find(wildId) : Promise.resolve(null),
         db.get<Trail>("trails").query(Q.where("park_id", parkId)).fetch(),
         user.usersPurchasedTrails,
         user.usersCompletedTrails,
         user.usersParks,
+        user.usersWilds.extend(Q.and(Q.where("user_id",user.id), Q.where("wild_id", wildId ||""))).fetch(),
       ]);
       setPark(p);
       setWild(w);
@@ -47,6 +49,8 @@ const ParkDetails = () => {
       setPurchasedTrails(pt);
       setCompletedTrails(ct);
       setUserParks(up);
+      setUserWild(uw || null);
+      console.log("Loaded park details:", { p, w, t, pt, ct, up, uw });
     } catch (error) {
       console.error("Error loading park details:", error);  
     }
@@ -122,25 +126,66 @@ const ParkDetails = () => {
       </View>
 
       {/* Wild */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Wild</Text>
-        {wild ? (
-          <View style={styles.wildRow}>
-            <WildAvatar id={wild.id} pose={wildPose} size={150} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.wildName}>{wild.wildName}</Text>
-              <View style={styles.tagRow}>
-                {wild.species && userParks.some(up => up.parkId === park.id) ? (
-                  <Tag theme={theme} label={wild.species} />
-                ) : null}
-                {wild.rarity ? <Tag theme={theme} label={`Rarity: ${wild.rarity}`} /> : null}
-              </View>
+<View style={styles.card}>
+  <Text style={styles.sectionTitle}>Wild</Text>
+
+  {wild ? (
+    <View style={styles.wildRow}>
+      <WildAvatar id={wild.id} pose={wildPose} size={140} />
+
+      <View style={{ flex: 1 }}>
+        <Text style={styles.wildName}>{wild.wildName}</Text>
+        <Text style={{ color: theme.secondaryText, marginBottom: 4 }}>
+          {wild.species ?? "Unknown species"}
+        </Text>
+
+        {/* Level + XP Info */}
+        {userWild && (
+          <>
+            <Text
+              style={{
+                color: theme.text,
+                fontSize: 13,
+                fontWeight: "600",
+                marginBottom: 4,
+              }}
+            >
+              Level {userWild.level} — {userWild.xp} / {userWild.xpToNext} XP
+            </Text>
+
+            <View style={styles.xpBarOuter}>
+              <View
+                style={[
+                  styles.xpBarFill,
+                  {
+                    width: `${
+                      userWild.xpToNext
+                        ? Math.min(
+                            (userWild.xp / userWild.xpToNext) * 100,
+                            100
+                          )
+                        : 0
+                    }%`,
+                  },
+                ]}
+              />
             </View>
-          </View>
-        ) : (
-          <EmptyLine theme={theme} text="No wild assigned to this park yet." />
+          </>
         )}
+
+        {/* Tags */}
+        <View style={[styles.tagRow, { marginTop: 8 }]}>
+          {wild.rarity ? (
+            <Tag theme={theme} label={`Rarity: ${wild.rarity}`} />
+          ) : null}
+          {userWild?.isActive ? <Tag theme={theme} label="Active" /> : null}
+        </View>
       </View>
+    </View>
+  ) : (
+    <EmptyLine theme={theme} text="No wild assigned to this park yet." />
+  )}
+</View>
 
       {/* Trails */}
       <View style={styles.card}>
@@ -420,6 +465,20 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       backgroundColor: theme.border,
       opacity: 0.6,
     },
+    xpBarOuter: {
+  height: 8,
+  backgroundColor: theme.progressBarBackground,
+  borderRadius: 999,
+  overflow: "hidden",
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: theme.progressBorder,
+  marginBottom: 6,
+},
+xpBarFill: {
+  height: "100%",
+  backgroundColor: theme.progressBar, // uses same accent as park progress
+},
+
   });
 
 export default ParkDetails;
