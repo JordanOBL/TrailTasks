@@ -6,7 +6,7 @@ const InitialWilds = [
     "species": "Fox",
     "park_id":"1",
     "perk_id": "1",
-    "is_active": false,
+    
     "rarity": "common"
   },
   {
@@ -15,7 +15,7 @@ const InitialWilds = [
     "species": "Flying Fox Bat",
     "park_id": "2",
     "perk_id": "2",
-    "is_active": false,
+    
     "rarity": "rare"
   },
   {
@@ -25,7 +25,7 @@ const InitialWilds = [
     "perk_name": "Momentum Hop",
     "park_id":"3",
     "perk_id": "3",
-    "is_active": false,
+    
     "rarity": "common"
   },
     {
@@ -34,7 +34,7 @@ const InitialWilds = [
     "species": "Bison",
     "park_id":"4",
     "perk_id": "4",
-    "is_active": false,
+    
     "rarity": "rare"
   },
   {
@@ -43,7 +43,7 @@ const InitialWilds = [
     "species": "Javelina",
     "park_id":"5",
     "perk_id": "5",
-    "is_active": false,
+    
     "rarity": "epic"
   },
   {
@@ -52,7 +52,7 @@ const InitialWilds = [
     "species": "Raccoon",
     "park_id":"6",
     "perk_id": "6",
-    "is_active": false,
+    
     "rarity": "common"
   },
   {
@@ -61,7 +61,7 @@ const InitialWilds = [
     "species": "Short-horned Lizard",
     "park_id":"7",
     "perk_id": "7",
-    "is_active": false,
+    
     "rarity": "common"
   },
   {
@@ -70,7 +70,7 @@ const InitialWilds = [
     "species": "Prairie Dog",
     "park_id":"8",
     "perk_id": "8",
-    "is_active": false,
+    
     "rarity": "rare"
   },
   {
@@ -79,7 +79,7 @@ const InitialWilds = [
     "species": "Collared Lizard",
     "park_id":"9",
     "perk_id": "9",
-    "is_active": false,
+    
     "rarity": "common"
   },
   {
@@ -88,7 +88,7 @@ const InitialWilds = [
     "species": "Striped Skunk",
     "park_id":"10",
     "perk_id": "10",
-    "is_active": false,
+    
     "rarity": "common"
   },
 
@@ -98,7 +98,7 @@ const InitialWilds = [
     "species": "Ringtail",
     "park_id":"11",
     "perk_id": "11",
-    "is_active": false,
+    
     "rarity": "common"
   },
   {
@@ -107,7 +107,7 @@ const InitialWilds = [
     "species": "Duck",
     "park_id":"12",
     "perk_id": "12",
-    "is_active": false,
+    
     "rarity": "rare"
   },
   {
@@ -116,7 +116,7 @@ const InitialWilds = [
     "species": "Owl",
     "park_id":"13",
     "perk_id": "13",
-    "is_active": false,
+    
     "rarity": "rare"
   },
 
@@ -126,7 +126,7 @@ const InitialWilds = [
   "species": "Cougar",
   "park_id":"14",
     "perk_id": "14",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -135,7 +135,7 @@ const InitialWilds = [
   "species": "Groundhog",
   "park_id":"15",
     "perk_id": "15",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -144,7 +144,7 @@ const InitialWilds = [
   "species": "Rattlesnake",
  "park_id":"16",
     "perk_id": "16",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -153,7 +153,7 @@ const InitialWilds = [
   "species": "Canadian Lynx",
  "park_id":"17",
     "perk_id": "17",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -162,7 +162,7 @@ const InitialWilds = [
   "species": "Red Corn Snake",
  "park_id":"18",
     "perk_id": "18",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -171,7 +171,7 @@ const InitialWilds = [
   "species": "Crocodile",
   "park_id":"19",
     "perk_id": "19",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -180,7 +180,7 @@ const InitialWilds = [
   "species": "Dall Sheep",
   "park_id":"20",
     "perk_id": "20",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -189,7 +189,7 @@ const InitialWilds = [
   "species": "Mole",
  "park_id":"21",
     "perk_id": "21",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -198,7 +198,7 @@ const InitialWilds = [
   "species": "Mountain Goat",
  "park_id":"22",
     "perk_id": "22",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -207,7 +207,7 @@ const InitialWilds = [
   "species":"Porcupine",
   "park_id":"23",
     "perk_id": "23",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -216,7 +216,7 @@ const InitialWilds = [
   "species": "Kaibab Squirrel",
  "park_id":"24",
     "perk_id": "24",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -225,7 +225,7 @@ const InitialWilds = [
   "species": "Trumpeter Swan",
   "park_id":"25",
     "perk_id": "25",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -234,7 +234,7 @@ const InitialWilds = [
   "species": "Opossum",
  "park_id":"26",
     "perk_id": "26",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -243,7 +243,7 @@ const InitialWilds = [
   "species": "Kangaroo Mouse",
   "park_id":"27",
     "perk_id": "27",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -252,7 +252,7 @@ const InitialWilds = [
   "species": "Wild Turkey",
   "park_id":"28",
     "perk_id":"28",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -261,7 +261,7 @@ const InitialWilds = [
   "species": "Banded Gecko",
   "park_id":"29",
     "perk_id": "29",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -270,7 +270,7 @@ const InitialWilds = [
   "species": "Hawaiian Goose",
  "park_id":"30",
     "perk_id": "30",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -279,7 +279,7 @@ const InitialWilds = [
   "species": "ʻApapane",
   "park_id":"31",
     "perk_id": "31",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -288,7 +288,7 @@ const InitialWilds = [
   "species": "Armadillo",
   "park_id":"32",
     "perk_id": "32",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -297,7 +297,7 @@ const InitialWilds = [
   "species": "Fowler's Toad",
  "park_id":"33",
     "perk_id": "33",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -306,7 +306,7 @@ const InitialWilds = [
   "species": "Moose",
   "park_id":"34",
     "perk_id": "34",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -315,7 +315,7 @@ const InitialWilds = [
   "species": "Desert Tortoise",
  "park_id":"35",
     "perk_id": "35",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -324,7 +324,7 @@ const InitialWilds = [
   "species": "Raven",
  "park_id":"36",
     "perk_id": "36",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -333,7 +333,7 @@ const InitialWilds = [
   "species": "Polar Bear",
  "park_id":"37",
     "perk_id": "37",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -342,7 +342,7 @@ const InitialWilds = [
   "species": "Chipmunk",
  "park_id":"38",
     "perk_id": "38",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -351,7 +351,7 @@ const InitialWilds = [
   "species": "Caribou",
   "park_id":"39",
     "perk_id": "39",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -360,7 +360,7 @@ const InitialWilds = [
   "species": "Bald Eagle",
  "park_id":"40",
     "perk_id": "40",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -369,7 +369,7 @@ const InitialWilds = [
   "species": "Grizzly Bear",
   "park_id":"41",
     "perk_id": "41",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -378,7 +378,7 @@ const InitialWilds = [
   "species": "River Otter",
  "park_id":"42",
     "perk_id": "42",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -387,7 +387,7 @@ const InitialWilds = [
   "species": "Wild Mustang",
   "park_id":"43",
     "perk_id": "43",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -396,7 +396,7 @@ const InitialWilds = [
   "species": "Pacific Tree Frog",
  "park_id":"44",
     "perk_id": "44",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -405,7 +405,7 @@ const InitialWilds = [
   "species": "Weasel",
 "park_id":"45",
     "perk_id": "45",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -414,7 +414,7 @@ const InitialWilds = [
   "species": "Coyote",
  "park_id":"46",
     "perk_id": "46",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -423,7 +423,7 @@ const InitialWilds = [
   "species": "Elk",
  "park_id":"47",
     "perk_id": "47",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -432,7 +432,7 @@ const InitialWilds = [
   "species": "Gila Monster",
  "park_id":"48",
     "perk_id": "48",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -441,7 +441,7 @@ const InitialWilds = [
   "species": "California Condor",
   "park_id":"49",
     "perk_id": "49",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -450,7 +450,7 @@ const InitialWilds = [
   "species": "Banana Slug",
   "park_id":"50",
     "perk_id": "50",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -459,7 +459,7 @@ const InitialWilds = [
   "species": "Alpaca",
   "park_id":"51",
     "perk_id": "51",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -468,7 +468,7 @@ const InitialWilds = [
   "species": "Coati",
   "park_id":"52",
     "perk_id": "52",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -477,7 +477,7 @@ const InitialWilds = [
   "species": "Mule",
   "park_id":"53",
     "perk_id": "53",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -486,7 +486,7 @@ const InitialWilds = [
   "species": "Spotted Salamander",
   "park_id":"54",
     "perk_id": "54",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -495,7 +495,7 @@ const InitialWilds = [
   "species": "Badger",
   "park_id":"55",
     "perk_id": "55",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -504,7 +504,7 @@ const InitialWilds = [
   "species": "Iguana",
   "park_id":"56",
     "perk_id": "56",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -513,7 +513,7 @@ const InitialWilds = [
   "species": "Beaver",
   "park_id":"57",
     "perk_id": "57",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 {
@@ -522,7 +522,7 @@ const InitialWilds = [
   "species": "Oryx",
   "park_id":"58",
     "perk_id": "58",
-    "is_active": false,
+    
     "rarity": "common"
 },
 {
@@ -531,7 +531,7 @@ const InitialWilds = [
   "species": "Pronghorn Antelope",
   "park_id":"59",
     "perk_id": "59",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -540,7 +540,7 @@ const InitialWilds = [
   "species": "Wolverine",
   "park_id":"60",
     "perk_id": "60",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -549,7 +549,7 @@ const InitialWilds = [
   "species": "Wolf",
   "park_id":"61",
     "perk_id": "61",
-    "is_active": false,
+    
     "rarity": "rare"
 },
 {
@@ -558,7 +558,7 @@ const InitialWilds = [
   "species": "Bobcat",
   "park_id":"62",
     "perk_id": "62",
-    "is_active": false,
+    
     "rarity": "epic"
 },
 
@@ -569,7 +569,7 @@ const InitialWilds = [
 "species": "Bighorn Sheep",
 "park_id":"63",
     "perk_id": "63",
-    "is_active": false,
+    
     "rarity": "rare"
 }]
 

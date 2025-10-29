@@ -43,7 +43,9 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
-		const response: Response = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/users`, {
+		const url = `${HTTP_HTTPS}://${Config.DATABASE_URL}/api/users`;
+		console.log('checkGlobalUserExists url:', url);
+		const response: Response = await fetch(url, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -182,7 +184,7 @@ export const checkForLoggedInUser = async (
 	}
 };
 
-//saveUserToLocalDB saves user and related data to local database
+//saveUserToLocalDB saves user from global and related data to local database
 export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSuccess & User, watermelonDatabase: Database) {
 	try
 {
@@ -282,7 +284,22 @@ export async function saveUserToLocalDB(remoteUser: GlobalExistingUserResponseSu
 					})
 				})
 
-				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, ...userAchievements, ...userCompletedTrails, ...userParks, ...userAddons]);
+				const userWilds = [...remoteUser.userWilds].map((wild: User_Wild) => {
+					return watermelonDatabase.collections.get('users_wilds').prepareCreate((newUserWild: User_Wild) => {
+						newUserWild._raw.id = wild.id;
+						newUserWild.userId = wild.user_id;
+						newUserWild.wildId = wild.wild_id;
+						newUserWild.isActive = wild.is_active;
+						newUserWild.level = wild.level;
+						newUserWild.xp = wild.xp;
+						newUserWild.xpToNext = wild.xp_to_next;
+						newUserWild.unlockedAt = wild.unlocked_at;
+						//newUserWild.createdAt = wild.created_at;
+						//newUserWild.updatedAt = wild.updated_at;
+					})
+				})
+
+				await watermelonDatabase.batch([newUser, ...userSessions, ...userPurchasedTrails, ...userAchievements, ...userCompletedTrails, ...userParks, ...userAddons, ...userWilds]);
 			});
 	} catch (err) {
 		handleError(err, "saveUserToLocalDB")

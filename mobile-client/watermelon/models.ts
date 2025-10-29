@@ -747,6 +747,9 @@ export class User_Wild extends Model
   @field('user_id') userId;
   @field('wild_id') wildId;
   @field('is_active') isActive;
+  @field('level') level;
+  @field('xp') xp;
+  @field('xp_to_next') xpToNext;
   @date('unlocked_at') unlockedAt;
   @date('created_at') createdAt;
   @date('updated_at') updatedAt;

@@ -116,7 +116,6 @@ const findUser = async (req, res, next) => {
         // Set userId in res.locals
         if (user) {
 
-            //const userSubscription = await Subscription.findAll({ where: { user_id: user.id } });
             const userSessions = await User_Session.findAll({ where: { user_id: user.id } });
             const userPurchasedTrails = await User_Purchased_Trail.findAll({ where: { user_id: user.id } });
             const userAchievements = await User_Achievement.findAll({ where: { user_id: user.id } });
@@ -124,8 +123,9 @@ const findUser = async (req, res, next) => {
             const userAddons = await User_Addon.findAll({where: {user_id: user.id}});
             const userParks = await User_Park.findAll({where: {user_id: user.id}});
             const userFriends = await User_Friend.findAll({where: {user_id: user.id}});
+            const userWilds = await User_Wild.findAll({where: {user_id: user.id}});
             res.locals.user = user;
-            //res.locals.userSubscription = userSubscription;
+            res.locals.userWilds = userWilds;
             res.locals.userSessions = userSessions;
             res.locals.userPurchasedTrails = userPurchasedTrails;
             res.locals.userAchievements = userAchievements;
@@ -136,7 +136,7 @@ const findUser = async (req, res, next) => {
 
         } else {
             res.locals.user = null;
-            //res.locals.userSubscription = null;
+            res.locals.userWilds = null;
             res.locals.userSessions = null;
             res.locals.userPurchasedTrails = null;
             res.locals.userAchievements = null;
@@ -338,11 +338,11 @@ app.get('/api/cachedFriends', getCachedFriends, async (req, res, next) => {
     }
 });
 app.post('/api/users', findUser, async (req, res, next) => {
-    const { user, userSessions, userPurchasedTrails, userAchievements, userCompletedTrails, userAddons, userParks} = res.locals;
+    const { user, userSessions, userPurchasedTrails, userAchievements, userCompletedTrails, userAddons, userParks, userWilds} = res.locals;
 
     if (user) {
         // Respond with userId if found
-        return res.status(200).json({ user, userSessions, userPurchasedTrails, userAchievements, userCompletedTrails, userAddons, userParks });
+        return res.status(200).json({ user, userSessions, userPurchasedTrails, userAchievements, userCompletedTrails, userAddons, userParks, userWilds });
     } else {
         // Respond with a 404 status code if user not found
         return res.status(404).json({ message: 'User not found' });
@@ -1011,7 +1011,7 @@ async function seedDatabase(){
 const connect = async () => {
     try {
         await SYNC({alter: true});
-        await seedDatabase()
+        //await seedDatabase()
         //set random free trails
         exec(process.env.REROLL_FREE_TRAILS, (err, stdout, stderr) => {
             if (err) {
