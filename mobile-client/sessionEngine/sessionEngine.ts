@@ -16,7 +16,6 @@ export type SessionEvent =
   | 'SESSION_COMPLETED'
   | 'SESSION_STRIKE_APPLIED'
   | 'SESSION_PAUSED'
-  | 'SESSION_RESUMED'
   | 'SESSION_DISTANCE_INCREASED'
   | 'SESSION_TRAIL_COMPLETED'
   | 'SESSION_BREAK_SKIPPED'
@@ -185,7 +184,7 @@ export class SessionEngine {
     this.bus.on('UI_QUIT_REQUESTED', () => this.quit())
     this.bus.on('UI_BREAK_SKIP_REQUESTED', () => this.skipBreak())
     this.bus.on('NEW_TRAIL_ASSIGNED', (payload: NewTrailAssignedPayload) => {
-      console.log("SessionEngine received NEW_TRAIL_ASSIGNED with distance:", payload.newTrailDistance, 'Of type:', typeof payload.distance);
+      console.log("SessionEngine received NEW_TRAIL_ASSIGNED with distance:", payload.newTrailDistance, 'Of type:', typeof payload.newTrailDistance);
       this.distanceNeeded += payload.newTrailDistance
     }) 
   }

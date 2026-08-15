@@ -1,8 +1,8 @@
-Event_Name | Emmitter | Listener/consumer | Payload shape | Category
+Event_Name | Emitter | Listener/consumer | Payload shape | Category
 |--|--|--|--|--|
 SESSION_STARTED | SessionEngine | UI - SessionScreen | SessionSnapshotPayload | Domain Fact
 SESSION_PHASE_CHANGED | SessionEngine | Planned - UI | SessionPhaseChangedPayload | Domain Fact
-SSESSION_PACE_INCREASED | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
+SESSION_PACE_INCREASED | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
 SESSION_PACE_DECREASED | Planned - SessionEngine | Planned - UI - ActiveSession.tsx | Planned - SessionSnapshotPayload | Domain Fact
 SESSION_TICK | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
 SESSION_SET_COMPLETED | SessionEngine | Planned - UI - ActiveSession.tsx | SessionSetCompletedPayload | Domain Fact
@@ -12,7 +12,7 @@ SESSION_PAUSED | SessionEngine | UI - ActiveSession | SessionSnapshotPayload | D
 SESSION_RESUMED | Planned - SessionEngine | Planned - UI | planned - null | Domain Fact
 SESSION_DISTANCE_INCREASED | SessionEngine | PersistenceService | SessionDistanceIncreasedPayload | Domain Fact
 SESSION_TRAIL_COMPLETED | SessionEngine | RewardsService, PersistenceService, UI | SessionTrailCompletedPayload | Domain Fact
-SESSION_BREAK_SKIPPED | SessionEngine | Planned - UI | SessionSnapshotPayload | Domain Fact
+SESSION_BREAK_SKIPPED | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
 UI_NEW_SESSION_REQUESTED | Planned - SessionEngine | Planned - UI | null | Request
 UI_PAUSE_REQUESTED | UI | SessionEngine | null | Request
 UI_RESUME_REQUESTED | UI | SessionEngine | null | Request
