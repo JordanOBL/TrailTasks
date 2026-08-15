@@ -18,4 +18,4 @@ UI_RESUME_REQUESTED | UI | SessionEngine | null | Request
 UI_QUIT_REQUESTED | UI | SessionEngine | null | Request
 UI_BREAK_SKIP_REQUESTED | UI | SessionEngine | null | Request
 PERSISTENCE_STARTED_NEW_TRAIL | Planned - PersistenceService | Planned - SessionEngine | Planned - PersistenceStartedNewTrailPayload | Domain Fact
-NEW_TRAIL_ASSIGNED | Planned - PersistenceService | Planned - SessionEngine | Planned - NewTrailAssignedPayload | Domain Fact
+NEW_TRAIL_ASSIGNED | PersistenceService | SessionEngine | NewTrailAssignedPayload | Domain Fact

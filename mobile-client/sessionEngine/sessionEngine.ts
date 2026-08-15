@@ -184,9 +184,9 @@ export class SessionEngine {
     this.bus.on('UI_RESUME_REQUESTED', () => this.resume()) 
     this.bus.on('UI_QUIT_REQUESTED', () => this.quit())
     this.bus.on('UI_BREAK_SKIP_REQUESTED', () => this.skipBreak())
-    this.bus.on('NEW_TRAIL_ASSIGNED', (newTrailDistance) => {
-      console.log("SessionEngine received NEW_TRAIL_ASSIGNED with distance:", newTrailDistance, 'Of type:', typeof newTrailDistance);
-      this.distanceNeeded += newTrailDistance
+    this.bus.on('NEW_TRAIL_ASSIGNED', (payload: NewTrailAssignedPayload) => {
+      console.log("SessionEngine received NEW_TRAIL_ASSIGNED with distance:", payload.newTrailDistance, 'Of type:', typeof payload.distance);
+      this.distanceNeeded += payload.newTrailDistance
     }) 
   }
 
