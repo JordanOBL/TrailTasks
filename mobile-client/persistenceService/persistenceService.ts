@@ -111,7 +111,7 @@ export default class PersistenceService {
 
       const newTrailDistance:number = await this.user.assignNewTrail({ completedTrailId, isProMember });
       console.log("New trail distance:", newTrailDistance);
-      this.bus.emit("NEW_TRAIL_ASSIGNED", newTrailDistance);
+      this.bus.emit("NEW_TRAIL_ASSIGNED", { newTrailDistance });
       await this.user.markTrailCompleted({
         trailId: completedTrailId,
         isProMember: isProMember,
