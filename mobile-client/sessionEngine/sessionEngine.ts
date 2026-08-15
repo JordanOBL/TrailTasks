@@ -59,7 +59,13 @@ export interface SessionTrailCompletedPayload {
   export type PersistenceEvent = 
   |'PERSISTENCE_STARTED_NEW_TRAIL'
   | 'NEW_TRAIL_ASSIGNED'
-  
+
+  export interface PersistenceStartedNewTrailPayload {
+    newTrailDistance: number;
+  }
+  export interface NewTrailAssignedPayload {
+    newTrailDistance: number;
+  }
   export interface SessionSnapshot {
       sessionId: string;
       userId: string;
