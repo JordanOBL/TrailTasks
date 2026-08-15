@@ -258,11 +258,12 @@ export class SessionEngine {
   }
 
   trailCompleted(){
-    const { trailProgress, trailId, isProMember, trailStartedAt } = this.user;
-    if (!trailId || !trailProgress || !trailStartedAt || !isProMember) {
+    const { trailProgress, trailId, trailStartedAt } = this.user;
+    if (!trailId || !trailProgress || !trailStartedAt) {
       console.error("Error: Missing information for trail completion in SessionEngine.");
       return;
     }
+    const isProMember = this.user.isProMember ?? false; // Default to false if undefined
     this.completedTrails.push({id: trailId, distance: trailProgress})
     this.bus.emit("SESSION_TRAIL_COMPLETED", {completedTrailId: trailId, isProMember, trailStartedAt})
   }
@@ -343,6 +344,7 @@ export class SessionEngine {
           this.elapsedInPhaseSec = 0;
           this.bus.emit("SESSION_PHASE_CHANGED", {
             snapshot: this.buildSnapshot(),
+            from: "SHORT_BREAK",
             to: "FOCUS",
             reason: "break_ended",
           });
@@ -389,6 +391,7 @@ export class SessionEngine {
     this.phase = isLong ? "LONG_BREAK" : "SHORT_BREAK";
     this.bus.emit("SESSION_PHASE_CHANGED", {
       snapshot: this.buildSnapshot(),
+      from: "FOCUS",
       to: this.phase,
       reason: "set_completed",
     });
