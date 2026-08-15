@@ -1,9 +1,10 @@
 import { EventBus, Registry } from './EventBus';
+import { PersistenceEvent, SessionEvent, UI_Event } from '../sessionEngine/sessionEngine';
 import React, {useEffect, useRef} from 'react';
 
 import { useServices } from '../contexts/ServiceProvider';
 
-export default function useBusEvent<T>(event: string, cb: (payload: T) => void ){
+export default function useBusEvent<T>(event: SessionEvent | UI_Event | PersistenceEvent, cb: (payload: T) => void ){
     const {bus} = useServices()
     // Keep a ref to the latest handler (so we don’t re-register on each render)
     const handlerRef = useRef(cb);

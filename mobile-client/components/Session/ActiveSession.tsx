@@ -76,7 +76,6 @@ const ActiveSession = ({user,
 	useBusEvent("SESSION_TICK",(payload: SessionSnapshotPayload) => setSnapshot(payload.snapshot) );
 	useBusEvent("SESSION_PAUSED", (payload: SessionSnapshotPayload) => {setSnapshot(payload.snapshot)});
 	useBusEvent("SESSION_PACE_INCREASED", (payload:SessionSnapshotPayload) => {setSnapshot(payload.snapshot)});
-	useBusEvent("SESSION_PACE_DECREASED", (payload:SessionSnapshotPayload) => {setSnapshot(payload.snapshot)})
 	useBusEvent("SESSION_BREAK_SKIPPED", (payload:SessionSnapshotPayload) => {setSnapshot(payload.snapshot)})
 
 	
