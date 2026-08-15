@@ -2,7 +2,8 @@ Event_Name | Emmitter | Listener/consumer | Payload shape | Category
 |--|--|--|--|--|
 SESSION_STARTED | SessionEngine | UI - SessionScreen | SessionSnapshotPayload | Domain Fact
 SESSION_PHASE_CHANGED | SessionEngine | Planned - UI | SessionPhaseChangedPayload | Domain Fact
-SESSION_PACE_INCREASED | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
+SSESSION_PACE_INCREASED | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
+SESSION_PACE_DECREASED | Planned - SessionEngine | Planned - UI - ActiveSession.tsx | Planned - SessionSnapshotPayload | Domain Fact
 SESSION_TICK | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
 SESSION_SET_COMPLETED | SessionEngine | Planned - UI - ActiveSession.tsx | SessionSetCompletedPayload | Domain Fact
 SESSION_COMPLETED | SessionEngine | RewardsService, PersistenceService, UI | SessionCompletedPayload | Domain Fact
