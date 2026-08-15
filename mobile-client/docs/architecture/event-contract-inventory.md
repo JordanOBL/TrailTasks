@@ -18,5 +18,5 @@ UI_PAUSE_REQUESTED | UI | SessionEngine | null | Request
 UI_RESUME_REQUESTED | UI | SessionEngine | null | Request
 UI_QUIT_REQUESTED | UI | SessionEngine | null | Request
 UI_BREAK_SKIP_REQUESTED | UI | SessionEngine | null | Request
-PERSISTENCE_STARTED_NEW_TRAIL | PersistenceService | SessionEngine | {newTrailDistance:number} | Domain Fact
-NEW_TRAIL_ASSIGNED | PersistenceService | SessionEngine | {newTrailDistance:number} | Domain Fact
+PERSISTENCE_STARTED_NEW_TRAIL | PersistenceService | SessionEngine | PersistenceStartedNewTrailPayload | Domain Fact
+NEW_TRAIL_ASSIGNED | PersistenceService | SessionEngine | NewTrailAssignedPayload | Domain Fact
