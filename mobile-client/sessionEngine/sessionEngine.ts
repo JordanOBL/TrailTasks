@@ -20,6 +20,34 @@ export type SessionEvent =
   | 'SESSION_DISTANCE_INCREASED'
   | 'SESSION_TRAIL_COMPLETED'
   | 'SESSION_BREAK_SKIPPED'
+  | 'SESSION_PACE_INCREASED'
+
+export interface SessionPhaseChangedPayload {
+  snapshot: SessionSnapshot;
+  from: SessionPhase;
+  to: SessionPhase;
+  reason: string;
+}
+
+export interface SessionSetCompletedPayload {
+  snapshot: SessionSnapshot;
+  setNumber: number;
+}
+
+export interface SessionDistanceIncreasedPayload {
+  session: User_Session | null;
+  snapshot: SessionSnapshot;
+}
+export interface SessionCompletedPayload {
+  snapshot: SessionSnapshot;
+  reason: "all_sets_completed" | "ended_early";
+}
+
+export interface SessionTrailCompletedPayload {
+  completedTrailId: string;
+  isProMember: boolean;
+  trailStartedAt: string;
+}
 
   export type UI_Event = 
   | 'UI_NEW_SESSION_REQUESTED'
@@ -321,7 +349,7 @@ export class SessionEngine {
   private bumpPace() {
     const next = this.currentPaceMph + this.paceIncreaseValueMph;
     this.currentPaceMph = Math.min(next, this.maxPaceMph);
-    this.bus.emit("SESSION_PACE_INCREASED" as SessionEvent, this.buildSnapshot());
+    this.bus.emit("SESSION_PACE_INCREASED", this.buildSnapshot());
   }
 
   private skipPaceBump() {
