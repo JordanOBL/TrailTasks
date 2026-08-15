@@ -1,8 +1,17 @@
-import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const QuitSessionModal = ({ isVisible, continueSession, sessionDetails, showResultsScreen}) => {
-  const unfinishedSets = sessionDetails.sets - sessionDetails.completedSets
+import React from 'react';
+import { SessionSnapshot } from '../../sessionEngine/sessionEngine';
+
+interface Props {
+  isVisible: boolean;
+  sessionDetails: SessionSnapshot;
+  cancel: () => void;
+  quit: () => void;
+}
+
+const QuitSessionModal = ({ isVisible, sessionDetails, cancel, quit }: Props) => {
+  const unfinishedSets = sessionDetails.totalSets - sessionDetails.completedSets
   
   return (
     <Modal transparent={true} visible={isVisible} animationType="fade" testID="quit-session-modal">
@@ -11,13 +20,13 @@ const QuitSessionModal = ({ isVisible, continueSession, sessionDetails, showResu
           <Text style={styles.titleText}>Quit Session Early!?</Text>
 
           {( sessionDetails.completedSets < 3 ) && <View style={styles.messageContainer}>
-            <Text style={styles.messageText}>You have {unfinishedSets} left to recieve session rewards. </Text>
+            <Text style={styles.messageText}>You have {unfinishedSets} sets left to recieve session rewards. </Text>
                     </View> }
-          <TouchableOpacity style={styles.buttonEndSession} testID="confirm-quit-button" onPress={showResultsScreen}>
+          <TouchableOpacity style={styles.buttonEndSession} testID="confirm-quit-button" onPress={() => quit()}>
             <Text style={styles.buttonText}>Quit Session</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity testID="confirm-cancel-button" style={styles.buttonNewSet} onPress={continueSession}>
+          <TouchableOpacity testID="confirm-cancel-button" style={styles.buttonNewSet} onPress={() => cancel()}>
             <Text  style={styles.buttonText}>Cancel (Resume)</Text>
           </TouchableOpacity>
         </View>

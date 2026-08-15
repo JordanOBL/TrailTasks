@@ -6,7 +6,7 @@ import { Database } from '@nozbe/watermelondb';
 import { User } from '../watermelon/models';
 import handleError from '../helpers/ErrorHandler';
 import {sync} from '../watermelon/sync';
-import {useInternetConnection} from './useInternetConnection';
+import {useInternetConnection} from '../contexts/InternetConnectionProvider';
 import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 
 type UseAuthParams = {

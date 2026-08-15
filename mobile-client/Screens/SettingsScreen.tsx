@@ -1,13 +1,13 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { darkTheme, lightTheme } from '../theme';
 
+import React from 'react';
 import { User } from '../watermelon/models';
 import { sync } from '../watermelon/sync';
-import { useDatabase } from '@nozbe/watermelondb/react';
-import { useInternetConnection } from '../hooks/useInternetConnection';
-import { useTheme } from '../contexts/ThemeProvider';
 import {useAuthContext} from '../services/AuthContext';
-import { lightTheme, darkTheme } from '../theme';
+import { useDatabase } from '@nozbe/watermelondb/react';
+import { useInternetConnection } from "../contexts/InternetConnectionProvider";
+import { useTheme } from '../contexts/ThemeProvider';
 
 interface Props {
   user: User;

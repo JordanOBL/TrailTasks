@@ -32,6 +32,7 @@ import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import {InternetConnectionProvider} from './contexts/InternetConnectionProvider';
 import React from 'react';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
+import {ServiceProvider} from './contexts/ServiceProvider'
 import {ThemeProvider} from './contexts/ThemeProvider';
 import {name as appName} from './app.json';
 import migrations from './watermelon/migrations';
@@ -80,7 +81,9 @@ export const WrappedApp = () => {
       <InternetConnectionProvider>
         <AuthProvider>
           <ThemeProvider>
+          <ServiceProvider>
             <App />
+          </ServiceProvider>
           </ThemeProvider>
         </AuthProvider>
       </InternetConnectionProvider>

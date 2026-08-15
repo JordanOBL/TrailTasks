@@ -830,7 +830,7 @@ app.post('/push', async (req, res) => {
             if (changes?.users_wilds?.updated[0] !== undefined) {
                 const updateQueries = changes.users_wilds.updated.map((remoteEntry) => {
                     //console.log({remoteEntry});
-                    return User.update({...remoteEntry}, {
+                    return User_Wild.update({...remoteEntry}, {
                         where: {
                             user_id: remoteEntry.user_id,
                             wild_id: remoteEntry.wild_id,

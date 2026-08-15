@@ -1,52 +1,65 @@
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import Rive, { RiveRef }  from 'rive-react-native';
 
+import { Q } from '@nozbe/watermelondb';
 import React from 'react';
-import ScreenLink from '../components/HomeScreen/screenLink';
 import {User} from '../watermelon/models';
 import WildAvatar from '../components/Wilds/WildAvatar';
 import {useAuthContext} from '../services/AuthContext';
 
-interface Props {
-  user: User;
-  currentWild: string;
+interface Props { 
   navigation: any;
-  setUser: any;
 }
 
-const SessionTypeScreen = ({navigation, user, setUser}: Props) => {
-  const {isProMember} = useAuthContext();
+const SessionTypeScreen = ({navigation}: Props) => {
+  const {user, isProMember} = useAuthContext();
   const [selection, setSelection] = React.useState('solo');
-  const currentWild = 'scout';
+  //const currentWild = 'scout';
 
-   const riveRef = React.useRef<RiveRef>(null);
+   //const riveRef = React.useRef<RiveRef>(null);
 
-  function blink()
-  {
-     riveRef.current?.fireState('State Machine 1', 'blink');
+//   function blink()
+//   {
+//      riveRef.current?.fireState('State Machine 1', 'blink');
 
-  }
-function getRandom() {
-  return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
-}
+//   }
+// function getRandom() {
+//   return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
+// }
+
+// React.useEffect(() => {
+//   let timeout = null;
+
+//   function scheduleBlink() {
+//     const delay = getRandom();
+//     timeout = setTimeout(() => {
+//       if (riveRef.current) blink();
+//       scheduleBlink(); // Recurse to schedule the next blink
+//     }, delay);
+//   }
+
+//   scheduleBlink(); // Start the blinking loop
+
+//   return () => {
+//     clearTimeout(timeout); // Clean up on unmount
+//   };
+// }, [riveRef]);
+
+const [shownWildId, setShownWildId] = React.useState();
 
 React.useEffect(() => {
-  let timeout = null;
-
-  function scheduleBlink() {
-    const delay = getRandom();
-    timeout = setTimeout(() => {
-      if (riveRef.current) blink();
-      scheduleBlink(); // Recurse to schedule the next blink
-    }, delay);
+  if(user){
+    (async () => {
+      const [currWild] = await user?.usersWilds.extend(Q.where('is_active', true))
+      console.log('CURRENT WILD IN SESSION TYPE SCREEN:', currWild);
+      if (currWild) {
+        setShownWildId(currWild.wildId);
+      }
+    })()
   }
+}, []);
 
-  scheduleBlink(); // Start the blinking loop
-
-  return () => {
-    clearTimeout(timeout); // Clean up on unmount
-  };
-}, [riveRef]);
+const currentWild = shownWildId ? shownWildId : 'scout';
 
   async function toggleSwitch() {
     setSelection(previousState =>
@@ -78,14 +91,14 @@ React.useEffect(() => {
       <View style={{width: '100%', alignItems: 'center'}}>
         <View style={{width: '100%', alignItems: 'center'}}>
           {selection === 'solo' ? (
-            /* <WildAvatar id={currentWild} pose="wave" size={200} />*/
-            <Rive
+             <WildAvatar id={currentWild} pose="wave" size={200} />
+           /* <Rive
               ref={riveRef}
      resourceName={currentWild}
       artboardName="Artboard"
       stateMachineName="State Machine 1"
       style={{width: 250, height: 250}}
-  />
+  />*/
           ) : (
             <View style={styles.groupWildsContainer}>
               <WildAvatar key={0} id={'ember'} pose="wave" size={200} />

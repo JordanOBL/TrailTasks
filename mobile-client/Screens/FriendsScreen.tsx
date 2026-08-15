@@ -1,19 +1,27 @@
-import { StyleSheet,ScrollView, Text, View, FlatList } from 'react-native'
-import SearchAddFriend from '../components/Friends/SearchAddFriend';
-import FriendsList from '../components/Friends/FriendsList';
-import { useNavigation } from '@react-navigation/native';
-import React from 'react'
-import { useInternetConnection } from "../hooks/useInternetConnection";
-import RefreshConnection from "../components/RefreshConnection";
-import EnhancedFriendCard from "../components/Friends/FriendCard"; 
- import {withObservables} from '@nozbe/watermelondb/react';
-import {useDatabase} from '@nozbe/watermelondb/react';
-import Config from 'react-native-config';
-import {Cached_Friend} from '../watermelon/models';
-import {Button} from 'react-native-paper';
-import { useTheme } from '../contexts/ThemeProvider';
+import {Cached_Friend, User, User_Friend} from '../watermelon/models';
+import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native'
 
-const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
+import {Button} from 'react-native-paper';
+import Config from 'react-native-config';
+import EnhancedFriendCard from "../components/Friends/FriendCard";
+import React from 'react'
+import RefreshConnection from "../components/RefreshConnection";
+import SearchAddFriend from '../components/Friends/SearchAddFriend';
+import {useDatabase} from '@nozbe/watermelondb/react';
+import { useInternetConnection } from "../contexts/InternetConnectionProvider";
+//import FriendsList from '../components/Friends/FriendsList';
+import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../contexts/ThemeProvider';
+import {withObservables} from '@nozbe/watermelondb/react';
+
+interface Props {
+  user: User,
+  cachedFriends: Cached_Friend[],
+  navigation: any,
+  friends: User_Friend[]
+}
+
+const FriendsScreen = ({ user, cachedFriends, navigation, friends}:Props) => {
   //const [cachedFriends, setCachedFriends] = React.useState([]);
   const watermelonDatabase = useDatabase();
   const {isConnected} = useInternetConnection();
@@ -25,7 +33,7 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
     acc.set(friend.friendId, idx);
     return acc;
   }, new Map())
-  async function handleJoinSession(roomId) {
+  async function handleJoinSession(roomId:string) {
     navigation.navigate('Timer', { screen: 'Group',params: { joinRoomId: roomId } });
 
   }
@@ -42,7 +50,7 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
       }
 
       //turn newCachedFriendsMap into an array
-      const recentFriendsFromServerEntries = Object.entries(recentFriendsFromServerMap)
+      const recentFriendsFromServerEntries: [string, User_Friend][] = Object.entries(recentFriendsFromServerMap)
       //loop over the most recent friend data from the server
       //if  isnt new in the cache
         //update the friend in cached friends
@@ -62,7 +70,7 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends}) => {
             })
           }
         } else {
-            return watermelonDatabase.get('cached_friends').prepareCreate(f => {
+            return watermelonDatabase.get<Cached_Friend>('cached_friends').prepareCreate(f => {
               f.userId = user.id
               f.friendId = friend.friend_id
               f.username = friend.username

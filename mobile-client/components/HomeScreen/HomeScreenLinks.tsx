@@ -1,16 +1,22 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { darkTheme, lightTheme } from "../../theme";
 
 import React from "react";
+import { User } from "../../watermelon/models";
 import { useAuthContext } from "../../services/AuthContext";
 import {useTheme} from '../../contexts/ThemeProvider';
 
-export default function HomeScreenLinks ({user, navigation}) {
+interface Props {
+    user: User;
+    navigation:any
+}
+export default function HomeScreenLinks ({user, navigation}: Props) {
     const {theme} = useTheme();
     const styles = getStyles(theme)
     const {currentOffering, customerInfo, isProMember } = useAuthContext();
 
 
-    function handlePress(needsSubscription, link){
+    function handlePress(needsSubscription: boolean, link: string){
         if(!needsSubscription){
             navigation.navigate(link)
             return
@@ -43,7 +49,7 @@ export default function HomeScreenLinks ({user, navigation}) {
 };
 
 
-const getStyles = (theme) =>  {
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>  {
     return StyleSheet.create({
         container:{
              flexDirection: 'row',

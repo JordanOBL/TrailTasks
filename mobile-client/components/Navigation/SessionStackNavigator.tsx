@@ -1,5 +1,5 @@
-import EnhancedSessionScreen from '../../Screens/SessionScreen';
 import GroupSessionScreen from '../../Screens/GroupSessionScreen';
+import SessionScreen from '../../Screens/SessionScreen';
 import SessionTypeScreen from '../../Screens/SessionTypeScreen';
 import {User} from '../../watermelon/models';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -19,7 +19,7 @@ export function SessionStackNavigator()
       </Session.Screen>
 
       <Session.Screen name="Solo" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}}>
-        {(props:any) => <EnhancedSessionScreen user={user} {...props} />}
+        {(props:any) => <SessionScreen user={user} {...props} />}
       </Session.Screen>
 
     </Session.Navigator>

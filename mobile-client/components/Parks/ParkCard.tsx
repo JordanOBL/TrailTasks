@@ -45,7 +45,6 @@ if(!user ){
             id={wildId}
             key={wildId}
             pose={isWildUnlocked ?  'still' : 'hidden'}
-            //pose={'still'}
             size={100}
           /> : <Text style={{color: 'white'}}>No Image</Text>}
         </View>

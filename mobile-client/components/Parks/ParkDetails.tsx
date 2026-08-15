@@ -1,4 +1,4 @@
-import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Park, Trail, User, User_Completed_Trail, User_Park, User_Purchased_Trail, User_Wild, Wild } from "../../watermelon/models";
 import React, { useCallback, useMemo, useState } from "react";
 import { darkTheme, lightTheme } from "../../theme";
@@ -17,7 +17,7 @@ const ParkDetails = () => {
   const navigation = useNavigation<any>();
   const { parkId, wildId } = params;
 
- const { user } = useAuthContext();
+  const { user } = useAuthContext();
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const db = useDatabase();
@@ -104,7 +104,11 @@ const ParkDetails = () => {
             </View>
           </View>
           {!!park.parkImageUrl && (
-            <Image source={{ uri: park.parkImageUrl }} style={styles.parkImage} resizeMode="cover" />
+            <Image
+              source={{ uri: park.parkImageUrl }}
+              style={styles.parkImage}
+              resizeMode="cover"
+            />
           )}
         </View>
 
@@ -115,7 +119,7 @@ const ParkDetails = () => {
           <Stat theme={theme} label="Purchased" value={String(purchasedCount)} />
         </View>
 
-        {/* Progress */}
+        {/* Park Progress */}
         <View style={styles.progressWrap}>
           <Text style={styles.progressLabel}>Park Completion</Text>
           <View style={styles.progressBarOuter}>
@@ -125,67 +129,70 @@ const ParkDetails = () => {
         </View>
       </View>
 
-      {/* Wild */}
-<View style={styles.card}>
-  <Text style={styles.sectionTitle}>Wild</Text>
-
-  {wild ? (
-    <View style={styles.wildRow}>
-      <WildAvatar id={wild.id} pose={wildPose} size={140} />
-
-      <View style={{ flex: 1 }}>
-        <Text style={styles.wildName}>{wild.wildName}</Text>
-        <Text style={{ color: theme.secondaryText, marginBottom: 4 }}>
-          {wild.species ?? "Unknown species"}
-        </Text>
-
-        {/* Level + XP Info */}
-        {userWild && (
-          <>
-            <Text
-              style={{
-                color: theme.text,
-                fontSize: 13,
-                fontWeight: "600",
-                marginBottom: 4,
-              }}
-            >
-              Level {userWild.level} — {userWild.xp} / {userWild.xpToNext} XP
-            </Text>
-
-            <View style={styles.xpBarOuter}>
-              <View
-                style={[
-                  styles.xpBarFill,
-                  {
-                    width: `${
-                      userWild.xpToNext
-                        ? Math.min(
-                            (userWild.xp / userWild.xpToNext) * 100,
-                            100
-                          )
-                        : 0
-                    }%`,
-                  },
-                ]}
-              />
+      {/* Wild Progress */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Wild</Text>
+        {wild ? (
+          <View style={styles.wildRow}>
+            <View style={{ alignItems: "center" }}>
+              <WildAvatar id={wild.id} pose={wildPose} size={140} />
+              <Pressable
+                onPress={async () => {
+                  await user?.setActiveWild(wild.id);
+                  load(); // refresh data
+                }}
+              >
+                <Text>Set Active</Text>
+              </Pressable>
             </View>
-          </>
-        )}
+            <View style={{ flex: 1 }}>
+              <Text style={styles.wildName}>{wild.wildName}</Text>
+              <Text style={{ color: theme.secondaryText, marginBottom: 4 }}>
+                {wild.species ?? "Unknown species"}
+              </Text>
 
-        {/* Tags */}
-        <View style={[styles.tagRow, { marginTop: 8 }]}>
-          {wild.rarity ? (
-            <Tag theme={theme} label={`Rarity: ${wild.rarity}`} />
-          ) : null}
-          {userWild?.isActive ? <Tag theme={theme} label="Active" /> : null}
-        </View>
+              {/* Level + XP Info */}
+              {userWild && (
+                <>
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontSize: 13,
+                      fontWeight: "600",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Level {userWild.level} — {userWild.xp} / {userWild.xpToNext} XP
+                  </Text>
+
+                  <View style={styles.xpBarOuter}>
+                    <View
+                      style={[
+                        styles.xpBarFill,
+                        {
+                          width: `${
+                            userWild.xpToNext
+                              ? Math.min((userWild.xp / userWild.xpToNext) * 100, 100)
+                              : 0
+                          }%`,
+                        },
+                      ]}
+                    />
+                  </View>
+                </>
+              )}
+
+              {/* Tags */}
+              <View style={[styles.tagRow, { marginTop: 8 }]}>
+                {wild.rarity ? <Tag theme={theme} label={`Rarity: ${wild.rarity}`} /> : null}
+                {userWild?.isActive ? <Tag theme={theme} label="Active" /> : null}
+              </View>
+            </View>
+          </View>
+        ) : (
+          <EmptyLine theme={theme} text="No wild assigned to this park yet." />
+        )}
       </View>
-    </View>
-  ) : (
-    <EmptyLine theme={theme} text="No wild assigned to this park yet." />
-  )}
-</View>
 
       {/* Trails */}
       <View style={styles.card}>
@@ -202,13 +209,23 @@ const ParkDetails = () => {
               const isCompleted = completedIds.has(trail.id);
               const isPurchased = purchasedIds.has(trail.id);
               return (
-                <TouchableOpacity activeOpacity={0.85} style={styles.trailRow} onPress={() => onPressTrail(trail)}>
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  style={styles.trailRow}
+                  onPress={() => onPressTrail(trail)}
+                >
                   <View style={{ flex: 1 }}>
                     <Text style={styles.trailName}>{trail.trailName}</Text>
                     <View style={styles.trailMetaRow}>
-                      {trail.trailDistance ? <Meta theme={theme} label={`${trail.trailDistance} mi`} /> : null}
-                      {trail.trailElevation ? <Meta theme={theme} label={`${trail.trailElevation} ft gain`} /> : null}
-                      {trail.trailDifficulty ? <Meta theme={theme} label={trail.trailDifficulty} /> : null}
+                      {trail.trailDistance ? (
+                        <Meta theme={theme} label={`${trail.trailDistance} mi`} />
+                      ) : null}
+                      {trail.trailElevation ? (
+                        <Meta theme={theme} label={`${trail.trailElevation} ft gain`} />
+                      ) : null}
+                      {trail.trailDifficulty ? (
+                        <Meta theme={theme} label={trail.trailDifficulty} />
+                      ) : null}
                       {trail.isFree ? <Meta theme={theme} label="Free" /> : null}
                       {trail.isSubscribersOnly ? <Meta theme={theme} label="Subscribers" /> : null}
                     </View>

@@ -1,6 +1,10 @@
 // __mocks__/UserModel.ts
 
-export function createMockUserBase(overrides?: Partial<User>) {
+import { Database, Model } from "@nozbe/watermelondb";
+
+import { User } from "../watermelon/models";
+
+export function createMockUserBase(overrides?: Partial<User>): User {
   const baseUser = {
     id: '123',
     // Basic fields so your code can read them
@@ -44,7 +48,7 @@ export function createMockUserBase(overrides?: Partial<User>) {
 
 export async function createUser(database: Database, newUser: any){
   const user = await database.write(async() => {
-    const user = await database.get('users').create(user => {
+    const user = await database.get<User>('users').create((user) => {
       user.username = newUser.username;
       user.email = newUser.email;
       user.password = newUser.password;

@@ -8,6 +8,7 @@ import {
 	User_Session,
 } from '../../watermelon/models';
 import {
+	Alert,
 	AppState,
 	Pressable,
 	SafeAreaView,
@@ -16,13 +17,16 @@ import {
 	Text,
 	View,
 } from 'react-native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SessionCfg, SessionDetails } from '../../types/session';
+import { SessionEngine, SessionSnapshot } from '../../sessionEngine/sessionEngine';
 import {
 	pauseSession,
 	resumeSession,
 	skipBreak,
 	updateSession,
 } from '../../helpers/Timer/timerFlow';
+import {useFocusEffect, useNavigation, usePreventRemove} from '@react-navigation/native'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
 
 import { AchievementsWithCompletion } from '../../types/achievements';
 import ActiveSessionBackpack from './ActiveSessionBackpack';
@@ -32,258 +36,206 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import NextHundredthMileSeconds from '../../helpers/Timer/nextHundredthMileSeconds';
 import QuitSessionModal from './QuitSessionModal';
 import Rewards from '../../helpers/Session/Rewards';
-import { SessionDetails } from '../../types/session';
+import SessionEngineManager from '../../sessionEngine/SessionEngineManager';
 import SessionTimer from '../Timer/SessionTimer';
 import Timer from '../../types/timer';
 import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
 import formatTime from '../../helpers/formatTime';
 import handleError from '../../helpers/ErrorHandler';
+import { useAuthContext } from '../../services/AuthContext';
+import useBusEvent from '../../EventBus/useBusEvent';
 import { useDatabase } from '@nozbe/watermelondb/react';
-import {useFocusEffect} from '@react-navigation/native'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
+import { useServices } from '../../contexts/ServiceProvider';
 import {withObservables} from '@nozbe/watermelondb/react';
 
-interface Props {
-	sessionDetails: SessionDetails;
-	setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
-	timer: Timer;
-	setTimer: React.Dispatch<React.SetStateAction<Timer>>;
-	userSession: User_Session;
-	user: User;
-	currentTrail: Trail;
-	queuedTrails: User_Queued_Trail[];
-	completedTrails: User_Completed_Trail[];
-	achievementsWithCompletion: AchievementsWithCompletion[];
-	currentSessionCategory: string;
-	showResultsScreen: boolean;
-	endSession: () => void;
-	userPurchasedTrails:User_Purchased_Trail[];
-	freeTrails:Trail[];
-	isProMember: boolean;
-}
-
-const ActiveSession = ({
-	setSessionDetails,
-	sessionDetails,
-	timer,
-	setTimer,
-	userSession,
-	user,
+const ActiveSession = ({user, 
 	currentTrail,
-	queuedTrails,
 	completedTrails,
-	achievementsWithCompletion,
-	currentSessionCategory,
-	endSession,
-	showResultsScreen,
-	userPurchasedTrails,
-	freeTrails,
-	isProMember
-}: Props) => {
-
-
+	queuedTrails,
+	userAchievements,
+	userPurchasedTrails }: any) => {
+	// const {user} = useAuthContext()
+	const navigation = useNavigation()
 	const watermelonDatabase = useDatabase();
+	const {bus, sessionEngineMgr} = useServices()
+	const sEngineRef = useRef<SessionEngine|null>(null)
 	const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);
 	const [appState, setAppState] = useState(AppState.currentState);
 	const [showQuitSessionModal, setShowQuitSessionModal] = useState(false);
-	const [sessionCompletedTrails, setSessionCompletedTrails] = useState<User_Completed_Trail[]>([]);
-	const onAchievementEarned = useCallback(
-		(achievements: Achievement[]) => {
-			setEarnedAchievements((prevAchievements) => [
-				...prevAchievements,
-				...achievements,
-			]);
-		},
-		[]
-	);
+    const [snapshot, setSnapshot] = useState<SessionSnapshot | null>(null);
 
-	const addCompletedTrail = ({ trail }: { trail: Trail }) => {
-		setSessionCompletedTrails((prevSessionCompletedTrails) => [...prevSessionCompletedTrails, trail]);
-	};
-
-	const onCompletedTrail = useCallback(
-		({ setSessionDetails, trail, reward }: { setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>; trail: Trail; reward: number }) => {
-			addCompletedTrail({ trail });
-			Rewards.completedTrail({ setSessionDetails, reward });
-		},
-		[]
-	);
-
-	const sessionUpdateFrequency = useMemo(() => NextHundredthMileSeconds(timer.pace), [timer.pace]);
-
-	const canIncreaseDistance = useMemo(() => {
-		const notJustStarted = timer.time < timer.focusTime;
-		return notJustStarted && timer.startTime !== null && !timer.isPaused && !timer.isBreak;
-	}, [timer.time, timer.startTime, timer.isPaused, timer.isBreak]);
 
 	useEffect(() => {
-		let intervalId: NodeJS.Timeout | null = null;
-
-		if (canIncreaseDistance) {
-			intervalId = setInterval(() => {
-				updateSession({
-					watermelonDatabase,
-					user,
-					userSession,
-					completedTrails,
-					queuedTrails,
-					currentTrail,
-					setSessionDetails,
-					sessionDetails,
-					timer,
-					setTimer,
-					achievementsWithCompletion,
-					onAchievementEarned,
-					onCompletedTrail,
-					userPurchasedTrails,
-					freeTrails,
-					isProMember
-				});
-			}, sessionUpdateFrequency * 1000);
+		if(sessionEngineMgr?.getCurrent()){
+			sEngineRef.current = sessionEngineMgr.getCurrent()!
+			const snapshot = sEngineRef.current.buildSnapshot()
+			setSnapshot(snapshot)
 		}
+		
+	},[])
+	useBusEvent("SESSION_TICK",(cfg:SessionSnapshot) => setSnapshot(cfg) )
+	useBusEvent("SESSION_PAUSED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
+	useBusEvent("SESSION_PACE_INCREASED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
+	useBusEvent("SESSION_PACE_DECREASED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
+	useBusEvent("SESSION_BREAK_SKIPPED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
 
-		return () => {
-			if (intervalId !== null) {clearInterval(intervalId);}
-		};
-	}, [canIncreaseDistance, sessionUpdateFrequency]);
+	
+	
+	// const [sessionCompletedTrails, setSessionCompletedTrails] = useState<User_Completed_Trail[]>([]);
+	// const onAchievementEarned = useCallback(
+	// 	(achievements: Achievement[]) => {
+	// 		setEarnedAchievements((prevAchievements) => [
+	// 			...prevAchievements,
+	// 			...achievements,
+	// 		]);
+	// 	},
+	// 	[]
+	// );	
 
-	const checkUserSessionAchievements = async () => {
-		const results = await achievementManagerInstance.checkUserSessionAchievements(
-			user,
-			sessionDetails,
-			currentSessionCategory,
-			achievementsWithCompletion
-		);
-		if (results) {onAchievementEarned(results);}
-	};
+	// const checkUserSessionAchievements = async () => {
+	// 	const results = await achievementManagerInstance.checkUserSessionAchievements(
+	// 		user,
+	// 		sessionDetails,
+	// 		currentSessionCategory,
+	// 		achievementsWithCompletion
+	// 	);
+	// 	if (results) {onAchievementEarned(results);}
+	// };
 
-	useEffect(() => {
-		if (user && sessionDetails && currentSessionCategory && achievementsWithCompletion) {
-			checkUserSessionAchievements();
-		}
-	}, [achievementsWithCompletion]);
+	// useEffect(() => {
+	// 	if (user && sessionDetails && currentSessionCategory && achievementsWithCompletion) {
+	// 		checkUserSessionAchievements();
+	// 	}
+	// }, [achievementsWithCompletion]);
 
-	async function handleShowQuitSessionModal() {
-		await pauseSession(timer, setTimer, sessionDetails, setSessionDetails)
+	// async function handleShowQuitSessionModal() {
+	// 	await pauseSession(timer, setTimer, sessionDetails, setSessionDetails)
 
-		await Rewards.calculateSessionTokens({setSessionDetails,sessionDetails, timer})
-		setShowQuitSessionModal(true)
+	// 	await Rewards.calculateSessionTokens({setSessionDetails,sessionDetails, timer})
+	// 	setShowQuitSessionModal(true)
+	// }
+
+	// async function handleContinueSession(){
+	// 	await resumeSession(setTimer)
+	// 	setShowQuitSessionModal(false)
+	// }
+
+
+
+	// const onAddSession = async () => {
+	// 	try {
+	// 		const sessionTokenReward = await Rewards.calculateSessionTokens({
+	// 			setSessionDetails,
+	// 			sessionDetails,
+	// 			timer,
+	// 		});
+
+	// 		setSessionDetails((prev) => ({
+	// 			...prev,
+	// 			totalSessionTokens: sessionTokenReward,
+	// 		}));
+
+	// 		setTimer((prev: { focusTime: any; sets: number; }) => ({
+	// 			...prev,
+	// 			time: prev.focusTime,
+	// 			sets: prev.sets + 3,
+	// 			isBreak: false,
+	// 			isCompleted: false,
+	// 		}));
+	// 	} catch (err) {
+	// 		handleError(err, 'onAddSession');
+	// 	}
+	// };
+
+	// const onAddSet = async () => {
+	// 	try {
+	// 		const sessionTokenReward = await Rewards.calculateSessionTokens({
+	// 			setSessionDetails,
+	// 			sessionDetails,
+	// 			timer,
+	// 		});
+
+	// 		setSessionDetails((prev) => ({
+	// 			...prev,
+	// 			totalSessionTokens: sessionTokenReward,
+	// 		}));
+
+	// 		setTimer((prev: { focusTime: any; sets: number; }) => ({
+	// 			...prev,
+	// 			time: prev.focusTime,
+	// 			sets: prev.sets + 1,
+	// 			isBreak: false,
+	// 			isCompleted: false,
+	// 		}));
+	// 	} catch (err) {
+	// 		handleError(err, 'onAddSet');
+	// 	}
+	// };
+
+	// useEffect(() => {
+	// 	const handleAppStateChange = (nextAppState: string | ((prevState: 'active' | 'background' | 'inactive' | 'unknown' | 'extension') => 'active' | 'background' | 'inactive' | 'unknown' | 'extension')) => {
+	// 		if(snapshot && snapshot.sessionId && snapshot.phase !== 'COMPLETED'){
+	// 			if (appState.match(/active/) && nextAppState?.match(/inactive|background/)) {
+	// 				let next = true
+	// 				setSnapshot(prev => ({...prev!, isPaused: next}))
+	// 				sessionEngineMgr?.getCurrent()?.pause()
+							
+	// 			} 
+	// 			// @ts-ignore
+	// 			setAppState(nextAppState);
+	// 		}
+	// 	};
+
+	// 	const subscription = AppState.addEventListener('change', handleAppStateChange);
+	// 	return () => subscription.remove();
+	// }, [appState]);
+
+	// useFocusEffect(
+	// 	React.useCallback(() => {
+			
+	// 		return () => {
+	// 			// Screen is unfocused
+	// 			if( snapshot && snapshot.phase !== 'COMPLETED' && snapshot.isPaused == false){
+	// 				let next = true
+	// 				setSnapshot(prev => ({...prev!, isPaused: next}))
+	// 				sessionEngineMgr?.getCurrent()?.pause()
+	// 			}
+	// 		};
+	// 	}, [])
+	// );
+
+	//This disallows an active session to leave
+	//leaving kills the session.
+	usePreventRemove(true, ({data}) => {
+		//@ts-ignore
+		setSnapshot(prev => ({...prev, isPaused: true}))
+		bus.emit('UI_PAUSE_REQUESTED')
+		Alert.alert(
+        'Quit Session?',
+        'Miles stay, Rewards dont!',
+        [
+          {
+            text: "Don't Quit",
+            style: 'cancel',
+            onPress: () => {
+              	setSnapshot(prev => ({...prev!, isPaused: false}))
+				bus.emit('UI_RESUME_REQUESTED') 
+            },
+          },
+          {
+            text: "I'm a quitter",
+            style: 'destructive',
+            onPress: () => navigation.dispatch(data.action),
+          },
+        ]
+      );
+	})
+
+	if(!snapshot){
+		return (
+		<Text>No Session</Text>
+		)
 	}
-
-	async function handleContinueSession(){
-		await resumeSession(setTimer)
-		setShowQuitSessionModal(false)
-	}
-
-
-
-	const onAddSession = async () => {
-		try {
-			const sessionTokenReward = await Rewards.calculateSessionTokens({
-				setSessionDetails,
-				sessionDetails,
-				timer,
-			});
-
-			setSessionDetails((prev) => ({
-				...prev,
-				totalSessionTokens: sessionTokenReward,
-			}));
-
-			setTimer((prev: { focusTime: any; sets: number; }) => ({
-				...prev,
-				time: prev.focusTime,
-				sets: prev.sets + 3,
-				isBreak: false,
-				isCompleted: false,
-			}));
-		} catch (err) {
-			handleError(err, 'onAddSession');
-		}
-	};
-
-	const onAddSet = async () => {
-		try {
-			const sessionTokenReward = await Rewards.calculateSessionTokens({
-				setSessionDetails,
-				sessionDetails,
-				timer,
-			});
-
-			setSessionDetails((prev) => ({
-				...prev,
-				totalSessionTokens: sessionTokenReward,
-			}));
-
-			setTimer((prev: { focusTime: any; sets: number; }) => ({
-				...prev,
-				time: prev.focusTime,
-				sets: prev.sets + 1,
-				isBreak: false,
-				isCompleted: false,
-			}));
-		} catch (err) {
-			handleError(err, 'onAddSet');
-		}
-	};
-
-	useEffect(() => {
-		let endSessionTimeout: NodeJS.Timeout | null = null;
-
-		if (timer.isCompleted) {
-			endSessionTimeout = setTimeout(() => {
-				if (timer.autoContinue) {
-					onAddSession();
-				} else {
-					endSession();
-				}
-			}, 60000); // 1 minute for modal countdown
-		}
-
-		return () => {
-			if (endSessionTimeout !== null) {clearTimeout(endSessionTimeout);}
-		};
-	}, [timer.isCompleted]);
-
-	async function updateSessionTokens() {
-		const sessionTokenRewards = await Rewards.calculateSessionTokens({ timer, sessionDetails, setSessionDetails });
-	}
-
-	useEffect(() => {
-		updateSessionTokens();
-	}, [timer.isBreak, timer.isCompleted]);
-
-	useEffect(() => {
-		const handleAppStateChange = (nextAppState: string | ((prevState: 'active' | 'background' | 'inactive' | 'unknown' | 'extension') => 'active' | 'background' | 'inactive' | 'unknown' | 'extension')) => {
-			if(timer.isRunning){
-				if (appState.match(/active/) && nextAppState?.match(/inactive|background/)) {
-					pauseSession(timer, setTimer, sessionDetails, setSessionDetails);
-				} else if (nextAppState === 'active' && appState.match(/inactive|background/)) {
-
-					resumeSession(setTimer)
-				}
-				// @ts-ignore
-				setAppState(nextAppState);
-			}
-		};
-
-		const subscription = AppState.addEventListener('change', handleAppStateChange);
-		return () => subscription.remove();
-	}, [appState, timer]);
-
-	useFocusEffect(
-		React.useCallback(() => {
-			// Screen is focused
-			if(timer.isRunning){
-				resumeSession(setTimer)
-			}
-			return () => {
-				// Screen is unfocused
-				if(timer.isRunning){
-					pauseSession(timer, setTimer, sessionDetails, setSessionDetails);
-				}
-			};
-		}, [timer.isRunning])
-	);
 
 
 	return (
@@ -291,52 +243,64 @@ const ActiveSession = ({
 			<ScrollView style={{ paddingBottom: 80 }}>
 				<QuitSessionModal
 					isVisible={showQuitSessionModal}
-					showResultsScreen={showResultsScreen}
-					continueSession={handleContinueSession}
-					sessionDetails={sessionDetails}
+					cancel={() => {
+						let next = !snapshot.isPaused
+						setSnapshot(prev => ({...prev!, isPaused: next}))
+						bus.emit('UI_RESUME_REQUESTED') 
+						setShowQuitSessionModal(false)
+					}}
+					quit={() => {
+						bus.emit('UI_QUIT_REQUESTED')
+					}}
+					sessionDetails={snapshot}
 					/>
-				<ContinueSessionModal
+				{/* <ContinueSessionModal
 					isVisible={timer.isCompleted}
 					showResultsScreen={showResultsScreen}
 					onAddSession={onAddSession}
 					onAddSet={onAddSet}
 					focusTime={timer.focusTime}
 					endSession={endSession}
-				/>
+				/> */}
 
-				<SessionTimer
-					timer={timer}
-					setTimer={setTimer}
-					minimumPace={sessionDetails.minimumPace}
-					maximumPace={sessionDetails.maximumPace}
-					paceIncreaseInterval={sessionDetails.paceIncreaseInterval}
-					paceIncreaseValue={sessionDetails.paceIncreaseValue}
-				/>
+				<SessionTimer snapshot={snapshot} />
 				<View style={styles.buttonsContainer}>
 					{/* Stop Button */}
-					<Pressable onPress={handleShowQuitSessionModal} testID="stop-button" style={[styles.button, styles.endSessionButton]}>
+					<Pressable 
+						testID="stop-button" style={[styles.button, styles.endSessionButton]} 
+						onPress={() => { 
+							let next = !snapshot.isPaused
+							setShowQuitSessionModal(true)
+							setSnapshot(prev => ({...prev!, isPaused: next}))
+							bus.emit('UI_PAUSE_REQUESTED')
+							}	
+						}>
 						<Icon name="square" size={28} color="white" />
 					</Pressable>
 
 					{/* Pause/Resume Button (conditionally rendered icon) */}
 					<Pressable
 						testID="pause-resume-button"
-						onPress={() =>
-							timer.isPaused
-								? resumeSession(setTimer)
-								: pauseSession(timer, setTimer, sessionDetails, setSessionDetails)
+						onPress={() => { 
+							let next = !snapshot.isPaused
+							setSnapshot(prev => ({...prev!, isPaused: next}))
+							snapshot.isPaused ? bus.emit('UI_RESUME_REQUESTED') :
+								bus.emit('UI_PAUSE_REQUESTED')
+							}	
 						}
 						style={[styles.button, styles.pauseResumeButton]}
 					>
 						<Icon
-							name={timer.isPaused ? 'play' : 'pause'}
+							name={snapshot.isPaused ? 'play' : 'pause'}
 							size={28}
 							color="white"
 						/>
 					</Pressable>
 					{/* Skip Break Button (conditionally rendered) */}
-					{timer.isBreak && (
-						<Pressable testID="skip-break-button" onPress={() => skipBreak({ timer, setTimer })} style={[styles.button, styles.skipBreakButton]}>
+					{snapshot.phase.includes('BREAK') && (
+						<Pressable testID="skip-break-button" onPress={() => {
+							bus.emit('UI_BREAK_SKIP_REQUESTED')
+						}}  style={[styles.button, styles.skipBreakButton]}>
 							<Icon name="play-skip-forward" size={28} color="white" />
 						</Pressable>
 					)}
@@ -344,21 +308,20 @@ const ActiveSession = ({
 				<View style={styles.trailNameContainer}>
 					<Text style={styles.trailName} testID="current-trail-name">{currentTrail.trailName}</Text>
 					<EnhancedDistanceProgressBar
-						timer={timer}
-						sessionDetails={sessionDetails}
 						user={user}
 						trail={currentTrail}
 					/>
 				</View>
-				<ActiveSessionBackpack sessionDetails={sessionDetails} user={user} />
+				{/* <ActiveSessionBackpack sessionDetails={sessionDetails} user={user} /> */}
 				<View style={styles.statsContainer}>
 					<View style={styles.statsGrid}>
-						<StatBox label="Pace" value={`${timer.pace} mph`} />
-						<StatBox label="Sets" value={`${timer.completedSets} / ${timer.sets}`} />
-						<StatBox  label="Strikes" value={sessionDetails.strikes} />
-						<StatBox label="Reward" value={Number( sessionDetails?.trailTokensEarned + sessionDetails?.sessionTokensEarned )} />
-						<StatBox  label="Achievements" value={earnedAchievements.length} />
-						<StatBox  label="Trails" value={sessionCompletedTrails.length} />
+						<StatBox label="Pace" value={`${snapshot.currentPaceMph} mph`} />
+						<StatBox label="Sets" value={`${snapshot.completedSets} / ${snapshot.totalSets}`} />
+						<StatBox  label="Strikes" value={snapshot.currentStrikes} />
+						<StatBox  label="Total Dist." value={`${snapshot.totalDistanceMiles.toFixed(2)} mi.`}  />
+						{/* <StatBox label="Reward" value={Number( session.totalTokensEarned)} /> */}
+						{/* <StatBox  label="Achievements" value={earnedAchievements.length} /> */}
+						<StatBox  label="Trails" value={snapshot.completedTrails.length} />
 					</View>
 				</View>
 			</ScrollView>
@@ -366,14 +329,14 @@ const ActiveSession = ({
 	);
 };
 
-const StatBox = ({ label, value }) => (
-	<View style={styles.infoBox}>
+const StatBox = React.memo(({ label, value }: { label:string, value:string | number}) => (
+	<View key={`${label}:${value}`} style={styles.infoBox}>
 		<Text style={styles.infoLabel}>{label}</Text>
 		<Text testID={label.toLowerCase()} style={styles.infoValue}>{value}</Text>
 	</View>
-);
+));
 
-const ActionButton = ({ onPress, label, buttonStyle }) => (
+const ActionButton = ({ onPress, label, buttonStyle }: any) => (
 	<Pressable onPress={onPress} style={[styles.button, buttonStyle]}>
 		<Text style={styles.buttonText}>{label}</Text>
 	</Pressable>
@@ -452,12 +415,11 @@ const styles = StyleSheet.create({
 	},
 });
 
-const enhance = withObservables(['user', 'currentTrail', 'completedTrails', 'queuedTrails', 'userSession', 'usersAchievements', 'userPurchasedTrails'], ({ user, userSession }) => ({
+const enhance = withObservables(['user', 'currentTrail', 'completedTrails', 'queuedTrails', 'usersAchievements', 'userPurchasedTrails'], ({ user }) => ({
 	user: user.observe(),
 	currentTrail: user.trail.observe(),
 	completedTrails: user.usersCompletedTrails.observe(),
 	queuedTrails: user.usersQueuedTrails.observe(),
-	userSession,
 	userAchievements: user.usersAchievements.observe(),
 	userPurchasedTrails: user.usersPurchasedTrails.observe(),
 }));

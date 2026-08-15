@@ -1,26 +1,31 @@
 import {
     Dimensions,
+    Pressable,
     SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View,
 } from 'react-native';
 import Rive, { RiveRef } from 'rive-react-native';
+import {
+   User,
+   User_Wild,
+} from '../watermelon/models';
 import { darkTheme, lightTheme } from '../theme';
 
 import Carousel from 'react-native-reanimated-carousel';
 import DistanceProgressBar from '../components/DistanceProgressBar';
 import HomeScreenLinks from '../components/HomeScreen/HomeScreenLinks'
+import { Q } from '@nozbe/watermelondb';
 import { Rank } from '../helpers/Ranks/ranksData';
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import SyncButton from '../components/syncButton';
 import TutorialModal from '../components/HomeScreen/tutorialModal';
-import {
-   User,
-} from '../watermelon/models';
 import WildAvatar from '../components/Wilds/WildAvatar';
+import XpRing from '../components/HomeScreen/XpRing';
 import checkDailyStreak from '../helpers/Session/checkDailyStreak';
 import getUserRank from '../helpers/Ranks/getUserRank';
 import handleError from '../helpers/ErrorHandler';
@@ -29,7 +34,7 @@ import {sync} from '../watermelon/sync';
 import {useAuthContext} from '../services/AuthContext';
 import {useDatabase} from '@nozbe/watermelondb/react';
 import {useFocusEffect} from '@react-navigation/native';
-import {useInternetConnection} from '../hooks/useInternetConnection';
+import {useInternetConnection} from '../contexts/InternetConnectionProvider';
 import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
 import {useTheme} from '../contexts/ThemeProvider';
 import { withObservables } from '@nozbe/watermelondb/react';
@@ -40,6 +45,7 @@ interface Props {
     navigation: any;
     setUser: any;
     userWilds:any;
+    activeWilds: User_Wild[];
 
 }
 
@@ -48,6 +54,7 @@ const HomeScreen: React.FC<Props> = ({
                                          navigation,
                                          currentTrail,
                                          userWilds,
+                                         activeWilds
                                      }) => {
     const watermelonDatabase = useDatabase();
     const {theme} = useTheme();
@@ -66,6 +73,7 @@ const HomeScreen: React.FC<Props> = ({
     const styles = getStyles(theme); // dynamically generate styles based on theme
     const {currentOffering, customerInfo, isProMember } = useAuthContext();
     userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
+    const [activeWild]  = activeWilds
     
 
     const handleTutorialClose = () => {
@@ -85,6 +93,7 @@ const HomeScreen: React.FC<Props> = ({
     //this useEffect checks daily streak and resets if needed
     React.useEffect(() => {
       console.log('userWilds', userWilds)
+      console.log(activeWild)
       if (user) {
         checkDailyStreak(user);
       }
@@ -160,19 +169,14 @@ const HomeScreen: React.FC<Props> = ({
         {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
         <View
           style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
-          <Text style={styles.trailTokens}>
-            Trail Tokens: {user?.trailTokens}
-          </Text>
-          <Text
-            style={[
-              styles.onlineStatus,
-              {color: isConnected ? 'green' : 'red'},
-            ]}>
-            {isConnected ? 'Online' : 'Offline'}
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
+          <Text style={[styles.onlineStatus, { color: isConnected ? "green" : "red" }]}>
+            {isConnected ? "Online" : "Offline"}
           </Text>
           <View>
             <Text style={styles.dailyStreak} testID="daily-streak">
@@ -181,53 +185,26 @@ const HomeScreen: React.FC<Props> = ({
             <SyncButton />
           </View>
         </View>
-        <View style={{height: 200}}>
-          <Carousel
-            loop
-            pagingEnabled={true}
-            snapEnabled={true}
-            width={width}
-            height={width / 2}
-            autoPlay={false}
-            data={[...new Array(2).keys()]}
-            scrollAnimationDuration={1000}
-            onSnapToItem={index => setActiveIndex(index)}
-            renderItem={({index}) => (
-              <View style={styles.carouselItem}>
-                {index === 0 ? (
-                  <View style={styles.rankContainer}>
-{ userWilds.length ? 
-                    <Rive
-                      ref={riveRef}
-                      resourceName="scout"
-                      artboardName="Artboard"
-                      stateMachineName="State Machine 1"
-                      style={{width: 150, height: 150}}
-                    /> : <Text style={{color: 'white'}}>No Wild Selected</Text>
- }
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'center',
-                        width: '100%',
-                      }}>
-                   
-                    </View>
-                  </View>
-                ) : (
-                  <View style={styles.currentTrailContainer}>
-                    <Text style={styles.trailText}>Current Trail:</Text>
-                    <Text style={styles.trailName}>
-                      {currentTrail.trailName}
-                    </Text>
-                    <DistanceProgressBar user={user} trail={currentTrail} />
-                  </View>
-                )}
-              </View>
-            )}
-          />
+        <View style={{ alignItems: "center", marginVertical: 10 }}>
+          {activeWild ? <XpRing size={120} xp={activeWild.xp} xpToLevel={activeWild.xpToNext} ringColor={'#00998aff'}>
+            <WildAvatar id={activeWild.wildId} pose={"still"} size={120} />
+          </XpRing> :
+          <Text style={styles.wildInfo}>No Active Wild</Text>
+          }
         </View>
-        <View style={styles.paginationDotsContainer}>
+        <View style={styles.currentTrailContainer}>
+          <Text style={styles.trailText}>Current Trail:</Text>
+          <Text style={styles.trailName}>{currentTrail.trailName}</Text>
+          <DistanceProgressBar user={user} trail={currentTrail} height={15} borderRadius={999} barColor={'#00998aff'}/>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={[styles.ctaButton, { marginTop: 15 }]}
+            onPress={() => navigation.navigate("Timer")}
+          >
+            <Text style={styles.ctaText}>Start a Session</Text>
+          </TouchableOpacity>
+        </View>
+        {/* <View style={styles.paginationDotsContainer}>
           {data.map((item, index) => (
             <View
               key={index}
@@ -237,8 +214,8 @@ const HomeScreen: React.FC<Props> = ({
               ]}
             />
           ))}
-        </View>
-      <HomeScreenLinks user={user} navigation={navigation}/>  
+        </View> */}
+        <HomeScreenLinks user={user} navigation={navigation} />
       </SafeAreaView>
     );
 };
@@ -247,7 +224,8 @@ const enhance = withObservables(['user'], ({user}) => ({
     user: user.observe(),
     currentTrail: user.trail.observe(),
     userSessions: user.usersSessions.observe(),
-    userWilds: user.usersWilds.observe()
+    userWilds: user.usersWilds.observe(),
+    activeWilds: user.usersWilds.extend(Q.where('is_active', true), Q.take(1)).observe(),
 }));
 
 const EnhancedHomeScreen = enhance(HomeScreen);
@@ -261,6 +239,30 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       padding: 10,
 
     },
+    ctaButton: {
+    backgroundColor: theme.progressBar,   // neon teal
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    // full width but with some margin – adjust to taste in parent
+    alignSelf: 'stretch',
+
+    // subtle glow / elevation
+    shadowColor: theme.progressBar,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  ctaText: {
+    color: '#000',          // black text pops on teal
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
     loadingContainer: {
       flex: 1,
       justifyContent: 'center',

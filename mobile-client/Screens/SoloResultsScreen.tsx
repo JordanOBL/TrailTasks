@@ -1,24 +1,53 @@
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { darkTheme, lightTheme } from '../theme';
+
 import React from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import {Rewards} from '../Screens/SessionScreen'
+import { SessionSnapshot } from '../sessionEngine/sessionEngine';
+import formatTime from '../helpers/formatTime';
+import { useNavigation } from '@react-navigation/native'
+import { useTheme } from '../contexts/ThemeProvider';
 
-const SoloResultsScreen = ({ sessionDetails, user,timer, endSession }) => {
+interface Props {
+  rewards: Rewards
+  snapshot: SessionSnapshot | null;
+  resetSession: () => void;
+}
 
+const SoloResultsScreen = ({rewards, snapshot, resetSession}: Props ) => { 
+  console.log("Rendering SoloResultsScreen with rewards:", rewards, "and snapshot:", snapshot); 
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
+  if(!rewards || !snapshot){
+   return (
+      <View>
+        <Text> Loading Session Rewards...</Text>
+      </View>
+    ) 
+  }
+  
   return (
     <View style={styles.container} testID="session-results-screen">
       <Text style={styles.title}>Session Results</Text>
 
       <View style={styles.sessionSummary}>
-        <Text style={styles.summaryText}>Total Distance: <Text testID="total-distance-text" style={styles.value}>{sessionDetails.totalDistanceHiked.toFixed(2)} miles</Text></Text>
-        <Text style={styles.summaryText}>Sets Completed: <Text testID="sets-completed-text" style={styles.value}>{timer.completedSets}</Text></Text>
+       <Text style={styles.summaryText}>Total Time: <Text testID="total-distance-text" style={styles.value}>{formatTime(snapshot?.totalElapsedSec)}</Text></Text> 
+        <Text style={styles.summaryText}>Total Distance: <Text testID="total-distance-text" style={styles.value}>{snapshot?.totalDistanceMiles} miles</Text></Text>
+        <Text style={styles.summaryText}>Sets Completed: <Text testID="sets-completed-text" style={styles.value}>{snapshot?.completedSets}</Text></Text>
+        
       </View>
 
       <Text style={styles.title}>Rewards</Text>
       <View style={styles.sessionSummary}>
-        <Text style={styles.summaryText}>Trail Tokens: <Text testID="trail-tokens-earned-text" style={styles.value}>{sessionDetails.trailTokensEarned}</Text></Text>
-        <Text style={styles.summaryText} testID="session-tokens-earned-text">Session Tokens: <Text style={styles.value}>{sessionDetails.sessionTokensEarned}</Text></Text>
+        <Text style={styles.summaryText}>Trail Tokens: <Text testID="trail-tokens-earned-text" style={styles.value}>{rewards.trailRewards}</Text></Text>
+        <Text style={styles.summaryText} testID="session-tokens-earned-text">Time Tokens: <Text style={styles.value}>{rewards.timeRewards}</Text></Text>
+        <Text style={styles.summaryText}>Total Tokens Earned: <Text testID="total-tokens-earned-text" style={styles.value}>{rewards.totalTokenRewards}</Text></Text>
       </View>
 
-      <TouchableOpacity style={styles.returnButton} testID="return-to-lobby-button" onPress={endSession}>
+      {/* Wild xp rewards */}
+
+      <TouchableOpacity style={styles.returnButton} testID="return-to-lobby-button" onPress={() => resetSession()}>
         <Text style={styles.returnButtonText}>Return to Lobby</Text>
       </TouchableOpacity>
     </View>
@@ -27,16 +56,17 @@ const SoloResultsScreen = ({ sessionDetails, user,timer, endSession }) => {
 
 export default SoloResultsScreen;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) => { 
+  return StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f8f9fa', // Light grey background for contrast
+    backgroundColor: theme.background, // Light grey background for contrast
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#003333', // Dark teal color
+    color: theme.text, // Dark teal color
     textAlign: 'center',
     marginBottom: 25,
   },
@@ -68,7 +98,7 @@ const styles = StyleSheet.create({
   },
 
    returnButton: {
-    backgroundColor: '#003333', // Dark teal button color
+    backgroundColor: theme.button, // Dark teal button color
     paddingVertical: 12,
     borderRadius: 25,
     marginTop: 25,
@@ -81,7 +111,8 @@ const styles = StyleSheet.create({
   returnButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#ffffff', // White text for contrast
+    color: theme.buttonText, // White text for contrast
   },
-});
+})
+}
 

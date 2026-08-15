@@ -1,12 +1,15 @@
+import { User, User_Session } from '../../watermelon/models';
+import {createMockUserBase, createUser} from '../../__mocks__/UserModel';
+import test, { describe } from 'node:test';
+
+import checkDailyStreak from './checkDailyStreak';
 import isToday from '../isToday';
 import isYesterday from '../isYesterday';
-import checkDailyStreak from './checkDailyStreak';
-import {createMockUserBase, createUser} from '../../__mocks__/UserModel';
-import {testDb} from '../../watermelon/testDB';
 import {sync} from '../../watermelon/sync';
+import {testDb} from '../../watermelon/testDB';
 
 describe('checkDailyStreak', () => {
-  let testUser;
+  let testUser: User;
 
   beforeAll(async () => {
     await testDb.write(async () => {
@@ -27,7 +30,7 @@ describe('checkDailyStreak', () => {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
     await testDb.write(async () => {
-      await testDb.collections.get('users_sessions').create((session) => {
+      await testDb.collections.get<User_Session>('users_sessions').create((session) => {
         session._id = '1';
         session.userId = testUser.id;
         session.sessionCategoryId = '1';

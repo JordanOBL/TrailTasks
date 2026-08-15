@@ -1,11 +1,13 @@
 import * as React from 'react';
+
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import Icon from 'react-native-vector-icons/Ionicons';
 import { Session_Category } from '../../watermelon/models';
 import formatTime from '../../helpers/formatTime';
 import { getSessionStats } from '../../helpers/Stats/GetSessionStats';
-import { useTheme } from '../../contexts/ThemeProvider';
 import { useAuthContext } from '../../services/AuthContext';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '../../contexts/ThemeProvider';
 
 type Props = {
   filteredUserSessions: any[];
@@ -52,7 +54,7 @@ const Stats: React.FC<Props> = ({
         <View style={styles.statsContainer}>
           <Text style={styles.statTitle}>Total Focus Time</Text>
           <Text testID="total-focus-time" style={styles.statValue}>
-            {totalTime === 0 ? 'N/A' : formatTime(totalTime)}
+            {formatTime(totalTime)}
           </Text>
         </View>
         <View style={styles.statsContainer}>

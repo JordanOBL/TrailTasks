@@ -35,6 +35,7 @@ const LogbookScreen = ({  navigation } : Props) => {
   const [userParks, setUserParks] = useState<User_Park[] | null>(null);
   const [userWilds, setUserWilds] = useState<User_Wild[] | null>(null);
   const [activeWild, setActiveWild] = useState<Wild | null>(null);
+  const [activeUserWild, setActiveUserWild] = useState<User_Wild | null>(null);
   const styles = getStyles(theme);
 
 const load = useCallback(async () => {
@@ -48,17 +49,19 @@ const load = useCallback(async () => {
 
     if(userWilds.length > 0){
       console.log('User wilds loaded:', userWilds);
-      const activeUserWild = userWilds.find((uw: User_Wild) => uw.isActive);
+      const [activeUserWild] = userWilds.filter((uw: User_Wild) => uw.isActive == true);
       console.log('Active user wild:', activeUserWild);
       const [activeWild]: Wild[] = await db.get<Wild>('wilds').query(Q.where('id', activeUserWild?.wildId || '')).fetch();
       console.log('Active wild details:', activeWild);
       setActiveWild(activeWild || null);
+      setActiveUserWild(activeUserWild ?? null);
     }
 
     setParksWilds(parksWilds);
     setParks(parks);
     setUserParks(userParks);
     setUserWilds(userWilds);
+   
 },[db, user])
 
 useFocusEffect(useCallback(() => {
@@ -77,8 +80,8 @@ useFocusEffect(useCallback(() => {
       return {
         parkId: pw.parkId,
         parkName: parks.find(p => p.id === pw.parkId)?.parkName || "",
-        isParkPassCompleted: userParks?.some(up => up.parkId === pw.parkId) || false,
-        isWildUnlocked: userWilds?.some(uw => uw.wildId === pw.wildId) || false,
+        isParkPassCompleted: userParks?.some(up => up.parkId === pw.parkId) ?? false,
+        isWildUnlocked: userWilds?.some(uw => uw.wildId === pw.wildId) ?? false,
         wildId: pw.wildId,
       };
     });
@@ -117,6 +120,7 @@ if (!user || !parksWilds || !parks || userParks === null || userWilds === null) 
       </Text>
 
       <ActiveWildBanner
+        userWild={activeUserWild}
         wild={activeWild}
         parkId={activeWild ? wildToParkId[activeWild.id] : undefined}
         onPress={() => {
@@ -141,17 +145,19 @@ if (!user || !parksWilds || !parks || userParks === null || userWilds === null) 
 export default LogbookScreen;
 
 const ActiveWildBanner = ({
+  userWild,
   wild,
   parkId,
   onPress,
 }: {
+  userWild: User_Wild | null;
   wild: Wild | null;
   parkId?: string;
   onPress: () => void;
 }) => {
   const { theme } = useTheme();
 
-  if (!wild || !parkId) {
+  if (!wild || !parkId || !userWild) {
     return (
       <View
         style={{
@@ -200,7 +206,7 @@ const ActiveWildBanner = ({
           numberOfLines={1}
           style={{ color: theme.text, opacity: 0.7, fontSize: 12 }}
         >
-          {wild.species ?? 'Wild'} • Level {wild.level ?? 1}
+          {wild.species ?? 'Wild'} • Level {userWild.level ?? 1}
         </Text>
       </View>
 

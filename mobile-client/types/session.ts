@@ -1,4 +1,4 @@
-import {Addon} from "../watermelon/models";
+import {Addon, User_Session} from "../watermelon/models";
 export interface SessionDetails {
   startTime: string | null;
   sessionName: string;
@@ -24,8 +24,33 @@ export interface SessionDetails {
     addon: null|Addon;
     minimumTotalMiles: number;
   }[];
-}
 
+  
+}
+export interface SessionCfg {
+  session: User_Session | null;
+  sessionId: string;
+  userId: string;
+  type: string;
+  sessionDescription?: string;
+  sessionName: string;
+  completedTrails: number;
+  sessionCategory: [string, string];
+  distanceNeeded: number;
+  totalSets: number;
+  focusTimeSec: number;
+  shortBreakSec: number;
+  longBreakSec: number;
+  autoContinue: boolean;
+  currentPaceMph: number;
+  minPaceMph: number;
+  maxPaceMph: number;
+  paceIncreaseValueMph: number;
+  paceIncreaseIntervalSec: number;
+  tokenBonusFlat: number;
+  tokenBonusPercent: number;
+  backpack: { addon: Addon | null, minimumTotalMiles: number }[];
+}
 export interface JoinedUserTrail {
   _changed: string;
   _status: string;

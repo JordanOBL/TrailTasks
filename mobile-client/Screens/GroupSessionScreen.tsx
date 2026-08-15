@@ -1,33 +1,43 @@
-import React, { useState,useRef, useEffect } from 'react';
-import { AppState, Dimensions, View, Text, FlatList, Pressable, Platform,  StyleSheet, SafeAreaView, TextInput, Switch, Modal, ScrollView } from 'react-native';
-import GroupResultsScreen from './GroupResultsScreen';
-import useWebSocket from 'react-use-websocket';
-import { Dropdown } from 'react-native-element-dropdown';
-import timeOptions from '../helpers/Session/timeOptions';
-import {handleResponse} from '../helpers/Websockets/HandleResponse';
 import * as Progress from 'react-native-progress';
-import formatCountdown from '../helpers/Timer/formatCountdown';
-import {useDatabase} from '@nozbe/watermelondb/react';
-import Icon from 'react-native-vector-icons/Ionicons'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+
+import { AppState, Dimensions, FlatList, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+
 import ContinueSessionModal from '../components/Session/ContinueSessionModal';
-import {useInternetConnection} from '../hooks/useInternetConnection';
+import { Dropdown } from 'react-native-element-dropdown';
+import GroupResultsScreen from './GroupResultsScreen';
+import Icon from 'react-native-vector-icons/Ionicons'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
+import { User } from '../watermelon/models';
+import formatCountdown from '../helpers/Timer/formatCountdown';
+import {handleResponse} from '../helpers/Websockets/HandleResponse';
 import {sync} from '../watermelon/sync';
-const StatBox = ({ label, value }) => (
+import timeOptions from '../helpers/Session/timeOptions';
+import {useDatabase} from '@nozbe/watermelondb/react';
+import {useInternetConnection} from '../contexts/InternetConnectionProvider';
+import useWebSocket from 'react-use-websocket';
+
+const StatBox = ({ label, value }: {label: string, value: number}) => (
   <View style={styles.infoBox}>
     <Text style={styles.infoLabel}>{label}</Text>
     <Text style={[ styles.infoValue, { color: label == 'Strikes' && value > 0 ? 'red' : 'white'}  ]}>{value}</Text>
   </View>
 );
 
-const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route }) => {
+interface Props {
+  user: User;
+  debugRef: any;
+  joinRoomId: string;
+  route: any
+}
+const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route }: Props) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const { isConnected, ipAddress } = useInternetConnection();
   const database = useDatabase();
 
   //this will check is emulater or device
   ////!TODO:Remove fo or production
-  const [serverUrl, setServerUrl] = useState(null);
+  const [serverUrl, setServerUrl] = useState<string | null>(null);
   const { sendJsonMessage, lastJsonMessage, isReady } = useWebSocket(serverUrl, {
     onClose: async () => {
       console.log('close');

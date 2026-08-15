@@ -1,5 +1,6 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import React, { useCallback } from 'react';
+
 import { Session_Category } from '../../watermelon/models';
 import formatTime from '../../helpers/formatTime';
 import { useTheme } from '../../contexts/ThemeProvider';
@@ -9,13 +10,9 @@ interface Props {
   sessionCategories: Session_Category[];
 }
 
-const SessionList = ({ filteredUserSessions }: Props) => {
-  const { theme } = useTheme();
-
-  const styles = getStyles(theme);
-
-  const renderSessionItem = ({ item }: any) => (
-    <View style={styles.sessionContainer} testID={`session-list-item-${item.id}`}>
+const SessionCard = React.memo(({styles, item}:any) => {
+  return (
+    <View key={item.id} style={styles.sessionContainer} testID={`session-list-item-${item.id}`}>
       <Text style={styles.title}>{item.session_name}</Text>
       <Text style={styles.category}>Category: {item.session_category_name}</Text>
       {item.session_description && (
@@ -26,8 +23,17 @@ const SessionList = ({ filteredUserSessions }: Props) => {
         <Text style={styles.info}>Miles: {item.total_distance_hiked} mi.</Text>
         <Text style={styles.info}>Time: {formatTime(item.total_session_time)}</Text>
       </View>
-    </View>
-  );
+    </View> 
+  )
+})
+
+const SessionList = ({ filteredUserSessions }: Props) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
+  const renderSessionItem = useCallback(({item}:any) => {
+    return <SessionCard key={item.id} styles={styles} item={item} />
+}, []);
 
   if (filteredUserSessions.length === 0) {
     return (

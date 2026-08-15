@@ -10,18 +10,17 @@ import {
 } from 'react-native';
 import {Session_Category, User, User_Session} from '../watermelon/models';
 
-import {FilterBy} from '../helpers/Stats/FilterFunction';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
-import Icon from 'react-native-vector-icons/Ionicons';
-import {Q} from '@nozbe/watermelondb';
 import { Dropdown } from 'react-native-element-dropdown';
+import {FilterBy} from '../helpers/Stats/FilterFunction';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {Q} from '@nozbe/watermelondb';
 import SessionList from '../components/Stats/SessionList';
 import Stats from '../components/Stats/Stats';
 import handleError from "../helpers/ErrorHandler";
+import {useAuthContext} from '../services/AuthContext';
 import {useDatabase} from '@nozbe/watermelondb/react';
 import {useTheme} from '../contexts/ThemeProvider';
-import {useAuthContext} from '../services/AuthContext';
 
 type TimeFrame = {
   label: string;
@@ -93,7 +92,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 
   async function getSessionCategories() {
     try {
-      const categories = await watermelonDatabase.get('session_categories').query().fetch();
+      const categories = await watermelonDatabase.get<Session_Category>('session_categories').query().fetch();
       const mapped = categories.map((cat) => ({
         sessionCategoryName: cat.sessionCategoryName,
         sessionCategoryId: cat.id

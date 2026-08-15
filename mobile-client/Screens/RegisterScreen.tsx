@@ -1,13 +1,15 @@
-import { Image, StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, {useEffect, useState}from 'react';
+
 import RegisterForm from '../components/Auth/RegisterForm';
-import React, {useState, useEffect, setTimeout}from 'react';
 import {useAuthContext} from '../services/AuthContext';
-import {useInternetConnection} from '../hooks/useInternetConnection';
+import {useInternetConnection} from "../contexts/InternetConnectionProvider";
+
 interface Props {
-    onChangeForm: () => void;
+    handleFormChange: () => void;
 }
 
-const RegisterScreen = ({handleFormChange}) => {
+const RegisterScreen = ({handleFormChange}: Props) => {
     const {register, error} = useAuthContext();
     const {isConnected, refreshConnectionStatus} = useInternetConnection();
     const [email, setEmail] = useState('');
@@ -37,7 +39,7 @@ const RegisterScreen = ({handleFormChange}) => {
                         password={password}
                         confirmPassword={confirmPassword}
                         username={username}
-                       
+
                         onEmailChange={setEmail}
                         onPasswordChange={setPassword}
                         onConfirmPasswordChange={setConfirmPassword}
@@ -46,8 +48,9 @@ const RegisterScreen = ({handleFormChange}) => {
                         isConnected={isConnected}
                         onRegisterPress={handleRegister}
                         onRefreshPress={refreshConnectionStatus}
-                        onFormChange={handleFormChange}
-                    />
+                        onFormChange={handleFormChange} 
+                        onFirstNameChange={undefined} 
+                        onLastNameChange={undefined}                    />
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>

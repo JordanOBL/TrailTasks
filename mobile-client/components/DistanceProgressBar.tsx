@@ -1,17 +1,23 @@
 import * as Progress from 'react-native-progress';
+
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import React, { useRef } from 'react';
+
+import { EventBus } from '../EventBus/EventBus';
 import { SessionDetails } from '../types/session';
 import Timer from '../types/timer';
-import { withObservables } from '@nozbe/watermelondb/react';
 import { useTheme } from '../contexts/ThemeProvider';
+import { withObservables } from '@nozbe/watermelondb/react';
 
 interface Props {
   user: any;
   pace?: number;
   sessionDetails?: SessionDetails;
-  timer: Timer;
+  timer?: Timer;
   currentTrail: any;
+  height?: number;
+  borderRadius?: number;
+  barColor?: string;
 }
 
 const DistanceProgressBar = ({
@@ -19,6 +25,10 @@ const DistanceProgressBar = ({
   timer,
   currentTrail,
   sessionDetails,
+  height,
+  borderRadius,
+  barColor
+
 }: Props) => {
   const width = Dimensions.get('window').width;
   const { theme } = useTheme();
@@ -29,19 +39,22 @@ const DistanceProgressBar = ({
     (timer && timer.isBreak);
 
   const progressColor = isPaused ? theme.progressBarPaused : theme.progressBar;
+  const isCompleted = Number(user.trailProgress) == Number(currentTrail.trailDistance)
+
+
 
   return (
     <View style={{ alignItems: 'center' }}>
       <Progress.Bar
         width={width - 50}
-        height={40}
+        height={height ?? 40}
         borderWidth={0}
-        borderRadius={10}
+        borderRadius={ borderRadius ?? 10}
         unfilledColor={theme.progressBarBackground}
         progress={Number(user.trailProgress) / Number(currentTrail.trailDistance)}
         animationType="timing"
         useNativeDriver={true}
-        color={progressColor}
+        color={barColor ?? progressColor}
       />
       <Text
         style={{

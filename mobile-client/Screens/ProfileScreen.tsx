@@ -9,10 +9,10 @@ import { withObservables } from "@nozbe/watermelondb/react";
 
 const ProfileScreen = ({navigation, user}) => {
     const {theme} = useTheme();
-    const {currentOffering, customerInfo, isProMember } = useAuthContext();
+    const {isProMember } = useAuthContext();
   return (
     <View>
-      <Text>ProfileScreen</Text>
+   
       <ScreenLink
             user={user}
             needsActiveSubscription={false}
@@ -46,7 +46,7 @@ const ProfileScreen = ({navigation, user}) => {
           </ScreenLink>
     </View>
   );
-};
+}
 
 const enhance = withObservables(['user'], ({user}) => ({
     user: user.observe(),

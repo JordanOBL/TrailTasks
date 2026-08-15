@@ -1,12 +1,8 @@
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
-import {
-  configureReanimatedLogger,
-  ReanimatedLogLevel,
-} from 'react-native-reanimated';
 
-import BootSplash from 'react-native-bootsplash';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
+import {EventBus, Registry} from './EventBus/EventBus'
 import {
   PermissionsAndroid,
   Platform,
@@ -16,17 +12,24 @@ import {
   useColorScheme,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import RNFS from 'react-native-fs';
+import {
+  ReanimatedLogLevel,
+  configureReanimatedLogger,
+} from 'react-native-reanimated';
+
+import AuthScreen from "./Screens/AuthScreen";
+import BootSplash from 'react-native-bootsplash';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import RNFS from 'react-native-fs';
 import TabNavigator from './components/Navigation/TabNavigator';
-import { sync } from './watermelon/sync';
-import { useDatabase } from '@nozbe/watermelondb/react';
 import handleError from './helpers/ErrorHandler'; // Import the hook
+//import {markAllRecordsAsCreated} from "./helpers/markAllRecordsAsCreated";
+import { sync } from './watermelon/sync';
 import {useAuthContext} from "./services/AuthContext";
-import {useInternetConnection} from "./hooks/useInternetConnection";
-import AuthScreen from "./Screens/AuthScreen";
-import {markAllRecordsAsCreated} from "./helpers/markAllRecordsAsCreated";
+import { useDatabase } from '@nozbe/watermelondb/react';
+import {useInternetConnection} from "./contexts/InternetConnectionProvider";
+
 // This is the default configuration
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -35,10 +38,13 @@ configureReanimatedLogger({
 
 const App = () => {
   const watermelonDatabase = useDatabase();
-  const { user, initUser} = useAuthContext()
+  const { user} = useAuthContext()
   const {isConnected} = useInternetConnection()
+
   const isDarkMode = useColorScheme() === 'dark';
   const [form, setForm] = useState('login');
+  const eventBus = EventBus.getInstance()
+  console.log(eventBus)
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -54,7 +60,10 @@ const App = () => {
 
   useEffect(() => {
     const onLoad = async () => {
+      const registry: Registry[] = []
+      const bus = EventBus.getInstance()
       try {
+        let alive = true
         if(!user) {
           // This finds and prints file path in the phones memory for the sqlite DB
           const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
@@ -64,15 +73,22 @@ const App = () => {
             await PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
             await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
           }
-
-        }
-        if (user) {
-          await sync(watermelonDatabase, isConnected,user.id);
+          if(alive){
+            await sync(watermelonDatabase, isConnected);
+          }
         } else {
-          await sync(watermelonDatabase, isConnected);
+          await sync(watermelonDatabase, isConnected,user.id);
         }
 
-        return;
+        if(alive){
+          //push toast listensers
+        }
+
+        return () => {
+          alive = false;
+          registry.forEach(r => r.unregister())
+
+        }
       } catch (err) {
         handleError(err, 'onLoad');
       }
@@ -82,7 +98,7 @@ const App = () => {
     onLoad().finally(async ()=>{
       await BootSplash.hide({ fade: true });
     }).catch(e => handleError(e, 'useEffect onLoad'));
-  }, [user, watermelonDatabase]);
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -95,8 +111,6 @@ const App = () => {
             backgroundColor={backgroundStyle.backgroundColor}
           />
 
-          {/* <SyncIndicator delay={3000} />  */}
-          {/*<Text style={styles.title}>Trail Tasks</Text>*/}
           {user != null ? (
             <TabNavigator  />
           ) : <AuthScreen form={form} handleFormChange={handleFormChange}   />}

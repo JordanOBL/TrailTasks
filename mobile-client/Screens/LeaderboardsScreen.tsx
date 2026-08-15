@@ -1,19 +1,18 @@
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import FetchGlobalLeaderboards, {Leaderboard} from "../components/Leaderboards/FetchGlobalLeaderboards";
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import { User } from '../watermelon/models';
 
 import EnhancedLeaderboard from '../components/Leaderboards/Leaderboard';
+import FilterSearch from "../components/FilterSearch";
+import RefreshConnection from "../components/RefreshConnection";
 import SyncIndicator from '../components/SyncIndicator';
+import { User } from '../watermelon/models';
+import handleError from "../helpers/ErrorHandler";
 import { sync } from '../watermelon/sync';
 import { useDatabase } from '@nozbe/watermelondb/react';
-import {withObservables} from '@nozbe/watermelondb/react'
-import { useInternetConnection } from "../hooks/useInternetConnection";
-import RefreshConnection from "../components/RefreshConnection";
-import handleError from "../helpers/ErrorHandler";
+import { useInternetConnection } from "../contexts/InternetConnectionProvider";
 import {useTheme} from "../contexts/ThemeProvider";
-
-import FetchGlobalLeaderboards, {Leaderboard} from "../components/Leaderboards/FetchGlobalLeaderboards";
-import FilterSearch from "../components/FilterSearch";
+import {withObservables} from '@nozbe/watermelondb/react'
 
 interface Props {
   user: User;
