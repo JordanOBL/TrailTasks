@@ -1,5 +1,5 @@
 import { EventBus, Registry } from "../EventBus/EventBus";
-import { SessionEngine, SessionSnapshot } from "../sessionEngine/sessionEngine";
+import { SessionDistanceIncreasedPayload, SessionEngine, SessionSnapshot, SessionTrailCompletedPayload } from "../sessionEngine/sessionEngine";
 import { User, User_Session } from '../watermelon/models';
 
 import {Database} from '@nozbe/watermelondb'
@@ -30,20 +30,26 @@ export default class PersistenceService {
 
   register(): Function {
     const unregisterList: Registry[] = [];
-    unregisterList.push(
-      this.bus.on("NEW_SESSION_REQUESTED", (cfg: SessionCfg) => this.createNewSession(cfg)),
-    );
+    // unregisterList.push(
+    //   this.bus.on("NEW_SESSION_REQUESTED", (cfg: SessionCfg) => this.createNewSession(cfg)),
+    // );
     unregisterList.push(
       this.bus.on(
         "SESSION_DISTANCE_INCREASED",
-        (payload: { session: User_Session; snapshot: SessionSnapshot }) =>
-          this.persistNewDistance({ session: payload.session, snapshot: payload.snapshot }),
-      ),
+        (payload: SessionDistanceIncreasedPayload) =>  {
+          if (payload.session === null) {
+            console.error("Error: session is null in SESSION_DISTANCE_INCREASED event");
+            return;
+          }
+        
+          this.persistNewDistance({ session: payload.session, snapshot: payload.snapshot })
+        }
+      )
     );
     unregisterList.push(
       this.bus.on(
         "SESSION_TRAIL_COMPLETED",
-        (payload: { completedTrailId: string; isProMember: boolean; trailStartedAt: string }) =>
+        (payload: SessionTrailCompletedPayload) =>
           this.persistCompletedTrail(payload),
       ),
     );
@@ -81,10 +87,7 @@ export default class PersistenceService {
   public async persistNewDistance({
     session,
     snapshot,
-  }: {
-    session: User_Session;
-    snapshot: SessionSnapshot;
-  }) {
+  }: SessionDistanceIncreasedPayload) {
     try {
       console.log("In peristenceService inscreaseDistanceHiked()");
 
@@ -102,11 +105,7 @@ export default class PersistenceService {
     completedTrailId,
     isProMember,
     trailStartedAt,
-  }: {
-    completedTrailId: string;
-    isProMember: boolean;
-    trailStartedAt: string;
-  }) {
+  }: SessionTrailCompletedPayload) {
     try {
       console.log("In peristenceService sessionTrailCompleted()");
 
