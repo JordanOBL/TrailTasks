@@ -1,22 +1,21 @@
 Event_Name | Emmitter | Listener/consumer | Payload shape | Category
 |--|--|--|--|--|
-SESSION_STARTED | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact 
-SESSION_PHASE_CHANGED | SessionEngine | RewardsService, PersistenceService, UI | SessionPhaseChangedPayload | Domain Fact
-SESSION_PACE_INCREASED | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact
-SESSION_TICK | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact
-SESSION_SET_COMPLETED | SessionEngine | RewardsService, PersistenceService, UI | SessionSetCompletedPayload | Domain Fact
+SESSION_STARTED | SessionEngine | UI - SessionScreen | SessionSnapshotPayload | Domain Fact
+SESSION_PHASE_CHANGED | SessionEngine | Planned - UI | SessionPhaseChangedPayload | Domain Fact
+SESSION_PACE_INCREASED | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
+SESSION_TICK | SessionEngine | UI - ActiveSession.tsx | SessionSnapshotPayload | Domain Fact
+SESSION_SET_COMPLETED | SessionEngine | Planned - UI - ActiveSession.tsx | SessionSetCompletedPayload | Domain Fact
 SESSION_COMPLETED | SessionEngine | RewardsService, PersistenceService, UI | SessionCompletedPayload | Domain Fact
-SESSION__STRIKE_APPLIED | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact
-SESSION_PAUSED | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact
-SESSION_RESUMED | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact
-SESSION_DISTANCE_INCREASED | SessionEngine | RewardsService, PersistenceService, UI | SessionDistanceIncreasedPayload | Domain Fact
+SESSION_STRIKE_APPLIED | SessionEngine | Planned - UI | Planned - SessionSnapshotPayload | Planned - Domain Fact
+SESSION_PAUSED | SessionEngine | UI - ActiveSession | SessionSnapshotPayload | Domain Fact
+SESSION_RESUMED | Planned - SessionEngine | Planned - UI | planned - null | Domain Fact
+SESSION_DISTANCE_INCREASED | SessionEngine | PersistenceService | SessionDistanceIncreasedPayload | Domain Fact
 SESSION_TRAIL_COMPLETED | SessionEngine | RewardsService, PersistenceService, UI | SessionTrailCompletedPayload | Domain Fact
-SESSION_BREAK_SKIPPED | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact
-SESSION_PACE_INCREASED | SessionEngine | RewardsService, PersistenceService, UI | SessionSnapshot | Domain Fact
-UI_NEW_SESSION_REQUESTED | UI | SessionEngine | SessionCfg | Request
+SESSION_BREAK_SKIPPED | SessionEngine | Planned - UI | SessionSnapshotPayload | Domain Fact
+UI_NEW_SESSION_REQUESTED | Planned - SessionEngine | Planned - UI | null | Request
 UI_PAUSE_REQUESTED | UI | SessionEngine | null | Request
 UI_RESUME_REQUESTED | UI | SessionEngine | null | Request
 UI_QUIT_REQUESTED | UI | SessionEngine | null | Request
 UI_BREAK_SKIP_REQUESTED | UI | SessionEngine | null | Request
-PERSISTENCE_STARTED_NEW_TRAIL | PersistenceService | SessionEngine | PersistenceStartedNewTrailPayload | Domain Fact
-NEW_TRAIL_ASSIGNED | PersistenceService | SessionEngine | NewTrailAssignedPayload | Domain Fact
+PERSISTENCE_STARTED_NEW_TRAIL | Planned - PersistenceService | Planned - SessionEngine | Planned - PersistenceStartedNewTrailPayload | Domain Fact
+NEW_TRAIL_ASSIGNED | Planned - PersistenceService | Planned - SessionEngine | Planned - NewTrailAssignedPayload | Domain Fact
