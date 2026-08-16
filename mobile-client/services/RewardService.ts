@@ -121,6 +121,7 @@ export default class RewardService {
       handleError(e, "RewardService.calculateRewards()");
       throw new Error("Error calculating rewards in RewardService", { cause: e});
     }
+    return rewards;
   }
 
   private calculateTimeTokens(snapshot: SessionSnapshot): number {
