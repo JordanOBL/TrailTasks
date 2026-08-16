@@ -14,48 +14,80 @@ export type SessionEvent =
   | 'SESSION_TICK'
   | 'SESSION_SET_COMPLETED'
   | 'SESSION_COMPLETED'
-  | 'SESSION__STRIKE_APPLIED'
+  | 'SESSION_STRIKE_APPLIED'
   | 'SESSION_PAUSED'
-  | 'SESSION_RESUMED'
   | 'SESSION_DISTANCE_INCREASED'
   | 'SESSION_TRAIL_COMPLETED'
   | 'SESSION_BREAK_SKIPPED'
+  | 'SESSION_PACE_INCREASED'
 
-  export type UI_Event = 
+export interface SessionSnapshotPayload {
+  snapshot: SessionSnapshot;
+}
+export interface SessionPhaseChangedPayload extends SessionSnapshotPayload {
+  from: SessionPhase;
+  to: SessionPhase;
+  reason: string;
+}
+
+export interface SessionSetCompletedPayload extends SessionSnapshotPayload {
+  setNumber: number;
+}
+
+export interface SessionDistanceIncreasedPayload extends SessionSnapshotPayload {
+  session: User_Session | null;
+}
+export interface SessionCompletedPayload extends SessionSnapshotPayload {
+  reason: "all_sets_completed" | "ended_early";
+}
+
+export interface SessionTrailCompletedPayload {
+  completedTrailId: string;
+  isProMember: boolean;
+  trailStartedAt: string;
+}
+
+export type UI_Event = 
   | 'UI_NEW_SESSION_REQUESTED'
   | 'UI_PAUSE_REQUESTED'
   | 'UI_RESUME_REQUESTED'
   | 'UI_QUIT_REQUESTED'
   | 'UI_BREAK_SKIP_REQUESTED'
  
-  export type PersistenceEvent = 
+export type PersistenceEvent = 
   |'PERSISTENCE_STARTED_NEW_TRAIL'
-  | 'NEW_TRAIL_ASSIGNED'
-  
-  export interface SessionSnapshot {
-      sessionId: string;
-      userId: string;
-      sessionName: string;
-      sessionCategory: [string, string];
-      phase: string;
-      totalElapsedSec: number;
-      elapsedInPhaseSec: number;
-      distanceNeeded: number;
-      currentSet: number;
-      completedSets: number;
-      totalSets: number;
-      currentPaceMph: number;
-      totalDistanceMiles: number;
-      focusTimeSec: number;
-      shortBreakSec: number;
-      longBreakSec: number;
-      autoContinue: boolean;
-      currentStrikes: number;
-      completedTrails: {id: string, distance: number}[];
-      isPaused: boolean;
-      tokenBonusFlat: number;
-      tokenBonusPercent: number;
-      startedAt: number | null;
+  |'NEW_TRAIL_ASSIGNED'
+
+export interface PersistenceStartedNewTrailPayload {
+    newTrailDistance: number;
+  }
+export interface NewTrailAssignedPayload {
+    newTrailDistance: number;
+  }
+export interface SessionSnapshot {
+  sessionId: string;
+  userId: string;
+  sessionName: string;
+  sessionCategory: [string, string];
+  phase: string;
+  totalElapsedSec: number;
+  elapsedInPhaseSec: number;
+  distanceNeeded: number;
+  currentSet: number;
+  completedSets: number;
+  totalSets: number;
+  currentPaceMph: number;
+  totalDistanceMiles: number;
+  focusTimeSec: number;
+  shortBreakSec: number;
+  longBreakSec: number;
+  autoContinue: boolean;
+  currentStrikes: number;
+  completedTrails: { id: string; distance: number }[];
+  isPaused: boolean;
+  tokenBonusFlat: number;
+  tokenBonusPercent: number;
+  startedAt: number | null;
 }
 
 export interface EventBus {
@@ -151,9 +183,9 @@ export class SessionEngine {
     this.bus.on('UI_RESUME_REQUESTED', () => this.resume()) 
     this.bus.on('UI_QUIT_REQUESTED', () => this.quit())
     this.bus.on('UI_BREAK_SKIP_REQUESTED', () => this.skipBreak())
-    this.bus.on('NEW_TRAIL_ASSIGNED', (newTrailDistance) => {
-      console.log("SessionEngine received NEW_TRAIL_ASSIGNED with distance:", newTrailDistance, 'Of type:', typeof newTrailDistance);
-      this.distanceNeeded += newTrailDistance
+    this.bus.on('NEW_TRAIL_ASSIGNED', (payload: NewTrailAssignedPayload) => {
+      console.log("SessionEngine received NEW_TRAIL_ASSIGNED with distance:", payload.newTrailDistance, 'Of type:', typeof payload.newTrailDistance);
+      this.distanceNeeded += payload.newTrailDistance
     }) 
   }
 
@@ -169,16 +201,16 @@ export class SessionEngine {
     this.currentPaceMph = this.minPaceMph;
 
     // announce
-    this.bus.emit("SESSION_STARTED", this.buildSnapshot());
+    this.bus.emit("SESSION_STARTED", { snapshot: this.buildSnapshot() });
     this.bus.emit("SESSION_PHASE_CHANGED", {
-      ...this.buildSnapshot(),
+      snapshot: this.buildSnapshot(),
       from: "IDLE",
       to: "FOCUS",
       reason: "start",
     });
 
     // emit initial tick so UI can render immediately
-    this.bus.emit("SESSION_TICK", this.buildSnapshot());
+    this.bus.emit("SESSION_TICK", { snapshot: this.buildSnapshot() });
 
     // start tick loop
     this.startTickLoop();
@@ -198,13 +230,13 @@ export class SessionEngine {
     // could emit a PAUSED event later if you want
     this.isPaused = true;
     
-    this.bus.emit("SESSION_PAUSED", this.buildSnapshot())
+    this.bus.emit("SESSION_PAUSED", { snapshot: this.buildSnapshot() });
   }
 
   resume() {
     if (this.tickTimer) return;
     if (this.phase === "COMPLETED" || this.phase === "IDLE") return;
-    this.isPaused = false
+    this.isPaused = false;
     this.startTickLoop();
   }
 
@@ -217,7 +249,7 @@ export class SessionEngine {
     this.phase = isLong ? "LONG_BREAK" : "SHORT_BREAK";
     this.elapsedInPhaseSec = 0;
     this.bus.emit("SESSION_PHASE_CHANGED", {
-      ...this.buildSnapshot(),
+      snapshot: this.buildSnapshot(),
       from: "FOCUS",
       to: this.phase,
       reason: "set_completed",
@@ -225,8 +257,14 @@ export class SessionEngine {
   }
 
   trailCompleted(){
-    this.completedTrails.push({id: this.user.trailId, distance: this.user.trailProgress})
-    this.bus.emit("SESSION_TRAIL_COMPLETED", {completedTrailId: this.user.trailId, isProMember:this.isProMember, trailStartedAt: this.user.trailStartedAt})
+    const { trailProgress, trailId, trailStartedAt } = this.user;
+    if (!trailId || !trailProgress || !trailStartedAt) {
+      console.error("Error: Missing information for trail completion in SessionEngine.");
+      return;
+    }
+    const isProMember = this.user.isProMember ?? false; // Default to false if undefined
+    this.completedTrails.push({id: trailId, distance: trailProgress})
+    this.bus.emit("SESSION_TRAIL_COMPLETED", {completedTrailId: trailId, isProMember, trailStartedAt})
   }
 
   skipBreak() {
@@ -239,7 +277,7 @@ export class SessionEngine {
       this.elapsedInPhaseSec = this.longBreakSec
     }
 
-    this.bus.emit("SESSION_BREAK_SKIPPED", this.buildSnapshot())
+    this.bus.emit("SESSION_BREAK_SKIPPED", { snapshot: this.buildSnapshot() })
   }
 
   async increaseDistance(){
@@ -250,7 +288,7 @@ export class SessionEngine {
       this.trailCompleted()
     }
 
-    this.bus.emit("SESSION_DISTANCE_INCREASED", {session: this.session, snapshot:{...this.buildSnapshot()}})
+    this.bus.emit("SESSION_DISTANCE_INCREASED", { session: this.session, snapshot: this.buildSnapshot() })
   }
 
   /* -------------------- private ticking logic -------------------- */
@@ -266,7 +304,7 @@ export class SessionEngine {
     //this.totalDistanceMiles += this.currentPaceMph * (1 / 3600);
 
     // emit tick snapshot
-    this.bus.emit("SESSION_TICK", this.buildSnapshot());
+    this.bus.emit("SESSION_TICK",{ snapshot: this.buildSnapshot() });
     console.log(this.buildSnapshot())
 
     if (this.phase === "FOCUS") {
@@ -304,7 +342,8 @@ export class SessionEngine {
           this.phase = "FOCUS";
           this.elapsedInPhaseSec = 0;
           this.bus.emit("SESSION_PHASE_CHANGED", {
-            ...this.buildSnapshot(),
+            snapshot: this.buildSnapshot(),
+            from: "SHORT_BREAK",
             to: "FOCUS",
             reason: "break_ended",
           });
@@ -321,7 +360,7 @@ export class SessionEngine {
   private bumpPace() {
     const next = this.currentPaceMph + this.paceIncreaseValueMph;
     this.currentPaceMph = Math.min(next, this.maxPaceMph);
-    this.bus.emit("SESSION_PACE_INCREASED" as SessionEvent, this.buildSnapshot());
+    this.bus.emit("SESSION_PACE_INCREASED", { snapshot: this.buildSnapshot() });
   }
 
   private skipPaceBump() {
@@ -333,7 +372,7 @@ export class SessionEngine {
   private handleSetComplete() {
     this.completedSets += 1;
     this.bus.emit("SESSION_SET_COMPLETED", {
-      ...this.buildSnapshot(),
+      snapshot: this.buildSnapshot(),
       setNumber: this.currentSet,
     });
 
@@ -350,7 +389,8 @@ export class SessionEngine {
     const isLong = this.shouldTakeLongBreak();
     this.phase = isLong ? "LONG_BREAK" : "SHORT_BREAK";
     this.bus.emit("SESSION_PHASE_CHANGED", {
-      ...this.buildSnapshot(),
+      snapshot: this.buildSnapshot(),
+      from: "FOCUS",
       to: this.phase,
       reason: "set_completed",
     });

@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SessionCfg, SessionDetails } from '../../types/session';
-import { SessionEngine, SessionSnapshot } from '../../sessionEngine/sessionEngine';
+import { SessionEngine, SessionSnapshot, SessionSnapshotPayload } from '../../sessionEngine/sessionEngine';
 import {
 	pauseSession,
 	resumeSession,
@@ -73,11 +73,10 @@ const ActiveSession = ({user,
 		}
 		
 	},[])
-	useBusEvent("SESSION_TICK",(cfg:SessionSnapshot) => setSnapshot(cfg) )
-	useBusEvent("SESSION_PAUSED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
-	useBusEvent("SESSION_PACE_INCREASED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
-	useBusEvent("SESSION_PACE_DECREASED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
-	useBusEvent("SESSION_BREAK_SKIPPED", (cfg:SessionSnapshot) => {setSnapshot(cfg)})
+	useBusEvent("SESSION_TICK",(payload: SessionSnapshotPayload) => setSnapshot(payload.snapshot) );
+	useBusEvent("SESSION_PAUSED", (payload: SessionSnapshotPayload) => {setSnapshot(payload.snapshot)});
+	useBusEvent("SESSION_PACE_INCREASED", (payload:SessionSnapshotPayload) => {setSnapshot(payload.snapshot)});
+	useBusEvent("SESSION_BREAK_SKIPPED", (payload:SessionSnapshotPayload) => {setSnapshot(payload.snapshot)})
 
 	
 	
