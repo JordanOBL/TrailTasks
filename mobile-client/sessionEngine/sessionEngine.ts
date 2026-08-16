@@ -1,69 +1,12 @@
 // SessionEngine.ts
 
 import { Addon, User, User_Session } from "../watermelon/models";
+import { EventBus, NewTrailAssignedPayload } from "../EventBus/EventBus";
 
-import PersistanceService from '../persistenceService/persistenceService'
 import { SessionCfg } from "../types/session";
-import handleError from "../helpers/ErrorHandler";
 
 export type SessionPhase = 'IDLE' | 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' | 'COMPLETED';
 export type SessionType = 'SOLO' | 'GROUP'
-export type SessionEvent =
-  | 'SESSION_STARTED'
-  | 'SESSION_PHASE_CHANGED'
-  | 'SESSION_TICK'
-  | 'SESSION_SET_COMPLETED'
-  | 'SESSION_COMPLETED'
-  | 'SESSION_STRIKE_APPLIED'
-  | 'SESSION_PAUSED'
-  | 'SESSION_DISTANCE_INCREASED'
-  | 'SESSION_TRAIL_COMPLETED'
-  | 'SESSION_BREAK_SKIPPED'
-  | 'SESSION_PACE_INCREASED'
-
-export interface SessionSnapshotPayload {
-  snapshot: SessionSnapshot;
-}
-export interface SessionPhaseChangedPayload extends SessionSnapshotPayload {
-  from: SessionPhase;
-  to: SessionPhase;
-  reason: string;
-}
-
-export interface SessionSetCompletedPayload extends SessionSnapshotPayload {
-  setNumber: number;
-}
-
-export interface SessionDistanceIncreasedPayload extends SessionSnapshotPayload {
-  session: User_Session | null;
-}
-export interface SessionCompletedPayload extends SessionSnapshotPayload {
-  reason: "all_sets_completed" | "ended_early";
-}
-
-export interface SessionTrailCompletedPayload {
-  completedTrailId: string;
-  isProMember: boolean;
-  trailStartedAt: string;
-}
-
-export type UI_Event = 
-  | 'UI_NEW_SESSION_REQUESTED'
-  | 'UI_PAUSE_REQUESTED'
-  | 'UI_RESUME_REQUESTED'
-  | 'UI_QUIT_REQUESTED'
-  | 'UI_BREAK_SKIP_REQUESTED'
- 
-export type PersistenceEvent = 
-  |'PERSISTENCE_STARTED_NEW_TRAIL'
-  |'NEW_TRAIL_ASSIGNED'
-
-export interface PersistenceStartedNewTrailPayload {
-    newTrailDistance: number;
-  }
-export interface NewTrailAssignedPayload {
-    newTrailDistance: number;
-  }
 export interface SessionSnapshot {
   sessionId: string;
   userId: string;
@@ -89,13 +32,6 @@ export interface SessionSnapshot {
   tokenBonusPercent: number;
   startedAt: number | null;
 }
-
-export interface EventBus {
-  on(event: SessionEvent | UI_Event | PersistenceEvent, listener: (payload: any) => void): void;
-  off?(event: SessionEvent | UI_Event | PersistenceEvent, listener: (payload: any) => void): void;
-  emit(event: SessionEvent | UI_Event | PersistenceEvent, payload?: any): void;
-}
-
 export class SessionEngine {
   static instance: SessionEngine | null;
   private bus: EventBus;
