@@ -1,9 +1,9 @@
-import { EventBus, Registry } from "../EventBus/EventBus";
-import { SessionDistanceIncreasedPayload, SessionEngine, SessionSnapshot, SessionTrailCompletedPayload } from "../sessionEngine/sessionEngine";
+import { EventBus, Registry, SessionDistanceIncreasedPayload, SessionTrailCompletedPayload } from "../EventBus/EventBus";
 import { User, User_Session } from '../watermelon/models';
 
 import {Database} from '@nozbe/watermelondb'
 import { SessionCfg } from '../types/session';
+import { SessionSnapshot } from "../sessionEngine/sessionEngine";
 import formatDateTime from '../helpers/formatDateTime';
 import handleError from '../helpers/ErrorHandler';
 
@@ -61,10 +61,11 @@ export default class PersistenceService {
 
   //--------------USER SESSION--------------//
 
-  public async createNewSession(cfg: SessionCfg): Promise<User_Session | undefined> {
+  public async createNewSession(cfg: SessionCfg): Promise<User_Session> {
+    let newSession: User_Session = null as unknown as User_Session;
     try {
       console.log("Config in createnewsession", cfg);
-      const s = await this.db.write(async () => {
+      newSession = await this.db.write(async () => {
         const newSession = await this.db.get<User_Session>("users_sessions").create(session => {
           session.userId = cfg.userId;
           session.sessionCategoryId = cfg.sessionCategory[0];
@@ -75,19 +76,20 @@ export default class PersistenceService {
         });
         return newSession;
       });
-      if (!s) {
+      if (!newSession) {
         throw new Error("Error creating new session in persistenceService");
       }
-      return s;
     } catch (e) {
       handleError(e, "Error creating new user session in PS");
     }
+
+    return newSession;
   }
   //Event: SESSION_DISTANCE_INCREASED
   public async persistNewDistance({
     session,
     snapshot,
-  }: SessionDistanceIncreasedPayload) {
+  }: SessionDistanceIncreasedPayload): Promise<void> {
     try {
       console.log("In peristenceService inscreaseDistanceHiked()");
 
@@ -105,7 +107,7 @@ export default class PersistenceService {
     completedTrailId,
     isProMember,
     trailStartedAt,
-  }: SessionTrailCompletedPayload) {
+  }: SessionTrailCompletedPayload): Promise<void> {
     try {
       console.log("In peristenceService sessionTrailCompleted()");
 
@@ -123,7 +125,7 @@ export default class PersistenceService {
     }
   }
   //EVENT: SESSION_COMPLETED
-  public async persistCompletedSessionWithRewards(args: TRewardsCalculatedPayload) {
+  public async persistCompletedSessionWithRewards(args: TRewardsCalculatedPayload): Promise<void> {
     try {
       console.log("In peristenceService persistCompletedSessionWithRewards()");
       console.log(args)

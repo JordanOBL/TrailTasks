@@ -1,10 +1,16 @@
 import { Database, Q } from "@nozbe/watermelondb";
-import { EventBus, Registry } from "../EventBus/EventBus";
+import { EventBus, Registry, SessionCompletedPayload } from "../EventBus/EventBus";
 
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
 import { User } from "../watermelon/models";
 import handleError from "../helpers/ErrorHandler";
 
+export type  Rewards = {
+  trailRewards: number;
+  wildXpRewards: number;
+  timeRewards: number;
+  totalTokenRewards: number;
+}
 type TrailTokenRules = {
   // e.g. distance * perMileMultiplier
   perMileMultiplier: number;   // was "distance * 3"
@@ -36,10 +42,10 @@ export default class RewardService {
   private isProMember: boolean;
   private defaultRewardRules: RewardRules = {
     timeTokens: {
-        minThresholdMinutes: 15, //how many minutes needed for token grant
-        tokensPerThreshold: 5, // how many tokens granted
-        bonusThresholdMinutes: 45,
-        bonusThresholdMultiplier: .25
+      minThresholdMinutes: 15, //how many minutes needed for token grant
+      tokensPerThreshold: 5, // how many tokens granted
+      bonusThresholdMinutes: 45,
+      bonusThresholdMultiplier: 0.25,
     },
     trailTokens: {
       perMileMultiplier: 3,
@@ -56,7 +62,7 @@ export default class RewardService {
     db: Database,
     user: User,
     isProMember: boolean,
-    rewardRulesOverride: Partial<RewardRules> = {}
+    rewardRulesOverride: Partial<RewardRules> = {},
   ) {
     this.bus = bus;
     this.db = db;
@@ -68,7 +74,9 @@ export default class RewardService {
   register(): Function {
     const unregisterList: Registry[] = [];
     unregisterList.push(
-      this.bus.on("SESSION_COMPLETED", (args: {snapshot: SessionSnapshot, reason: string}) => this.calculateRewards(args.snapshot)),
+      this.bus.on("SESSION_COMPLETED", (payload: SessionCompletedPayload) =>
+        this.calculateRewards(payload.snapshot),
+      ),
     );
 
     return () => {
@@ -76,46 +84,67 @@ export default class RewardService {
     };
   }
 
-  async calculateRewards(
-    snapshot: SessionSnapshot,
-  ): Promise<{ trailRewards: number; timeRewards: number; totalTokenRewards: number; wildXpRewards: Promise<number |undefined> } | undefined> { 
-    try{
-    //(PRO)calculate non active wilds xp from completed trails
-    const wildXpRewards: Promise<number | undefined> = await this.calculateActiveWildXpReward(snapshot);
-   
-    const timeRewards = this.calculateTimeTokens(snapshot)
-    //calculate trail tokens from completed trails
-    //trail distance * 3, minimum of 5 tokens
+  async calculateRewards(snapshot: SessionSnapshot): Promise<Rewards> {
+    let rewards: Rewards = {
+      trailRewards: 0,
+      wildXpRewards: 0,
+      timeRewards: 0,
+      totalTokenRewards: 0,
+    };
 
-    //add bonus xp from sessions totalBonusXp (there is a backpack addon and wild perk(if active) that adds x% to token bonus depending on addon or wild level)
-    //take away tokens from penalty strikes (sessions  penalty val can be decreased via active backpack addon or active wild perk )
-    const trailRewards: number = this.calculateTrailTokens(snapshot);
+    try {
+      //(PRO)calculate non active wilds xp from completed trails
+      const wildXpRewards: number = await this.calculateActiveWildXpReward(snapshot);
 
-    //persistenceService listens and takes the payload and applies rewards to watermelon db transaction
-    //UI listens and shows rewards component wiith payload
-    this.bus.emit("REWARDS_CALCULATED", {finalSnapshot: snapshot, rewards: {trailRewards: trailRewards, timeRewards: timeRewards, totalTokenRewards: trailRewards + timeRewards, wildXpRewards} });
-    return { trailRewards: trailRewards, timeRewards: timeRewards, totalTokenRewards: trailRewards + timeRewards, wildXpRewards };
-    } catch(e){
-      handleError(e, "RewardService.calculateRewards()")
+      const timeRewards = this.calculateTimeTokens(snapshot);
+      //calculate trail tokens from completed trails
+      //trail distance * 3, minimum of 5 tokens
+
+      //add bonus xp from sessions totalBonusXp (there is a backpack addon and wild perk(if active) that adds x% to token bonus depending on addon or wild level)
+      //take away tokens from penalty strikes (sessions  penalty val can be decreased via active backpack addon or active wild perk )
+      const trailRewards: number = this.calculateTrailTokens(snapshot);
+
+      //persistenceService listens and takes the payload and applies rewards to watermelon db transaction
+      //UI listens and shows rewards component wiith payload
+      this.bus.emit("REWARDS_CALCULATED", {
+        finalSnapshot: snapshot,
+        rewards: {
+          trailRewards: trailRewards,
+          timeRewards: timeRewards,
+          totalTokenRewards: trailRewards + timeRewards,
+          wildXpRewards,
+        },
+      });
+      rewards = {
+        trailRewards: trailRewards,
+        timeRewards: timeRewards,
+        totalTokenRewards: trailRewards + timeRewards,
+        wildXpRewards,
+      };
+    } catch (e) {
+      handleError(e, "RewardService.calculateRewards()");
     }
+    return rewards;
   }
 
-  private calculateTimeTokens(snapshot:SessionSnapshot): number {
-    const rules = this.rules.timeTokens
-    let totalTimeTokens = 0
+  private calculateTimeTokens(snapshot: SessionSnapshot): number {
+    const rules = this.rules.timeTokens;
+    let totalTimeTokens = 0;
 
     // Convert elapsed time to minutes
     const totalMinutes = Math.floor(snapshot.totalElapsedSec / 60);
     // If total focus time is < 15 minutes, NO reward
     if (totalMinutes < rules.minThresholdMinutes) {
-        return 0;
+      return 0;
     }
 
     // Base Tokens: **10 per 15 minutes**
-    const baseTokens = Math.floor(totalMinutes / rules.minThresholdMinutes) * rules.tokensPerThreshold;
+    const baseTokens =
+      Math.floor(totalMinutes / rules.minThresholdMinutes) * rules.tokensPerThreshold;
 
     // Bonus Multiplier: Every **45 min → +25%**
-    const bonusMultiplier = Math.floor(totalMinutes / rules.bonusThresholdMinutes) * rules.bonusThresholdMultiplier;
+    const bonusMultiplier =
+      Math.floor(totalMinutes / rules.bonusThresholdMinutes) * rules.bonusThresholdMultiplier;
     const bonusTokens = Math.floor(baseTokens * bonusMultiplier);
 
     // 🔹 **Adjusted Expected Sets (Prevents Cheating)**
@@ -130,12 +159,12 @@ export default class RewardService {
     // }
     // 🔥 Final Token Calculation
     totalTimeTokens = baseTokens + bonusTokens;
-    console.log("total time tokens", totalTimeTokens)
+    console.log("total time tokens", totalTimeTokens);
 
-    return totalTimeTokens
+    return totalTimeTokens;
   }
 
-  private async calculateActiveWildXpReward(session: SessionSnapshot): Promise<any> {
+  private async calculateActiveWildXpReward(session: SessionSnapshot): Promise<number> {
     let activeWildXp: number = 0;
 
     try {
@@ -169,11 +198,10 @@ export default class RewardService {
       //     }
       //     session.completedTrails.map()
       // }
-
-      return activeWildXp 
     } catch (e) {
       handleError(e, "RewardService calculateWildXp()");
     }
+    return activeWildXp;
   }
 
   private calculateTrailTokens(
@@ -183,9 +211,15 @@ export default class RewardService {
 
     const baseTokens = completedTrails?.length
       ? completedTrails.reduce((acc, trail) => {
-          return acc + Math.max(this.rules.trailTokens.minPerTrail, Math.ceil(trail.distance * this.rules.trailTokens.perMileMultiplier));
+          return (
+            acc +
+            Math.max(
+              this.rules.trailTokens.minPerTrail,
+              Math.ceil(trail.distance * this.rules.trailTokens.perMileMultiplier),
+            )
+          );
         }, 0)
-      : 0; 
+      : 0;
 
     const afterFlat = baseTokens + tokenBonusFlat;
     const calculatedPercent = Math.ceil(afterFlat * (tokenBonusPercent / 100));

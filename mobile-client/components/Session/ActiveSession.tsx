@@ -18,8 +18,7 @@ import {
 	View,
 } from 'react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { SessionCfg, SessionDetails } from '../../types/session';
-import { SessionEngine, SessionSnapshot, SessionSnapshotPayload } from '../../sessionEngine/sessionEngine';
+import { SessionEngine, SessionSnapshot } from '../../sessionEngine/sessionEngine';
 import {
 	pauseSession,
 	resumeSession,
@@ -37,6 +36,7 @@ import NextHundredthMileSeconds from '../../helpers/Timer/nextHundredthMileSecon
 import QuitSessionModal from './QuitSessionModal';
 import Rewards from '../../helpers/Session/Rewards';
 import SessionEngineManager from '../../sessionEngine/SessionEngineManager';
+import { SessionSnapshotPayload } from '../../EventBus/EventBus';
 import SessionTimer from '../Timer/SessionTimer';
 import Timer from '../../types/timer';
 import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
