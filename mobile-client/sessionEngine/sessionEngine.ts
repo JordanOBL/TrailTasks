@@ -2,9 +2,7 @@
 
 import { Addon, User, User_Session } from "../watermelon/models";
 
-import PersistanceService from '../persistenceService/persistenceService'
 import { SessionCfg } from "../types/session";
-import handleError from "../helpers/ErrorHandler";
 
 export type SessionPhase = 'IDLE' | 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' | 'COMPLETED';
 export type SessionType = 'SOLO' | 'GROUP'
@@ -14,7 +12,6 @@ export type SessionEvent =
   | 'SESSION_TICK'
   | 'SESSION_SET_COMPLETED'
   | 'SESSION_COMPLETED'
-  | 'SESSION_STRIKE_APPLIED'
   | 'SESSION_PAUSED'
   | 'SESSION_DISTANCE_INCREASED'
   | 'SESSION_TRAIL_COMPLETED'

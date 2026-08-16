@@ -1,5 +1,27 @@
+import { NewTrailAssignedPayload, PersistenceStartedNewTrailPayload, SessionCompletedPayload, SessionDistanceIncreasedPayload, SessionPhaseChangedPayload, SessionSetCompletedPayload, SessionSnapshotPayload, SessionTrailCompletedPayload } from "../sessionEngine/sessionEngine";
+
 export interface Registry {
     unregister: () => void;
+}
+
+export interface EventPayloadMap {
+  SESSION_STARTED: SessionSnapshotPayload;
+  SESSION_PHASE_CHANGED: SessionPhaseChangedPayload;
+  SESSION_TICK: SessionSnapshotPayload;
+  SESSION_SET_COMPLETED: SessionSetCompletedPayload;
+  SESSION_COMPLETED: SessionCompletedPayload;
+  SESSION_PAUSED: void;
+  SESSION_DISTANCE_INCREASED: SessionDistanceIncreasedPayload;
+  SESSION_TRAIL_COMPLETED: SessionTrailCompletedPayload;
+  SESSION_BREAK_SKIPPED: void;
+  SESSION_PACE_INCREASED: void;
+  UI_NEW_SESSION_REQUESTED: void;
+  UI_PAUSE_REQUESTED: void;
+  UI_RESUME_REQUESTED: void;
+  UI_QUIT_REQUESTED: void;
+  UI_BREAK_SKIP_REQUESTED: void;
+  PERSISTENCE_STARTED_NEW_TRAIL: PersistenceStartedNewTrailPayload;
+  NEW_TRAIL_ASSIGNED: NewTrailAssignedPayload;
 }
 
 export interface Callable {
@@ -7,15 +29,22 @@ export interface Callable {
 }
 
 //These are the subscribed Events from multible connected hosts
+// Created when useBusEvent for a specific event is called in a domain
+//{ "EVENT_NAME": { "0(persistanceServices event subscription)": callback, "1(sessionServiceEventsubscription": callback, ... } }
 export interface Subscriber {
     [key: string]: Callable;
 }
 
-export interface IEventBus { 
-    emit<T>(event: string, arg?:T):void;
-    on(event: string, callback: Function): Registry;
+// Some event callbacks take a payload, others dont
+export type EventListenerCallback<K extends keyof EventPayloadMap> = 
+EventPayloadMap[K] extends void ? () => void : (payload: EventPayloadMap[K]) => void;
 
+export interface IEventBus { 
+    emit<T extends keyof EventPayloadMap>(event: T, ...args: EventPayloadMap[T] extends void ? [] : [payload:EventPayloadMap[T]]):void;
+    on<K extends keyof EventPayloadMap>(event: K, callback: EventListenerCallback<K>): Registry;
 }
+
+
 
 export class EventBus implements IEventBus {
     private static instance?: EventBus = undefined;
@@ -34,7 +63,7 @@ export class EventBus implements IEventBus {
         return this.instance;
     }
 
-    public emit<T>(event:string, arg?: T): T| void{
+    public emit<T extends keyof EventPayloadMap>(event: T, ...args: EventPayloadMap[T] extends void ? [] : [payload:EventPayloadMap[T]]): void {
       const subscriberGroup = this.subscribers[event];
 
       if (subscriberGroup === undefined) return;
@@ -44,23 +73,23 @@ console.log('[Bus] listeners for SESSION_DISTANCE_INCREASED =', Object.keys(this
 
       Object.keys(subscriberGroup).forEach(key => {
         try {
-          const res = subscriberGroup[key](arg);
+          subscriberGroup[key](args[0]);
         } catch (e) {
           console.log(`Error with a subscriber in EventBus for ${key}`);
         }
       });
     }
 
-    public on(event: string, callback: Function): Registry {
+    public on<K extends keyof EventPayloadMap>(event: K, callback: EventListenerCallback<K>): Registry {
         const id = String(this.nextId++);
         if(!this.subscribers[event]) this.subscribers[event] = {};
         this.subscribers[event][id] = callback;
 
         return {
             unregister: () => {
-               delete  this.subscribers[event][id]
+               delete  this.subscribers[event][id];
                if(Object.keys(this.subscribers[event]).length === 0){
-                delete this.subscribers[event]
+                delete this.subscribers[event];
                }
             }
         }
@@ -71,7 +100,7 @@ console.log('[Bus] listeners for SESSION_DISTANCE_INCREASED =', Object.keys(this
     }
 
     public clear(){
-        EventBus.instance = undefined
+        EventBus.instance = undefined;
     }
     
 }
