@@ -104,15 +104,12 @@ export class EventBus implements EventBus {
       const subscriberGroup = this.subscribers[event];
 
       if (subscriberGroup === undefined) return;
-      // inside bus.emit/dispatch for 'SESSION_DISTANCE_INCREASED'
-console.log('[Bus] listeners for SESSION_DISTANCE_INCREASED =', Object.keys(this.subscribers['SESSION_DISTANCE_INCREASED'] || {}).length);
-
 
       Object.keys(subscriberGroup).forEach(key => {
         try {
           subscriberGroup[key](args[0]);
         } catch (e) {
-          console.log(`Error with a subscriber in EventBus for ${key}`);
+          console.log(`Error with a subscriber in EventBus for ${event}`, e);
         }
       });
     }
@@ -138,6 +135,8 @@ console.log('[Bus] listeners for SESSION_DISTANCE_INCREASED =', Object.keys(this
 
     public clear(){
         EventBus.instance = undefined;
+        this.subscribers = {};
+        this.nextId = 0;
     }
     
 }
