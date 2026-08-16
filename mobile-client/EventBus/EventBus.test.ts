@@ -2,7 +2,6 @@ import { EventBus, SessionSnapshotPayload } from "./EventBus"
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
 
 import { SessionSnapshot } from '../sessionEngine/sessionEngine';
-import { snapshot } from "node:test";
 
 describe("EventBus", () => {
     const fakeSnapshot: SessionSnapshot = {
@@ -35,7 +34,7 @@ describe("EventBus", () => {
         EventBus.getInstance().clear();
     });
     
-    test('singlton Pattern', async () => {
+    test('singleton Pattern', async () => {
         const eb = EventBus.getInstance();
         const eb1 = EventBus.getInstance(); 
         expect(eb).toBe(eb1);
@@ -98,11 +97,11 @@ describe("EventBus", () => {
       }).not.toThrowError();
     });
 
-    test("One bad listener doenst stop others", () => {
+    test("One bad listener doesnt stop others", () => {
         //create event bus
         const eb = EventBus.getInstance();
         //create callback to spy on not called
-        const cb1 = jest.fn(() => { throw new Error( 'Cb1 Failed') });
+        const cb1 = jest.fn(() => { throw new Error('Cb1 Failed') });
         //create another callback to actually call
         const cb2 = jest.fn();
         //Create bus listener for event with callback 1
@@ -113,12 +112,11 @@ describe("EventBus", () => {
         expect(Object.keys(eb.getSubscribers()["SESSION_STARTED"])).toHaveLength(2);
         // emit event
         eb.emit('SESSION_STARTED', { snapshot: fakeSnapshot });
-        expect(cb1).toThrowError()
         // assert cb2 still called
         expect(cb2).toHaveBeenCalledWith({snapshot: fakeSnapshot});
     });
 
-    test("Clear method removes subscribes/listeners and resets singleton", () => {
+    test("Clear method removes subscribers/listeners and resets singleton", () => {
       //create event bus
         const eb = EventBus.getInstance();
         expect(eb).toBeInstanceOf(EventBus);
@@ -134,8 +132,10 @@ describe("EventBus", () => {
         expect(Object.keys(eb.getSubscribers()["SESSION_STARTED"])).toHaveLength(2);
         // clear instance
         eb.clear();
+        const eb2 = EventBus.getInstance();
 
         expect(eb).toBeInstanceOf(EventBus);
+        expect(eb2).not.toBe(eb)
         expect(eb.getSubscribers()).toEqual({});
     })
 });
