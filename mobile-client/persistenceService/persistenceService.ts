@@ -79,11 +79,11 @@ export default class PersistenceService {
       if (!newSession) {
         throw new Error("Error creating new session in persistenceService");
       }
+      return newSession;
     } catch (e) {
       handleError(e, "Error creating new user session in PS");
+      throw new Error("Error creating new session in persistenceService");
     }
-
-    return newSession;
   }
   //Event: SESSION_DISTANCE_INCREASED
   public async persistNewDistance({

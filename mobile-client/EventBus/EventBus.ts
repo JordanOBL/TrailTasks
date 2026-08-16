@@ -1,6 +1,6 @@
 import { SessionPhase, SessionSnapshot } from "../sessionEngine/sessionEngine";
 
-import { Rewards } from "../Screens/SessionScreen";
+import type { Rewards } from "../services/RewardService";
 import { User_Session } from "../watermelon/models";
 
 export interface Registry {
