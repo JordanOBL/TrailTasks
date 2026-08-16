@@ -74,9 +74,11 @@ export default class RewardService {
   register(): Function {
     const unregisterList: Registry[] = [];
     unregisterList.push(
-      this.bus.on("SESSION_COMPLETED", (payload: SessionCompletedPayload) =>
-        this.calculateRewards(payload.snapshot),
-      ),
+      this.bus.on("SESSION_COMPLETED", (payload: SessionCompletedPayload) => {
+        void this.calculateRewards(payload.snapshot).catch(e => {
+          handleError(e, "RewardService.register() - Error calculating rewards on SESSION_COMPLETED event");
+        })
+  }),
     );
 
     return () => {
@@ -85,13 +87,6 @@ export default class RewardService {
   }
 
   async calculateRewards(snapshot: SessionSnapshot): Promise<Rewards> {
-    let rewards: Rewards = {
-      trailRewards: 0,
-      wildXpRewards: 0,
-      timeRewards: 0,
-      totalTokenRewards: 0,
-    };
-
     try {
       //(PRO)calculate non active wilds xp from completed trails
       const wildXpRewards: number = await this.calculateActiveWildXpReward(snapshot);
@@ -115,16 +110,17 @@ export default class RewardService {
           wildXpRewards,
         },
       });
-      rewards = {
+      const rewards = {
         trailRewards: trailRewards,
         timeRewards: timeRewards,
         totalTokenRewards: trailRewards + timeRewards,
         wildXpRewards,
       };
+    return rewards;
     } catch (e) {
       handleError(e, "RewardService.calculateRewards()");
+      throw new Error("Error calculating rewards in RewardService", { cause: e});
     }
-    return rewards;
   }
 
   private calculateTimeTokens(snapshot: SessionSnapshot): number {
@@ -165,9 +161,6 @@ export default class RewardService {
   }
 
   private async calculateActiveWildXpReward(session: SessionSnapshot): Promise<number> {
-    let activeWildXp: number = 0;
-
-    try {
       /*
             RULES: 
                 ALL users  gain wild xp for active wild for either partial distance hiked or overal session time
@@ -183,8 +176,8 @@ export default class RewardService {
 
       const activeWild = await user.usersWilds.extend(Q.where("is_active", true));
 
-      if (activeWild) {
-        activeWildXp = Math.floor(Number(session.totalDistanceMiles)) * this.rules.wildXp.xpPerMile;
+      if (!activeWild) {
+        return 0;
       }
 
       //if Pro
@@ -198,10 +191,7 @@ export default class RewardService {
       //     }
       //     session.completedTrails.map()
       // }
-    } catch (e) {
-      handleError(e, "RewardService calculateWildXp()");
-    }
-    return activeWildXp;
+    return Math.floor(Number(session.totalDistanceMiles)) * this.rules.wildXp.xpPerMile;
   }
 
   private calculateTrailTokens(
