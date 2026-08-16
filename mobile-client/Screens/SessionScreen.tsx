@@ -1,4 +1,5 @@
 import {ActivityIndicator, Pressable, StyleSheet, Text, View} from 'react-native';
+import { EventBus, RewardsCalculatedPayload } from '../EventBus/EventBus';
 import React, {useEffect, useRef, useState} from 'react';
 import {
   Trail,
@@ -9,7 +10,6 @@ import { darkTheme, lightTheme } from '../theme';
 
 import {AchievementsWithCompletion} from '../types/achievements';
 import EnhancedActiveSession from '../components/Session/ActiveSession';
-import { EventBus } from '../EventBus/EventBus';
 import GroupResultsScreen from './GroupResultsScreen';
 import NewSessionOptions from './NewSessionOptions';
 import Rewards from '../helpers/Session/Rewards';
@@ -61,9 +61,9 @@ const SessionScreen = () =>
     //this sets the view when engine emits
     useEventBus('SESSION_STARTED', () => setView('ACTIVE'));
     useEventBus('SESSION_COMPLETED', () => setView('REWARDS_SOLO'))
-    useEventBus('REWARDS_CALCULATED', (args: {rewards: Rewards, finalSnapshot: SessionSnapshot}) => {
-      setRewards(prev => ({...prev, ...args.rewards}))
-      setFinalSnapshot({...args.finalSnapshot})
+    useEventBus('REWARDS_CALCULATED', (payload: RewardsCalculatedPayload) => {
+      setRewards(prev => ({...prev, ...payload.rewards}))
+      setFinalSnapshot({...payload.finalSnapshot})
       //setView('REWARDS_SOLO')
     })
 

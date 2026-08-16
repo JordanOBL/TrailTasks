@@ -1,20 +1,55 @@
-import { NewTrailAssignedPayload, PersistenceStartedNewTrailPayload, SessionCompletedPayload, SessionDistanceIncreasedPayload, SessionPhaseChangedPayload, SessionSetCompletedPayload, SessionSnapshotPayload, SessionTrailCompletedPayload } from "../sessionEngine/sessionEngine";
+import { SessionPhase, SessionSnapshot } from "../sessionEngine/sessionEngine";
+
+import { Rewards } from "../Screens/SessionScreen";
+import { User_Session } from "../watermelon/models";
 
 export interface Registry {
-    unregister: () => void;
+  unregister: () => void;
 }
 
+export interface SessionSnapshotPayload {
+	snapshot: SessionSnapshot;
+}
+export interface SessionPhaseChangedPayload extends SessionSnapshotPayload {
+	from: SessionPhase;
+	to: SessionPhase;
+	reason: string;
+}
+
+export interface SessionSetCompletedPayload extends SessionSnapshotPayload {
+	setNumber: number;
+}
+
+export interface SessionDistanceIncreasedPayload extends SessionSnapshotPayload {
+	session: User_Session | null;
+}
+export interface SessionCompletedPayload extends SessionSnapshotPayload {
+	reason: "all_sets_completed" | "ended_early";
+}
+
+export interface SessionTrailCompletedPayload {
+	completedTrailId: string;
+	isProMember: boolean;
+	trailStartedAt: string;
+}
+
+export interface PersistenceStartedNewTrailPayload {
+		newTrailDistance: number;
+	}
+export interface NewTrailAssignedPayload {
+		newTrailDistance: number;
+	}
 export interface EventPayloadMap {
   SESSION_STARTED: SessionSnapshotPayload;
   SESSION_PHASE_CHANGED: SessionPhaseChangedPayload;
   SESSION_TICK: SessionSnapshotPayload;
   SESSION_SET_COMPLETED: SessionSetCompletedPayload;
   SESSION_COMPLETED: SessionCompletedPayload;
-  SESSION_PAUSED: void;
+  SESSION_PAUSED: SessionSnapshotPayload;
   SESSION_DISTANCE_INCREASED: SessionDistanceIncreasedPayload;
   SESSION_TRAIL_COMPLETED: SessionTrailCompletedPayload;
-  SESSION_BREAK_SKIPPED: void;
-  SESSION_PACE_INCREASED: void;
+  SESSION_BREAK_SKIPPED: SessionSnapshotPayload;
+  SESSION_PACE_INCREASED: SessionSnapshotPayload;
   UI_NEW_SESSION_REQUESTED: void;
   UI_PAUSE_REQUESTED: void;
   UI_RESUME_REQUESTED: void;
@@ -22,8 +57,13 @@ export interface EventPayloadMap {
   UI_BREAK_SKIP_REQUESTED: void;
   PERSISTENCE_STARTED_NEW_TRAIL: PersistenceStartedNewTrailPayload;
   NEW_TRAIL_ASSIGNED: NewTrailAssignedPayload;
+	REWARDS_CALCULATED: RewardsCalculatedPayload;
 }
 
+export interface RewardsCalculatedPayload {
+	rewards: Rewards;
+	finalSnapshot: SessionSnapshot;
+}
 export interface Callable {
     [key: string]: Function;
 }
@@ -39,14 +79,11 @@ export interface Subscriber {
 export type EventListenerCallback<K extends keyof EventPayloadMap> = 
 EventPayloadMap[K] extends void ? () => void : (payload: EventPayloadMap[K]) => void;
 
-export interface IEventBus { 
-    emit<T extends keyof EventPayloadMap>(event: T, ...args: EventPayloadMap[T] extends void ? [] : [payload:EventPayloadMap[T]]):void;
-    on<K extends keyof EventPayloadMap>(event: K, callback: EventListenerCallback<K>): Registry;
+export interface EventBus { 
+    emit<T extends keyof EventPayloadMap>(event: T, ...args: [EventPayloadMap[T]] extends [void] ? [] : [payload:EventPayloadMap[T]]):void;
+    on<T extends keyof EventPayloadMap>(event: T, callback: EventListenerCallback<T>): Registry;
 }
-
-
-
-export class EventBus implements IEventBus {
+export class EventBus implements EventBus {
     private static instance?: EventBus = undefined;
     private subscribers: Subscriber;
     private nextId = 0;
@@ -63,7 +100,7 @@ export class EventBus implements IEventBus {
         return this.instance;
     }
 
-    public emit<T extends keyof EventPayloadMap>(event: T, ...args: EventPayloadMap[T] extends void ? [] : [payload:EventPayloadMap[T]]): void {
+    public emit<T extends keyof EventPayloadMap>(event: T, ...args: [EventPayloadMap[T]] extends [void] ? [] : [payload:EventPayloadMap[T]]): void {
       const subscriberGroup = this.subscribers[event];
 
       if (subscriberGroup === undefined) return;
@@ -80,7 +117,7 @@ console.log('[Bus] listeners for SESSION_DISTANCE_INCREASED =', Object.keys(this
       });
     }
 
-    public on<K extends keyof EventPayloadMap>(event: K, callback: EventListenerCallback<K>): Registry {
+    public on<T extends keyof EventPayloadMap>(event: T, callback: EventListenerCallback<T>): Registry {
         const id = String(this.nextId++);
         if(!this.subscribers[event]) this.subscribers[event] = {};
         this.subscribers[event][id] = callback;

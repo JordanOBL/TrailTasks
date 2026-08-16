@@ -1,23 +1,21 @@
-import { EventBus, Registry } from './EventBus';
-import { PersistenceEvent, SessionEvent, UI_Event } from '../sessionEngine/sessionEngine';
+import { EventListenerCallback, EventPayloadMap, Registry } from './EventBus';
 import React, {useEffect, useRef} from 'react';
 
 import { useServices } from '../contexts/ServiceProvider';
 
-export default function useBusEvent<T>(event: SessionEvent | UI_Event | PersistenceEvent, cb: (payload: T) => void ){
-    const {bus} = useServices()
+export default function useBusEvent<T extends keyof EventPayloadMap>(event: T, cb: EventListenerCallback<T>){
+    const { bus } = useServices();
     // Keep a ref to the latest handler (so we don’t re-register on each render)
     const handlerRef = useRef(cb);
     handlerRef.current = cb;
 
     useEffect(() => {
-        const registry: Registry = bus.on(event, (payload: T) => {
+        const registry: Registry = bus.on(event, ((payload: EventPayloadMap[T]) => {
             handlerRef.current(payload)
-        })
-         console.log(bus.getSubscribers())
+        }) as EventListenerCallback<T>);
 
         return () => {
-            registry.unregister()
+            registry.unregister();
         }
 
     }, [bus, event])
