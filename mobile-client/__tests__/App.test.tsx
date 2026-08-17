@@ -1,4 +1,6 @@
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import test, { describe } from 'node:test';
+
 import { WrappedApp } from '../index';
 import {testDb as watermelonDatabase} from '../watermelon/testDB';
 

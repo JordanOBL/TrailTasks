@@ -1,7 +1,7 @@
-import { EventBus, Registry } from "../EventBus/EventBus";
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 
 import { Database } from "@nozbe/watermelondb";
+import { EventBus } from "../EventBus/EventBus";
 import PersistenceService from "../persistenceService/persistenceService";
 import RewardService from "../services/RewardService";
 import SessionEngineManager from "../sessionEngine/SessionEngineManager";
@@ -23,6 +23,9 @@ export const ServiceProvider = ({ children }: { children: React.ReactNode }) => 
   const { user, isProMember } = useAuthContext();
   const db: Database = useDatabase();
   const bus = EventBus.getInstance();
+
+  const [servicesCreated, setServicesCreated] = useState<boolean>(false);
+
   const rewardServiceRef = useRef<RewardService | null>(null);
   const persistenceServiceRef = useRef<PersistenceService | null>(null);
   const sessionEngineMgrRef = useRef<SessionEngineManager | null>(null);
@@ -31,7 +34,7 @@ export const ServiceProvider = ({ children }: { children: React.ReactNode }) => 
   const disposersRef = useRef<Function[]>([]);
 
   useEffect(() => {
-    if (!user || !db) return;
+    if (!user || !db || servicesCreated) return;
     if (persistenceServiceRef.current) return;
     console.log("[Services] Creating PersistenceService and SessionEngineManager");
 
@@ -49,6 +52,8 @@ export const ServiceProvider = ({ children }: { children: React.ReactNode }) => 
     ];
 
     disposersRef.current = regs;
+    
+    setServicesCreated(true);
 
     return () => {
       disposersRef.current.forEach(r => r());
