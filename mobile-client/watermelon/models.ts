@@ -217,7 +217,6 @@ export class User extends Model {
   //create new session
   @writer
   async startNewSession(sessionDetails) {
-    try {
       const newSession = this.collections.get("users_sessions").prepareCreate(userSession => {
         userSession.userId = this.id;
         userSession.sessionName = sessionDetails.sessionName;
@@ -245,24 +244,16 @@ export class User extends Model {
 
         const [addonRecord] = await this.usersAddons.extend(Q.where("addon_id", slot.addon.id));
 
-        if (!addonRecord) {
-          // handle "user doesn't actually have this addon"?
-          // or skip, or throw an error
-          continue;
+        if (addonRecord) {
+          const consumePrepared = this.prepareConsumeUserAddons(addonRecord);
+          consumePrepares.push(consumePrepared);
         }
-
-        const consumePrepared = this.prepareConsumeUserAddons(addonRecord);
-        consumePrepares.push(consumePrepared);
       }
 
       // 3) batch everything
       await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares);
 
       return { newSession, status: true };
-    } catch (e) {
-      handleError(e, "Error user.startNewSession()");
-      return { data: null, status: false };
-    }
   }
 
   @writer
@@ -459,7 +450,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
 
   @writer
   async markTrailCompleted({ trailId, isProMember, trailStartedAt }) {
-    try {
       //get trail
       const trail = await this.collections
         .get("trails")
@@ -472,7 +462,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       if (!completedTrail) {
         console.debug("First time completeing trail, adding trail in markCompletedTrail Writer");
         const currentTime = new Date();
-        await this.collections.get("users_completed_trails").create((uct: User_Completed_Trail) => {
+        const createdCompletedTrail = await this.collections.get("users_completed_trails").create((uct: User_Completed_Trail) => {
           uct.userId = this.id;
           uct.trailId = trailId;
           uct.completionCount = 1;
@@ -480,6 +470,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           uct.lastCompletedAt = formatDateTime(new Date());
           uct.bestCompletedTime = getTimeDifference(currentTime, trailStartedAt);
         });
+        if (!createdCompletedTrail) throw new Error('DB failed to created new completed trail');
         console.debug("Completed trail for the first time, checking if user has park pass in markCompletedTrail Writer");
         console.debug({trail})
         //check id user has park pass already
@@ -488,7 +479,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           .fetchCount();
         console.debug("hasParkPass in markTrailCompleted Writer:", hasParkPass);
         //if not, and user is pro member, redeem park pass
-        if (hasParkPass === 0) {
+        if (Number(hasParkPass) === 0) {
           const shouldRedeemPass = await this.redeemParkWildCheck(trail.parkId);
           if (shouldRedeemPass) {
             console.debug("Redeeming Park Pass in markCompletedTrail Writer");
@@ -506,9 +497,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           );
         });
       }
-    } catch (e) {
-      handleError(e, "marktrailCompleted writer");
-    }
+    
   }
 
   //Add User`
@@ -688,13 +677,14 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       });
       //Unlcok WIld For User
       [parkWild] = await this.collections.get("wilds").query(Q.where("park_id", parkId)).fetch();
+      if (!parkWild) throw new Error(`Park Wild not found for parkId: ${parkId}`);
       createUserWild = this.collections.get("users_wilds").prepareCreate(wild => {
         wild.userId = this.id;
         wild.wildId = parkWild.id; // Assuming '1' is a default wild ID
         wild.isActive = true;
         wild.unlockedAt = new Date().toISOString();
       });
-    } else if (this.prestigeLevel === existingParkPass.parkLevel) {
+    } else if (this.prestigeLevel == existingParkPass.parkLevel) {
       newUserPark = existingParkPass.prepareUpdate(pass => {
         pass.parkLevel += 1;
         pass.lastCompleted = new Date().toISOString();
@@ -764,6 +754,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       await this.database.batch(...batchOperations);
     } catch (e) {
       handleError(e, "finalizeSessionWithRewardsWriter");
+      throw new Error(`DB Failed to finalize session with rewards: ${e}`)
     }
   }
 

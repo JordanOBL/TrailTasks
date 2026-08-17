@@ -1,11 +1,16 @@
-import { EventBus, Registry, SessionDistanceIncreasedPayload, SessionTrailCompletedPayload } from "../EventBus/EventBus";
-import { User, User_Session } from '../watermelon/models';
+import {
+  EventBus,
+  Registry,
+  SessionDistanceIncreasedPayload,
+  SessionTrailCompletedPayload,
+} from "../EventBus/EventBus";
+import { User, User_Session } from "../watermelon/models";
 
-import {Database} from '@nozbe/watermelondb'
-import { SessionCfg } from '../types/session';
+import { Database } from "@nozbe/watermelondb";
+import { SessionCfg } from "../types/session";
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
-import formatDateTime from '../helpers/formatDateTime';
-import handleError from '../helpers/ErrorHandler';
+import formatDateTime from "../helpers/formatDateTime";
+import handleError from "../helpers/ErrorHandler";
 
 type TRewardsCalculatedPayload = {
   finalSnapshot: SessionSnapshot;
@@ -15,7 +20,7 @@ type TRewardsCalculatedPayload = {
     totalTokenRewards: number;
     wildXpRewards: number;
   };
-};  
+};
 
 export default class PersistenceService {
   private bus: EventBus;
@@ -34,27 +39,24 @@ export default class PersistenceService {
     //   this.bus.on("NEW_SESSION_REQUESTED", (cfg: SessionCfg) => this.createNewSession(cfg)),
     // );
     unregisterList.push(
-      this.bus.on(
-        "SESSION_DISTANCE_INCREASED",
-        (payload: SessionDistanceIncreasedPayload) =>  {
-          if (payload.session === null) {
-            console.error("Error: session is null in SESSION_DISTANCE_INCREASED event");
-            return;
-          }
-        
-          this.persistNewDistance({ session: payload.session, snapshot: payload.snapshot })
+      this.bus.on("SESSION_DISTANCE_INCREASED", (payload: SessionDistanceIncreasedPayload) => {
+        if (payload.session === null) {
+          console.error("Error: session is null in SESSION_DISTANCE_INCREASED event");
+          return;
         }
-      )
+
+        this.persistNewDistance({ session: payload.session, snapshot: payload.snapshot });
+      }),
     );
     unregisterList.push(
-      this.bus.on(
-        "SESSION_TRAIL_COMPLETED",
-        (payload: SessionTrailCompletedPayload) =>
-          this.persistCompletedTrail(payload),
+      this.bus.on("SESSION_TRAIL_COMPLETED", (payload: SessionTrailCompletedPayload) =>
+        this.persistCompletedTrail(payload),
       ),
     );
     unregisterList.push(
-      this.bus.on("REWARDS_CALCULATED", (args: TRewardsCalculatedPayload) => this.persistCompletedSessionWithRewards(args)),
+      this.bus.on("REWARDS_CALCULATED", (args: TRewardsCalculatedPayload) =>
+        this.persistCompletedSessionWithRewards(args),
+      ),
     );
     return () => unregisterList.forEach(obj => obj.unregister());
   }
@@ -62,28 +64,22 @@ export default class PersistenceService {
   //--------------USER SESSION--------------//
 
   public async createNewSession(cfg: SessionCfg): Promise<User_Session> {
-    let newSession: User_Session = null as unknown as User_Session;
-    try {
-      console.log("Config in createnewsession", cfg);
-      newSession = await this.db.write(async () => {
-        const newSession = await this.db.get<User_Session>("users_sessions").create(session => {
-          session.userId = cfg.userId;
-          session.sessionCategoryId = cfg.sessionCategory[0];
-          session.sessionName = cfg.sessionName;
-          session.totalDistanceHiked = "0.00";
-          session.totalSessionTime = 0;
-          session.dateAdded = formatDateTime(new Date());
-        });
-        return newSession;
+    console.log("Config in createnewsession", cfg);
+    const newSession = await this.db.write(async () => {
+      const newSession = await this.db.get<User_Session>("users_sessions").create(session => {
+        session.userId = cfg.userId;
+        session.sessionCategoryId = cfg.sessionCategory[0];
+        session.sessionName = cfg.sessionName;
+        session.totalDistanceHiked = "0.00";
+        session.totalSessionTime = 0;
+        session.dateAdded = formatDateTime(new Date());
       });
-      if (!newSession) {
-        throw new Error("Error creating new session in persistenceService");
-      }
       return newSession;
-    } catch (e) {
-      handleError(e, "Error creating new user session in PS");
+    });
+    if (!newSession) {
       throw new Error("Error creating new session in persistenceService");
     }
+    return newSession;
   }
   //Event: SESSION_DISTANCE_INCREASED
   public async persistNewDistance({
@@ -100,6 +96,7 @@ export default class PersistenceService {
       });
     } catch (e) {
       handleError(e, "PersistenceService increadeDistanceHiked");
+      throw e;
     }
   }
   //EVENT: SESSION_TRAIL_COMPLETED
@@ -111,7 +108,10 @@ export default class PersistenceService {
     try {
       console.log("In peristenceService sessionTrailCompleted()");
 
-      const newTrailDistance:number = await this.user.assignNewTrail({ completedTrailId, isProMember });
+      const newTrailDistance: number = await this.user.assignNewTrail({
+        completedTrailId,
+        isProMember,
+      });
       console.log("New trail distance:", newTrailDistance);
       this.bus.emit("NEW_TRAIL_ASSIGNED", { newTrailDistance });
       await this.user.markTrailCompleted({
@@ -119,7 +119,6 @@ export default class PersistenceService {
         isProMember: isProMember,
         trailStartedAt: trailStartedAt,
       });
-
     } catch (e) {
       handleError(e, "PersistenceService increadeDistanceHiked");
     }
@@ -128,15 +127,15 @@ export default class PersistenceService {
   public async persistCompletedSessionWithRewards(args: TRewardsCalculatedPayload): Promise<void> {
     try {
       console.log("In peristenceService persistCompletedSessionWithRewards()");
-      console.log(args)
+      console.log(args);
       await this.user.finalizeSessionWithRewardsWriter({
         user: this.user,
         snapshot: args.finalSnapshot,
         rewards: args.rewards,
       });
-
     } catch (e) {
       handleError(e, "PersistenceService persistCompletedSessionWithRewards");
+      throw e;
     }
   }
 }
