@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { Database } from "@nozbe/watermelondb";
 import { EventBus } from "../EventBus/EventBus";
@@ -8,7 +8,7 @@ import SessionEngineManager from "../sessionEngine/SessionEngineManager";
 import { useAuthContext } from "../services/AuthContext";
 import { useDatabase } from "@nozbe/watermelondb/react";
 
-interface ServiceContext {
+export interface ServiceContext {
   bus: EventBus;
   persistenceService: PersistenceService | null;
   sessionEngineMgr: SessionEngineManager | null;
@@ -19,60 +19,54 @@ interface ServiceContext {
 
 const ServiceContext = createContext<ServiceContext | undefined>(undefined);
 
+const initialServicesState: Omit<ServiceContext, "bus"> = {
+  persistenceService: null,
+  sessionEngineMgr: null,
+  rewardService: null,
+};
+
 export const ServiceProvider = ({ children }: { children: React.ReactNode }) => {
   const { user, isProMember } = useAuthContext();
   const db: Database = useDatabase();
   const bus = EventBus.getInstance();
 
-  const [servicesCreated, setServicesCreated] = useState<boolean>(false);
-
-  const rewardServiceRef = useRef<RewardService | null>(null);
-  const persistenceServiceRef = useRef<PersistenceService | null>(null);
-  const sessionEngineMgrRef = useRef<SessionEngineManager | null>(null);
-  //const wildsRef
-  //const rewardsRef
-  const disposersRef = useRef<Function[]>([]);
+  const [servicesState, setServicesState] =
+    useState<Omit<ServiceContext, "bus">>(initialServicesState);
 
   useEffect(() => {
-    if (!user || !db || servicesCreated) return;
-    if (persistenceServiceRef.current) return;
-    console.log("[Services] Creating PersistenceService and SessionEngineManager");
+    if (!user || !db) {
+      setServicesState(initialServicesState);
+      return;
+    }
+    console.log("[Services] Creating PersistenceService, SessionEngineManager, RewardService");
 
-    const persistence = new PersistenceService(user, db, bus);
-    const sessionEngineMgr = new SessionEngineManager(user, db, persistence, bus, isProMember);
+    const persistenceService = new PersistenceService(user, db, bus);
+    const sessionEngineMgr = new SessionEngineManager(
+      user,
+      db,
+      persistenceService,
+      bus,
+      isProMember,
+    );
     const rewardService = new RewardService(bus, db, user, isProMember);
-    persistenceServiceRef.current = persistence;
-    sessionEngineMgrRef.current = sessionEngineMgr;
-    rewardServiceRef.current = rewardService;
 
-    // Register their event listeners
-    const regs: Function[] = [
-      persistenceServiceRef.current.register(),
-      rewardServiceRef.current.register(),
-    ];
+    const disposers = [persistenceService.register(), rewardService.register()];
 
-    disposersRef.current = regs;
-    
-    setServicesCreated(true);
+    setServicesState({ persistenceService, sessionEngineMgr, rewardService });
 
     return () => {
-      disposersRef.current.forEach(r => r());
-      disposersRef.current = [];
-      persistenceServiceRef.current = null;
-      sessionEngineMgrRef.current = null;
-      rewardServiceRef.current = null;
+      disposers.forEach(r => r());
     };
-  }, [user?.id, db]);
+  }, [user?.id, db, isProMember]);
 
   return (
     <ServiceContext.Provider
       value={{
         bus,
-        persistenceService: persistenceServiceRef.current,
-        sessionEngineMgr: sessionEngineMgrRef.current,
-        rewardService: rewardServiceRef.current,
-      }}
-    >
+        persistenceService: servicesState.persistenceService,
+        sessionEngineMgr: servicesState.sessionEngineMgr,
+        rewardService: servicesState.rewardService,
+      }}>
       {children}
     </ServiceContext.Provider>
   );
