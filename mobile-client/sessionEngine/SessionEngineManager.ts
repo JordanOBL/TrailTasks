@@ -1,11 +1,10 @@
 import { Trail, User, User_Session } from "../watermelon/models";
 
 import { Database } from "@nozbe/watermelondb";
-import { EventBus } from "../EventBus/EventBus"
+import { EventBus } from "../EventBus/EventBus";
 import PersistenceService from "../persistenceService/persistenceService";
 import { SessionCfg } from "../types/session";
-import { SessionEngine } from "./sessionEngine"
-import handleError from "../helpers/ErrorHandler";
+import { SessionEngine } from "./sessionEngine";
 
 export default class SessionEngineManager {
   private current: SessionEngine | null = null;
@@ -15,39 +14,38 @@ export default class SessionEngineManager {
   private isProMember: boolean;
   private db: Database;
 
-  constructor(user: User, db: Database, ps: PersistenceService, bus: EventBus, isProMember: boolean) {
-    this.bus = bus
+  constructor(
+    user: User,
+    db: Database,
+    ps: PersistenceService,
+    bus: EventBus,
+    isProMember: boolean,
+  ) {
+    this.bus = bus;
     this.user = user;
     this.isProMember = isProMember;
     this.db = db;
-    this.persistenceService = ps; 
+    this.persistenceService = ps;
   }
 
-  async requestNewSession(cfg: SessionCfg): Promise<User_Session | undefined> {
-    try {
-      if (!this.persistenceService) throw new Error("Persistence not initialized");
-      //persistance service create row in sqlite
-      // return it
-      const s: User_Session | undefined = await this.persistenceService.createNewSession(cfg);
-      if (!s) {
-        throw new Error("No session Id Returned, cannot create session");
-      }
-      return s;
-    } catch (e) {
-      handleError(e, "SessionEnginManager.requestNewSession()");
-    }
+  async requestNewSession(cfg: SessionCfg): Promise<User_Session> {
+    if (!this.persistenceService)
+      throw new Error("Cannot request new session, no persistence service");
+    //persistance service create row in sqlite
+    // return it
+    const s: User_Session = await this.persistenceService.createNewSession(cfg);
+    return s;
   }
 
-  async createSessionEngine(cfg: SessionCfg, createdSession: User_Session):Promise<SessionEngine> {
+  async createSessionEngine(cfg: SessionCfg, createdSession: User_Session): Promise<SessionEngine> {
     //setDistance needed for trail
-    const trail: Trail = await this.user.trail
-   
+    const trail: Trail = await this.user.trail;
+
     //add session and sessionId to cfg
     cfg.session = createdSession;
     cfg.sessionId = createdSession.id;
-    cfg.distanceNeeded = Number(trail.trailDistance) - Number(this.user.trailProgress)
+    cfg.distanceNeeded = Number(trail.trailDistance) - Number(this.user.trailProgress);
 
-  
     // 2) make a new engine with full config
     this.current = new SessionEngine(this.bus, cfg, this.user, this.isProMember);
 
@@ -56,7 +54,7 @@ export default class SessionEngineManager {
     }
 
     //register the needed event listeners on the event bus
-    this.current.register()
+    this.current.register();
     //return the sessionEngine
     return this.current;
   }

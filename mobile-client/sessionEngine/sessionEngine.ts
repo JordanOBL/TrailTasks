@@ -111,9 +111,7 @@ export class SessionEngine {
     this.backpack = cfg.backpack
   }
 
-  /* -------------------- public commands -------------------- */
- 
- 
+  /* -------------------- public commands -------------------- */ 
   register(){
     this.bus.on('UI_PAUSE_REQUESTED', () => this.pause())
     this.bus.on('UI_RESUME_REQUESTED', () => this.resume()) 
