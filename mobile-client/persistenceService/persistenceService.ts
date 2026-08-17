@@ -96,7 +96,6 @@ export default class PersistenceService {
       });
     } catch (e) {
       handleError(e, "PersistenceService increadeDistanceHiked");
-      throw e;
     }
   }
   //EVENT: SESSION_TRAIL_COMPLETED
@@ -135,7 +134,6 @@ export default class PersistenceService {
       });
     } catch (e) {
       handleError(e, "PersistenceService persistCompletedSessionWithRewards");
-      throw e;
     }
   }
 }
