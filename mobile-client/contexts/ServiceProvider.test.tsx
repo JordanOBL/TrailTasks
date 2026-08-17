@@ -117,10 +117,9 @@ describe("ServiceProvider", () => {
       expect(secondRenderedServices.rewardService).not.toBeNull();
 
       expect(
-        firstRenderedServices?.persistenceService !== secondRenderedServices?.persistenceService,
-      );
-      expect(firstRenderedServices?.sessionEngineMgr !== secondRenderedServices?.sessionEngineMgr);
-      expect(firstRenderedServices?.rewardService !== secondRenderedServices?.rewardService);
+        firstRenderedServices?.persistenceService).not.toBe(secondRenderedServices?.persistenceService);
+      expect(firstRenderedServices?.sessionEngineMgr).not.toBe(secondRenderedServices?.sessionEngineMgr);
+      expect(firstRenderedServices?.rewardService).not.toBe(secondRenderedServices?.rewardService);
     });
   });
 });
