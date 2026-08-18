@@ -3,6 +3,9 @@ module.exports = {
   preset: 'react-native',
   verbose: true,
   testEnvironment: 'jsdom', // or 'node', depending on your needs
+  globals: {
+    structuredClone: globalThis.structuredClone
+  },
   transform: {
     '^.+\\.(js|jsx)$': 'babel-jest',
   },

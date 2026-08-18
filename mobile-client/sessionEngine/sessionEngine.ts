@@ -32,6 +32,7 @@ export interface SessionSnapshot {
   tokenBonusPercent: number;
   startedAt: number | null;
   consecutiveSecWithoutStrikes: number;
+  extraSets: number;
 }
 export class SessionEngine {
   static instance: SessionEngine | null;
@@ -47,7 +48,7 @@ export class SessionEngine {
   private readonly type: string;
   private readonly sessionName: string;
   private readonly sessionCategory: [string, string];
-  private readonly totalSets: number;
+  private totalSets: number;
   private readonly focusTimeSec: number;
   private readonly shortBreakSec: number;
   private readonly longBreakSec: number;
@@ -118,12 +119,6 @@ export class SessionEngine {
     this.bus.on("UI_QUIT_REQUESTED", () => this.quit());
     this.bus.on("UI_BREAK_SKIP_REQUESTED", () => this.skipBreak());
     this.bus.on("NEW_TRAIL_ASSIGNED", (payload: NewTrailAssignedPayload) => {
-      console.log(
-        "SessionEngine received NEW_TRAIL_ASSIGNED with distance:",
-        payload.newTrailDistance,
-        "Of type:",
-        typeof payload.newTrailDistance,
-      );
       this.distanceNeeded += payload.newTrailDistance;
     });
   }
@@ -229,7 +224,7 @@ export class SessionEngine {
     this.totalDistanceMiles += 0.01;
     //check if trail complete
 
-    if (this.totalDistanceMiles.toFixed(2) >= this.distanceNeeded.toFixed(2)) {
+    if (Number(this.totalDistanceMiles.toFixed(2)) >= Number(this.distanceNeeded.toFixed(2))) {
       this.trailCompleted();
     }
 
@@ -284,6 +279,16 @@ export class SessionEngine {
           });
         } else {
           if (this.autoContinue) {
+            // auto start another session
+            this.extraSets = this.extraSets ? this.extraSets * 2 : this.totalSets;
+            this.elapsedInPhaseSec = 0;
+            this.phase = "FOCUS";
+            this.bus.emit("SESSION_PHASE_CHANGED", {
+              snapshot: this.buildSnapshot(),
+              from: "LONG_BREAK",
+              to: "FOCUS",
+              reason: "break_ended",
+            });
           } else {
             this.finishSession("all_sets_completed");
           }
@@ -435,6 +440,7 @@ export class SessionEngine {
       tokenBonusFlat: this.tokenBonusFlat,
       tokenBonusPercent: this.tokenBonusPercent,
       startedAt: this.startTimestampMs,
+      extraSets: this.extraSets,
     };
   }
 }
