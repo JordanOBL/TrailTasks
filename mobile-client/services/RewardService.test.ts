@@ -38,12 +38,13 @@ describe('RewardService', () => {
             shortBreakSec: 300,
             longBreakSec: 900,
             autoContinue: false,
-            currentStrikes:0,
+            totalStrikes:0,
             completedTrails: [],
             isPaused: false,
             tokenBonusFlat: 0,
             tokenBonusPercent: 1,
-            startedAt: 123456789
+            startedAt: 123456789,
+            consecutiveSecWithoutStrikes: 0
         }
 
         if(!user){
