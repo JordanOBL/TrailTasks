@@ -28,7 +28,7 @@ describe("Session Engine", () => {
     type: "SOLO",
     sessionName: "Test Session",
     sessionCategory: ["category-id", "Category"],
-    distanceNeeded: 1,
+    distanceNeeded: 10.00,
     totalSets: 3,
     focusTimeSec: 1500,
     shortBreakSec: 300,
@@ -232,7 +232,6 @@ describe("Session Engine", () => {
     let snapshot = engine.buildSnapshot();
     const focusTimeSec = engine.getFocusTimeSec();
     const shortBreakTimeSec = engine.getShortBreakTimeSec();
-    const longBreakTimeSec = engine.getLongBreakTimeSec();
     engine.start();
 
     snapshot = engine.buildSnapshot();
@@ -311,5 +310,50 @@ describe("Session Engine", () => {
       snapshot,
       reason: "ended_early",
     });
+  });
+
+  test("Session continues after long break time completed if autoContinue true", async () => {
+    const newSessionConfig = structuredClone(sessionConfig);
+    newSessionConfig.autoContinue = true;
+    engine = new SessionEngine(bus, newSessionConfig, userMock, true);
+    engine.register();
+
+    let snapshot = engine.buildSnapshot();
+    const focusTimeSec = engine.getFocusTimeSec();
+    const shortBreakTimeSec = engine.getShortBreakTimeSec();
+    const longBreakTimeSec = engine.getLongBreakTimeSec();
+    engine.start();
+
+    snapshot = engine.buildSnapshot();
+
+    expect(snapshot.phase).toEqual("FOCUS");
+
+    for (let i = 0; i < (snapshot.totalSets - 1); i++) {
+      jest.advanceTimersByTime(focusTimeSec * 1000);
+      jest.advanceTimersByTime(shortBreakTimeSec * 1000);
+    }
+    jest.advanceTimersByTime(focusTimeSec * 1000);
+    jest.advanceTimersByTime(longBreakTimeSec * 1000);
+
+    snapshot = engine.buildSnapshot();
+    expect(snapshot.totalElapsedSec).toEqual(
+      focusTimeSec * 3 + shortBreakTimeSec * 2 + longBreakTimeSec,
+    );
+    expect(snapshot.currentSet).toEqual(4);
+    expect(snapshot.completedSets).toEqual(3);
+    expect(snapshot.totalSets).toEqual(newSessionConfig.totalSets);
+    expect(snapshot.extraSets).toEqual(newSessionConfig.totalSets);
+    expect(snapshot.phase).toEqual("FOCUS");
+    
+    for (let i = 0; i < (snapshot.extraSets - 1); i++)
+    {
+      jest.advanceTimersByTime(focusTimeSec * 1000);
+      jest.advanceTimersByTime(shortBreakTimeSec * 1000);
+    }
+    jest.advanceTimersByTime(focusTimeSec * 1000);
+    jest.advanceTimersByTime(longBreakTimeSec * 1000);
+
+    expect(sessionCompletedCb).toBeCalled();
+   
   });
 });

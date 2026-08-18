@@ -472,7 +472,10 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         });
         if (!createdCompletedTrail) throw new Error('DB failed to created new completed trail');
         console.debug("Completed trail for the first time, checking if user has park pass in markCompletedTrail Writer");
-        console.debug({trail})
+        console.debug(trail)
+        console.debug(`trail.parkId: ${trail.parkId}`)
+        console.debug(`trail.park_id: ${trail.park_id}`)
+        console.debug(this.usersParks)
         //check id user has park pass already
         const hasParkPass = await this.usersParks
           .query(Q.where("park_id", trail.parkId))
