@@ -42,13 +42,13 @@ export interface SessionCfg {
   shortBreakSec: number;
   longBreakSec: number;
   autoContinue: boolean;
-  currentPaceMph: number;
-  minPaceMph: number;
-  maxPaceMph: number;
-  paceIncreaseValueMph: number;
-  paceIncreaseIntervalSec: number;
-  tokenBonusFlat: number;
-  tokenBonusPercent: number;
+  currentPaceMph?: number;
+  minPaceMph?: number;
+  maxPaceMph?: number;
+  paceIncreaseValueMph?: number;
+  paceIncreaseIntervalSec?: number;
+  tokenBonusFlat?: number;
+  tokenBonusPercent?: number;
   backpack: { addon: Addon | null, minimumTotalMiles: number }[];
 }
 export interface JoinedUserTrail {
