@@ -278,7 +278,7 @@ export class SessionEngine {
             reason: "break_ended",
           });
         } else {
-          if (this.autoContinue) {
+          if (this.autoContinue && (this.completedSets === this.totalSets )) {
             // auto start another session
             this.extraSets = this.totalSets;
             this.elapsedInPhaseSec = 0;

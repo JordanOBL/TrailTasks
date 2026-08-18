@@ -312,7 +312,7 @@ describe("Session Engine", () => {
     });
   });
 
-  test("Session continues after long break time completed if autocontinue true", async () => {
+  test("Session continues after long break time completed if autoContinue true", async () => {
     const newSessionConfig = structuredClone(sessionConfig);
     newSessionConfig.autoContinue = true;
     engine = new SessionEngine(bus, newSessionConfig, userMock, true);
@@ -344,13 +344,16 @@ describe("Session Engine", () => {
     expect(snapshot.totalSets).toEqual(newSessionConfig.totalSets);
     expect(snapshot.extraSets).toEqual(newSessionConfig.totalSets);
     expect(snapshot.phase).toEqual("FOCUS");
+    
+    for (let i = 0; i < (snapshot.extraSets - 1); i++)
+    {
+      jest.advanceTimersByTime(focusTimeSec * 1000);
+      jest.advanceTimersByTime(shortBreakTimeSec * 1000);
+    }
+    jest.advanceTimersByTime(focusTimeSec * 1000);
+    jest.advanceTimersByTime(longBreakTimeSec * 1000);
 
-    expect(sessionCompletedCb).not.toBeCalled();
-    expect(sessionPhaseChangeCb).toBeCalledWith({
-      snapshot,
-      from: "LONG_BREAK",
-      to: "FOCUS",
-      reason: "break_ended",
-    });
+    expect(sessionCompletedCb).toBeCalled();
+   
   });
 });
