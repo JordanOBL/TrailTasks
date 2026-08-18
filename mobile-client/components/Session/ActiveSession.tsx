@@ -316,7 +316,7 @@ const ActiveSession = ({user,
 					<View style={styles.statsGrid}>
 						<StatBox label="Pace" value={`${snapshot.currentPaceMph} mph`} />
 						<StatBox label="Sets" value={`${snapshot.completedSets} / ${snapshot.totalSets}`} />
-						<StatBox  label="Strikes" value={snapshot.currentStrikes} />
+						<StatBox  label="Strikes" value={snapshot.totalStrikes} />
 						<StatBox  label="Total Dist." value={`${snapshot.totalDistanceMiles.toFixed(2)} mi.`}  />
 						{/* <StatBox label="Reward" value={Number( session.totalTokensEarned)} /> */}
 						{/* <StatBox  label="Achievements" value={earnedAchievements.length} /> */}

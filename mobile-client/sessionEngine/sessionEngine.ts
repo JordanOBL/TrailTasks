@@ -5,8 +5,8 @@ import { EventBus, NewTrailAssignedPayload } from "../EventBus/EventBus";
 
 import { SessionCfg } from "../types/session";
 
-export type SessionPhase = 'IDLE' | 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' | 'COMPLETED';
-export type SessionType = 'SOLO' | 'GROUP'
+export type SessionPhase = "IDLE" | "FOCUS" | "SHORT_BREAK" | "LONG_BREAK" | "COMPLETED";
+export type SessionType = "SOLO" | "GROUP";
 export interface SessionSnapshot {
   sessionId: string;
   userId: string;
@@ -25,13 +25,13 @@ export interface SessionSnapshot {
   shortBreakSec: number;
   longBreakSec: number;
   autoContinue: boolean;
-  currentStrikes: number;
   totalStrikes: number;
   completedTrails: { id: string; distance: number }[];
   isPaused: boolean;
   tokenBonusFlat: number;
   tokenBonusPercent: number;
   startedAt: number | null;
+  consecutiveSecWithoutStrikes: number;
 }
 export class SessionEngine {
   static instance: SessionEngine | null;
@@ -74,9 +74,9 @@ export class SessionEngine {
   private currentPaceMph: number;
   private totalDistanceMiles = 0;
   private completedTrails: { id: string; distance: number }[] = [];
-  private currentStrikes = 0;
   private totalStrikes = 0;
   private strikePacePenaltyMph = 0.25;
+  private consecutiveSecWithoutStrikes = 0;
 
   // timer
   private tickTimer: ReturnType<typeof setInterval> | null = null;
@@ -161,10 +161,13 @@ export class SessionEngine {
       this.tickTimer = null;
     }
     if (this.phase === "FOCUS") {
-      this.currentStrikes++;
       this.totalStrikes++;
-      let next = this.currentPaceMph - this.strikePacePenaltyMph;
-      this.currentPaceMph = Math.max(this.minPaceMph, next);
+      this.consecutiveSecWithoutStrikes = 0;
+      // Begin dropping pace with pace resets if user has 3+ strikes (addon to increases this)
+      if (this.totalStrikes === 3) {
+        let next = this.currentPaceMph - this.strikePacePenaltyMph;
+        this.currentPaceMph = Math.max(this.minPaceMph, next);
+      }
     }
     // could emit a PAUSED event later if you want
     this.isPaused = true;
@@ -252,22 +255,10 @@ export class SessionEngine {
     this.bus.emit("SESSION_TICK", { snapshot: this.buildSnapshot() });
 
     if (this.phase === "FOCUS") {
+      this.consecutiveSecWithoutStrikes += 1;
       // pace increase?
-      if (
-        this.paceIncreaseIntervalSec > 0 &&
-        this.elapsedInPhaseSec > 0 &&
-        this.elapsedInPhaseSec % this.paceIncreaseIntervalSec === 0 &&
-        this.currentStrikes === 0
-      ) {
+      if (this.canBumpPace()) {
         this.bumpPace();
-      }
-
-      if (
-        this.paceIncreaseIntervalSec > 0 &&
-        this.elapsedInPhaseSec % this.paceIncreaseIntervalSec === 0 &&
-        this.currentStrikes > 0
-      ) {
-        this.skipPaceBump();
       }
 
       //increaseDistance
@@ -301,16 +292,18 @@ export class SessionEngine {
     }
   }
 
+  // if user under 3 strikes we simply reset consecutiveTImeWithoutStrikes.
+  // Later we can add if user has 3+ strikes we decrease pace.
+  // Later we can add if user has 5+ strikes user wil need total strikes times the amount of time it takes to increase pace
+  private canBumpPace(): boolean {
+    return this.getConsecutiveSecWithoutStrikes() >= this.getPaceIncreaseIntervalSec();
+  }
+
   private bumpPace() {
     const next = this.currentPaceMph + this.paceIncreaseValueMph;
     this.currentPaceMph = Math.min(next, this.maxPaceMph);
+    this.consecutiveSecWithoutStrikes = 0;
     this.bus.emit("SESSION_PACE_INCREASED", { snapshot: this.buildSnapshot() });
-  }
-
-  private skipPaceBump() {
-    if (this.currentStrikes === 0) return;
-    this.currentStrikes--;
-    //this.bus.emit("SKIPPED_PACE_INCREASE");
   }
 
   private handleSetComplete() {
@@ -390,15 +383,29 @@ export class SessionEngine {
   public getShortBreakTimeSec(): number {
     return this.shortBreakSec;
   }
-  
-  public getLongBreakTimeSec(): number
-  {
+
+  public getLongBreakTimeSec(): number {
     return this.longBreakSec;
   }
-  
-  public getCompletedSets(): number
-  {
+
+  public getCompletedSets(): number {
     return this.completedSets;
+  }
+
+  public getConsecutiveSecWithoutStrikes() {
+    return this.consecutiveSecWithoutStrikes;
+  }
+
+  public getTotalStrikes(): number {
+    return this.totalStrikes;
+  }
+
+  public getCurrentPace(): number {
+    return this.currentPaceMph;
+  }
+
+  public getPaceIncreaseValueMph() {
+    return this.paceIncreaseValueMph;
   }
   /* -------------------- snapshot -------------------- */
 
@@ -423,8 +430,8 @@ export class SessionEngine {
       shortBreakSec: this.shortBreakSec,
       longBreakSec: this.longBreakSec,
       autoContinue: this.autoContinue,
-      currentStrikes: this.currentStrikes,
       totalStrikes: this.totalStrikes,
+      consecutiveSecWithoutStrikes: this.getConsecutiveSecWithoutStrikes(),
       tokenBonusFlat: this.tokenBonusFlat,
       tokenBonusPercent: this.tokenBonusPercent,
       startedAt: this.startTimestampMs,

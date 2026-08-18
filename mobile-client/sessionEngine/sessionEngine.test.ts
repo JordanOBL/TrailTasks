@@ -39,7 +39,7 @@ describe("Session Engine", () => {
     tokenBonusPercent: 0,
     backpack: [],
   };
-  const bus = EventBus.getInstance();
+  let bus: EventBus;
 
   const sessionStartedCb = jest.fn();
   const sessionPhaseChangeCb = jest.fn();
@@ -49,15 +49,7 @@ describe("Session Engine", () => {
   const sessionBreakSkippedCb = jest.fn();
   const sessionDistanceIncreasedCb = jest.fn();
   const sessionCompletedCb = jest.fn();
-
-  bus.on("SESSION_STARTED", sessionStartedCb);
-  bus.on("SESSION_PHASE_CHANGED", sessionPhaseChangeCb);
-  bus.on("SESSION_TICK", sessionTickCb);
-  bus.on("SESSION_PAUSED", sessionPausedCb);
-  bus.on("SESSION_TRAIL_COMPLETED", sessionTrailCompletedCb);
-  bus.on("SESSION_BREAK_SKIPPED", sessionBreakSkippedCb);
-  bus.on("SESSION_DISTANCE_INCREASED", sessionDistanceIncreasedCb);
-  bus.on("SESSION_COMPLETED", sessionCompletedCb);
+  const sessionPaceIncreasedCb = jest.fn();
 
   let engine: SessionEngine;
 
@@ -66,17 +58,28 @@ describe("Session Engine", () => {
   });
 
   beforeEach(() => {
+    bus = EventBus.getInstance();
+    bus.on("SESSION_STARTED", sessionStartedCb);
+    bus.on("SESSION_PHASE_CHANGED", sessionPhaseChangeCb);
+    bus.on("SESSION_TICK", sessionTickCb);
+    bus.on("SESSION_PAUSED", sessionPausedCb);
+    bus.on("SESSION_TRAIL_COMPLETED", sessionTrailCompletedCb);
+    bus.on("SESSION_BREAK_SKIPPED", sessionBreakSkippedCb);
+    bus.on("SESSION_DISTANCE_INCREASED", sessionDistanceIncreasedCb);
+    bus.on("SESSION_PACE_INCREASED", sessionPaceIncreasedCb);
+    bus.on("SESSION_COMPLETED", sessionCompletedCb);
+
     engine = new SessionEngine(bus, sessionConfig, userMock, false);
     engine.register();
   });
 
   afterAll(() => {
     jest.useRealTimers();
-    bus.clear();
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    bus.clear();
   });
 
   test("Start begins a session and emits SESSION_STARTED with an initial snapshot", async () => {
@@ -100,7 +103,7 @@ describe("Session Engine", () => {
     expect(snapshot.elapsedInPhaseSec).toEqual(0);
   });
 
-  test("Timer updates session elaped time and total time after started", async () => {
+  test("Timer updates session elapsed time and total time after started", async () => {
     engine.start();
 
     let snapshot = engine.buildSnapshot();
@@ -128,6 +131,55 @@ describe("Session Engine", () => {
     expect(snapshot.elapsedInPhaseSec).toEqual(elapsedSecNeededForDistanceIncrease);
     expect(snapshot.totalDistanceMiles).toEqual(0.01);
   });
+  test("Session/users pace is increased when user goes paceIncreaseIntervalSec without a strike", async () => {
+    let snapshot = engine.buildSnapshot();
+    expect(snapshot.totalDistanceMiles).toEqual(0);
+    expect(snapshot.totalStrikes).toEqual(0);
+
+    const paceIncreaseIntervalSec = engine.getPaceIncreaseIntervalSec();
+
+    engine.start();
+
+    jest.advanceTimersByTime(paceIncreaseIntervalSec * 1000);
+
+    snapshot = engine.buildSnapshot();
+
+    expect(snapshot.totalElapsedSec).toEqual(paceIncreaseIntervalSec);
+    expect(snapshot.elapsedInPhaseSec).toEqual(paceIncreaseIntervalSec);
+    expect(sessionPaceIncreasedCb).toHaveBeenCalledTimes(1);
+  });
+  test("Session users have to wait paceIncreaseIntervalSec of focus time without gaining a strike to increase pace, strikes reset time", async () => {
+    let snapshot = engine.buildSnapshot();
+    expect(snapshot.totalStrikes).toEqual(0);
+    expect(snapshot.consecutiveSecWithoutStrikes).toEqual(0);
+
+    const paceIncreaseIntervalSec = engine.getPaceIncreaseIntervalSec();
+    const initialPaceMph = engine.getCurrentPace();
+
+    engine.start();
+
+    //Go 5 seconds then incur strike
+    jest.advanceTimersByTime(5000);
+    snapshot = engine.buildSnapshot();
+    expect(snapshot.consecutiveSecWithoutStrikes).toEqual(5);
+
+    bus.emit("UI_PAUSE_REQUESTED");
+
+    snapshot = engine.buildSnapshot();
+    expect(snapshot.consecutiveSecWithoutStrikes).toEqual(0);
+    expect(snapshot.totalElapsedSec).toEqual(5);
+    expect(snapshot.totalStrikes).toEqual(1);
+
+    bus.emit("UI_RESUME_REQUESTED");
+
+    jest.advanceTimersByTime(paceIncreaseIntervalSec * 1000);
+    snapshot = engine.buildSnapshot();
+
+    expect(snapshot.consecutiveSecWithoutStrikes).toEqual(0);
+    expect(snapshot.totalElapsedSec).toEqual(paceIncreaseIntervalSec + 5);
+    expect(sessionPaceIncreasedCb).toHaveBeenCalled();
+    expect(snapshot.currentPaceMph).toEqual(initialPaceMph + engine.getPaceIncreaseValueMph());
+  });
   test("Session pauses on pause event and gives 1 strike", async () => {
     let snapshot = engine.buildSnapshot();
     expect(snapshot.phase).toEqual("IDLE");
@@ -147,7 +199,6 @@ describe("Session Engine", () => {
     bus.emit("UI_PAUSE_REQUESTED");
 
     snapshot = engine.buildSnapshot();
-    expect(snapshot.currentStrikes).toEqual(1);
     expect(snapshot.totalStrikes).toEqual(1);
     expect(snapshot.isPaused).toBeTruthy();
     expect(sessionPausedCb).toBeCalledWith({ snapshot });
@@ -206,7 +257,7 @@ describe("Session Engine", () => {
       reason: "set_completed",
     });
   });
-  test("Session ends after long break time completed is autocontinue false", async () => {
+  test("Session ends after long break time completed if autocontinue false", async () => {
     let snapshot = engine.buildSnapshot();
     const focusTimeSec = engine.getFocusTimeSec();
     const shortBreakTimeSec = engine.getShortBreakTimeSec();
@@ -235,6 +286,29 @@ describe("Session Engine", () => {
     expect(sessionCompletedCb).toBeCalledWith({
       snapshot,
       reason: "all_sets_completed",
+    });
+  });
+  test("Session ends early after UI_QUIT_REQUESTED", async () => {
+    let snapshot = engine.buildSnapshot();
+    engine.start();
+
+    snapshot = engine.buildSnapshot();
+
+    expect(snapshot.phase).toEqual("FOCUS");
+
+    jest.advanceTimersByTime(5000);
+
+    snapshot = engine.buildSnapshot();
+    expect(snapshot.totalElapsedSec).toEqual(5);
+
+    bus.emit("UI_QUIT_REQUESTED");
+    snapshot = engine.buildSnapshot();
+
+    expect(snapshot.phase).toEqual("COMPLETED");
+
+    expect(sessionCompletedCb).toBeCalledWith({
+      snapshot,
+      reason: "ended_early",
     });
   });
 });

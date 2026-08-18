@@ -22,12 +22,13 @@ describe("EventBus", () => {
       shortBreakSec: 300,
       longBreakSec: 900,
       autoContinue: false,
-      currentStrikes: 0,
       completedTrails: [],
+      totalStrikes: 0,
       isPaused: false,
       tokenBonusFlat: 0,
       tokenBonusPercent: 0,
-      startedAt: null,
+        startedAt: null,
+      consecutiveSecWithoutStrikes: 0
     };
 
     afterEach(() => {
