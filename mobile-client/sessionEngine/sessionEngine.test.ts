@@ -79,6 +79,7 @@ describe("Session Engine", () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.clearAllTimers();
     bus.clear();
   });
 

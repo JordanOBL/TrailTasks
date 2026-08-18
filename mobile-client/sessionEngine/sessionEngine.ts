@@ -335,7 +335,7 @@ export class SessionEngine {
 
   private shouldTakeLongBreak(): boolean {
     // example rule: every 3rd set → long break
-    return this.completedSets % this.totalSets === 0;
+    return this.completedSets % 3 === 0;
   }
 
   public shouldIncreaseDistance(): boolean {
