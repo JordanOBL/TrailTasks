@@ -278,9 +278,9 @@ export class SessionEngine {
             reason: "break_ended",
           });
         } else {
-          if (this.autoContinue && !this.extraSets ) {
+          if (this.autoContinue) {
             // auto start another session
-            this.extraSets = 3;
+            this.extraSets = this.totalSets;
             this.elapsedInPhaseSec = 0;
             this.phase = "FOCUS";
             this.bus.emit("SESSION_PHASE_CHANGED", {
