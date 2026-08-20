@@ -55,7 +55,7 @@ const NewSessionOptions = () => {
   });
 
   const [loading, setLoading] = useState<boolean>(true);
-
+ const [error, setError] = useState<boolean>(false);
   const [categories, setCategories] = useState<Session_Category[]>([]);
   const [currentTrail, setCurrentTrail] = useState<Trail | null>(null);
   const [currentPark, setCurrentPark] = useState<Park | null>(null);
@@ -89,6 +89,7 @@ const NewSessionOptions = () => {
         }
       } catch (e) {
         handleError(e, "Error in NewSessionOptions");
+        setError(true);
       }
     })();
 
@@ -170,7 +171,7 @@ const NewSessionOptions = () => {
     return <ActivityIndicator />;
   }
 
-  if (!sessionEngineMgr || !persistenceService) {
+  if (!sessionEngineMgr || !persistenceService || error) {
     return (
       <View>
         <Text>Cannot Create New Session</Text>

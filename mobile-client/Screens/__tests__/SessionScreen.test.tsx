@@ -95,6 +95,6 @@ describe('SessionScreen', () =>
         );
         
         expect(await screen.findByText("Start Session")).toBeTruthy();
-        expect(await screen.findByTestId("settings-modal")).toBeDefined()
+        expect(await screen.findByTestId("settings-modal")).toBeDefined();
     })
 })
