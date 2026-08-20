@@ -186,7 +186,6 @@ describe("SessionScreen", () => {
     });
     const user = userEvent.setup();
     render(<EnhancedSessionScreen />);
-    screen.debug();
     const saveAndCloseButton = await screen.findByText("Save & Close");
     const backpackButton = await screen.findByText("Backpack");
 

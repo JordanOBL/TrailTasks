@@ -72,12 +72,6 @@ const NewSessionOptions = () => {
   const [currentPark, setCurrentPark] = useState<Park | null>(null);
   const [usersAddonSelection, setUsersAddonSelection] = useState<Addon[]>([]);
 
-  if (!user)
-  {
-    setLoading(false);
-    setError(true);
-  }
-
   const closeBackpackModal = () =>
   {
     const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
