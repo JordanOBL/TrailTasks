@@ -1,54 +1,133 @@
-import { Button, Text } from 'react-native';
-import {beforeAll, describe, expect, jest, test} from '@jest/globals';
-import { createMockUserBase, createUser } from '../../__mocks__/UserModel';
-import {fireEvent, render, screen} from '@testing-library/react-native'
-import { useDatabase, withObservables } from '@nozbe/watermelondb/react';
+import { afterAll, describe, expect, jest, test} from '@jest/globals';
+import { createMockUserBase } from '../../__mocks__/UserModel';
+import { render, screen} from '@testing-library/react-native'
 
 import SessionScreen from '../SessionScreen';
-import { TestWrapper } from '../../__mocks__/TestWrapper';
+import { Session_Category, Trail, User } from '../../watermelon/models';
 
+const mockUser = createMockUserBase({ trailId: "1" });
+const mockTrail: Trail = { trailName: "TestTrail", id: "1", park: { id: 1, parkName:'MockPark'} } as Trail;
 jest.mock('../../contexts/ThemeProvider', () => {
     return {
         useTheme: () => ({ theme: 'dark' }),
     };
 });
-
-jest.mock('@nozbe/watermelondb/react', () => {
-    return {
-        withObservables: jest.fn((propsMapper) => (Component: any) => {
-            return (props: any) => <Component {...props} {...propsMapper(props)} />;
-        }),
-        useDatabase: jest.fn(() => {
+const mockDb = {
+    get: jest.fn().mockImplementation((arg) =>
+    {
+        if (arg === 'trails')
+        {
             return {
-                get: jest.fn(),
-                write: jest.fn(),
-            };
-        }),     
+                query: () => ({
+                    fetch: () => [mockTrail],
+                }),
+            }
+    
+        } else if (arg === 'session_categories')
+        {
+            return {
+                query: () => ({
+                    fetch: (): Session_Category[] => [{id: '1', sessionCategoryName: 'gaming'}] as Session_Category[],
+                }),
+            }
+        }
 
-    };
-})
+    })
+};
+jest.mock("@nozbe/watermelondb/react", () => {
+  return {
+      useDatabase: jest.fn(() => mockDb),
+      withObservables: jest.fn(() => jest.fn())
+  };
+});
+
+const mockPersistenceCleanup = jest.fn();
+const mockRewardCleanup = jest.fn();
+
+const mockPersistenceRegister = jest.fn(() => mockPersistenceCleanup);
+const mockRewardRegister = jest.fn(() => mockRewardCleanup);
+
+jest.mock("../../services/AuthContext", () => ({
+  useAuthContext: () => ({
+    user: mockUser as User,
+    isProMember: false,
+  }),
+}));
+
+jest.mock("../../persistenceService/persistenceService", () => {
+  return jest.fn().mockImplementation(() => ({
+    register: mockPersistenceRegister,
+  }));
+});
+
+jest.mock("../../contexts/ServiceProvider", () => {
+    return {
+        useServices: jest.fn(() =>
+        ({
+            sessionEngineMgr: {
+                resetCurrentSessionEngine: jest.fn()
+            },
+            bus: {
+                on: jest.fn(() => ({ unregister: jest.fn()}))
+            },
+            persistenceService: jest.fn()
+        }))
+    }
+});
+
+jest.mock("../../services/RewardService", () => {
+  return jest.fn().mockImplementation(() => ({
+    register: mockRewardRegister,
+  }));
+});
 
 jest.mock('../../components/DistanceProgressBar', () => {
-    return {
-        EnhancedDistanceProgressBar: jest.fn()
-    };
+    return jest.fn(() => { return (<></>) } )
+    
 });
 
+afterAll(() =>
+{
+    jest.clearAllMocks();
+})
 
-describe('SessionScreen', () => {
-    let testUser:any;
-    beforeAll(async () => {
-        const db = useDatabase()
-
-        testUser = await createUser(db, createMockUserBase())
-    })
-   
-    test('renders SessionScreen correctly', async () => {
- 
-        render(<TestWrapper testUser={testUser}>
+describe('SessionScreen', () =>
+{
+    test("Initially renders session options by default", async () =>
+    {
+        render(
             <SessionScreen />
-        </TestWrapper>);
-        expect(screen.getByText('Start Session')).toBeTruthy();
-    })
+        );
+        
+        expect(await screen.findByText("Start Session")).toBeTruthy();
+        expect(await screen.findByTestId("settings-modal")).toBeDefined();
+    });
+    test("Spinner disappears and error appears", async () =>
+    {
+    mockDb.get.mockImplementation((arg) => {
+        if (arg === 'session_categories') {
+          return {
+            query: () => ({
+              fetch: (): Session_Category[] => [{id: '1', sessionCategoryName: 'gaming'}] as Session_Category[],
+            }),
+          };
+        }
 
-});
+        if (arg === 'trails') {
+          return {
+            query: () => ({
+              fetch: () => [],
+            }),
+          };
+        }
+
+        throw new Error(`Unexpected collection: ${arg}`);
+      });
+
+      render(<SessionScreen />);
+
+      expect(await screen.findByText("Cannot Create New Session")).toBeTruthy();
+      expect(await screen.findByText("Try Restarting App")).toBeTruthy();
+    });
+
+})

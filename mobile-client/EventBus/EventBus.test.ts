@@ -28,7 +28,8 @@ describe("EventBus", () => {
       tokenBonusFlat: 0,
       tokenBonusPercent: 0,
         startedAt: null,
-      consecutiveSecWithoutStrikes: 0
+        consecutiveSecWithoutStrikes: 0,
+      extraSets: 0
     };
 
     afterEach(() => {

@@ -397,7 +397,7 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route }:
             transparent={true}
             visible={isSettingsModalVisible}
             onRequestClose={() => setSettingsModalVisible(false)}
-            testID="settings-modal"
+            testID="group-settings-modal"
           >
             <View style={styles.modalOverlay}>
               <ScrollView style={styles.modalContent}>

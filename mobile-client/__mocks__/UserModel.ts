@@ -1,6 +1,7 @@
 // __mocks__/UserModel.ts
+import { jest } from '@jest/globals';
 
-import { Database, Model } from "@nozbe/watermelondb";
+import { Database } from "@nozbe/watermelondb";
 
 import { User } from "../watermelon/models";
 
@@ -43,7 +44,7 @@ export function createMockUserBase(overrides?: Partial<User>): User {
   return {
     ...baseUser,
     ...overrides,
-  }
+  } as User
 }
 
 export async function createUser(database: Database, newUser: any){
