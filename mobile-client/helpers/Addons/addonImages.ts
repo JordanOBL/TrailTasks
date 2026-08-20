@@ -1,3 +1,26 @@
+enum addonName {
+  "HikingPolesI",
+    "HikingPolesII",
+    "HikingPolesIII",
+    "WaterBottleI",
+    "WaterBottleII",
+    "WaterBottleIII",
+    "TrailMixI",
+    "TrailMixII",
+    "TrailMixIII",
+    "FirstAidI",
+    "FirstAidII",
+    "FirstAidIII",
+    "RunningShoesI",
+    "RunningShoesII",
+    "RunningShoesIII",
+    "TreasureMapI",
+    "TreasureMapII",
+    "TreasureMapIII",
+    "UltralightI",
+    "UltralightII",
+    "UltralightIII"
+}
 const addonImages = {
   HikingPolesI: require('../../assets/addons/HikingPoles1.png'),
   HikingPolesII: require('../../assets/addons/HikingPoles2.png'),

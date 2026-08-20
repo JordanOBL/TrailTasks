@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { Badge, Button } from "react-native-paper";
-import { Park, Trail, User, User_Addon } from "../watermelon/models";
-import React, { useEffect, useRef, useState } from "react";
+import { Addon, Park, Trail } from "../watermelon/models";
+import React, { useEffect, useState } from "react";
 
 import BackpackModal from "../components/Session/BackpackModal";
 import EnhancedDistanceProgressBar from "../components/DistanceProgressBar";
@@ -13,7 +13,6 @@ import formatCountdown from "../helpers/Timer/formatCountdown";
 import handleError from "../helpers/ErrorHandler";
 import { useAuthContext } from "../services/AuthContext";
 import { useDatabase } from "@nozbe/watermelondb/react";
-import { useNavigation } from "@react-navigation/native";
 import { useServices } from "../contexts/ServiceProvider";
 
 const DEFAULT_BACKPACK = [
@@ -22,11 +21,23 @@ const DEFAULT_BACKPACK = [
   { addon: null, minimumTotalMiles: 175.0 },
   { addon: null, minimumTotalMiles: 375.0 },
 ];
+
+const baseAddonConfig = {
+  totalSets: 3,
+  completedTrails: 0,
+  currentPaceMph: 2,
+  minPaceMph: 2,
+  maxPaceMph: 5.5,
+  paceIncreaseValueMph: 0.25,
+  paceIncreaseIntervalSec: 900,
+  tokenBonusFlat: 0,
+  tokenBonusPercent: 0,
+};
+
 const NewSessionOptions = () => {
   const db = useDatabase();
   const { user } = useAuthContext();
-  const { bus, sessionEngineMgr, persistenceService } = useServices();
-  const navigation = useNavigation();
+  const { sessionEngineMgr, persistenceService } = useServices();
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(true);
   const [isBackpackModalVisible, setIsBackpackModalVisible] = useState(false);
   const [sessionCfg, setSessionCfg] = useState<SessionCfg>({
@@ -55,10 +66,52 @@ const NewSessionOptions = () => {
   });
 
   const [loading, setLoading] = useState<boolean>(true);
- const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
   const [categories, setCategories] = useState<Session_Category[]>([]);
   const [currentTrail, setCurrentTrail] = useState<Trail | null>(null);
   const [currentPark, setCurrentPark] = useState<Park | null>(null);
+  const [usersAddonSelection, setUsersAddonSelection] = useState<Addon[]>([]);
+
+  if (!user)
+  {
+    setLoading(false);
+    setError(true);
+  }
+
+  const closeBackpackModal = () =>
+  {
+    const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
+
+    sessionCfgWithAddons.backpack.forEach(slot => {
+      if (slot.addon) {
+        switch (slot.addon.effectType) {
+          case "min_pace_increase":
+            sessionCfgWithAddons.minPaceMph = slot.addon.effectValue;
+            break;
+          case "max_pace_increase":
+            sessionCfgWithAddons.maxPaceMph = slot.addon.effectValue;
+            break;
+          case "pace_increase_interval":
+            sessionCfgWithAddons.paceIncreaseIntervalSec = slot.addon.effectValue;
+            break;
+          case "pace_increase_value":
+            sessionCfgWithAddons.paceIncreaseValueMph = slot.addon.effectValue;
+            break;
+          //  case "penalty_reduction":
+          //    sessionCfgWithAddons.penaltyValue -= slot.addon.effectValue;
+          //    break;
+          case "trail_token_bonus":
+            sessionCfgWithAddons.tokenBonusFlat += slot.addon.effectValue;
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    setSessionCfg(sessionCfgWithAddons);
+    setIsBackpackModalVisible(false);
+  }
 
   useEffect(() => {
     let alive = true;
@@ -71,6 +124,7 @@ const NewSessionOptions = () => {
           db.get<Session_Category>("session_categories").query().fetch(),
           db.get<Trail>("trails").query(Q.where("id", user?.trailId)).fetch(),
         ]);
+        const usersAddons = await user.usersAddons;
         if (!sc) {
           throw Error("Error getting session categories");
         }
@@ -85,6 +139,7 @@ const NewSessionOptions = () => {
           setCurrentTrail(ct);
           setCurrentPark(park);
           setCategories(sc);
+          setUsersAddonSelection(usersAddons);
           setLoading(false);
         }
       } catch (e) {
@@ -102,80 +157,12 @@ const NewSessionOptions = () => {
     };
   }, [user, db]);
 
-  // const startSession = () => {
-  //     if (!sessionDetails.startTime) {
-  //         NewSessionHandlers.StartSessionClick({
-  //             timer,
-  //             setTimer,
-  //             setSessionDetails,
-  //             sessionDetails,
-  //             user,
-  //             database: watermelonDatabase,
-  //         }).then((newSession: any) => {
-  //             if (newSession) {
-  //                 const sessionDetailsWithAddons = { ...sessionDetails };
-  //                 const timerWithAddons = { ...timer };
 
-  //                 sessionDetailsWithAddons.backpack.forEach((slot) => {
-  //                     if (slot.addon) {
-  //                         switch (slot.addon.effectType) {
-  //                             case 'min_pace_increase':
-  //                                 sessionDetailsWithAddons.minimumPace = slot.addon.effectValue;
-  //                                 timerWithAddons.pace = slot.addon.effectValue;
-  //                                 break;
-  //                             case 'max_pace_increase':
-  //                                 sessionDetailsWithAddons.maximumPace = slot.addon.effectValue;
-  //                                 break;
-  //                             case 'pace_increase_interval':
-  //                                 sessionDetailsWithAddons.paceIncreaseInterval =
-  //                                     slot.addon.effectValue;
-  //                                 break;
-  //                             case 'pace_increase_value':
-  //                                 timerWithAddons.pace += slot.addon.effectValue;
-  //                                 break;
-  //                             case 'penalty_reduction':
-  //                                 sessionDetailsWithAddons.penaltyValue -= slot.addon.effectValue;
-  //                                 break;
-  //                             case 'trail_token_bonus':
-  //                                 sessionDetailsWithAddons.totalTokenBonus +=
-  //                                     slot.addon.effectValue;
-  //                                 break;
-  //                             case 'break_time_reduction':
-  //                                 sessionDetailsWithAddons.breakTimeReduction =
-  //                                     slot.addon.effectValue;
-  //                                 break;
-  //                             default:
-  //                                 break;
-  //                         }
-  //                     }
-  //                 });
-
-  //                 setUserSession(newSession);
-  //                 setSessionDetails((prev) => ({
-  //                     ...sessionDetailsWithAddons,
-  //                     startTime: new Date().toISOString(),
-  //                     isLoading: false,
-  //                 }));
-  //                 setTimer((prev) => ({
-  //                     ...timerWithAddons,
-  //                     isRunning: true,
-  //                     startTime: new Date().toISOString(),
-  //                 }));
-  //             } else {
-  //                 setSessionDetails((prev) => ({
-  //                     ...prev,
-  //                     isLoading: false,
-  //                     isError: 'Error creating new session in StartSessionClick.',
-  //                 }));
-  //             }
-  //         });
-  //     }
-  // };
   if (loading) {
     return <ActivityIndicator />;
   }
 
-  if (!sessionEngineMgr || !persistenceService || error) {
+  if (!user || !sessionEngineMgr || !persistenceService || error) {
     return (
       <View>
         <Text>Cannot Create New Session</Text>
@@ -283,14 +270,14 @@ const NewSessionOptions = () => {
         sessionCategories={categories}
       />
       {/* Backpack Modal */}
-      {/* <BackpackModal
+      <BackpackModal
                 isVisible={isBackpackModalVisible}
-                onClose={() => setIsBackpackModalVisible(false)}
-                sessionCfg={sessionDetails}
-                setSessionDetails={setSessionDetails}
+                onClose={closeBackpackModal}
+                sessionCfg={sessionCfg}
+                setSessionCfg={setSessionCfg}
                 user={user}
-                usersAddons={usersAddons}
-            /> */}
+                usersAddons={usersAddonSelection}
+            />
     </SafeAreaView>
   );
 };

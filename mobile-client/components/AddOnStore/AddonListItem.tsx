@@ -3,11 +3,17 @@ import React from 'react';
 import addonImages from '../../helpers/Addons/addonImages';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { useTheme } from '../../contexts/ThemeProvider';
+import { Addon, User_Addon } from '../../watermelon/models';
 
-const AddonListItem = ({ userAddon, selectAddon, addon }) => {
+interface AddonListItemProps {
+  userAddon: User_Addon;
+  selectAddon: (addon: Addon) => void;
+  addon: Addon;
+}
+
+const AddonListItem = ({ userAddon, selectAddon, addon }: AddonListItemProps) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
-
   return (
     <TouchableOpacity onPress={() => selectAddon(addon)}>
       <View style={styles.container}>
