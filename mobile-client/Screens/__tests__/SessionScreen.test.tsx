@@ -1,4 +1,4 @@
-import { describe, expect, jest, test} from '@jest/globals';
+import { afterAll, describe, expect, jest, test} from '@jest/globals';
 import { createMockUserBase } from '../../__mocks__/UserModel';
 import { render, screen} from '@testing-library/react-native'
 
@@ -86,15 +86,48 @@ jest.mock('../../components/DistanceProgressBar', () => {
     
 });
 
+afterAll(() =>
+{
+    jest.clearAllMocks();
+})
+
 describe('SessionScreen', () =>
 {
     test("Initially renders session options by default", async () =>
     {
         render(
-        <SessionScreen />
+            <SessionScreen />
         );
         
         expect(await screen.findByText("Start Session")).toBeTruthy();
         expect(await screen.findByTestId("settings-modal")).toBeDefined();
-    })
+    });
+    test("Spinner disappears and error appears", async () =>
+    {
+    mockDb.get.mockImplementation((arg) => {
+        if (arg === 'session_categories') {
+          return {
+            query: () => ({
+              fetch: (): Session_Category[] => [{id: '1', sessionCategoryName: 'gaming'}] as Session_Category[],
+            }),
+          };
+        }
+
+        if (arg === 'trails') {
+          return {
+            query: () => ({
+              fetch: () => [],
+            }),
+          };
+        }
+
+        throw new Error(`Unexpected collection: ${arg}`);
+      });
+
+      render(<SessionScreen />);
+
+      expect(await screen.findByText("Cannot Create New Session")).toBeTruthy();
+      expect(await screen.findByText("Try Restarting App")).toBeTruthy();
+    });
+
 })

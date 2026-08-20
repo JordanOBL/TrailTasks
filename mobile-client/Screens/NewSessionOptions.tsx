@@ -89,6 +89,7 @@ const NewSessionOptions = () => {
         }
       } catch (e) {
         handleError(e, "Error in NewSessionOptions");
+        setLoading(false);
         setError(true);
       }
     })();
