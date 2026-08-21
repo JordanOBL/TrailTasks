@@ -1,4 +1,4 @@
-import {Addon, User_Session} from "../watermelon/models";
+import { Addon, User_Session } from "../watermelon/models";
 export interface SessionDetails {
   startTime: string | null;
   sessionName: string;
@@ -14,18 +14,16 @@ export interface SessionDetails {
   increasePaceOnBreakValue: number;
   strikes: number;
   continueSessionModal: boolean;
-  totalTokenBonus: number
+  totalTokenBonus: number;
   trailTokensEarned: number;
   sessionTokensEarned: number;
   totalDistanceHiked: number;
   isLoading: boolean;
   isError: boolean;
   backpack: {
-    addon: null|Addon;
+    addon: null | Addon;
     minimumTotalMiles: number;
   }[];
-
-  
 }
 export interface SessionCfg {
   session: User_Session | null;
@@ -49,7 +47,7 @@ export interface SessionCfg {
   paceIncreaseIntervalSec?: number;
   tokenBonusFlat?: number;
   tokenBonusPercent?: number;
-  backpack: { addon: Addon | null, minimumTotalMiles: number }[];
+  backpack: { addon: Addon | null; minimumTotalMiles: number }[];
 }
 export interface JoinedUserTrail {
   _changed: string;
@@ -79,37 +77,37 @@ export interface JoinedUserTrail {
   username: string;
 }
 
-export type SessionCategories = {
-  1: "Chores",
-  2: "Cooking",
-  3: "Crafts",
-  4: "DIY Project",
-  5: "Drawing",
-  6: "Driving",
-  7: "Errands",
-  8: "Family",
-  9: "Finance",
-  10: "Gaming",
-  11: "Gardening",
-  12: "Gym",
-  13: "Hiking",
-  14: "Learning",
-  15: "Meditating",
-  16: "Music",
-  17: "Other",
-  18: "Outdoors",
-  19: "Personal Projects",
-  20: "Pets",
-  21: "Photography",
-  22: "Planning",
-  23: "Reading",
-  24: "Self Care",
-  25: "Social",
-  26: "Sports",
-  27: "Study",
-  28: "Work",
-  29: "Workout",
-  30: "Writing",
-  31: "Volunteering",
-  32: "Yoga",
+export type SessionCateegories = {
+  1: "Chores";
+  2: "Cooking";
+  3: "Crafts";
+  4: "DIY Project";
+  5: "Drawing";
+  6: "Driving";
+  7: "Errands";
+  8: "Family";
+  9: "Finance";
+  10: "Gaming";
+  11: "Gardening";
+  12: "Gym";
+  13: "Hiking";
+  14: "Learning";
+  15: "Meditating";
+  16: "Music";
+  17: "Other";
+  18: "Outdoors";
+  19: "Personal Projects";
+  20: "Pets";
+  21: "Photography";
+  22: "Planning";
+  23: "Reading";
+  24: "Self Care";
+  25: "Social";
+  26: "Sports";
+  27: "Study";
+  28: "Work";
+  29: "Workout";
+  30: "Writing";
+  31: "Volunteering";
+  32: "Yoga";
 };
