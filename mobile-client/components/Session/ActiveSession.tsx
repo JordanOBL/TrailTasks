@@ -140,8 +140,6 @@ const ActiveSession = ({ user, currentTrail }: any) => {
     return <Text>No Session</Text>;
   }
 
-  console.log(snapshot);
-
   return (
     <SafeAreaView style={styles.container} testID="active-session-screen">
       <ScrollView style={{ paddingBottom: 80 }}>
