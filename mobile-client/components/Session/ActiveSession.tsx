@@ -1,11 +1,5 @@
 import {
 	Achievement,
-	Trail,
-	User,
-	User_Completed_Trail,
-	User_Purchased_Trail,
-	User_Queued_Trail,
-	User_Session,
 } from '../../watermelon/models';
 import {
 	Alert,
@@ -17,32 +11,16 @@ import {
 	Text,
 	View,
 } from 'react-native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SessionEngine, SessionSnapshot } from '../../sessionEngine/sessionEngine';
-import {
-	pauseSession,
-	resumeSession,
-	skipBreak,
-	updateSession,
-} from '../../helpers/Timer/timerFlow';
-import {useFocusEffect, useNavigation, usePreventRemove} from '@react-navigation/native'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
 
-import { AchievementsWithCompletion } from '../../types/achievements';
-import ActiveSessionBackpack from './ActiveSessionBackpack';
-import ContinueSessionModal from './ContinueSessionModal';
+import { useNavigation, usePreventRemove} from '@react-navigation/native'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
+
 import EnhancedDistanceProgressBar from '../DistanceProgressBar';
 import Icon from 'react-native-vector-icons/Ionicons';
-import NextHundredthMileSeconds from '../../helpers/Timer/nextHundredthMileSeconds';
 import QuitSessionModal from './QuitSessionModal';
-import Rewards from '../../helpers/Session/Rewards';
-import SessionEngineManager from '../../sessionEngine/SessionEngineManager';
 import { SessionSnapshotPayload } from '../../EventBus/EventBus';
 import SessionTimer from '../Timer/SessionTimer';
-import Timer from '../../types/timer';
-import { achievementManagerInstance } from '../../helpers/Achievements/AchievementManager';
-import formatTime from '../../helpers/formatTime';
-import handleError from '../../helpers/ErrorHandler';
-import { useAuthContext } from '../../services/AuthContext';
 import useBusEvent from '../../EventBus/useBusEvent';
 import { useDatabase } from '@nozbe/watermelondb/react';
 import { useServices } from '../../contexts/ServiceProvider';
@@ -50,20 +28,12 @@ import {withObservables} from '@nozbe/watermelondb/react';
 
 const ActiveSession = ({user, 
 	currentTrail,
-	completedTrails,
-	queuedTrails,
-	userAchievements,
-	userPurchasedTrails }: any) => {
-	// const {user} = useAuthContext()
+ }: any) => {
 	const navigation = useNavigation()
-	const watermelonDatabase = useDatabase();
 	const {bus, sessionEngineMgr} = useServices()
 	const sEngineRef = useRef<SessionEngine|null>(null)
-	const [earnedAchievements, setEarnedAchievements] = useState<Achievement[]>([]);
-	const [appState, setAppState] = useState(AppState.currentState);
 	const [showQuitSessionModal, setShowQuitSessionModal] = useState(false);
     const [snapshot, setSnapshot] = useState<SessionSnapshot | null>(null);
-
 
 	useEffect(() => {
 		if(sessionEngineMgr?.getCurrent()){
