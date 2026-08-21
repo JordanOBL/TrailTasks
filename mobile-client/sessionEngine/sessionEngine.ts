@@ -34,6 +34,7 @@ export interface SessionSnapshot {
   consecutiveSecWithoutStrikes: number;
   extraSets: number;
 }
+
 export class SessionEngine {
   static instance: SessionEngine | null;
   private bus: EventBus;
