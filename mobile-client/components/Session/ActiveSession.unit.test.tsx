@@ -156,7 +156,7 @@ describe("active Session UI screen", () => {
 
     expect(mockBus.emit).toHaveBeenCalledWith("UI_PAUSE_REQUESTED");
   });
-  test("The pause button sets snapshot pahse to pause", async () => {
+  test("ause/resume button emits UI_RESUME_REQUESTED when snapshot is paused", async () => {
     const user = userEvent.setup();
     mockSnapshot.isPaused = true;
 
