@@ -59,7 +59,7 @@ const ActiveSession = ({user,
 	// 		]);
 	// 	},
 	// 	[]
-	// );	
+	// );
 
 	// const checkUserSessionAchievements = async () => {
 	// 	const results = await achievementManagerInstance.checkUserSessionAchievements(
@@ -149,7 +149,7 @@ const ActiveSession = ({user,
 	// 				setSnapshot(prev => ({...prev!, isPaused: next}))
 	// 				sessionEngineMgr?.getCurrent()?.pause()
 							
-	// 			} 
+	// 			}
 	// 			// @ts-ignore
 	// 			setAppState(nextAppState);
 	// 		}
@@ -173,9 +173,10 @@ const ActiveSession = ({user,
 	// 	}, [])
 	// );
 
+	const shouldPreventRemove = snapshot && snapshot.phase !== "COMPLETED" ? true : false;
 	//This disallows an active session to leave
 	//leaving kills the session.
-	usePreventRemove(true, ({data}) => {
+	usePreventRemove(shouldPreventRemove, ({data}) => {
 		//@ts-ignore
 		setSnapshot(prev => ({...prev, isPaused: true}))
 		bus.emit('UI_PAUSE_REQUESTED')
