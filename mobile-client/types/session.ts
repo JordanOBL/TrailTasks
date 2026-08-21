@@ -78,3 +78,38 @@ export interface JoinedUserTrail {
   updated_at: number;
   username: string;
 }
+
+export type SessionCategories = {
+  1: "Chores",
+  2: "Cooking",
+  3: "Crafts",
+  4: "DIY Project",
+  5: "Drawing",
+  6: "Driving",
+  7: "Errands",
+  8: "Family",
+  9: "Finance",
+  10: "Gaming",
+  11: "Gardening",
+  12: "Gym",
+  13: "Hiking",
+  14: "Learning",
+  15: "Meditating",
+  16: "Music",
+  17: "Other",
+  18: "Outdoors",
+  19: "Personal Projects",
+  20: "Pets",
+  21: "Photography",
+  22: "Planning",
+  23: "Reading",
+  24: "Self Care",
+  25: "Social",
+  26: "Sports",
+  27: "Study",
+  28: "Work",
+  29: "Workout",
+  30: "Writing",
+  31: "Volunteering",
+  32: "Yoga",
+};

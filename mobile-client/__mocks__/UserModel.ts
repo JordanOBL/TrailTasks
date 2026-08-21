@@ -11,7 +11,7 @@ export function createMockUserBase(overrides?: Partial<User>): User {
     // Basic fields so your code can read them
     username: 'mockusername',
     email: 'mockemail@example.com',
-    // ... any other fields used in your code
+    // ... any other fields used in your code 
  
     password: 'mockPassword',
     dailyStreak: 0,

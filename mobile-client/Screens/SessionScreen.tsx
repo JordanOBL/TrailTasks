@@ -1,40 +1,22 @@
-import {ActivityIndicator, Pressable, StyleSheet, Text, View} from 'react-native';
-import { EventBus, RewardsCalculatedPayload } from '../EventBus/EventBus';
-import React, {useEffect, useRef, useState} from 'react';
-import {
-  Trail,
-  User,
-  User_Achievement,
-} from '../watermelon/models';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import { RewardsCalculatedPayload } from '../EventBus/EventBus';
+import React, {useState} from 'react';
+
 import { darkTheme, lightTheme } from '../theme';
 
-import {AchievementsWithCompletion} from '../types/achievements';
 import EnhancedActiveSession from '../components/Session/ActiveSession';
-import GroupResultsScreen from './GroupResultsScreen';
 import NewSessionOptions from './NewSessionOptions';
 import { Rewards } from '../services/RewardService';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {SessionDetails} from '../types/session';
-import SessionEngineManager from '../sessionEngine/SessionEngineManager'
 import { SessionSnapshot } from '../sessionEngine/sessionEngine';
 import SoloResultsScreen from './SoloResultsScreen';
 import {useAuthContext} from '../services/AuthContext';
-import {useDatabase} from '@nozbe/watermelondb/react';
 import useEventBus from '../EventBus/useBusEvent'
-import { useInternetConnection } from "../contexts/InternetConnectionProvider";
 import { useKeepAwake } from '@sayem314/react-native-keep-awake';
-import {useNavigation} from '@react-navigation/native';
 import { useServices } from '../contexts/ServiceProvider';
 import {useTheme} from '../contexts/ThemeProvider';
 import {withObservables} from '@nozbe/watermelondb/react';
 
-interface Props {
-  user: User;
-  setUser: any;
-  currentTrail: Trail;
-  userAchievements: User_Achievement[];
-  initialSessionDetails?: SessionDetails;
-}
 
 type UI_VIEWS = 'LOADING' | 'OPTIONS' | 'ACTIVE' | 'REWARDS_SOLO' | 'REWARDS_GROUP'
 
@@ -127,15 +109,16 @@ const SessionScreen = () =>
   );
 };
 
-// const enhance = withObservables(['user', 'userAchievements', 'currentTrail'], ({user}) => ({
-//   user: user.observe(),
-//   userAchievements: user.usersAchievements.observe(),
-//   currentTrail: user.trail,
+const enhance = withObservables(['user', 'userAchievements', 'currentTrail'], ({user}) => ({
+  user: user.observe(),
+  userAchievements: user.usersAchievements.observe(),
+  currentTrail: user.trail,
 
-// }));
+}));
 
-// const EnhancedSessionScreen = enhance(SessionScreen);
-export default SessionScreen;
+//Enhanced because if a user leaves backpack modal to buy an addon, this reloads the session screen automatically following the user, so when they go back to use the addon they purchased it will be there
+const EnhancedSessionScreen = enhance(SessionScreen);
+export default EnhancedSessionScreen;
 
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) => StyleSheet.create({
   container: {flex: 1},
