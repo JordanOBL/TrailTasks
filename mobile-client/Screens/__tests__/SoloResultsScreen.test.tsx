@@ -64,13 +64,7 @@ describe("Solo Results Screen", () => {
   });
 
   test("renders fallback when snapshot is missing", async () => {
-    render(
-      <SoloResultScreen
-        rewards={mockRewards}
-        snapshot={undefined as unknown as SessionSnapshot}
-        resetSession={resetSession}
-      />,
-    );
+    render(<SoloResultScreen rewards={mockRewards} snapshot={null} resetSession={resetSession} />);
 
     expect(await screen.findByText("Unable to load session rewards...")).toBeDefined();
   });

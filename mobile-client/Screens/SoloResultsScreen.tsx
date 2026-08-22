@@ -9,12 +9,11 @@ import { useTheme } from "../contexts/ThemeProvider";
 
 interface Props {
   rewards: Rewards;
-  snapshot: SessionSnapshot;
+  snapshot: SessionSnapshot | null;
   resetSession: () => void;
 }
 
 const SoloResultsScreen = ({ rewards, snapshot, resetSession }: Props) => {
-  console.log("Rendering SoloResultsScreen with rewards:", rewards, "and snapshot:", snapshot);
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
