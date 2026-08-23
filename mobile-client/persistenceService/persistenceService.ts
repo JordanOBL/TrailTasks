@@ -1,6 +1,7 @@
 import {
   EventBus,
   Registry,
+  RewardsCalculatedPayload,
   SessionDistanceIncreasedPayload,
   SessionTrailCompletedPayload,
 } from "../EventBus/EventBus";
@@ -22,10 +23,31 @@ type TRewardsCalculatedPayload = {
   };
 };
 
+export interface IPersistenceService {
+  register: Function;
+  persistNewDistance: (payload: SessionDistanceIncreasedPayload) => Promise<void>;
+  persistCompletedTrail: (payload: SessionTrailCompletedPayload) => Promise<void>;
+  persistCompletedSessionWithRewards: (payload: TRewardsCalculatedPayload) => Promise<void>;
+}
+
+interface DistanceIdempotencyCache {
+  [key: string]: SessionDistanceIncreasedPayload;
+}
+
+interface CompletedTrailsIdemptencyCache {
+  [key: string]: SessionTrailCompletedPayload;
+}
+
+interface SessionWithRewardsIdempotencyCache {
+  [key: string]: RewardsCalculatedPayload | User;
+}
 export default class PersistenceService {
   private bus: EventBus;
   private db: Database;
   private user: User;
+  private distanceIdempotencyCache: DistanceIdempotencyCache = {};
+  private completedTrailsIdempotencyCache: CompletedTrailsIdemptencyCache = {};
+  private sessionWithRewardsIdempotencyCache: SessionWithRewardsIdempotencyCache = {};
 
   constructor(user: User, db: Database, bus: EventBus) {
     this.db = db;
@@ -39,24 +61,59 @@ export default class PersistenceService {
     //   this.bus.on("NEW_SESSION_REQUESTED", (cfg: SessionCfg) => this.createNewSession(cfg)),
     // );
     unregisterList.push(
-      this.bus.on("SESSION_DISTANCE_INCREASED", (payload: SessionDistanceIncreasedPayload) => {
-        if (payload.session === null) {
-          console.error("Error: session is null in SESSION_DISTANCE_INCREASED event");
+      this.bus.on(
+        "SESSION_DISTANCE_INCREASED",
+        async (payload: SessionDistanceIncreasedPayload) => {
+          const { session, snapshot } = payload;
+          if (!session) {
+            throw new Error("Error: session is null in SESSION_DISTANCE_INCREASED event");
+          }
+          if (!snapshot) {
+            throw new Error("Error: snapshot is null in SESSION_DISTANCE_INCREASED event");
+          }
+          const eventId: string = this.createDistanceIdempotentId(session);
+          if (!this.distanceIdempotencyCache[eventId]) {
+            this.persistNewDistance({ session, snapshot });
+            this.distanceIdempotencyCache[eventId] = { session, snapshot };
+          }
+        },
+      ),
+    );
+    unregisterList.push(
+      this.bus.on("SESSION_TRAIL_COMPLETED", (payload: SessionTrailCompletedPayload) => {
+        const { completedTrailId, isProMember, trailStartedAt } = payload;
+        const idempotentId = this.createCompletedTrailIdempotentId(
+          completedTrailId,
+          trailStartedAt,
+        );
+        if (this.completedTrailsIdempotencyCache[idempotentId]) {
           return;
         }
 
-        this.persistNewDistance({ session: payload.session, snapshot: payload.snapshot });
+        this.completedTrailsIdempotencyCache[idempotentId] = {
+          completedTrailId,
+          isProMember,
+          trailStartedAt,
+        };
+        this.persistCompletedTrail(payload);
       }),
     );
     unregisterList.push(
-      this.bus.on("SESSION_TRAIL_COMPLETED", (payload: SessionTrailCompletedPayload) =>
-        this.persistCompletedTrail(payload),
-      ),
-    );
-    unregisterList.push(
-      this.bus.on("REWARDS_CALCULATED", (args: TRewardsCalculatedPayload) =>
-        this.persistCompletedSessionWithRewards(args),
-      ),
+      this.bus.on("REWARDS_CALCULATED", (payload: TRewardsCalculatedPayload) => {
+        const { finalSnapshot, rewards } = payload;
+
+        const idempotencyKey = finalSnapshot.sessionId;
+        if (this.sessionWithRewardsIdempotencyCache[idempotencyKey]) {
+          return;
+        }
+
+        this.sessionWithRewardsIdempotencyCache[idempotencyKey] = {
+          finalSnapshot,
+          rewards,
+          user: { ...this.user },
+        };
+        this.persistCompletedSessionWithRewards(payload);
+      }),
     );
     return () => unregisterList.forEach(obj => obj.unregister());
   }
@@ -87,8 +144,6 @@ export default class PersistenceService {
     snapshot,
   }: SessionDistanceIncreasedPayload): Promise<void> {
     try {
-      console.log("In peristenceService inscreaseDistanceHiked()");
-
       await this.user.increaseDistanceHikedWriter({
         user: this.user,
         userSession: session,
@@ -105,13 +160,15 @@ export default class PersistenceService {
     trailStartedAt,
   }: SessionTrailCompletedPayload): Promise<void> {
     try {
-      console.log("In peristenceService sessionTrailCompleted()");
+      if (!completedTrailId || !trailStartedAt) {
+        throw new Error("Error, missing args, cannot persist trail completion");
+      }
 
-      const newTrailDistance: number = await this.user.assignNewTrail({
+      const newTrailDistance: number = this.user.assignNewTrail({
         completedTrailId,
         isProMember,
       });
-      console.log("New trail distance:", newTrailDistance);
+
       this.bus.emit("NEW_TRAIL_ASSIGNED", { newTrailDistance });
       await this.user.markTrailCompleted({
         trailId: completedTrailId,
@@ -125,8 +182,6 @@ export default class PersistenceService {
   //EVENT: SESSION_COMPLETED
   public async persistCompletedSessionWithRewards(args: TRewardsCalculatedPayload): Promise<void> {
     try {
-      console.log("In peristenceService persistCompletedSessionWithRewards()");
-      console.log(args);
       await this.user.finalizeSessionWithRewardsWriter({
         user: this.user,
         snapshot: args.finalSnapshot,
@@ -135,5 +190,15 @@ export default class PersistenceService {
     } catch (e) {
       handleError(e, "PersistenceService persistCompletedSessionWithRewards");
     }
+  }
+
+  private createDistanceIdempotentId(payload: User_Session): string {
+    const id: string = `${payload.id}:${payload.totalDistanceHiked}`;
+    return id;
+  }
+
+  private createCompletedTrailIdempotentId(trailId: string, trailStartedAt: string): string {
+    const id: string = `${trailId}:${trailStartedAt}`;
+    return id;
   }
 }
