@@ -35,6 +35,7 @@ export interface SessionCfg {
   completedTrails: number;
   sessionCategory: [string, string];
   distanceNeeded: number;
+  currentTrailDistance: number;
   totalSets: number;
   focusTimeSec: number;
   shortBreakSec: number;
@@ -77,7 +78,7 @@ export interface JoinedUserTrail {
   username: string;
 }
 
-export type SessionCateegories = {
+export type SessionCategories = {
   1: "Chores";
   2: "Cooking";
   3: "Crafts";

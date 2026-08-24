@@ -3,9 +3,7 @@ import { jest } from "@jest/globals";
 
 import { Database } from "@nozbe/watermelondb";
 
-import { User, User_Session } from "../watermelon/models";
-import { SessionSnapshot } from "../sessionEngine/sessionEngine";
-import { Rewards } from "../services/RewardService";
+import { User } from "../watermelon/models";
 
 export function createMockUserBase(overrides?: Partial<User>): User {
   const baseUser = {

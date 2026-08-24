@@ -28,7 +28,8 @@ describe("Session Engine", () => {
     type: "SOLO",
     sessionName: "Test Session",
     sessionCategory: ["category-id", "Category"],
-    distanceNeeded: 10.00,
+    distanceNeeded: 10.0,
+    currentTrailDistance: 10.0,
     totalSets: 3,
     focusTimeSec: 1500,
     shortBreakSec: 300,
@@ -50,6 +51,7 @@ describe("Session Engine", () => {
   const sessionDistanceIncreasedCb = jest.fn();
   const sessionCompletedCb = jest.fn();
   const sessionPaceIncreasedCb = jest.fn();
+  const sessionSetCompletedCb = jest.fn();
 
   let engine: SessionEngine;
 
@@ -68,7 +70,7 @@ describe("Session Engine", () => {
     bus.on("SESSION_DISTANCE_INCREASED", sessionDistanceIncreasedCb);
     bus.on("SESSION_PACE_INCREASED", sessionPaceIncreasedCb);
     bus.on("SESSION_COMPLETED", sessionCompletedCb);
-
+    bus.on("SESSION_SET_COMPLETED", sessionSetCompletedCb);
     engine = new SessionEngine(bus, sessionConfig, userMock, false);
     engine.register();
   });
@@ -328,7 +330,7 @@ describe("Session Engine", () => {
 
     expect(snapshot.phase).toEqual("FOCUS");
 
-    for (let i = 0; i < (snapshot.totalSets - 1); i++) {
+    for (let i = 0; i < snapshot.totalSets - 1; i++) {
       jest.advanceTimersByTime(focusTimeSec * 1000);
       jest.advanceTimersByTime(shortBreakTimeSec * 1000);
     }
@@ -344,9 +346,8 @@ describe("Session Engine", () => {
     expect(snapshot.totalSets).toEqual(newSessionConfig.totalSets);
     expect(snapshot.extraSets).toEqual(newSessionConfig.totalSets);
     expect(snapshot.phase).toEqual("FOCUS");
-    
-    for (let i = 0; i < (snapshot.extraSets - 1); i++)
-    {
+
+    for (let i = 0; i < snapshot.extraSets - 1; i++) {
       jest.advanceTimersByTime(focusTimeSec * 1000);
       jest.advanceTimersByTime(shortBreakTimeSec * 1000);
     }
@@ -354,6 +355,22 @@ describe("Session Engine", () => {
     jest.advanceTimersByTime(longBreakTimeSec * 1000);
 
     expect(sessionCompletedCb).toBeCalled();
-   
+  });
+  test("Session stores completed trail Id and trail distance upon completion", async () => {
+    const newSessionConfig = structuredClone(sessionConfig);
+    newSessionConfig.distanceNeeded = 0.01;
+    newSessionConfig.currentTrailDistance = 5.0;
+    engine = new SessionEngine(bus, newSessionConfig, userMock, true);
+    engine.register();
+    engine.start();
+    let snapshot = engine.buildSnapshot();
+
+    while (snapshot.totalDistanceMiles < snapshot.distanceNeeded) {
+      jest.advanceTimersByTime(1000);
+      snapshot = engine.buildSnapshot();
+    }
+    expect(sessionTrailCompletedCb).toBeCalled();
+    expect(snapshot.completedTrails).toHaveLength(1);
+    expect(snapshot.completedTrails).toEqual([{ id: "1", distance: 5.0 }]);
   });
 });

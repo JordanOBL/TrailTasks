@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import EnhancedAddonListItem from "../AddOnStore/AddonListItem";
 import { SessionCfg } from "../../types/session";
-import { Addon, User, User_Addon } from "../../watermelon/models";
+import { Addon, User } from "../../watermelon/models";
 
 interface backpackModalProps {
   isVisible: boolean;
@@ -19,7 +19,7 @@ interface backpackModalProps {
   sessionCfg: SessionCfg;
   setSessionCfg: React.Dispatch<React.SetStateAction<SessionCfg>>;
   user: User;
-  usersAddons: User_Addon[];
+  usersAddons: Addon[];
 }
 
 const BackpackModal = ({
