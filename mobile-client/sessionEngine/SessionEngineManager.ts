@@ -41,14 +41,14 @@ export default class SessionEngineManager {
     //setDistance needed for trail
     const trail: Trail = await this.user.trail;
     if (!trail) {
-      throw new Error("Cannot creat session, current user has no trail assigned");
+      throw new Error("Cannot create session, current user has no trail assigned");
     }
 
     //add session and sessionId to cfg
     cfg.session = createdSession;
     cfg.sessionId = createdSession.id;
     cfg.distanceNeeded = Number(trail.trailDistance) - Number(this.user.trailProgress);
-    cfg.currentTrailDistance = trail.trailDistance;
+    cfg.currentTrailDistance = Number(trail.trailDistance);
 
     // 2) make a new engine with full config
     this.current = new SessionEngine(this.bus, cfg, this.user, this.isProMember);
