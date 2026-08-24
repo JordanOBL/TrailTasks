@@ -78,7 +78,7 @@ export interface JoinedUserTrail {
   username: string;
 }
 
-export type SessionCateegories = {
+export type SessionCategories = {
   1: "Chores";
   2: "Cooking";
   3: "Crafts";
