@@ -727,7 +727,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           updatedUser.trailTokens += args.rewards.totalTokenRewards;
         }),
         currentSession.prepareUpdate((session: Session) => {
-          session.totalDistanceHiked = Number(args.snapshot.totalDistanceMiles.fixed(2));
+          session.totalDistanceHiked = Number(args.snapshot.totalDistanceMiles.toFixed(2));
           session.totalSessionTime = args.snapshot.totalElapsedSec;
         }),
         activeWild
