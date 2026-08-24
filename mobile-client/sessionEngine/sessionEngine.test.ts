@@ -371,5 +371,6 @@ describe("Session Engine", () => {
     }
     expect(sessionTrailCompletedCb).toBeCalled();
     expect(snapshot.completedTrails).toHaveLength(1);
+    expect(snapshot.completedTrails).toEqual([{ id: "1", distance: 0.01 }]);
   });
 });
