@@ -347,7 +347,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }: {
     completedTrailId: string;
     isProMember: boolean;
-  }): number {
+  }): Promise<number> {
     let sameTrailAsCompleted = true;
     let chosenTrail: Trail | null = null;
 
@@ -440,7 +440,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
 
   @writer
-  async markTrailCompleted({ trailId, isProMember, trailStartedAt }) {
+  async markTrailCompleted({ trailId, isProMember, trailStartedAt }): Promise<void> {
     //get trail
     const trail = await this.collections.get("trails").query(Q.where("id", trailId)).fetch();
     if (!trail) {

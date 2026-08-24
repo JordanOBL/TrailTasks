@@ -164,7 +164,7 @@ export default class PersistenceService {
         throw new Error("Error, missing args, cannot persist trail completion");
       }
 
-      const newTrailDistance: number = this.user.assignNewTrail({
+      const newTrailDistance: number = await this.user.assignNewTrail({
         completedTrailId,
         isProMember,
       });
@@ -176,7 +176,7 @@ export default class PersistenceService {
         trailStartedAt: trailStartedAt,
       });
     } catch (e) {
-      handleError(e, "PersistenceService increadeDistanceHiked");
+      handleError(e, "PersistenceService persistCompletedTrail");
     }
   }
   //EVENT: SESSION_COMPLETED

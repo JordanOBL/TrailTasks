@@ -6,8 +6,8 @@ import { EventBus } from "../EventBus/EventBus";
 import { Database } from "@nozbe/watermelondb";
 import { User_Session } from "../watermelon/models";
 import formatDateTime from "../helpers/formatDateTime";
+import { waitFor } from "@testing-library/react-native";
 
-const mockUser = createMockUserBase();
 const mockSnapshot: SessionSnapshot = {
   sessionId: "session-1",
   userId: "user-1",
@@ -62,12 +62,12 @@ const mockDatabase = jest.fn(() => {
 
 describe("Persistence Service", () => {
   let bus = EventBus.getInstance();
-  let user = createMockUserBase();
+  let mockUser = createMockUserBase();
   let persistenceService: IPersistenceService;
 
   beforeEach(() => {
     bus = EventBus.getInstance();
-    persistenceService = new PersistenceService(user, mockDatabase, bus);
+    persistenceService = new PersistenceService(mockUser, mockDatabase, bus);
     persistenceService.register();
   });
 
@@ -84,12 +84,12 @@ describe("Persistence Service", () => {
     expect(persistNewDistanceSpy).toHaveBeenCalledTimes(1);
     bus.emit("SESSION_DISTANCE_INCREASED", payload);
     expect(persistNewDistanceSpy).toHaveBeenCalledTimes(1);
+    expect(mockUser.increaseDistanceHikedWriter).toBeCalledTimes(1);
   });
 
-  test("it doesnt attempt to persist the same completed trail event more than once", () => {
+  test("it doesnt attempt to persist the same completed trail event more than once", async () => {
     const persistCompletedTrailSpy = jest.spyOn(persistenceService, "persistCompletedTrail");
     const startedAt = new Date();
-
     const payload = {
       completedTrailId: "1",
       isProMember: false,
@@ -99,6 +99,11 @@ describe("Persistence Service", () => {
     expect(persistCompletedTrailSpy).toHaveBeenCalledTimes(1);
     bus.emit("SESSION_TRAIL_COMPLETED", payload);
     expect(persistCompletedTrailSpy).toHaveBeenCalledTimes(1);
+    expect(mockUser.assignNewTrail).toBeCalledTimes(1);
+
+    await waitFor(() => {
+      expect(mockUser.markTrailCompleted).toBeCalledTimes(1);
+    });
   });
 
   test("it doesnt attempt to save the same completed session & rewards", () => {
@@ -120,5 +125,6 @@ describe("Persistence Service", () => {
     expect(persistCompletedSessionSpy).toHaveBeenCalledTimes(1);
     bus.emit("REWARDS_CALCULATED", payload);
     expect(persistCompletedSessionSpy).toHaveBeenCalledTimes(1);
+    expect(mockUser.finalizeSessionWithRewardsWriter).toBeCalledTimes(1);
   });
 });
