@@ -86,6 +86,18 @@ describe("Persistence Service", () => {
     expect(persistNewDistanceSpy).toHaveBeenCalledTimes(1);
     expect(mockUser.increaseDistanceHikedWriter).toBeCalledTimes(1);
   });
+  test("it call increaseDistance on the different snapshots", () => {
+    const persistNewDistanceSpy = jest.spyOn(persistenceService, "persistNewDistance");
+
+    const payload = { session: mockSession, snapshot: mockSnapshot };
+    bus.emit("SESSION_DISTANCE_INCREASED", payload);
+    expect(persistNewDistanceSpy).toHaveBeenCalledTimes(1);
+
+    payload.snapshot.totalDistanceMiles++;
+    bus.emit("SESSION_DISTANCE_INCREASED", payload);
+    expect(persistNewDistanceSpy).toHaveBeenCalledTimes(2);
+    expect(mockUser.increaseDistanceHikedWriter).toBeCalledTimes(2);
+  });
 
   test("it doesnt attempt to persist the same completed trail event more than once", async () => {
     const persistCompletedTrailSpy = jest.spyOn(persistenceService, "persistCompletedTrail");
