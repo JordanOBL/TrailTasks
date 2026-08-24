@@ -98,30 +98,25 @@ export default class RewardService {
       //add bonus xp from sessions totalBonusXp (there is a backpack addon and wild perk(if active) that adds x% to token bonus depending on addon or wild level)
       //take away tokens from penalty strikes (sessions  penalty val can be decreased via active backpack addon or active wild perk )
       const trailRewards: number = this.calculateTrailTokens(snapshot);
+      const rewards: Rewards = {
+        trailRewards,
+        timeRewards,
+        totalTokenRewards: trailRewards + timeRewards,
+        wildXpRewards,
+      };
 
       //persistenceService listens and takes the payload and applies rewards to watermelon db transaction
       //UI listens and shows rewards component wiith payload
       this.bus.emit("REWARDS_CALCULATED", {
         finalSnapshot: snapshot,
-        rewards: {
-          trailRewards: trailRewards,
-          timeRewards: timeRewards,
-          totalTokenRewards: trailRewards + timeRewards,
-          wildXpRewards,
-        },
+        rewards,
       });
-      const rewards = {
-        trailRewards: trailRewards,
-        timeRewards: timeRewards,
-        totalTokenRewards: trailRewards + timeRewards,
-        wildXpRewards,
-      };
-    return rewards;
+
+      return rewards;
     } catch (e) {
       handleError(e, "RewardService.calculateRewards()");
-      throw new Error("Error calculating rewards in RewardService", { cause: e});
+      throw new Error("Error calculating rewards in RewardService");
     }
-    return rewards;
   }
 
   private calculateTimeTokens(snapshot: SessionSnapshot): number {
@@ -156,8 +151,6 @@ export default class RewardService {
     // }
     // 🔥 Final Token Calculation
     totalTimeTokens = baseTokens + bonusTokens;
-    console.log("total time tokens", totalTimeTokens);
-
     return totalTimeTokens;
   }
 
