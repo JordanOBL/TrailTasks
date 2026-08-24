@@ -52,7 +52,7 @@ export interface JoinedUserTrail {
   username: string;
 }
 
-export type SessionCategories = {
+export type SessionCateegories = {
   1: "Chores";
   2: "Cooking";
   3: "Crafts";
