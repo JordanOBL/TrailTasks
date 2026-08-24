@@ -71,7 +71,7 @@ export default class PersistenceService {
           if (!snapshot) {
             throw new Error("Error: snapshot is null in SESSION_DISTANCE_INCREASED event");
           }
-          const eventId: string = this.createDistanceIdempotentId(session);
+          const eventId: string = this.createDistanceIdempotentId(session, snapshot);
           if (!this.distanceIdempotencyCache[eventId]) {
             this.persistNewDistance({ session, snapshot });
             this.distanceIdempotencyCache[eventId] = { session, snapshot };
@@ -192,8 +192,8 @@ export default class PersistenceService {
     }
   }
 
-  private createDistanceIdempotentId(payload: User_Session): string {
-    const id: string = `${payload.id}:${payload.totalDistanceHiked}`;
+  private createDistanceIdempotentId(session: User_Session, snapshot: SessionSnapshot): string {
+    const id: string = `${session.id}:${snapshot.totalDistanceMiles}`;
     return id;
   }
 
