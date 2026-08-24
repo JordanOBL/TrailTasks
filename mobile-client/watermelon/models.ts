@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import { Model, Q } from "@nozbe/watermelondb";
 import {
   children,
@@ -217,43 +216,43 @@ export class User extends Model {
   //create new session
   @writer
   async startNewSession(sessionDetails) {
-      const newSession = this.collections.get("users_sessions").prepareCreate(userSession => {
-        userSession.userId = this.id;
-        userSession.sessionName = sessionDetails.sessionName;
-        userSession.sessionDescription = sessionDetails.sessionDescription || "";
-        userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
-        userSession.totalSessionTime = "0";
-        userSession.totalDistanceHiked = "0.00";
-        userSession.dateAdded = formatDateTime(new Date());
-      });
+    const newSession = this.collections.get("users_sessions").prepareCreate(userSession => {
+      userSession.userId = this.id;
+      userSession.sessionName = sessionDetails.sessionName;
+      userSession.sessionDescription = sessionDetails.sessionDescription || "";
+      userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
+      userSession.totalSessionTime = "0";
+      userSession.totalDistanceHiked = "0.00";
+      userSession.dateAdded = formatDateTime(new Date());
+    });
 
-      const sessionAddonsPrepares = [];
-      const consumePrepares = [];
+    const sessionAddonsPrepares = [];
+    const consumePrepares = [];
 
-      for (const slot of sessionDetails.backpack) {
-        if (!slot.addon) {
-          continue;
-        }
-
-        // create a session_addons record
-        const sessionAddonPrepared = this.collections.get("sessions_addons").prepareCreate(sa => {
-          sa.sessionId = newSession.id;
-          sa.addonId = slot.addon.id;
-        });
-        sessionAddonsPrepares.push(sessionAddonPrepared);
-
-        const [addonRecord] = await this.usersAddons.extend(Q.where("addon_id", slot.addon.id));
-
-        if (addonRecord) {
-          const consumePrepared = this.prepareConsumeUserAddons(addonRecord);
-          consumePrepares.push(consumePrepared);
-        }
+    for (const slot of sessionDetails.backpack) {
+      if (!slot.addon) {
+        continue;
       }
 
-      // 3) batch everything
-      await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares);
+      // create a session_addons record
+      const sessionAddonPrepared = this.collections.get("sessions_addons").prepareCreate(sa => {
+        sa.sessionId = newSession.id;
+        sa.addonId = slot.addon.id;
+      });
+      sessionAddonsPrepares.push(sessionAddonPrepared);
 
-      return { newSession, status: true };
+      const [addonRecord] = await this.usersAddons.extend(Q.where("addon_id", slot.addon.id));
+
+      if (addonRecord) {
+        const consumePrepared = this.prepareConsumeUserAddons(addonRecord);
+        consumePrepares.push(consumePrepared);
+      }
+    }
+
+    // 3) batch everything
+    await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares);
+
+    return { newSession, status: true };
   }
 
   @writer
@@ -348,121 +347,112 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }: {
     completedTrailId: string;
     isProMember: boolean;
-  }) {
-    try {
-      let sameTrailAsCompleted = true;
-      let chosenTrail: Trail | null = null;
+  }): Promise<number> {
+    let sameTrailAsCompleted = true;
+    let chosenTrail: Trail | null = null;
 
-      // Pro member: use queued trail if available
-      if (isProMember) {
-        // Expecting an array of User_Queued_Trail
-        const queued: User_Queued_Trail[] = await this.usersQueuedTrails;
-        const queuedTrail = queued?.[0];
-        if (queuedTrail) {
-          const queuedTrailRecord: Trail = await queuedTrail.trail; // relation
-          // Update user + remove from queue
-          await this.database.batch(
-            this.prepareUpdate(user => {
-              user.trailId = queuedTrailRecord.id;
-              user.trailProgress = "0.00";
-              user.trailStartedAt = formatDateTime(new Date());
-              user.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
-            }),
-            queuedTrail.prepareDestroyPermanently(), // destroy the QUEUE ITEM, not the Trail
-          );
-          return queuedTrailRecord.trailDistance;
-        }
-        // Fallthrough to random if nothing queued
+    // Pro member: use queued trail if available
+    if (isProMember) {
+      // Expecting an array of User_Queued_Trail
+      const queued: User_Queued_Trail[] = await this.usersQueuedTrails;
+      const queuedTrail = queued?.[0];
+      if (queuedTrail) {
+        const queuedTrailRecord: Trail = await queuedTrail.trail; // relation
+        // Update user + remove from queue
+        await this.database.batch(
+          this.prepareUpdate(user => {
+            user.trailId = queuedTrailRecord.id;
+            user.trailProgress = "0.00";
+            user.trailStartedAt = formatDateTime(new Date());
+            user.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
+          }),
+          queuedTrail.prepareDestroyPermanently(), // destroy the QUEUE ITEM, not the Trail
+        );
+        return queuedTrailRecord.trailDistance;
       }
+      // Fallthrough to random if nothing queued
+    }
 
-      // Pull candidate pools once
-      const freeTrails: Trail[] = await this.collections
-        .get("trails")
-        .query(Q.where("is_free", true))
-        .fetch();
+    // Pull candidate pools once
+    const freeTrails: Trail[] = await this.collections
+      .get("trails")
+      .query(Q.where("is_free", true))
+      .fetch();
 
-      // Expecting an array of User_Purchased_Trail (records with a .trail relation)
-      const purchased: User_Purchased_Trail[] = await this.usersPurchasedTrails;
+    // Expecting an array of User_Purchased_Trail (records with a .trail relation)
+    const purchased: User_Purchased_Trail[] = await this.usersPurchasedTrails;
 
-      // Build a uniform selector of entries with an accessor to get the Trail record
-      // so we can index without resolving everything up front.
-      type Candidate =
-        | { kind: "free"; trail: Trail }
-        | { kind: "purchased"; ptr: User_Purchased_Trail };
-      const candidates: Candidate[] = [
-        ...freeTrails.map(t => ({ kind: "free", trail: t as Trail })),
-        ...purchased.map(p => ({ kind: "purchased", ptr: p as User_Purchased_Trail })),
-      ];
+    // Build a uniform selector of entries with an accessor to get the Trail record
+    // so we can index without resolving everything up front.
+    type Candidate =
+      | { kind: "free"; trail: Trail }
+      | { kind: "purchased"; ptr: User_Purchased_Trail };
+    const candidates: Candidate[] = [
+      ...freeTrails.map(t => ({ kind: "free", trail: t })),
+      ...purchased.map(p => ({ kind: "purchased", ptr: p })),
+    ];
 
-      if (candidates.length === 0) {
-        throw new Error("No available trails to assign.");
+    if (candidates.length === 0) {
+      throw new Error("No available trails to assign.");
+    }
+
+    // Try a few times to avoid picking the just-completed trail
+    for (let attempts = 0; attempts < Math.min(25, candidates.length * 2); attempts++) {
+      const randomIndex = Math.floor(Math.random() * candidates.length); // 0..n-1
+      const pick = candidates[randomIndex];
+
+      // Resolve to a Trail record
+      const pickedTrail = pick.kind === "free" ? pick.trail : await pick.ptr.trail;
+
+      const pickedId = pickedTrail.id;
+      if (pickedId !== completedTrailId) {
+        chosenTrail = pickedTrail;
+        break;
       }
+    }
 
-      // Try a few times to avoid picking the just-completed trail
-      for (let attempts = 0; attempts < Math.min(25, candidates.length * 2); attempts++) {
-        const randomIndex = Math.floor(Math.random() * candidates.length); // 0..n-1
-        const pick = candidates[randomIndex];
-        console.log("randomIndex", randomIndex);
-        console.log("pick", pick);
-
-        // Resolve to a Trail record
-        const pickedTrail = pick.kind === "free" ? pick.trail : await pick.ptr.trail;
-        console.log("pickedTrail", pickedTrail);
-
-        const pickedId = pickedTrail.id;
-        if (pickedId !== completedTrailId) {
-          console.log("pick is diffent than older trail");
-          chosenTrail = pickedTrail;
+    // If we still somehow matched the same one each time, just take the first different one
+    if (!chosenTrail) {
+      for (const c of candidates) {
+        const t = c.kind === "free" ? c.trail : await c.ptr.trail;
+        if (t.id !== completedTrailId) {
+          chosenTrail = t;
           break;
         }
       }
-
-      // If we still somehow matched the same one each time, just take the first different one
-      if (!chosenTrail) {
-        for (const c of candidates) {
-          const t = c.kind === "free" ? c.trail : await c.ptr.trail;
-          if (t.id !== completedTrailId) {
-            chosenTrail = t;
-            break;
-          }
-        }
-      }
-
-      if (!chosenTrail) {
-        // All candidates are the completed trail? then just pick something deterministic
-        chosenTrail =
-          candidates[0].kind === "free" ? candidates[0].trail : await candidates[0].ptr.trail;
-      }
-
-      // Update the user with new trail
-      await this.update(user => {
-        user.trailProgress = "0.00"; // fixed spelling
-        user.trailId = chosenTrail!.id;
-        user.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
-        user.trailStartedAt = formatDateTime(new Date());
-      });
-
-      return Number(chosenTrail.trailDistance);
-    } catch (e) {
-      handleError(e, "assignNewTrail Writer()");
     }
+
+    if (!chosenTrail) {
+      // All candidates are the completed trail? then just pick something deterministic
+      chosenTrail =
+        candidates[0].kind === "free" ? candidates[0].trail : await candidates[0].ptr.trail;
+    }
+
+    // Update the user with new trail
+    await this.update(user => {
+      user.trailProgress = "0.00"; // fixed spelling
+      user.trailId = chosenTrail!.id;
+      user.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
+      user.trailStartedAt = formatDateTime(new Date());
+    });
+
+    return Number(chosenTrail.trailDistance);
   }
 
   @writer
-  async markTrailCompleted({ trailId, isProMember, trailStartedAt }) {
-      //get trail
-      const trail = await this.collections
-        .get("trails")
-        .query(Q.where("id", trailId))
-        .fetch();
-      console.debug("trail in markTrailCompleted():", trail);
-      //check trail completed
-      const [ completedTrail ] = await this.usersCompletedTrails.extend(Q.where("trail_id", trailId));
-      console.debug("completedTrail in markTrailComplete():", completedTrail);
-      if (!completedTrail) {
-        console.debug("First time completeing trail, adding trail in markCompletedTrail Writer");
-        const currentTime = new Date();
-        const createdCompletedTrail = await this.collections.get("users_completed_trails").create((uct: User_Completed_Trail) => {
+  async markTrailCompleted({ trailId, isProMember, trailStartedAt }): Promise<void> {
+    //get trail
+    const trail = await this.collections.get("trails").query(Q.where("id", trailId)).fetch();
+    if (!trail) {
+      throw new Error("Completed Trail not found");
+    }
+    //check trail completed
+    const [completedTrail] = await this.usersCompletedTrails.extend(Q.where("trail_id", trailId));
+    if (!completedTrail) {
+      const currentTime = new Date();
+      const createdCompletedTrail = await this.collections
+        .get("users_completed_trails")
+        .create((uct: User_Completed_Trail) => {
           uct.userId = this.id;
           uct.trailId = trailId;
           uct.completionCount = 1;
@@ -470,37 +460,32 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           uct.lastCompletedAt = formatDateTime(new Date());
           uct.bestCompletedTime = getTimeDifference(currentTime, trailStartedAt);
         });
-        if (!createdCompletedTrail) throw new Error('DB failed to created new completed trail');
-        console.debug("Completed trail for the first time, checking if user has park pass in markCompletedTrail Writer");
-        console.debug(trail)
-        console.debug(`trail.parkId: ${trail.parkId}`)
-        console.debug(`trail.park_id: ${trail.park_id}`)
-        console.debug(this.usersParks)
-        //check id user has park pass already
-        const hasParkPass = await this.usersParks
-          .query(Q.where("park_id", trail.parkId))
-          .fetchCount();
-        console.debug("hasParkPass in markTrailCompleted Writer:", hasParkPass);
-        //if not, and user is pro member, redeem park pass
-        if (Number(hasParkPass) === 0) {
-          const shouldRedeemPass = await this.redeemParkWildCheck(trail.parkId);
-          if (shouldRedeemPass) {
-            console.debug("Redeeming Park Pass in markCompletedTrail Writer");
-            await this.redeemParkPass(trail.parkId);
-          }
+      if (!createdCompletedTrail) throw new Error("DB failed to created new completed trail");
+
+      //check id user has park pass already
+      const hasParkPass = await this.usersParks
+        .query(Q.where("park_id", trail.parkId))
+        .fetchCount();
+      console.debug("hasParkPass in markTrailCompleted Writer:", hasParkPass);
+      //if not, and user is pro member, redeem park pass
+      if (Number(hasParkPass) === 0) {
+        const shouldRedeemPass = await this.redeemParkWildCheck(trail.parkId);
+        if (shouldRedeemPass) {
+          console.debug("Redeeming Park Pass in markCompletedTrail Writer");
+          await this.redeemParkPass(trail.parkId);
         }
-      } else {
-        console.debug("Completed trail before trail, updating in markCompletedTrail Writer");
-        await completedTrail.update(uct => {
-          uct.completionCount += 1;
-          uct.lastCompletedAt = formatDateTime(new Date());
-          uct.bestCompletedTime = getBetterTime(
-            getTimeDifference(new Date(), new Date(trailStartedAt)),
-            completedTrail.bestCompletedTime,
-          );
-        });
       }
-    
+    } else {
+      console.debug("Completed trail before trail, updating in markCompletedTrail Writer");
+      await completedTrail.update(uct => {
+        uct.completionCount += 1;
+        uct.lastCompletedAt = formatDateTime(new Date());
+        uct.bestCompletedTime = getBetterTime(
+          getTimeDifference(new Date(), new Date(trailStartedAt)),
+          completedTrail.bestCompletedTime,
+        );
+      });
+    }
   }
 
   //Add User`
@@ -731,33 +716,37 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }) {
     try {
       const batchOperations = [];
-      
-      const [[currentSession], [activeWild]] = await Promise.all([this.usersSessions.extend(Q.where("id", args.snapshot.sessionId)).fetch(),
-   this.usersWilds.extend(Q.where("is_active", true)).fetch()])
+
+      const [[currentSession], [activeWild]] = await Promise.all([
+        this.usersSessions.extend(Q.where("id", args.snapshot.sessionId)).fetch(),
+        this.usersWilds.extend(Q.where("is_active", true)).fetch(),
+      ]);
 
       batchOperations.push(
-       this.prepareUpdate(updatedUser => {
+        this.prepareUpdate(updatedUser => {
           updatedUser.trailTokens += args.rewards.totalTokenRewards;
         }),
-         currentSession.prepareUpdate((session: Session) => {
-          session.totalDistanceHiked = Number(args.snapshot.totalDistanceMiles)
+        currentSession.prepareUpdate((session: Session) => {
+          session.totalDistanceHiked = Number(args.snapshot.totalDistanceMiles.toFixed(2));
           session.totalSessionTime = args.snapshot.totalElapsedSec;
-        }), activeWild ? activeWild.prepareUpdate(wild => {
-            wild.xp += args.rewards.wildXpRewards;
-            //level up logic
-            while (wild.xp >= wild.xpToNext) {
-              wild.xp -= wild.xpToNext;
-              wild.level += 1;
-              wild.xpToNext = Math.floor(wild.xpToNext * 1.5); // Increase XP needed for next level
-            }
-          }) : null
-        );
-
+        }),
+        activeWild
+          ? activeWild.prepareUpdate(wild => {
+              wild.xp += args.rewards.wildXpRewards;
+              //level up logic
+              while (wild.xp >= wild.xpToNext) {
+                wild.xp -= wild.xpToNext;
+                wild.level += 1;
+                wild.xpToNext = Math.floor(wild.xpToNext * 1.5); // Increase XP needed for next level
+              }
+            })
+          : null,
+      );
 
       await this.database.batch(...batchOperations);
     } catch (e) {
       handleError(e, "finalizeSessionWithRewardsWriter");
-      throw new Error(`DB Failed to finalize session with rewards: ${e}`)
+      throw new Error(`DB Failed to finalize session with rewards: ${e}`);
     }
   }
 
@@ -1009,7 +998,6 @@ export class User_Session extends Model {
   sessionCategory;
 
   @children("users") users;
-
 }
 
 // @ts-ignore
