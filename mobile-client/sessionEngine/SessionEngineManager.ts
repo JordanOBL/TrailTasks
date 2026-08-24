@@ -40,6 +40,9 @@ export default class SessionEngineManager {
   async createSessionEngine(cfg: SessionCfg, createdSession: User_Session): Promise<SessionEngine> {
     //setDistance needed for trail
     const trail: Trail = await this.user.trail;
+    if (!trail) {
+      throw new Error("Cannot creat session, current user has no trail assigned");
+    }
 
     //add session and sessionId to cfg
     cfg.session = createdSession;

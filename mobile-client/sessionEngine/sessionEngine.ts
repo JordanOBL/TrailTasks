@@ -97,7 +97,7 @@ export class SessionEngine {
     this.sessionName = cfg.sessionName;
     this.sessionCategory = cfg.sessionCategory ?? null;
     this.distanceNeeded = cfg.distanceNeeded;
-    this.currentTrailDistance = cfg.currentTrailDistance;
+    this.currentTrailDistance = cfg.currentTrailDistance ?? 0;
     this.totalSets = cfg.totalSets ?? 3;
     this.focusTimeSec = cfg.focusTimeSec ?? 1500;
     this.shortBreakSec = cfg.shortBreakSec ?? 300;
