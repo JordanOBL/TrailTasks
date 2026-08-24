@@ -21,6 +21,7 @@ export interface SessionSnapshot {
   totalSets: number;
   currentPaceMph: number;
   totalDistanceMiles: number;
+  currentTrailDistance: number;
   focusTimeSec: number;
   shortBreakSec: number;
   longBreakSec: number;
@@ -69,6 +70,7 @@ export class SessionEngine {
   private totalElapsedSec = 0;
   private elapsedInPhaseSec = 0;
   private distanceNeeded: number;
+  private currentTrailDistance: number;
   private currentSet = 1;
   private completedSets = 0;
   private extraSets = 0;
@@ -95,6 +97,7 @@ export class SessionEngine {
     this.sessionName = cfg.sessionName;
     this.sessionCategory = cfg.sessionCategory ?? null;
     this.distanceNeeded = cfg.distanceNeeded;
+    this.currentTrailDistance = cfg.currentTrailDistance;
     this.totalSets = cfg.totalSets ?? 3;
     this.focusTimeSec = cfg.focusTimeSec ?? 1500;
     this.shortBreakSec = cfg.shortBreakSec ?? 300;
@@ -121,6 +124,7 @@ export class SessionEngine {
     this.bus.on("UI_BREAK_SKIP_REQUESTED", () => this.skipBreak());
     this.bus.on("NEW_TRAIL_ASSIGNED", (payload: NewTrailAssignedPayload) => {
       this.distanceNeeded += payload.newTrailDistance;
+      this.currentTrailDistance = payload.newTrailDistance;
     });
   }
 
@@ -195,13 +199,13 @@ export class SessionEngine {
   }
 
   trailCompleted() {
-    const { trailProgress, trailId, trailStartedAt } = this.user;
-    if (!trailId || !trailProgress || !trailStartedAt) {
+    const { trailId, trailStartedAt } = this.user;
+    if (!trailId || !trailStartedAt) {
       console.error("Error: Missing information for trail completion in SessionEngine.");
       return;
     }
     const isProMember = this.user.isProMember ?? false; // Default to false if undefined
-    this.completedTrails.push({ id: trailId, distance: trailProgress });
+    this.completedTrails.push({ id: trailId, distance: this.currentTrailDistance });
     this.bus.emit("SESSION_TRAIL_COMPLETED", {
       completedTrailId: trailId,
       isProMember,
@@ -279,7 +283,7 @@ export class SessionEngine {
             reason: "break_ended",
           });
         } else {
-          if (this.autoContinue && (this.completedSets === this.totalSets )) {
+          if (this.autoContinue && this.completedSets === this.totalSets) {
             // auto start another session
             this.extraSets = this.totalSets;
             this.elapsedInPhaseSec = 0;
@@ -425,6 +429,7 @@ export class SessionEngine {
       isPaused: this.isPaused,
       totalElapsedSec: this.totalElapsedSec,
       distanceNeeded: this.distanceNeeded,
+      currentTrailDistance: this.currentTrailDistance,
       elapsedInPhaseSec: this.elapsedInPhaseSec,
       currentSet: this.currentSet,
       completedSets: this.completedSets,

@@ -45,6 +45,7 @@ export default class SessionEngineManager {
     cfg.session = createdSession;
     cfg.sessionId = createdSession.id;
     cfg.distanceNeeded = Number(trail.trailDistance) - Number(this.user.trailProgress);
+    cfg.currentTrailDistance = trail.trailDistance;
 
     // 2) make a new engine with full config
     this.current = new SessionEngine(this.bus, cfg, this.user, this.isProMember);
