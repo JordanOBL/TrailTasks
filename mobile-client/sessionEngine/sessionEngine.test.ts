@@ -359,7 +359,7 @@ describe("Session Engine", () => {
   test("Session stores completed trail Id and trail distance upon completion", async () => {
     const newSessionConfig = structuredClone(sessionConfig);
     newSessionConfig.distanceNeeded = 0.01;
-    newSessionConfig.currentTrailDistance = 0.01;
+    newSessionConfig.currentTrailDistance = 5.0;
     engine = new SessionEngine(bus, newSessionConfig, userMock, true);
     engine.register();
     engine.start();
@@ -371,6 +371,6 @@ describe("Session Engine", () => {
     }
     expect(sessionTrailCompletedCb).toBeCalled();
     expect(snapshot.completedTrails).toHaveLength(1);
-    expect(snapshot.completedTrails).toEqual([{ id: "1", distance: 0.01 }]);
+    expect(snapshot.completedTrails).toEqual([{ id: "1", distance: 5.0 }]);
   });
 });
