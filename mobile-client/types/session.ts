@@ -1,4 +1,30 @@
 import { Addon, User_Session } from "../watermelon/models";
+export interface SessionDetails {
+  startTime: string | null;
+  sessionName: string;
+  sessionDescription: string;
+  sessionCategoryId: null;
+  completedTrail: boolean;
+  breakTimeReduction: number;
+  minimumPace: number;
+  maximumPace: number;
+  paceIncreaseValue: number;
+  paceIncreaseInterval: number;
+  penaltyValue: number;
+  increasePaceOnBreakValue: number;
+  strikes: number;
+  continueSessionModal: boolean;
+  totalTokenBonus: number;
+  trailTokensEarned: number;
+  sessionTokensEarned: number;
+  totalDistanceHiked: number;
+  isLoading: boolean;
+  isError: boolean;
+  backpack: {
+    addon: null | Addon;
+    minimumTotalMiles: number;
+  }[];
+}
 export interface SessionCfg {
   session: User_Session | null;
   sessionId: string;
