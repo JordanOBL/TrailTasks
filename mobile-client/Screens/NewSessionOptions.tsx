@@ -50,6 +50,7 @@ const NewSessionOptions = () => {
     sessionCategory: ["", ""],
     totalSets: 3,
     distanceNeeded: Infinity,
+    currentTrailDistance: 0,
     completedTrails: 0,
     currentPaceMph: 2,
     minPaceMph: 2,
@@ -72,8 +73,7 @@ const NewSessionOptions = () => {
   const [currentPark, setCurrentPark] = useState<Park | null>(null);
   const [usersAddonSelection, setUsersAddonSelection] = useState<Addon[]>([]);
 
-  const closeBackpackModal = () =>
-  {
+  const closeBackpackModal = () => {
     const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
 
     sessionCfgWithAddons.backpack.forEach(slot => {
@@ -105,7 +105,7 @@ const NewSessionOptions = () => {
 
     setSessionCfg(sessionCfgWithAddons);
     setIsBackpackModalVisible(false);
-  }
+  };
 
   useEffect(() => {
     let alive = true;
@@ -138,8 +138,7 @@ const NewSessionOptions = () => {
         }
       } catch (e) {
         handleError(e, "Error in NewSessionOptions");
-        if (alive)
-        {
+        if (alive) {
           setLoading(false);
           setError(true);
         }
@@ -150,7 +149,6 @@ const NewSessionOptions = () => {
       alive = false;
     };
   }, [user, db]);
-
 
   if (loading) {
     return <ActivityIndicator />;
@@ -265,13 +263,13 @@ const NewSessionOptions = () => {
       />
       {/* Backpack Modal */}
       <BackpackModal
-                isVisible={isBackpackModalVisible}
-                onClose={closeBackpackModal}
-                sessionCfg={sessionCfg}
-                setSessionCfg={setSessionCfg}
-                user={user}
-                usersAddons={usersAddonSelection}
-            />
+        isVisible={isBackpackModalVisible}
+        onClose={closeBackpackModal}
+        sessionCfg={sessionCfg}
+        setSessionCfg={setSessionCfg}
+        user={user}
+        usersAddons={usersAddonSelection}
+      />
     </SafeAreaView>
   );
 };
