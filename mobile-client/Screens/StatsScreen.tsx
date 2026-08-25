@@ -1,26 +1,19 @@
-import * as React from 'react';
+import * as React from "react";
 
-import {
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import {Session_Category, User, User_Session} from '../watermelon/models';
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Session_Category, User, User_Session } from "../watermelon/models";
 
-import { Dropdown } from 'react-native-element-dropdown';
-import {FilterBy} from '../helpers/Stats/FilterFunction';
-import Icon from 'react-native-vector-icons/Ionicons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {Q} from '@nozbe/watermelondb';
-import SessionList from '../components/Stats/SessionList';
-import Stats from '../components/Stats/Stats';
+import { Dropdown } from "react-native-element-dropdown";
+import { FilterBy } from "../helpers/Stats/FilterFunction";
+import Icon from "react-native-vector-icons/Ionicons";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { Q } from "@nozbe/watermelondb";
+import SessionList from "../components/Stats/SessionList";
+import Stats from "../components/Stats/Stats";
 import handleError from "../helpers/ErrorHandler";
-import {useAuthContext} from '../services/AuthContext';
-import {useDatabase} from '@nozbe/watermelondb/react';
-import {useTheme} from '../contexts/ThemeProvider';
+import { useAuthContext } from "../services/AuthContext";
+import { useDatabase } from "@nozbe/watermelondb/react";
+import { useTheme } from "../contexts/ThemeProvider";
 
 type TimeFrame = {
   label: string;
@@ -28,14 +21,14 @@ type TimeFrame = {
 };
 
 const timeFrames: TimeFrame[] = [
-  {label: 'All Time', value: 0},
-  {label: '1 Year', value: 365},
-  {label: '6 Months', value: 180},
-  {label: '3 Months', value: 90},
-  {label: '1 Month', value: 30},
-  {label: '2 Weeks', value: 14},
-  {label: '1 Week', value: 7},
-  {label: '1 Day', value: 1},
+  { label: "All Time", value: 0 },
+  { label: "1 Year", value: 365 },
+  { label: "6 Months", value: 180 },
+  { label: "3 Months", value: 90 },
+  { label: "1 Month", value: 30 },
+  { label: "2 Weeks", value: 14 },
+  { label: "1 Week", value: 7 },
+  { label: "1 Day", value: 1 },
 ];
 
 type Props = {
@@ -43,18 +36,20 @@ type Props = {
   userSessions: User_Session[];
 };
 
-const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
+const StatsScreen: React.FC<Props> = ({ user, userSessions }) => {
   const watermelonDatabase = useDatabase();
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const {isProMember} = useAuthContext();
+  const { isProMember } = useAuthContext();
 
-  const [sessionCategories, setSessionCategories] = React.useState<Session_Category[]>([]);
+  const [sessionCategories, setSessionCategories] = React.useState<
+    { sessionCategoryName: string; sessionCategoryId: string }[]
+  >([]);
   const [userSessionsWithCategories, setUserSessionsWithCategories] = React.useState<any[]>([]);
-  const [timeFilter, setTimeFilter] = React.useState<string>('All Time');
-  const [categoryFilter, setCategoryFilter] = React.useState<string>('All Categories');
-  const [filteredUserSessions, setFilteredUserSessions] = React.useState<any[]>([]);
-  const [view, setView] = React.useState<'stats' | 'sessions'>('stats');
+  const [timeFilter, setTimeFilter] = React.useState<string>("All Time");
+  const [categoryFilter, setCategoryFilter] = React.useState<string>("All Categories");
+  const [filteredUserSessions, setFilteredUserSessions] = React.useState<User_Session[]>([]);
+  const [view, setView] = React.useState<"stats" | "sessions">("stats");
   const [showFilterMenu, setShowFilterMenu] = React.useState(false);
 
   const handleTimeFilterChange = (str: string) => {
@@ -64,9 +59,11 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   const handleCategoryFilterChange = (categoryName: string) => {
     setCategoryFilter(categoryName);
     setFilteredUserSessions(
-      categoryName === 'All Categories'
+      categoryName === "All Categories"
         ? userSessionsWithCategories
-        : userSessionsWithCategories.filter((session) => session.sessionCategoryName === categoryName)
+        : userSessionsWithCategories.filter(
+            session => session.sessionCategoryName === categoryName,
+          ),
     );
   };
 
@@ -79,8 +76,8 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
         WHERE users_sessions.user_id = ?
         ORDER BY users_sessions.date_added DESC;
       `;
-      const sessions: any[] = await watermelonDatabase
-        .get('users_sessions')
+      const sessions: User_Session[] = await watermelonDatabase
+        .get<User_Session>("users_sessions")
         .query(Q.unsafeSqlQuery(query, [user.id]))
         .unsafeFetchRaw();
       setUserSessionsWithCategories(sessions);
@@ -92,11 +89,16 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 
   async function getSessionCategories() {
     try {
-      const categories = await watermelonDatabase.get<Session_Category>('session_categories').query().fetch();
-      const mapped = categories.map((cat) => ({
-        sessionCategoryName: cat.sessionCategoryName,
-        sessionCategoryId: cat.id
-      }));
+      const categories = await watermelonDatabase
+        .get<Session_Category>("session_categories")
+        .query()
+        .fetch();
+      const mapped: { sessionCategoryName: string; sessionCategoryId: string }[] = categories.map(
+        cat => ({
+          sessionCategoryName: cat.sessionCategoryName,
+          sessionCategoryId: cat.id,
+        }),
+      );
       setSessionCategories(mapped);
     } catch (err) {
       handleError(err, "getSessionCategories() in Stats Screen");
@@ -114,19 +116,43 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   }, [timeFilter, categoryFilter]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} testID="stats-screen">
-      <Pressable style={styles.filterToggle} disabled={!isProMember} onPress={() => setShowFilterMenu(prev => !prev)}>
-        <Text style={[styles.filterToggleText, { color: isProMember ? theme.text : theme.linkDisabled }]}>Filter</Text>
-        {isProMember && <Ionicons name={showFilterMenu ? 'caret-up-outline' : 'caret-down-outline'} size={20} color={theme.secondaryText} />}
-        {!isProMember && <View style={{ flexDirection: 'row', alignItems: 'center' }}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.filterToggleText, { color: theme.linkDisabled }]}>Pro</Text></View>}
-     
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      testID="stats-screen">
+      <Pressable
+        style={styles.filterToggle}
+        disabled={!isProMember}
+        onPress={() => setShowFilterMenu(prev => !prev)}>
+        <Text
+          style={[
+            styles.filterToggleText,
+            { color: isProMember ? theme.text : theme.linkDisabled },
+          ]}>
+          Filter
+        </Text>
+        {isProMember && (
+          <Ionicons
+            name={showFilterMenu ? "caret-up-outline" : "caret-down-outline"}
+            size={20}
+            color={theme.secondaryText}
+          />
+        )}
+        {!isProMember && (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Icon name="lock-closed" size={18} color={theme.linkDisabled} />
+            <Text style={[styles.filterToggleText, { color: theme.linkDisabled }]}>Pro</Text>
+          </View>
+        )}
       </Pressable>
 
       {showFilterMenu && (
         <View style={[styles.filterMenu, { backgroundColor: theme.card }]}>
           <Dropdown
-            data={[{ sessionCategoryName: 'All Categories', sessionCategoryId: 0 }, ...sessionCategories]}
-            onChange={(item) => handleCategoryFilterChange(item.sessionCategoryName)}
+            data={[
+              { sessionCategoryName: "All Categories", sessionCategoryId: 0 },
+              ...sessionCategories,
+            ]}
+            onChange={item => handleCategoryFilterChange(item.sessionCategoryName)}
             labelField="sessionCategoryName"
             valueField="sessionCategoryId"
             placeholder="Select a category"
@@ -138,7 +164,7 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
 
           <Dropdown
             data={timeFrames}
-            onChange={(item) => handleTimeFilterChange(item.label)}
+            onChange={item => handleTimeFilterChange(item.label)}
             labelField="label"
             valueField="value"
             placeholder="Select a time frame"
@@ -151,18 +177,20 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
           <Pressable
             style={[styles.filterButton, { backgroundColor: theme.button }]}
             onPress={() => {
-              setCategoryFilter('All Categories');
-              setTimeFilter('All Time');
+              setCategoryFilter("All Categories");
+              setTimeFilter("All Time");
               setShowFilterMenu(false);
-            }}
-          >
-            <Text style={{ color: theme.buttonText, fontWeight: '600' }}>Reset</Text>
+            }}>
+            <Text style={{ color: theme.buttonText, fontWeight: "600" }}>Reset</Text>
           </Pressable>
         </View>
       )}
 
-      {view === 'sessions' ? (
-        <SessionList filteredUserSessions={filteredUserSessions} sessionCategories={sessionCategories} />
+      {view === "sessions" ? (
+        <SessionList
+          filteredUserSessions={filteredUserSessions}
+          sessionCategories={sessionCategories}
+        />
       ) : (
         <Stats
           filteredUserSessions={filteredUserSessions}
@@ -175,10 +203,9 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
       <Pressable
         style={[styles.toggleButton, { backgroundColor: theme.button }]}
         testID="toggle-stats-screen"
-        onPress={() => setView(view === 'stats' ? 'sessions' : 'stats')}
-      >
+        onPress={() => setView(view === "stats" ? "sessions" : "stats")}>
         <Ionicons
-          name={view === 'stats' ? 'list-outline' : 'podium-outline'}
+          name={view === "stats" ? "list-outline" : "podium-outline"}
           size={24}
           color={theme.buttonText}
         />
@@ -187,49 +214,50 @@ const StatsScreen: React.FC<Props> = ({user, userSessions}) => {
   );
 };
 
-const getStyles = (theme: any) =>  StyleSheet.create({
-  container: { flex: 1 },
-  dropdown: {
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginBottom: 10,
-  },
-  filterToggle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  filterToggleText: {
-    fontWeight: '600',
-    fontSize: 17,
-  },
-  filterMenu: {
-    width: '100%',
-    padding: 16,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
-  },
-  filterButton: {
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginVertical: 6,
-    alignItems: 'center',
-  },
-  toggleButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    borderRadius: 28,
-    width: 56,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 5,
-  },
-});
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: { flex: 1 },
+    dropdown: {
+      borderRadius: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      marginBottom: 10,
+    },
+    filterToggle: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    filterToggleText: {
+      fontWeight: "600",
+      fontSize: 17,
+    },
+    filterMenu: {
+      width: "100%",
+      padding: 16,
+      borderBottomLeftRadius: 12,
+      borderBottomRightRadius: 12,
+    },
+    filterButton: {
+      borderRadius: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      marginVertical: 6,
+      alignItems: "center",
+    },
+    toggleButton: {
+      position: "absolute",
+      bottom: 20,
+      right: 20,
+      borderRadius: 28,
+      width: 56,
+      height: 56,
+      alignItems: "center",
+      justifyContent: "center",
+      elevation: 5,
+    },
+  });
 
 export default StatsScreen;

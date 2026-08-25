@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,26 +7,27 @@ import {
   ActivityIndicator,
   Alert,
   TouchableOpacity,
-} from 'react-native';
-import { useAuthContext } from '../services/AuthContext';
-import SubscriptionOptionCard from '../components/RevenueCat/SubscriptionOptionCard';
-import Purchases from 'react-native-purchases';
-import { useTheme } from '../contexts/ThemeProvider';
+} from "react-native";
+import { useAuthContext } from "../services/AuthContext";
+import SubscriptionOptionCard from "../components/RevenueCat/SubscriptionOptionCard";
+import Purchases from "react-native-purchases";
+import { useTheme } from "../contexts/ThemeProvider";
+import { darkTheme, lightTheme } from "../theme";
 
-const SubscribeScreen = ({ navigation }) => {
+const SubscribeScreen = ({ navigation }: { navigation: any }) => {
   const { currentOffering, isProMember } = useAuthContext();
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [selectedPackage, setSelectedPackage] = useState(null);
-const FEATURES = [
-  'Access All Trails',
-  'Use Trail Queue Feature',
-  'Pomdoro Time Selections',
-  'Multiple Session Tracking Filters',
-  'Complete Sessions With Friends in Group Sessions',  
-  'Access All Leaderboards',
-  'Priority Support'
-];
+  const FEATURES = [
+    "Access All Trails",
+    "Use Trail Queue Feature",
+    "Pomdoro Time Selections",
+    "Multiple Session Tracking Filters",
+    "Complete Sessions With Friends in Group Sessions",
+    "Access All Leaderboards",
+    "Priority Support",
+  ];
 
   const handlePurchase = async () => {
     if (!selectedPackage) return;
@@ -37,12 +38,12 @@ const FEATURES = [
         customerInfo.entitlements.active &&
         Object.keys(customerInfo.entitlements.active).length > 0
       ) {
-        Alert.alert('🎉 Success!', 'You are now a Trail Tasks Pro member.');
+        Alert.alert("🎉 Success!", "You are now a Trail Tasks Pro member.");
         navigation.goBack();
       }
-    } catch (err) {
-      console.warn('❌ Purchase error:', err);
-      Alert.alert('Error', err.message || 'Something went wrong.');
+    } catch (err: unknown) {
+      console.warn("❌ Purchase error:", err);
+      Alert.alert("Error", err.message || "Something went wrong.");
     }
   };
 
@@ -59,14 +60,16 @@ const FEATURES = [
       <Text style={styles.emoji}>⛰️</Text>
       <Text style={styles.header}>Unlock Trail Tasks Pro</Text>
       <Text style={styles.subHeader}>
-        Access all features, support development, and hike in style 
+        Access all features, support development, and hike in style
       </Text>
       <View style={styles.featureList}>
         {FEATURES.map((item, index) => (
-          <Text key={index} style={styles.featureItem}>• {item}</Text>
+          <Text key={index} style={styles.featureItem}>
+            • {item}
+          </Text>
         ))}
       </View>
-{currentOffering.annual && (
+      {currentOffering.annual && (
         <SubscriptionOptionCard
           product={currentOffering.annual.product}
           isPopular={true}
@@ -83,8 +86,6 @@ const FEATURES = [
         />
       )}
 
-      
-
       {selectedPackage && (
         <TouchableOpacity style={styles.subscribeButton} onPress={handlePurchase}>
           <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
@@ -94,18 +95,18 @@ const FEATURES = [
   );
 };
 
-const getStyles = (theme) =>
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({
     container: {
       padding: 20,
       paddingBottom: 80,
       backgroundColor: theme.background,
-      alignItems: 'center',
+      alignItems: "center",
     },
     loading: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       backgroundColor: theme.background,
     },
     emoji: {
@@ -113,9 +114,9 @@ const getStyles = (theme) =>
       marginTop: 10,
       marginBottom: 6,
     },
-     featureList: {
-      alignItems: 'flex-start',
-      width: '100%',
+    featureList: {
+      alignItems: "flex-start",
+      width: "100%",
       marginBottom: 20,
     },
     featureItem: {
@@ -126,15 +127,15 @@ const getStyles = (theme) =>
     header: {
       fontSize: 24,
       color: theme.text,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       marginBottom: 6,
-      textAlign: 'center',
+      textAlign: "center",
     },
     subHeader: {
       color: theme.secondaryText,
       fontSize: 14,
       marginBottom: 20,
-      textAlign: 'center',
+      textAlign: "center",
     },
     subscribeButton: {
       marginTop: 20,
@@ -151,9 +152,8 @@ const getStyles = (theme) =>
     subscribeButtonText: {
       color: theme.buttonText,
       fontSize: 16,
-      fontWeight: 'bold',
+      fontWeight: "bold",
     },
   });
 
 export default SubscribeScreen;
-

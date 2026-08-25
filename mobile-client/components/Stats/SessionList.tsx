@@ -1,16 +1,18 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
-import React, { useCallback } from 'react';
+import { FlatList, StyleSheet, Text, View } from "react-native";
+import React, { useCallback } from "react";
 
-import { Session_Category } from '../../watermelon/models';
-import formatTime from '../../helpers/formatTime';
-import { useTheme } from '../../contexts/ThemeProvider';
-
+import formatTime from "../../helpers/formatTime";
+import { useTheme } from "../../contexts/ThemeProvider";
+interface NormalizedSesttionCategoryNameId {
+  sessionCategoryName: string;
+  sessionCategoryId: string;
+}
 interface Props {
   filteredUserSessions: any[];
-  sessionCategories: Session_Category[];
+  sessionCategories: NormalizedSesttionCategoryNameId[];
 }
 
-const SessionCard = React.memo(({styles, item}:any) => {
+const SessionCard = React.memo(({ styles, item }: any) => {
   return (
     <View key={item.id} style={styles.sessionContainer} testID={`session-list-item-${item.id}`}>
       <Text style={styles.title}>{item.session_name}</Text>
@@ -23,17 +25,17 @@ const SessionCard = React.memo(({styles, item}:any) => {
         <Text style={styles.info}>Miles: {item.total_distance_hiked} mi.</Text>
         <Text style={styles.info}>Time: {formatTime(item.total_session_time)}</Text>
       </View>
-    </View> 
-  )
-})
+    </View>
+  );
+});
 
 const SessionList = ({ filteredUserSessions }: Props) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
-  const renderSessionItem = useCallback(({item}:any) => {
-    return <SessionCard key={item.id} styles={styles} item={item} />
-}, []);
+  const renderSessionItem = useCallback(({ item }: any) => {
+    return <SessionCard key={item.id} styles={styles} item={item} />;
+  }, []);
 
   if (filteredUserSessions.length === 0) {
     return (
@@ -69,7 +71,7 @@ const getStyles = (theme: any) =>
       padding: 16,
       borderRadius: 12,
       backgroundColor: theme.card,
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.15,
       shadowRadius: 4,
@@ -77,19 +79,19 @@ const getStyles = (theme: any) =>
     },
     title: {
       fontSize: 18,
-      fontWeight: '600',
-      color: 'rgb(7, 254, 213)',
+      fontWeight: "600",
+      color: "rgb(7, 254, 213)",
       marginBottom: 4,
     },
     category: {
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
       color: theme.secondaryText,
       marginBottom: 4,
     },
     description: {
       fontSize: 14,
-      fontStyle: 'italic',
+      fontStyle: "italic",
       color: theme.secondaryText,
       marginBottom: 4,
     },
@@ -99,8 +101,8 @@ const getStyles = (theme: any) =>
       marginBottom: 8,
     },
     infoContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       borderTopWidth: 1,
       borderTopColor: theme.border,
       paddingTop: 8,
@@ -108,21 +110,20 @@ const getStyles = (theme: any) =>
     },
     info: {
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
       color: theme.text,
     },
     emptyContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       padding: 40,
       backgroundColor: theme.background,
     },
     emptyText: {
       fontSize: 16,
-      fontWeight: '500',
+      fontWeight: "500",
       color: theme.secondaryText,
-      textAlign: 'center',
+      textAlign: "center",
     },
   });
-

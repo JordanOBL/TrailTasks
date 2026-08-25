@@ -73,6 +73,7 @@
     "@types/node": "^24.0.13",
     "@types/react": "^18.2.6",
     "@types/react-native": "^0.72.8",
+    "@types/react-native-vector-icons": "^6.4.18",
     "@types/react-test-renderer": "^18.0.0",
     "@types/testing-library__jest-dom": "^5.14.9",
     "babel-jest": "^29.7.0",
