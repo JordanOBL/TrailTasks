@@ -18,21 +18,15 @@ describe("RewardService", () => {
   beforeAll(async () => {
     bus = EventBus.getInstance();
     user = createMockUserBase({
-      usersWilds: jest.fn(() => {
-        return {
-          extend: jest.fn(() => true),
-        };
-      }),
+      usersWilds: {
+        extend: () => true,
+      },
     });
-    db = jest.fn(() => {
-      return {
-        get: jest.fn(async () =>
-          Promise.resolve({
-            find: jest.fn(async id => user),
-          }),
-        ),
-      };
-    }) as unknown as Database;
+    db = {
+      get: jest.fn(() => ({
+        find: jest.fn(id => user),
+      })),
+    } as unknown as Database;
 
     rewardService = new RewardService(bus, db, user, false);
 
