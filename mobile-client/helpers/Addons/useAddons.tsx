@@ -18,7 +18,7 @@ const useAddons = () => {
             }
 
             try {
-		const addons = await watermelonDatabase.get('addons').query().fetch();
+		const addons = await watermelonDatabase.get<Addon>('addons').query().fetch();
 
                 if (!addons.length) {
                     setError("Error fetching addons.")

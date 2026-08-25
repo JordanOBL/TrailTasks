@@ -2,12 +2,17 @@ import { StyleSheet, Text, View } from "react-native";
 
 import React from "react";
 import ScreenLink from "../components/screenLink";
-import { getTheme } from "../utils/theme";
+import { User } from "../watermelon/models";
 import { useAuthContext } from "../services/AuthContext";
 import { useTheme } from "../contexts/ThemeProvider";
 import { withObservables } from "@nozbe/watermelondb/react";
 
-const ProfileScreen = ({navigation, user}) => {
+interface ProfileScreenProps {
+    navigation: any;
+    user: User;
+}
+
+const ProfileScreen = ({navigation, user}: ProfileScreenProps) => {
     const {theme} = useTheme();
     const {isProMember } = useAuthContext();
   return (

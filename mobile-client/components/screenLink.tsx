@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-nativ
 import Icon from 'react-native-vector-icons/Ionicons';
 import React from 'react';
 import { User } from '../watermelon/models';
+import { darkTheme, lightTheme } from '../theme';
 import { useTheme } from '../contexts/ThemeProvider';
 
 interface Props {

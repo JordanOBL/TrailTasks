@@ -18,7 +18,7 @@ const WildAvatar = ({id, pose, size = 120}: Props) => {
 
 if (!path) {
   console.warn(`Missing pose "${pose}" for wild "${id}"`);
-  return;
+  return null;
 }
 
   return (

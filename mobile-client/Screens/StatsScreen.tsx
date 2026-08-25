@@ -156,7 +156,7 @@ const StatsScreen: React.FC<Props> = ({ user, userSessions }) => {
             labelField="sessionCategoryName"
             valueField="sessionCategoryId"
             placeholder="Select a category"
-            style={[styles.dropdown, { backgroundColor: theme.inputBackground, color: theme.text }]}
+            style={[styles.dropdown, { backgroundColor: theme.inputBackground }]}
             placeholderStyle={{ color: theme.secondaryText }}
             selectedTextStyle={{ color: theme.text }}
             value={categoryFilter}
@@ -168,7 +168,7 @@ const StatsScreen: React.FC<Props> = ({ user, userSessions }) => {
             labelField="label"
             valueField="value"
             placeholder="Select a time frame"
-            style={[styles.dropdown, { backgroundColor: theme.inputBackground, color: theme.text }]}
+            style={[styles.dropdown, { backgroundColor: theme.inputBackground }]}
             placeholderStyle={{ color: theme.secondaryText }}
             selectedTextStyle={{ color: theme.text }}
             value={timeFilter}

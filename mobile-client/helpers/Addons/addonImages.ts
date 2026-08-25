@@ -21,7 +21,7 @@ enum addonName {
     "UltralightII",
     "UltralightIII"
 }
-const addonImages = {
+const addonImages: Record<string, any> = {
   HikingPolesI: require('../../assets/addons/HikingPoles1.png'),
   HikingPolesII: require('../../assets/addons/HikingPoles2.png'),
   HikingPolesIII: require('../../assets/addons/HikingPoles3.png'),

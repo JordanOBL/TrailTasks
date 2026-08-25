@@ -18,7 +18,7 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
   const { currentOffering, isProMember } = useAuthContext();
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const FEATURES = [
     "Access All Trails",
     "Use Trail Queue Feature",
@@ -43,7 +43,7 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
       }
     } catch (err: unknown) {
       console.warn("❌ Purchase error:", err);
-      Alert.alert("Error", err.message || "Something went wrong.");
+      Alert.alert("Error", err instanceof Error ? err.message : "Something went wrong.");
     }
   };
 

@@ -4,8 +4,8 @@ import React from "react";
 interface LoginFormProps {
   email: string;
   password: string;
-  onEmailChange: () => void;
-  onPasswordChange: () => void;
+  onEmailChange: (text: string) => void;
+  onPasswordChange: (text: string) => void;
   onFormChange: () => void;
   error: string;
   onLoginPress: () => void;
