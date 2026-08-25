@@ -1,6 +1,6 @@
 import { User } from "../watermelon/models";
 import { afterAll, beforeAll, describe, expect, jest, test } from "@jest/globals";
-import { createMockUserBase, createUser } from "../__mocks__/UserModel";
+import { createMockUserBase } from "../__mocks__/UserModel";
 
 import { EventBus } from "../EventBus/EventBus";
 import RewardService, { Rewards } from "./RewardService";
