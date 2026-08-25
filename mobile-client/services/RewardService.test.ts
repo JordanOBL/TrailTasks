@@ -5,20 +5,36 @@ import { createMockUserBase, createUser } from "../__mocks__/UserModel";
 import { EventBus } from "../EventBus/EventBus";
 import RewardService, { Rewards } from "./RewardService";
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
-import { testDb } from "../watermelon/testDB";
 import { waitFor } from "@testing-library/react-native";
+import { Database } from "@nozbe/watermelondb";
 
 describe("RewardService", () => {
   let bus: EventBus;
   let rewardService: RewardService;
   let user: User;
   let snapshot: SessionSnapshot;
+  let db: Database;
 
   beforeAll(async () => {
     bus = EventBus.getInstance();
-    user = await createUser(testDb, createMockUserBase());
+    user = createMockUserBase({
+      usersWilds: jest.fn(() => {
+        return {
+          extend: jest.fn(() => true),
+        };
+      }),
+    });
+    db = jest.fn(() => {
+      return {
+        get: jest.fn(async () =>
+          Promise.resolve({
+            find: jest.fn(async id => user),
+          }),
+        ),
+      };
+    }) as unknown as Database;
 
-    rewardService = new RewardService(bus, testDb, user, false);
+    rewardService = new RewardService(bus, db, user, false);
 
     snapshot = {
       sessionId: "123",
@@ -46,12 +62,12 @@ describe("RewardService", () => {
       tokenBonusPercent: 1,
       startedAt: 123456789,
       consecutiveSecWithoutStrikes: 0,
+      extraSets: 0,
     };
   });
 
   afterAll(() => {
     bus.clear();
-    testDb.write(() => testDb.unsafeResetDatabase());
   });
 
   test("calculateWildXp returns the correct wild xp (10 * totalSessionDistance)", async () => {
