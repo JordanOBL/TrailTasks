@@ -2,7 +2,6 @@ import EnhancedParkDetails from "../components/Parks/ParkDetails";
 import React from "react";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { Park, User, Wild } from "../watermelon/models";
-import { Model } from "@nozbe/watermelondb";
 export default function ParkDetailsScreen({
   user,
   route,

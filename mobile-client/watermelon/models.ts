@@ -442,7 +442,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   @writer
   async markTrailCompleted({ trailId, isProMember, trailStartedAt }): Promise<void> {
     //get trail
-    const trail = await this.collections.get("trails").query(Q.where("id", trailId)).fetch();
+    const [trail] = await this.collections.get("trails").query(Q.where("id", trailId)).fetch();
     if (!trail) {
       throw new Error("Completed Trail not found");
     }

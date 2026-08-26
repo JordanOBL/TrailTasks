@@ -1,6 +1,6 @@
 import EnhancedWildsScreen from "../../Screens/WildsScreen";
 import LogbookScreen from "../../Screens/LogbookScreen";
-import ParkDetailsScreen from "../../Screens/ParksScreen";
+import ParkDetailsScreen from "../../Screens/ParkDetailsScreen";
 import ParkPassScreen from "../../Screens/ParksScreen";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
