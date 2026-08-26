@@ -13,6 +13,7 @@ import { useInternetConnection } from "../contexts/InternetConnectionProvider";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../contexts/ThemeProvider";
 import { withObservables } from "@nozbe/watermelondb/react";
+import ComingSoon from "../components/ComingSoon";
 
 interface Props {
   user: User;
@@ -109,6 +110,8 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends }: Props) => {
       console.log("clean up");
     };
   }, [refreshFriends]);
+
+  return <ComingSoon />;
 
   return (
     <View testID="friends-screen" style={styles.container}>

@@ -8,57 +8,56 @@ import { useTheme } from "../contexts/ThemeProvider";
 import { withObservables } from "@nozbe/watermelondb/react";
 
 interface ProfileScreenProps {
-    navigation: any;
-    user: User;
+  navigation: any;
+  user: User;
 }
 
-const ProfileScreen = ({navigation, user}: ProfileScreenProps) => {
-    const {theme} = useTheme();
-    const {isProMember } = useAuthContext();
+const ProfileScreen = ({ navigation, user }: ProfileScreenProps) => {
+  const { theme } = useTheme();
+  const { isProMember } = useAuthContext();
   return (
     <View>
-   
       <ScreenLink
-            user={user}
-            needsActiveSubscription={false}
-            hasActiveSubscription={true}
-            navigation={navigation}
-            navTo={'Stats'}>
-            Stats
-          </ScreenLink>
-             <ScreenLink
-            user={user}
-            needsActiveSubscription={true}
-            hasActiveSubscription={isProMember}
-            navigation={navigation}
-            navTo={'Trail Queue'}>
-            Upcoming Trails
-          </ScreenLink> <ScreenLink
-            user={user}
-            needsActiveSubscription={true}
-            hasActiveSubscription={isProMember}
-            navigation={navigation}
-            navTo={'Friends'}>
-            Friends
-          </ScreenLink>
-                <ScreenLink
-            user={user}
-            needsActiveSubscription={false}
-            hasActiveSubscription={isProMember}
-            navigation={navigation}
-            navTo={'Achievements'}>
-            Achievements
-          </ScreenLink>
+        user={user}
+        needsActiveSubscription={false}
+        hasActiveSubscription={true}
+        navigation={navigation}
+        navTo={"Stats"}>
+        Stats
+      </ScreenLink>
+      <ScreenLink
+        user={user}
+        needsActiveSubscription={true}
+        hasActiveSubscription={isProMember}
+        navigation={navigation}
+        navTo={"Trail Queue"}>
+        Upcoming Trails
+      </ScreenLink>{" "}
+      <ScreenLink
+        user={user}
+        needsActiveSubscription={false}
+        hasActiveSubscription={isProMember}
+        navigation={navigation}
+        navTo={"Friends"}>
+        Friends
+      </ScreenLink>
+      <ScreenLink
+        user={user}
+        needsActiveSubscription={false}
+        hasActiveSubscription={isProMember}
+        navigation={navigation}
+        navTo={"Achievements"}>
+        Achievements
+      </ScreenLink>
     </View>
   );
-}
+};
 
-const enhance = withObservables(['user'], ({user}) => ({
-    user: user.observe(),
-    currentTrail: user.trail.observe(),
-    userSessions: user.usersSessions.observe(),
-    userWilds: user.usersWilds.observe(),
+const enhance = withObservables(["user"], ({ user }) => ({
+  user: user.observe(),
+  currentTrail: user.trail.observe(),
+  userSessions: user.usersSessions.observe(),
+  userWilds: user.usersWilds.observe(),
 }));
 const EnhancedProfileScreen = enhance(ProfileScreen);
 export default EnhancedProfileScreen;
-

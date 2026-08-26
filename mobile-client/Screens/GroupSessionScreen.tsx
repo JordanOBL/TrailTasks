@@ -30,6 +30,7 @@ import timeOptions from "../helpers/Session/timeOptions";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useInternetConnection } from "../contexts/InternetConnectionProvider";
 import useWebSocket from "react-use-websocket";
+import ComingSoon from "../components/ComingSoon";
 
 const StatBox = ({ label, value }: { label: string; value: number }) => (
   <View style={styles.infoBox}>
@@ -376,6 +377,8 @@ const GroupSessionComponent = ({ user, debugRef = null, joinRoomId = "", route }
       </View>
     );
   }
+
+  return <ComingSoon />;
 
   return (
     <SafeAreaView testID="group-session-screen" style={styles.container}>

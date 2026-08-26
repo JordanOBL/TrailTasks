@@ -65,19 +65,19 @@ const SessionTypeScreen = ({ navigation }: Props) => {
     setSelection(previousState => (previousState === "solo" ? "group" : "solo"));
   }
   async function handleSelection() {
-    if (isProMember) {
-      if (selection === "solo") {
-        navigation.navigate("Solo", { user });
-      } else {
-        navigation.navigate("Group", { user });
-      }
+    //if (isProMember) {
+    if (selection === "solo") {
+      navigation.navigate("Solo", { user });
     } else {
-      if (selection === "solo") {
-        navigation.navigate("Solo");
-      } else {
-        navigation.navigate("Basecamp", { screen: "Subscribe" });
-      }
+      navigation.navigate("Group", { user });
     }
+    // } else {
+    //   if (selection === "solo") {
+    //     navigation.navigate("Solo");
+    //   } else {
+    //     navigation.navigate("Basecamp", { screen: "Subscribe" });
+    //   }
+    // }
   }
   return (
     <View
