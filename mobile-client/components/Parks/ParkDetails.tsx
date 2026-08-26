@@ -1,5 +1,22 @@
-import { FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Park, Trail, User, User_Completed_Trail, User_Park, User_Purchased_Trail, User_Wild, Wild } from "../../watermelon/models";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  Park,
+  Trail,
+  User_Completed_Trail,
+  User_Park,
+  User_Purchased_Trail,
+  User_Wild,
+  Wild,
+} from "../../watermelon/models";
 import React, { useCallback, useMemo, useState } from "react";
 import { darkTheme, lightTheme } from "../../theme";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
@@ -33,7 +50,7 @@ const ParkDetails = () => {
   const load = useCallback(async () => {
     // Fetch in parallel; relations use .query().fetch()
     if (!user) return;
-    try{
+    try {
       const [p, w, t, pt, ct, up, [uw]] = await Promise.all([
         db.get<Park>("parks").find(parkId),
         wildId ? db.get<Wild>("wilds").find(wildId) : Promise.resolve(null),
@@ -41,7 +58,9 @@ const ParkDetails = () => {
         user.usersPurchasedTrails,
         user.usersCompletedTrails,
         user.usersParks,
-        user.usersWilds.extend(Q.and(Q.where("user_id",user.id), Q.where("wild_id", wildId ||""))).fetch(),
+        user.usersWilds
+          .extend(Q.and(Q.where("user_id", user.id), Q.where("wild_id", wildId || "")))
+          .fetch(),
       ]);
       setPark(p);
       setWild(w);
@@ -52,20 +71,36 @@ const ParkDetails = () => {
       setUserWild(uw || null);
       console.log("Loaded park details:", { p, w, t, pt, ct, up, uw });
     } catch (error) {
-      console.error("Error loading park details:", error);  
+      console.error("Error loading park details:", error);
     }
   }, [db, parkId, wildId, user]);
 
   // Fetch when the screen is focused (and on return)
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
 
   // Quick lookups
-  const purchasedIds = useMemo(() => new Set(purchasedTrails.map(pt => pt.trailId)), [purchasedTrails]);
-  const completedIds = useMemo(() => new Set(completedTrails.map(ct => ct.trailId)), [completedTrails]);
+  const purchasedIds = useMemo(
+    () => new Set(purchasedTrails.map(pt => pt.trailId)),
+    [purchasedTrails],
+  );
+  const completedIds = useMemo(
+    () => new Set(completedTrails.map(ct => ct.trailId)),
+    [completedTrails],
+  );
 
   const totalTrails = trails.length;
-  const completedCount = useMemo(() => trails.filter(t => completedIds.has(t.id)).length, [trails, completedIds]);
-  const purchasedCount = useMemo(() => trails.filter(t => purchasedIds.has(t.id)).length, [trails, purchasedIds]);
+  const completedCount = useMemo(
+    () => trails.filter(t => completedIds.has(t.id)).length,
+    [trails, completedIds],
+  );
+  const purchasedCount = useMemo(
+    () => trails.filter(t => purchasedIds.has(t.id)).length,
+    [trails, purchasedIds],
+  );
   const completionPct = totalTrails ? Math.round((completedCount / totalTrails) * 100) : 0;
 
   const wildPose = useMemo(() => {
@@ -140,8 +175,7 @@ const ParkDetails = () => {
                 onPress={async () => {
                   await user?.setActiveWild(wild.id);
                   load(); // refresh data
-                }}
-              >
+                }}>
                 <Text>Set Active</Text>
               </Pressable>
             </View>
@@ -160,8 +194,7 @@ const ParkDetails = () => {
                       fontSize: 13,
                       fontWeight: "600",
                       marginBottom: 4,
-                    }}
-                  >
+                    }}>
                     Level {userWild.level} — {userWild.xp} / {userWild.xpToNext} XP
                   </Text>
 
@@ -212,8 +245,7 @@ const ParkDetails = () => {
                 <TouchableOpacity
                   activeOpacity={0.85}
                   style={styles.trailRow}
-                  onPress={() => onPressTrail(trail)}
-                >
+                  onPress={() => onPressTrail(trail)}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.trailName}>{trail.trailName}</Text>
                     <View style={styles.trailMetaRow}>
@@ -244,66 +276,65 @@ const ParkDetails = () => {
   );
 };
 
-
 /* ————— Small UI bits (theme-aware) ————— */
 
-const Tag = ({ label, theme }: {label: string, theme: typeof lightTheme | typeof darkTheme }) => (
-
+const Tag = ({ label, theme }: { label: string; theme: typeof lightTheme | typeof darkTheme }) => (
   <View
     style={{
       backgroundColor:
-        theme.themeName === 'darkTheme' ? theme.linkBackground : theme.linkBackground,
+        theme.themeName === "darkTheme" ? theme.linkBackground : theme.linkBackground,
       borderColor: theme.linkBorder,
       borderWidth: 1,
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: 999,
-    }}
-  >
+    }}>
     <Text
       style={{
         color: theme.linkText,
         fontSize: 12,
-        fontWeight: '600',
-      }}
-    >
+        fontWeight: "600",
+      }}>
       {label}
     </Text>
   </View>
 );
 
-const Meta = ({ label, theme } :{label: string, theme: typeof lightTheme | typeof darkTheme }) => (
+const Meta = ({ label, theme }: { label: string; theme: typeof lightTheme | typeof darkTheme }) => (
   <View
     style={{
-      backgroundColor:
-        theme.themeName === 'darkTheme' ? theme.inputBackground : theme.card,
+      backgroundColor: theme.themeName === "darkTheme" ? theme.inputBackground : theme.card,
       borderRadius: 999,
       paddingHorizontal: 10,
       paddingVertical: 4,
-    }}
-  >
+    }}>
     <Text
       style={{
-        color:
-          theme.themeName === 'darkTheme' ? theme.trailStatText : theme.trailStatText,
+        color: theme.themeName === "darkTheme" ? theme.trailStatText : theme.trailStatText,
         fontSize: 12,
-        fontWeight: '500',
-      }}
-    >
+        fontWeight: "500",
+      }}>
       {label}
     </Text>
   </View>
 );
 
-const Stat = ({ label, value, theme }: {label: string, value: string, theme: typeof lightTheme | typeof darkTheme }) => (
-  <View style={{ alignItems: 'center', flex: 1, paddingVertical: 8 }}>
+const Stat = ({
+  label,
+  value,
+  theme,
+}: {
+  label: string;
+  value: string;
+  theme: typeof lightTheme | typeof darkTheme;
+}) => (
+  <View style={{ alignItems: "center", flex: 1, paddingVertical: 8 }}>
     <Text
       style={{
         fontSize: 20,
-        fontWeight: '700',
+        fontWeight: "700",
         color: theme.statValue,
-      }}
-    >
+      }}>
       {value}
     </Text>
     <Text
@@ -311,8 +342,7 @@ const Stat = ({ label, value, theme }: {label: string, value: string, theme: typ
         marginTop: 2,
         fontSize: 12,
         color: theme.statLabel,
-      }}
-    >
+      }}>
       {label}
     </Text>
   </View>
@@ -322,11 +352,20 @@ const Badge = ({
   text,
   tone,
   theme,
-}: {text: string, tone: string, theme: typeof lightTheme | typeof darkTheme }) => {
+}: {
+  text: string;
+  tone: string;
+  theme: typeof lightTheme | typeof darkTheme;
+}) => {
   let bg = theme.card;
-  if (tone === 'success') {bg = theme.completedBadge;} // green from theme
-  else if (tone === 'primary') {bg = theme.buttonPrimary;}
-  else if (tone === 'warning') {bg = '#FBBF24';}
+  if (tone === "success") {
+    bg = theme.completedBadge;
+  } // green from theme
+  else if (tone === "primary") {
+    bg = theme.buttonPrimary;
+  } else if (tone === "warning") {
+    bg = "#FBBF24";
+  }
   return (
     <View
       style={{
@@ -334,32 +373,32 @@ const Badge = ({
         borderRadius: 8,
         paddingVertical: 4,
         paddingHorizontal: 8,
-      }}
-    >
+      }}>
       <Text
         style={{
           fontSize: 12,
-          fontWeight: '700',
-          color:
-            tone === 'success'
-              ? theme.completedBadgeText
-              : theme.buttonPrimaryText,
-        }}
-      >
+          fontWeight: "700",
+          color: tone === "success" ? theme.completedBadgeText : theme.buttonPrimaryText,
+        }}>
         {text}
       </Text>
     </View>
   );
 };
 
-const EmptyLine = ({ text, theme }: {text: string, theme: typeof lightTheme | typeof darkTheme }) => (
+const EmptyLine = ({
+  text,
+  theme,
+}: {
+  text: string;
+  theme: typeof lightTheme | typeof darkTheme;
+}) => (
   <Text
     style={{
       color: theme.secondaryText,
-      fontStyle: 'italic',
+      fontStyle: "italic",
       paddingVertical: 8,
-    }}
-  >
+    }}>
     {text}
   </Text>
 );
@@ -381,7 +420,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       borderColor: theme.border,
     },
     headerRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: 12,
     },
     headerLeft: {
@@ -390,27 +429,26 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     },
     parkName: {
       fontSize: 22,
-      fontWeight: '700',
-      color: theme.trailHeaderText, 
+      fontWeight: "700",
+      color: theme.trailHeaderText,
     },
     tagRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: "row",
+      flexWrap: "wrap",
       gap: 8,
     },
     parkImage: {
       width: 84,
       height: 84,
       borderRadius: 12,
-      backgroundColor:
-        theme.themeName === 'darkTheme' ? theme.inputBackground : theme.card,
+      backgroundColor: theme.themeName === "darkTheme" ? theme.inputBackground : theme.card,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.border,
     },
     statsRow: {
       marginTop: 16,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
     },
     progressWrap: {
       marginTop: 16,
@@ -424,58 +462,58 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       height: 10,
       backgroundColor: theme.progressBarBackground,
       borderRadius: 999,
-      overflow: 'hidden',
+      overflow: "hidden",
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.progressBorder,
     },
     progressBarFill: {
-      height: '100%',
+      height: "100%",
       backgroundColor: theme.progressBar,
     },
     progressPct: {
       marginTop: 6,
       fontSize: 12,
       color: theme.progressText,
-      fontWeight: '600',
+      fontWeight: "600",
     },
     sectionTitle: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       color: theme.trailHeaderText,
       marginBottom: 10,
     },
     wildRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 12,
-      justifyContent:'center'
+      justifyContent: "center",
     },
     wildName: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: theme.text,
       marginBottom: 6,
     },
     trailRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
+      flexDirection: "row",
+      alignItems: "flex-start",
       paddingVertical: 12,
     },
     trailName: {
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: "600",
       color: theme.text,
     },
     trailMetaRow: {
       marginTop: 6,
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: "row",
+      flexWrap: "wrap",
       gap: 8,
     },
     badgeCol: {
       gap: 6,
       marginLeft: 12,
-      alignItems: 'flex-end',
+      alignItems: "flex-end",
     },
     separator: {
       height: 1,
@@ -483,21 +521,18 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       opacity: 0.6,
     },
     xpBarOuter: {
-  height: 8,
-  backgroundColor: theme.progressBarBackground,
-  borderRadius: 999,
-  overflow: "hidden",
-  borderWidth: StyleSheet.hairlineWidth,
-  borderColor: theme.progressBorder,
-  marginBottom: 6,
-},
-xpBarFill: {
-  height: "100%",
-  backgroundColor: theme.progressBar, // uses same accent as park progress
-},
-
+      height: 8,
+      backgroundColor: theme.progressBarBackground,
+      borderRadius: 999,
+      overflow: "hidden",
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.progressBorder,
+      marginBottom: 6,
+    },
+    xpBarFill: {
+      height: "100%",
+      backgroundColor: theme.progressBar, // uses same accent as park progress
+    },
   });
 
 export default ParkDetails;
-
-

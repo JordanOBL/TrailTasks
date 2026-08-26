@@ -1,165 +1,202 @@
-import {Cached_Friend, User, User_Friend} from '../watermelon/models';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Cached_Friend, User, User_Friend } from "../watermelon/models";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import {Button} from 'react-native-paper';
-import Config from 'react-native-config';
+import { Button } from "react-native-paper";
+import Config from "react-native-config";
 import EnhancedFriendCard from "../components/Friends/FriendCard";
-import React from 'react'
+import React from "react";
 import RefreshConnection from "../components/RefreshConnection";
-import SearchAddFriend from '../components/Friends/SearchAddFriend';
-import {useDatabase} from '@nozbe/watermelondb/react';
+import SearchAddFriend from "../components/Friends/SearchAddFriend";
+import { useDatabase } from "@nozbe/watermelondb/react";
 import { useInternetConnection } from "../contexts/InternetConnectionProvider";
 //import FriendsList from '../components/Friends/FriendsList';
-import { useNavigation } from '@react-navigation/native';
-import { useTheme } from '../contexts/ThemeProvider';
-import {withObservables} from '@nozbe/watermelondb/react';
+import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../contexts/ThemeProvider";
+import { withObservables } from "@nozbe/watermelondb/react";
 
 interface Props {
-  user: User,
-  cachedFriends: Cached_Friend[],
-  navigation: any,
-  friends: User_Friend[]
+  user: User;
+  cachedFriends: Cached_Friend[];
+  navigation: any;
+  friends: User_Friend[];
 }
 
-const FriendsScreen = ({ user, cachedFriends, navigation, friends}:Props) => {
+const FriendsScreen = ({ user, cachedFriends, navigation, friends }: Props) => {
   //const [cachedFriends, setCachedFriends] = React.useState([]);
   const watermelonDatabase = useDatabase();
-  const {isConnected} = useInternetConnection();
+  const { isConnected } = useInternetConnection();
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [refreshFriends, setRefreshFriends] = React.useState(true);
- const HTTP_HTTPS = Config.NODE_ENV === 'production' ? 'https' : 'http';
+  const HTTP_HTTPS = Config.NODE_ENV === "production" ? "https" : "http";
   const cachedFriendsMap = cachedFriends.reduce((acc, friend, idx) => {
     acc.set(friend.friendId, idx);
     return acc;
-  }, new Map())
-  async function handleJoinSession(roomId:string) {
-    navigation.navigate('Timer', { screen: 'Group',params: { joinRoomId: roomId } });
-
+  }, new Map());
+  async function handleJoinSession(roomId: string) {
+    navigation.navigate("Timer", { screen: "Group", params: { joinRoomId: roomId } });
   }
-  const cachedFriendUsernames = cachedFriends.map((friend) => friend.username.toLowerCase())
+  const cachedFriendUsernames = cachedFriends.map(friend => friend.username.toLowerCase());
   React.useEffect(() => {
-
     async function fetchOnlineFriends() {
       //fetch friends joined on friends user_id from server
-      const latestCachedFriends = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/cachedFriends?userId=${user.id}`)
-      const { friends: recentFriendsFromServerMap } = await latestCachedFriends.json()
-  
+      const latestCachedFriends = await fetch(
+        `${HTTP_HTTPS}://${Config.DATABASE_URL}/api/cachedFriends?userId=${user.id}`,
+      );
+      const { friends: recentFriendsFromServerMap } = await latestCachedFriends.json();
+
       if (Object.keys(recentFriendsFromServerMap).length === 0) {
         return;
       }
 
       //turn newCachedFriendsMap into an array
-      const recentFriendsFromServerEntries: [string, User_Friend][] = Object.entries(recentFriendsFromServerMap)
+      const recentFriendsFromServerEntries: [string, User_Friend][] = Object.entries(
+        recentFriendsFromServerMap,
+      );
       //loop over the most recent friend data from the server
       //if  isnt new in the cache
-        //update the friend in cached friends
-        //else
+      //update the friend in cached friends
+      //else
       //create a new friend in cached friends
       //Batch updated cachedFriends or create new cahced Friends
-       let friendBatch = recentFriendsFromServerEntries.map(([friend_id, friend]) => {
-        if(cachedFriendsMap.has(friend_id)){
-          const prevCachedFriend = cachedFriends[cachedFriendsMap.get(friend_id)]
-          if(prevCachedFriend.totalMiles != friend.total_miles || prevCachedFriend.currentTrail != friend.current_trail || prevCachedFriend.roomId != friend.room_id || prevCachedFriend.trailProgress != friend.trail_progress){
+      let friendBatch = recentFriendsFromServerEntries.map(([friend_id, friend]) => {
+        if (cachedFriendsMap.has(friend_id)) {
+          const prevCachedFriend = cachedFriends[cachedFriendsMap.get(friend_id)];
+          if (
+            prevCachedFriend.totalMiles != friend.total_miles ||
+            prevCachedFriend.currentTrail != friend.current_trail ||
+            prevCachedFriend.roomId != friend.room_id ||
+            prevCachedFriend.trailProgress != friend.trail_progress
+          ) {
             return prevCachedFriend.prepareUpdate(f => {
-              f.totalMiles = friend.total_miles
-              f.currentTrail = friend.current_trail
-              f.roomId = friend.room_id
-              f.trailProgress = friend.trail_progress
-             // f._raw._status = 'synced'
-            })
+              f.totalMiles = friend.total_miles;
+              f.currentTrail = friend.current_trail;
+              f.roomId = friend.room_id;
+              f.trailProgress = friend.trail_progress;
+              // f._raw._status = 'synced'
+            });
           }
         } else {
-            return watermelonDatabase.get<Cached_Friend>('cached_friends').prepareCreate(f => {
-              f.userId = user.id
-              f.friendId = friend.friend_id
-              f.username = friend.username
-              f.totalMiles = friend.total_miles
-              f.currentTrail = friend.current_trail
-              f.trailProgress = friend.trail_progress
-              f.roomId = friend.room_id
-             // f._raw._status = 'synced'
-            })
-          }
-        })
-      friendBatch = friendBatch.filter(query => query != undefined)
+          return watermelonDatabase.get<Cached_Friend>("cached_friends").prepareCreate(f => {
+            f.userId = user.id;
+            f.friendId = friend.friend_id;
+            f.username = friend.username;
+            f.totalMiles = friend.total_miles;
+            f.currentTrail = friend.current_trail;
+            f.trailProgress = friend.trail_progress;
+            f.roomId = friend.room_id;
+            // f._raw._status = 'synced'
+          });
+        }
+      });
+      friendBatch = friendBatch.filter(query => query != undefined);
 
       //Batch updated friends or create new friends
-    if(friendBatch.length  ){
-     await watermelonDatabase.write(async () => {
-        await watermelonDatabase.batch( ...friendBatch )
-      })
-    }
-      setRefreshFriends(false)
+      if (friendBatch.length) {
+        await watermelonDatabase.write(async () => {
+          await watermelonDatabase.batch(...friendBatch);
+        });
+      }
+      setRefreshFriends(false);
     }
 
-    if(isConnected && user && refreshFriends){
+    if (isConnected && user && refreshFriends) {
       //fetch new cached friends data from friends table
-      fetchOnlineFriends()
+      fetchOnlineFriends();
     }
-    
 
     return () => {
-      console.log('clean up')
-    }
-  }, [refreshFriends])
+      console.log("clean up");
+    };
+  }, [refreshFriends]);
 
   return (
-    <View testID='friends-screen' style={styles.container}>
-      {!isConnected &&  <RefreshConnection>
-        {`Internet Connection is Needed to view latest Friend Activity\nTry Refreshing Connection`}
-      </RefreshConnection>
-      }
+    <View testID="friends-screen" style={styles.container}>
+      {!isConnected && (
+        <RefreshConnection>
+          {`Internet Connection is Needed to view latest Friend Activity\nTry Refreshing Connection`}
+        </RefreshConnection>
+      )}
 
-      <SearchAddFriend database={watermelonDatabase} cachedFriendUsernames={cachedFriendUsernames} key={user.id} user={user} isConnected={isConnected} />
+      <SearchAddFriend
+        database={watermelonDatabase}
+        cachedFriendUsernames={cachedFriendUsernames}
+        key={user.id}
+        user={user}
+        isConnected={isConnected}
+      />
       {/*<FriendsList cachedFriends={cachedFriends} isConnected={isConnected} handleJoinSession={handleJoinSession} />*/}
       <View style={styles.titleUpdateContainer}>
-      <Text style={styles.friendsTitle} testID='friends-title'>Friends:</Text>
-       {isConnected && <Button style={styles.refreshButton} icon="refresh" mode="outlined" onPress={() => setRefreshFriends(true)} testID='refresh-friends-button' textColor="#07FED5" >Update</Button>}
+        <Text style={styles.friendsTitle} testID="friends-title">
+          Friends:
+        </Text>
+        {isConnected && (
+          <Button
+            style={styles.refreshButton}
+            icon="refresh"
+            mode="outlined"
+            onPress={() => setRefreshFriends(true)}
+            testID="refresh-friends-button"
+            textColor="#07FED5">
+            Update
+          </Button>
+        )}
       </View>
-      <ScrollView testID='friends-list' contentContainerStyle={{paddingBottom: 100}} >
-      {cachedFriends.length > 0 ? cachedFriends.map(friend => <EnhancedFriendCard key={friend.friendId} friend={friend}  isConnected={isConnected} handleAction={handleJoinSession} />) : <Text style={styles.noFriendsMessage} testID='no-friends-message'>Add a friend, or check back later</Text>
-      }
+      <ScrollView testID="friends-list" contentContainerStyle={{ paddingBottom: 100 }}>
+        {cachedFriends.length > 0 ? (
+          cachedFriends.map(friend => (
+            <EnhancedFriendCard
+              key={friend.friendId}
+              friend={friend}
+              isConnected={isConnected}
+              handleAction={handleJoinSession}
+            />
+          ))
+        ) : (
+          <Text style={styles.noFriendsMessage} testID="no-friends-message">
+            Add a friend, or check back later
+          </Text>
+        )}
       </ScrollView>
     </View>
-  )
-}
+  );
+};
 
-const enhance = withObservables(['user', 'cachedFriends'], ({ user, cachedFriends, friends }) => ({
-  user , 
+const enhance = withObservables(["user", "cachedFriends"], ({ user }) => ({
+  user,
   cachedFriends: user.cachedFriends,
   friends: user.friends.observe(),
 }));
-const EnhancedFriendsScreen = enhance(FriendsScreen)
-export default EnhancedFriendsScreen
+const EnhancedFriendsScreen = enhance(FriendsScreen);
+export default EnhancedFriendsScreen;
 
-const getStyles = (theme: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: theme.background,
-  },
-  titleUpdateContainer: {
-    padding: 16,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  noFriendsMessage: {
-    fontSize: 18,
-    color: theme.secondaryText,
-    textAlign: 'center',
-  },
-  friendsTitle: {
-    color: theme.text,
-    fontWeight: 'bold',
-    fontSize: 18,
-    padding: 18,
-  },
-  refreshButton: {
-    opacity: 0.8,
-    borderColor: theme.border,
-  },
-});
-
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: theme.background,
+    },
+    titleUpdateContainer: {
+      padding: 16,
+      width: "100%",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    noFriendsMessage: {
+      fontSize: 18,
+      color: theme.secondaryText,
+      textAlign: "center",
+    },
+    friendsTitle: {
+      color: theme.text,
+      fontWeight: "bold",
+      fontSize: 18,
+      padding: 18,
+    },
+    refreshButton: {
+      opacity: 0.8,
+      borderColor: theme.border,
+    },
+  });

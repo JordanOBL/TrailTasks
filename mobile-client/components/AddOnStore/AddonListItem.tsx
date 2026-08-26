@@ -1,9 +1,10 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
-import addonImages from '../../helpers/Addons/addonImages';
-import { withObservables } from '@nozbe/watermelondb/react';
-import { useTheme } from '../../contexts/ThemeProvider';
-import { Addon, User_Addon } from '../../watermelon/models';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import addonImages from "../../helpers/Addons/addonImages";
+import { withObservables } from "@nozbe/watermelondb/react";
+import { useTheme } from "../../contexts/ThemeProvider";
+import { Addon, User_Addon } from "../../watermelon/models";
+import { darkTheme, lightTheme } from "../../theme";
 
 interface AddonListItemProps {
   userAddon: User_Addon;
@@ -18,7 +19,7 @@ const AddonListItem = ({ userAddon, selectAddon, addon }: AddonListItemProps) =>
     <TouchableOpacity onPress={() => selectAddon(addon)}>
       <View style={styles.container}>
         <Image
-          source={addonImages[addon?.name.replace(/\s/g, '')]}
+          source={addonImages[addon?.name.replace(/\s/g, "")]}
           style={{ width: 75, height: 75 }}
         />
         <View style={styles.addonTitle}>
@@ -31,7 +32,7 @@ const AddonListItem = ({ userAddon, selectAddon, addon }: AddonListItemProps) =>
   );
 };
 
-const enhance = withObservables(['userAddon', 'addon'], ({ addon, userAddon }) => ({
+const enhance = withObservables(["userAddon", "addon"], ({ addon, userAddon }) => ({
   userAddon,
   addon: userAddon.addon,
 }));
@@ -39,25 +40,25 @@ const enhance = withObservables(['userAddon', 'addon'], ({ addon, userAddon }) =
 const EnhancedAddonListItem = enhance(AddonListItem);
 export default EnhancedAddonListItem;
 
-const getStyles = (theme: any) =>
+const getStyles = (theme: typeof darkTheme | typeof lightTheme) =>
   StyleSheet.create({
     container: {
-      flexDirection: 'row',
+      flexDirection: "row",
       backgroundColor: theme.card,
       padding: 12,
       borderRadius: 10,
       marginBottom: 12,
-      alignItems: 'center',
+      alignItems: "center",
       gap: 12,
     },
     addonTitle: {
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: "center",
     },
     addonName: {
       fontSize: 16,
-      fontWeight: '600',
-      color: 'rgb(7, 254, 213)', // Keep brand accent
+      fontWeight: "600",
+      color: "rgb(7, 254, 213)", // Keep brand accent
       marginBottom: 4,
     },
     ownedText: {
@@ -68,7 +69,6 @@ const getStyles = (theme: any) =>
     addonDescription: {
       fontSize: 12,
       color: theme.secondaryText,
-      flexWrap: 'wrap',
+      flexWrap: "wrap",
     },
   });
-

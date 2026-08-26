@@ -442,7 +442,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   @writer
   async markTrailCompleted({ trailId, isProMember, trailStartedAt }): Promise<void> {
     //get trail
-    const trail = await this.collections.get("trails").query(Q.where("id", trailId)).fetch();
+    const [trail] = await this.collections.get("trails").query(Q.where("id", trailId)).fetch();
     if (!trail) {
       throw new Error("Completed Trail not found");
     }
@@ -461,20 +461,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           uct.bestCompletedTime = getTimeDifference(currentTime, trailStartedAt);
         });
       if (!createdCompletedTrail) throw new Error("DB failed to created new completed trail");
-
-      //check id user has park pass already
-      const hasParkPass = await this.usersParks
-        .query(Q.where("park_id", trail.parkId))
-        .fetchCount();
-      console.debug("hasParkPass in markTrailCompleted Writer:", hasParkPass);
-      //if not, and user is pro member, redeem park pass
-      if (Number(hasParkPass) === 0) {
-        const shouldRedeemPass = await this.redeemParkWildCheck(trail.parkId);
-        if (shouldRedeemPass) {
-          console.debug("Redeeming Park Pass in markCompletedTrail Writer");
-          await this.redeemParkPass(trail.parkId);
-        }
-      }
     } else {
       console.debug("Completed trail before trail, updating in markCompletedTrail Writer");
       await completedTrail.update(uct => {
@@ -485,6 +471,18 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           completedTrail.bestCompletedTime,
         );
       });
+    }
+
+    //check id user has park pass already
+    const hasParkPass = await this.usersParks.extend(Q.where("park_id", trail.parkId)).fetchCount();
+    console.debug("hasParkPass in markTrailCompleted Writer:", hasParkPass);
+    //if not, and user is pro member, redeem park pass
+    if (Number(hasParkPass) === 0) {
+      const shouldRedeemPass = await this.callWriter(() => this.redeemParkWildCheck(trail.parkId));
+      if (shouldRedeemPass) {
+        console.debug("Redeeming Park Pass in markCompletedTrail Writer");
+        await this.callWriter(() => this.redeemParkPass(trail.parkId));
+      }
     }
   }
 

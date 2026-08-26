@@ -112,7 +112,7 @@ export class SessionEngine {
 
     this.strikePacePenaltyMph = 0;
 
-    this.currentPaceMph = this.minPaceMph;
+    this.currentPaceMph = cfg.currentPaceMph ?? this.minPaceMph;
     this.backpack = cfg.backpack;
   }
 
@@ -137,7 +137,6 @@ export class SessionEngine {
     this.elapsedInPhaseSec = 0;
     this.currentSet = 1;
     this.completedSets = 0;
-    this.currentPaceMph = this.minPaceMph;
 
     // announce
     this.bus.emit("SESSION_STARTED", { snapshot: this.buildSnapshot() });

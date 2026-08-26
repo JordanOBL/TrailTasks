@@ -1,19 +1,23 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import Icon from 'react-native-vector-icons/Ionicons';
-import { Session_Category } from '../../watermelon/models';
-import formatTime from '../../helpers/formatTime';
-import { getSessionStats } from '../../helpers/Stats/GetSessionStats';
-import { useAuthContext } from '../../services/AuthContext';
-import { useTheme } from '../../contexts/ThemeProvider';
+import Icon from "react-native-vector-icons/Ionicons";
+import { Session_Category } from "../../watermelon/models";
+import formatTime from "../../helpers/formatTime";
+import { getSessionStats } from "../../helpers/Stats/GetSessionStats";
+import { useAuthContext } from "../../services/AuthContext";
+import { useTheme } from "../../contexts/ThemeProvider";
 
+interface NormalizedSesttionCategoryNameId {
+  sessionCategoryName: string;
+  sessionCategoryId: string;
+}
 type Props = {
   filteredUserSessions: any[];
   filteredCategory: string;
   filteredTime: string;
-  sessionCategories: Session_Category[];
+  sessionCategories: NormalizedSesttionCategoryNameId[];
 };
 
 const Stats: React.FC<Props> = ({
@@ -23,15 +27,15 @@ const Stats: React.FC<Props> = ({
   sessionCategories,
 }) => {
   const { theme } = useTheme();
-  const {isProMember} = useAuthContext();
+  const { isProMember } = useAuthContext();
   const styles = getStyles(theme);
 
   const [totalTime, setTotalTime] = React.useState<number>(0);
   const [totalDistance, setTotalDistance] = React.useState<number>(0.0);
   const [mostProductiveTimes, setMostProductiveTimes] = React.useState<string[]>([]);
-  const [mostUsedCategory, setMostUsedCategory] = React.useState<string>('');
-  const [leastUsedCategory, setLeastUsedCategory] = React.useState<string>('');
-  const [mostProductiveCategory, setMostProductiveCategory] = React.useState<string>('');
+  const [mostUsedCategory, setMostUsedCategory] = React.useState<string>("");
+  const [leastUsedCategory, setLeastUsedCategory] = React.useState<string>("");
+  const [mostProductiveCategory, setMostProductiveCategory] = React.useState<string>("");
 
   React.useEffect(() => {
     getSessionStats(
@@ -40,7 +44,7 @@ const Stats: React.FC<Props> = ({
       setTotalDistance,
       setMostProductiveTimes,
       setMostUsedCategory,
-      setLeastUsedCategory
+      setLeastUsedCategory,
     );
   }, [filteredUserSessions]);
 
@@ -63,23 +67,41 @@ const Stats: React.FC<Props> = ({
             {totalDistance.toFixed(2)} miles
           </Text>
         </View>
-        {filteredCategory === 'All Categories' && mostUsedCategory && (
+        {filteredCategory === "All Categories" && mostUsedCategory && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Used Category</Text>
-            <Text testID="most-used-category" style={ isProMember ? styles.statValue : [styles.statValue, {opacity: .5}]}>
-              {isProMember ? mostUsedCategory : <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.statValue, {opacity: .5, marginLeft: 4}]}>Pro</Text></View>}
+            <Text
+              testID="most-used-category"
+              style={isProMember ? styles.statValue : [styles.statValue, { opacity: 0.5 }]}>
+              {isProMember ? (
+                mostUsedCategory
+              ) : (
+                <View style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                  <Icon name="lock-closed" size={18} color={theme.linkDisabled} />
+                  <Text style={[styles.statValue, { opacity: 0.5, marginLeft: 4 }]}>Pro</Text>
+                </View>
+              )}
             </Text>
           </View>
         )}
 
-        {filteredCategory === 'All Categories' && mostProductiveTimes.length > 0 && (
+        {filteredCategory === "All Categories" && mostProductiveTimes.length > 0 && (
           <View style={styles.statsContainer}>
             <Text style={styles.statTitle}>Most Productive Time</Text>
-             <Text testID="most-productive-time" style={ isProMember ? styles.statValue : [styles.statValue, {opacity: .5}]}>
-              {isProMember ? mostProductiveTimes[0] : <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}><Icon name="lock-closed" size={18} color={theme.linkDisabled} /><Text style={[styles.statValue, {opacity: .5, marginLeft: 4}]}>Pro</Text></View>}
+            <Text
+              testID="most-productive-time"
+              style={isProMember ? styles.statValue : [styles.statValue, { opacity: 0.5 }]}>
+              {isProMember ? (
+                mostProductiveTimes[0]
+              ) : (
+                <View style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                  <Icon name="lock-closed" size={18} color={theme.linkDisabled} />
+                  <Text style={[styles.statValue, { opacity: 0.5, marginLeft: 4 }]}>Pro</Text>
+                </View>
+              )}
             </Text>
           </View>
-        )}     
+        )}
       </ScrollView>
     </View>
   );
@@ -103,8 +125,8 @@ const getStyles = (theme: any) =>
     headerText: {
       color: theme.button,
       fontSize: 18,
-      fontWeight: '600',
-      textAlign: 'center',
+      fontWeight: "600",
+      textAlign: "center",
       marginVertical: 4,
     },
     contentContainer: {
@@ -117,7 +139,7 @@ const getStyles = (theme: any) =>
       paddingVertical: 20,
       paddingHorizontal: 16,
       borderRadius: 12,
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 6,
@@ -126,15 +148,14 @@ const getStyles = (theme: any) =>
     statTitle: {
       color: theme.secondaryText,
       fontSize: 15,
-      fontWeight: '500',
-      textAlign: 'center',
+      fontWeight: "500",
+      textAlign: "center",
       marginBottom: 8,
     },
     statValue: {
       color: theme.text,
       fontSize: 24,
-      fontWeight: 'bold',
-      textAlign: 'center',
+      fontWeight: "bold",
+      textAlign: "center",
     },
   });
-
