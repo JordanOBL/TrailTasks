@@ -14,7 +14,7 @@ interface Props {
   user: User;
 }
 
-const AchievementsScreen = ({ user }: Props) => {
+const AchievementsImplementationBase = ({ user }: Props) => {
   const watermelonDatabase = useDatabase();
   const [achievementsWithCompletion, setAchievementsWithCompletion] = useState<any>(null);
 
@@ -42,8 +42,6 @@ const AchievementsScreen = ({ user }: Props) => {
     getAchievementsWithCompletion().catch(e => console.error(e));
   }, []);
 
-  return <ComingSoon />;
-
   if (achievementsWithCompletion) {
     return (
       <View>
@@ -63,7 +61,18 @@ const AchievementsScreen = ({ user }: Props) => {
 };
 
 const enhance = withObservables(["user"], ({ user }) => ({ user }));
-const EnhancedAchievementsScreen = enhance(AchievementsScreen);
-export default EnhancedAchievementsScreen;
+const EnhancedAchievementsScreen = enhance(AchievementsImplementationBase);
+
+export const AchievementsImplementation = EnhancedAchievementsScreen;
+
+const AchievementsScreen = (_props: any) => (
+  <ComingSoon
+    title="Achievements are coming soon"
+    message="Achievement tracking is not part of the tested MVP path yet."
+    detail="For now, completed solo sessions still move your trail progress forward while achievements stay out of the release surface."
+  />
+);
+
+export default AchievementsScreen;
 
 const styles = StyleSheet.create({});

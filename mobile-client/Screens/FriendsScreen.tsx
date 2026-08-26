@@ -22,7 +22,7 @@ interface Props {
   friends: User_Friend[];
 }
 
-const FriendsScreen = ({ user, cachedFriends, navigation, friends }: Props) => {
+const FriendsImplementationBase = ({ user, cachedFriends, navigation, friends }: Props) => {
   //const [cachedFriends, setCachedFriends] = React.useState([]);
   const watermelonDatabase = useDatabase();
   const { isConnected } = useInternetConnection();
@@ -111,8 +111,6 @@ const FriendsScreen = ({ user, cachedFriends, navigation, friends }: Props) => {
     };
   }, [refreshFriends]);
 
-  return <ComingSoon />;
-
   return (
     <View testID="friends-screen" style={styles.container}>
       {!isConnected && (
@@ -170,8 +168,19 @@ const enhance = withObservables(["user", "cachedFriends"], ({ user }) => ({
   cachedFriends: user.cachedFriends,
   friends: user.friends.observe(),
 }));
-const EnhancedFriendsScreen = enhance(FriendsScreen);
-export default EnhancedFriendsScreen;
+const EnhancedFriendsScreen = enhance(FriendsImplementationBase);
+
+export const FriendsImplementation = EnhancedFriendsScreen;
+
+const FriendsScreen = (_props: any) => (
+  <ComingSoon
+    title="Friends are coming soon"
+    message="Friend activity is not part of the tested MVP path yet."
+    detail="This avoids showing stale social data or untested group-session entry points before the friend flow is ready."
+  />
+);
+
+export default FriendsScreen;
 
 const getStyles = (theme: any) =>
   StyleSheet.create({

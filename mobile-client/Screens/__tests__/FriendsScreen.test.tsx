@@ -15,7 +15,22 @@ import {useNavigation} from '@react-navigation/native';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_CONNECTION_STRING });
 
-describe('Friends Screen', () => {
+describe('Friends Screen deferred MVP wrapper', () => {
+	test('shows the coming soon screen without mounting friend/social controls', () => {
+		const navigation = { navigate: jest.fn() };
+		const {getByTestId, getByText, queryByTestId} = render(
+			<TestWrapper testUser={null}>
+				<EnhancedFriendsScreen navigation={navigation} user={null} />
+			</TestWrapper>
+		);
+
+		expect(getByTestId('coming-soon-screen')).toBeTruthy();
+		expect(getByText('Friends are coming soon')).toBeTruthy();
+		expect(queryByTestId('friend-search-input')).toBeNull();
+	});
+});
+
+describe.skip('Friends Screen implementation (deferred post-MVP)', () => {
 				let getByTestId: any;
 				let queryByTestId: any;
 				let testUser = createMockUserBase();

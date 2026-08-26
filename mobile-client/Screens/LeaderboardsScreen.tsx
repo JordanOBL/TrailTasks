@@ -21,7 +21,7 @@ interface Props {
   user: User;
 }
 
-const LeaderboardsScreen = ({ user }: Props) => {
+const LeaderboardsImplementationBase = ({ user }: Props) => {
   const watermelonDatabase = useDatabase();
   const { isConnected, refreshConnectionStatus } = useInternetConnection();
 
@@ -69,7 +69,6 @@ const LeaderboardsScreen = ({ user }: Props) => {
 
     return filtered;
   }, [filter, searchQuery, leaderboard]);
-  return <ComingSoon />;
   if (!isConnected) {
     return (
       // @ts-ignore
@@ -110,8 +109,19 @@ const enhance = withObservables(["user"], ({ user }) => ({
   user,
 }));
 
-const EnhancedLeaderboardsScreen = enhance(LeaderboardsScreen);
-export default EnhancedLeaderboardsScreen;
+const EnhancedLeaderboardsScreen = enhance(LeaderboardsImplementationBase);
+
+export const LeaderboardsImplementation = EnhancedLeaderboardsScreen;
+
+const LeaderboardsScreen = (_props: any) => (
+  <ComingSoon
+    title="Leaderboards are coming soon"
+    message="Leaderboard rankings are not part of the tested MVP path yet."
+    detail="This keeps the MVP focused on the solo hiking loop instead of paywalling a feature that still needs validation."
+  />
+);
+
+export default LeaderboardsScreen;
 
 const getStyles = (theme: any) =>
   StyleSheet.create({
