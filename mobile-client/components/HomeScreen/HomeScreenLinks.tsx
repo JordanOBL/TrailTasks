@@ -1,34 +1,45 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { darkTheme, lightTheme } from "../../theme";
 
 import React from "react";
 import { User } from "../../watermelon/models";
+import { useAuthContext } from "../../services/AuthContext";
 import { useTheme } from "../../contexts/ThemeProvider";
 
 interface Props {
   user: User;
   navigation: any;
 }
-export default function HomeScreenLinks({ user: _user, navigation }: Props) {
+export default function HomeScreenLinks({ user, navigation }: Props) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const { currentOffering, customerInfo, isProMember } = useAuthContext();
 
-  function handlePress(link: string) {
+  function handlePress(needsSubscription: boolean, link: string) {
+    if (!needsSubscription) {
+      navigation.navigate(link);
+      return;
+    }
+    if (!isProMember) {
+      navigation.navigate("Subscribe");
+      return;
+    }
     navigation.navigate(link);
+    return;
   }
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.screenLink} onPress={() => handlePress("Profile")}>
+      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Profile")}>
         <Text style={styles.text}>Profile</Text>
       </Pressable>
-      <Pressable style={styles.screenLink} onPress={() => handlePress("Shop")}>
+      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Shop")}>
         <Text style={styles.text}>Shop</Text>
       </Pressable>
-      <Pressable style={styles.screenLink} onPress={() => handlePress("Leaderboards")}>
+      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Leaderboards")}>
         <Text style={styles.text}>Leaderboards</Text>
       </Pressable>
-      <Pressable style={styles.screenLink} onPress={() => handlePress("Settings")}>
+      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Settings")}>
         <Text style={styles.text}>Settings</Text>
       </Pressable>
     </View>

@@ -1,7 +1,9 @@
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import Rive, { RiveRef } from "rive-react-native";
 
 import { Q } from "@nozbe/watermelondb";
 import React from "react";
+import { User } from "../watermelon/models";
 import WildAvatar from "../components/Wilds/WildAvatar";
 import { useAuthContext } from "../services/AuthContext";
 
@@ -10,7 +12,7 @@ interface Props {
 }
 
 const SessionTypeScreen = ({ navigation }: Props) => {
-  const { user } = useAuthContext();
+  const { user, isProMember } = useAuthContext();
   const [selection, setSelection] = React.useState("solo");
   //const currentWild = 'scout';
 
