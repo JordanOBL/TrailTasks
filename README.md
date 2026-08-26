@@ -6,6 +6,10 @@ This repository contains all services for the TrailTasks application. The projec
 - **mobile-client** – React Native client application.
 - **websockets-server** – Go server providing real-time group session capabilities.
 
+## Product Scope
+
+The first shippable milestone is defined in [`docs/mvp-scope.md`](docs/mvp-scope.md). Use that document to decide whether a feature or bug belongs in the offline solo MVP or should be deferred to a later social/group-session release.
+
 ## Getting Started
 
 Clone the repo and install dependencies for each package:
