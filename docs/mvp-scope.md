@@ -6,7 +6,7 @@ This document defines the first shippable Trail Tasks MVP. Its job is to keep th
 
 A user can open the mobile app, choose a trail and session options, complete or quit a solo focus session, and see their progress, distance, and rewards reflected consistently afterward.
 
-The MVP is not trying to prove social gameplay, online sync, monetization, or the full long-term reward economy. Those ideas can stay in the product vision, but they should not block shipping the first useful solo experience.
+The MVP is not trying to prove social gameplay, online sync, or the full long-term reward economy. Monetization should be present as a small, safe subscription path, but the core solo loop should still be useful without paying.
 
 ## Must-have for MVP
 
@@ -47,6 +47,21 @@ The MVP is not trying to prove social gameplay, online sync, monetization, or th
 - User progress required for the solo loop is available locally after app restart.
 - Network-only features must be hidden, disabled, or clearly marked as coming soon.
 
+### MVP subscription path
+
+- RevenueCat/paywall plumbing should be complete enough to test purchase, restore purchases, active entitlement detection, and unsubscribed behavior in a sandbox build.
+- The free experience should include enough of the solo loop to prove the product: start sessions, complete sessions, earn basic progress, and see the loop work.
+- Pro should unlock depth, not the basic habit loop. Good MVP Pro candidates are: more trails/parks, trail queue/convenience features, extra session options, richer stats filters, and cosmetic/current-wild delight.
+- Unsubscribed users should not be routed to Subscribe for deferred or broken features like group sessions and leaderboards. Those screens should show Coming Soon or be hidden until they are real Pro value.
+- The Subscribe screen should advertise only features that exist now or are clearly labeled coming soon. Do not sell group sessions or leaderboards as active MVP value until they are tested.
+
+### Current wild character delight
+
+- Keep the existing wild roster; do not add new wilds for MVP.
+- Use Rive animation for the current wilds where assets already exist or can be safely wired without changing reward/progression rules.
+- The active wild should feel alive in the MVP loop, especially on Home, active session, or reward/result moments.
+- Static image fallback is acceptable for any wild that does not yet have a stable Rive asset.
+
 ### Basic quality gate
 
 - There is a documented local command path for the mobile client quality check.
@@ -57,7 +72,7 @@ The MVP is not trying to prove social gameplay, online sync, monetization, or th
 
 These can be included if they are already working and low-risk, but they should not delay the first solo MVP:
 
-- Polished animations for trail progress, XP rings, or reward moments.
+- Polished animations for trail progress, XP rings, or reward moments beyond the existing/current wild Rive MVP pass.
 - More detailed stats breakdowns by week, park, category, or trail difficulty.
 - Achievement badges beyond the basic completion/reward data already needed for the solo loop.
 - More trails, parks, images, or richer trail metadata.
@@ -95,7 +110,8 @@ Reason: the session model has changed enough that group sessions need their own 
 
 - Prestige system.
 - Store/add-ons such as hiking poles, energy bars, trail shoes, bike, or water bottle.
-- Premium subscription behavior.
+- Advanced subscription tiers beyond one simple Pro entitlement.
+- Pro-only value tied to unfinished group sessions, leaderboards, or server features.
 - Unlock economy beyond what is needed to show basic MVP reward progress.
 - Advanced park-level reward reset behavior.
 
@@ -160,6 +176,17 @@ Use this script before calling the MVP shippable. Record the device/simulator, b
 4. Confirm the solo loop still works.
 5. Confirm no visible MVP screen depends on the API server or WebSocket server.
 
+### Subscription smoke check
+
+1. Open Subscribe from the normal app navigation.
+2. Confirm products load from RevenueCat in the sandbox/local test environment.
+3. Confirm the screen explains current Pro value without claiming group sessions or leaderboards are already usable.
+4. Complete a sandbox purchase.
+5. Confirm active entitlement state updates in the app.
+6. Restore purchases and confirm entitlement state remains correct.
+7. Test an unsubscribed user and confirm the core solo loop is still usable.
+8. Confirm unsubscribed users are not paywalled into broken/deferred group or leaderboard screens.
+
 ### Deferred-screen smoke check
 
 1. If Friends, Group Session, or Leaderboards are visible, open each one once.
@@ -182,6 +209,10 @@ A bug should block MVP launch if any of the following are true:
 - Quit/abandon grants completion-only rewards.
 - Home, Logbook, or Stats show materially contradictory persisted data after a completed session.
 - A visible MVP screen requires the API server or Go WebSocket server to be running.
+- Subscribe/paywall products cannot load in a sandbox build, purchase cannot complete, restore does not work, or active entitlement state is wrong.
+- The paywall advertises group sessions, leaderboards, or other deferred features as currently usable Pro value.
+- An unsubscribed user is blocked from proving the basic solo session loop.
+- Current wild Rive animation crashes a visible MVP screen instead of falling back safely.
 - A deferred group/social screen is visible and crashes when opened.
 - The documented local quality gate cannot be run at all because of missing scripts or broken dependency setup.
 
@@ -194,7 +225,7 @@ A bug should usually be deferred if it only affects:
 - Leaderboards.
 - Go WebSocket protocol behavior.
 - API/server features not used by the offline solo loop.
-- Prestige, subscriptions, store/add-ons, or advanced achievements.
+- Prestige, advanced subscription tiers, store/add-ons, or advanced achievements.
 - Cosmetic polish that does not confuse the user or hide important progress.
 - Extra stats breakdowns beyond the basic MVP totals.
 
@@ -204,4 +235,6 @@ A bug should usually be deferred if it only affects:
 - Make Logbook and Stats reflect completed sessions.
 - Defer or mark Friends, Group Session, and Leaderboards as coming soon.
 - Add a focused group-session design ticket for the new message bus and Go server protocol once the solo session model is stable.
+- Add a subscription/paywall polish ticket: sandbox purchase, restore, entitlement state, and honest MVP Pro copy.
+- Add a current-wild Rive MVP ticket: animate existing wilds in visible MVP moments with static fallback.
 - Keep broad type cleanup separate from MVP unless it blocks the solo quality gate or visible solo screens.
