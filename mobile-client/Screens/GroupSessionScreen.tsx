@@ -30,6 +30,7 @@ import timeOptions from "../helpers/Session/timeOptions";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useInternetConnection } from "../contexts/InternetConnectionProvider";
 import useWebSocket from "react-use-websocket";
+import ComingSoon from "../components/ComingSoon";
 
 const StatBox = ({ label, value }: { label: string; value: number }) => (
   <View style={styles.infoBox}>
@@ -46,7 +47,7 @@ interface Props {
   joinRoomId: string;
   route: any;
 }
-const GroupSessionComponent = ({ user, debugRef = null, joinRoomId = "", route }: Props) => {
+const GroupSessionImplementation = ({ user, debugRef = null, joinRoomId = "", route }: Props) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const { isConnected, ipAddress } = useInternetConnection();
   const database = useDatabase();
@@ -697,7 +698,17 @@ const GroupSessionComponent = ({ user, debugRef = null, joinRoomId = "", route }
   );
 };
 
-export default GroupSessionComponent;
+export { GroupSessionImplementation };
+
+const GroupSessionScreen = (_props: any) => (
+  <ComingSoon
+    title="Group sessions are coming soon"
+    message="Group sessions need the new session model, message bus work, and WebSocket/server validation before they belong in MVP."
+    detail="Solo sessions are still the supported path for focus, trail progress, rewards, and release testing."
+  />
+);
+
+export default GroupSessionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,31 +1,34 @@
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import FetchGlobalLeaderboards, {Leaderboard} from "../components/Leaderboards/FetchGlobalLeaderboards";
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import FetchGlobalLeaderboards, {
+  Leaderboard,
+} from "../components/Leaderboards/FetchGlobalLeaderboards";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import EnhancedLeaderboard from '../components/Leaderboards/Leaderboard';
+import EnhancedLeaderboard from "../components/Leaderboards/Leaderboard";
 import FilterSearch from "../components/FilterSearch";
 import RefreshConnection from "../components/RefreshConnection";
-import SyncIndicator from '../components/SyncIndicator';
-import { User } from '../watermelon/models';
+import SyncIndicator from "../components/SyncIndicator";
+import { User } from "../watermelon/models";
 import handleError from "../helpers/ErrorHandler";
-import { sync } from '../watermelon/sync';
-import { useDatabase } from '@nozbe/watermelondb/react';
+import { sync } from "../watermelon/sync";
+import { useDatabase } from "@nozbe/watermelondb/react";
 import { useInternetConnection } from "../contexts/InternetConnectionProvider";
-import {useTheme} from "../contexts/ThemeProvider";
-import {withObservables} from '@nozbe/watermelondb/react'
+import { useTheme } from "../contexts/ThemeProvider";
+import { withObservables } from "@nozbe/watermelondb/react";
+import ComingSoon from "../components/ComingSoon";
 
 interface Props {
   user: User;
 }
 
-const LeaderboardsScreen = ({ user }: Props) => {
+const LeaderboardsImplementationBase = ({ user }: Props) => {
   const watermelonDatabase = useDatabase();
-  const {isConnected, refreshConnectionStatus} = useInternetConnection();
+  const { isConnected, refreshConnectionStatus } = useInternetConnection();
 
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const [filter, setFilter] = useState('Top 100');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState("Top 100");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Custom hook to fetch leaderboards, only if user is defined
@@ -51,10 +54,10 @@ const LeaderboardsScreen = ({ user }: Props) => {
   };
 
   // Filter the leaderboard based on filter and search query
-  const filteredLeaderboard:any = useMemo(() => {
+  const filteredLeaderboard: any = useMemo(() => {
     let filtered = leaderboard || [];
 
-    if (filter === 'Top 100') {
+    if (filter === "Top 100") {
       filtered = leaderboard || [];
     }
     // Uncomment and implement when needed
@@ -66,56 +69,63 @@ const LeaderboardsScreen = ({ user }: Props) => {
 
     return filtered;
   }, [filter, searchQuery, leaderboard]);
-
   if (!isConnected) {
     return (
-        // @ts-ignore
-        <RefreshConnection>
-          {`Internet Connection is Needed to view Leaderboard\nTry Refreshing Connection`}
-        </RefreshConnection>
+      // @ts-ignore
+      <RefreshConnection>
+        {`Internet Connection is Needed to view Leaderboard\nTry Refreshing Connection`}
+      </RefreshConnection>
     );
   }
 
   if (loading) {
     return (
-      <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}> 
-          <ActivityIndicator size="large" color={theme.button} />
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={theme.button} />
       </View>
-
     );
   }
 
   return (
-      <SafeAreaView style={styles.container}>
-        <SyncIndicator database={watermelonDatabase} delay={3000} />
-        <FilterSearch
-            showSearch={false}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectFilter={selectFilter}
-            filterParams={["Top 100", "Friends"]}
-            filter={filter}
-            toggleDropdown={toggleDropdown}
-            showDropdown={showDropdown}
-            bgColor={'black'}
-        />
-        <EnhancedLeaderboard
-            leaderboard={filteredLeaderboard}
-            user={user}
-        />
-      </SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      <SyncIndicator database={watermelonDatabase} delay={3000} />
+      <FilterSearch
+        showSearch={false}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectFilter={selectFilter}
+        filterParams={["Top 100", "Friends"]}
+        filter={filter}
+        toggleDropdown={toggleDropdown}
+        showDropdown={showDropdown}
+        bgColor={"black"}
+      />
+      <EnhancedLeaderboard leaderboard={filteredLeaderboard} user={user} />
+    </SafeAreaView>
   );
 };
 
-const enhance = withObservables(['user'], ({ user }) => ({
+const enhance = withObservables(["user"], ({ user }) => ({
   user,
 }));
 
-const EnhancedLeaderboardsScreen = enhance(LeaderboardsScreen);
-export default EnhancedLeaderboardsScreen;
+const EnhancedLeaderboardsScreen = enhance(LeaderboardsImplementationBase);
 
-const getStyles = (theme: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+export const LeaderboardsImplementation = EnhancedLeaderboardsScreen;
+
+const LeaderboardsScreen = (_props: any) => (
+  <ComingSoon
+    title="Leaderboards are coming soon"
+    message="Leaderboard rankings are not part of the tested MVP path yet."
+    detail="This keeps the MVP focused on the solo hiking loop instead of paywalling a feature that still needs validation."
+  />
+);
+
+export default LeaderboardsScreen;
+
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+  });
