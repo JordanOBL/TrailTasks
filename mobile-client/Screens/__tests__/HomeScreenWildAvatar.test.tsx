@@ -68,7 +68,7 @@ jest.mock("../../helpers/Session/checkDailyStreak", () => jest.fn());
 jest.mock("../../helpers/Ranks/getUserRank", () => jest.fn(() => ({ range: [] })));
 jest.mock("../../helpers/ErrorHandler", () => jest.fn());
 
-describe("HomeScreen active wild avatar", () => {
+describe("HomeScreen active wild animation", () => {
   const baseProps = {
     user: {
       id: "user-1",
@@ -89,7 +89,7 @@ describe("HomeScreen active wild avatar", () => {
     mockWildAvatar.mockClear();
   });
 
-  it("keeps Scout on the still pose on the home page until an animated asset exists", () => {
+  it("asks Scout to wave on the home page", () => {
     render(
       <HomeScreen
         {...baseProps}
@@ -98,7 +98,7 @@ describe("HomeScreen active wild avatar", () => {
     );
 
     expect(mockWildAvatar).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "scout", pose: "still", size: 100 }),
+      expect.objectContaining({ id: "scout", pose: "wave", size: 100 }),
     );
   });
 
