@@ -20,7 +20,7 @@ interface Props {
   barColor?: string;
 }
 
-const DistanceProgressBar = ({
+export const DistanceProgressBar = ({
   user,
   timer,
   currentTrail,
@@ -39,7 +39,9 @@ const DistanceProgressBar = ({
     (timer && timer.isBreak);
 
   const progressColor = isPaused ? theme.progressBarPaused : theme.progressBar;
-  const isCompleted = Number(user.trailProgress) == Number(currentTrail.trailDistance)
+  const trailProgress = Number(user?.trailProgress ?? 0);
+  const trailDistance = Number(currentTrail?.trailDistance ?? 0);
+  const progress = trailDistance > 0 ? Math.max(0, Math.min(1, trailProgress / trailDistance)) : 0;
 
 
 
@@ -51,12 +53,13 @@ const DistanceProgressBar = ({
         borderWidth={0}
         borderRadius={ borderRadius ?? 10}
         unfilledColor={theme.progressBarBackground}
-        progress={Number(user.trailProgress) / Number(currentTrail.trailDistance)}
+        progress={progress}
         animationType="timing"
         useNativeDriver={true}
         color={barColor ?? progressColor}
       />
       <Text
+        testID="trail-progress-text"
         style={{
           color: theme.progressText,
           alignSelf: 'center',
@@ -65,7 +68,7 @@ const DistanceProgressBar = ({
           marginVertical: 5,
         }}
       >
-        {Number(user.trailProgress).toFixed(2)} / {Number(currentTrail.trailDistance).toFixed(2)} mi.
+        {trailProgress.toFixed(2)} / {trailDistance.toFixed(2)} mi.
       </Text>
     </View>
   );

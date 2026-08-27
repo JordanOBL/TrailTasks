@@ -34,7 +34,7 @@ interface Props {
   activeWilds: User_Wild[];
 }
 
-const HomeScreen: React.FC<Props> = ({
+export const HomeScreen: React.FC<Props> = ({
   user,
   navigation,
   currentTrail,
@@ -119,7 +119,9 @@ const HomeScreen: React.FC<Props> = ({
           flexDirection: "row",
           justifyContent: "space-between",
         }}>
-        <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
+        <Text testID="trail-tokens" style={styles.trailTokens}>
+          Trail Tokens: {user?.trailTokens}
+        </Text>
         <Text style={[styles.onlineStatus, { color: isConnected ? "green" : "red" }]}>
           {isConnected ? "Online" : "Offline"}
         </Text>
@@ -132,23 +134,31 @@ const HomeScreen: React.FC<Props> = ({
       </View>
       <View style={{ alignItems: "center", marginVertical: 10 }}>
         {activeWild ? (
-          <XpRing
-            size={120}
-            xp={activeWild.xp}
-            xpToLevel={activeWild.xpToNext}
-            ringColor={"#00998aff"}>
-            <WildAvatar id={activeWild.wildId} pose={"wave"} size={100} animated={true} />
-          </XpRing>
+          <>
+            <XpRing
+              size={120}
+              xp={activeWild.xp}
+              xpToLevel={activeWild.xpToNext}
+              ringColor={"#00998aff"}>
+              <WildAvatar id={activeWild.wildId} pose={"wave"} size={100} animated={true} />
+            </XpRing>
+            <Text testID="current-wild" style={styles.wildInfo}>
+              Current Wild: {activeWild.wildId}
+            </Text>
+            <Text testID="wild-xp" style={styles.wildInfo}>
+              Wild XP: {activeWild.xp} / {activeWild.xpToNext}
+            </Text>
+          </>
         ) : (
           <Text style={styles.wildInfo}>No Active Wild</Text>
         )}
       </View>
       <View style={styles.currentTrailContainer}>
         <Text style={styles.trailText}>Current Trail:</Text>
-        <Text style={styles.trailName}>{currentTrail.trailName}</Text>
+        <Text testID="current-trail" style={styles.trailName}>{currentTrail.trailName}</Text>
         <DistanceProgressBar
           user={user}
-          trail={currentTrail}
+          currentTrail={currentTrail}
           height={15}
           borderRadius={999}
           barColor={"#00998aff"}
