@@ -75,7 +75,12 @@ const PoseMap = {
     hidden_dark: require('../../assets/wilds/drift/images/drift_hidden_light.png'),
   },
   echo: {
+    cheer: require('../../assets/wilds/echo/images/echo_cheer.png'),
+    rest: require('../../assets/wilds/echo/images/echo_rest.png'),
+    run: require('../../assets/wilds/echo/images/echo_run.png'),
     still: require('../../assets/wilds/echo/images/echo_still.png'),
+    walk: require('../../assets/wilds/echo/images/echo_walk.png'),
+    wave: require('../../assets/wilds/echo/images/echo_wave.png'),
     hidden_light: require('../../assets/wilds/echo/images/echo_hidden_dark.png'),
     hidden_dark: require('../../assets/wilds/echo/images/echo_hidden_light.png'),
   },
