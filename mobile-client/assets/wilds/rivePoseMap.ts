@@ -9,10 +9,25 @@ export interface RivePoseConfig {
 
 const RivePoseMap: Partial<Record<WildId, Partial<Record<Pose, RivePoseConfig>>>> = {
   scout: {
+    still: {
+      source: require("./scout/rive/scout.riv"),
+      artboardName: "Artboard",
+      animationName: "idle",
+    },
+    rest: {
+      source: require("./scout/rive/scout.riv"),
+      artboardName: "Artboard",
+      animationName: "idle",
+    },
     wave: {
       source: require("./scout/rive/scout.riv"),
       artboardName: "Artboard",
-      stateMachineName: "State Machine 1",
+      animationName: "wave",
+    },
+    cheer: {
+      source: require("./scout/rive/scout.riv"),
+      artboardName: "Artboard",
+      animationName: "wave",
     },
   },
 };
