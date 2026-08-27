@@ -62,6 +62,7 @@ const WildAvatar = ({ id, pose, size = 120, animated = false }: Props) => {
     return (
       <Rive
         source={rivePose.source}
+        resourceName={id}
         artboardName={rivePose.artboardName}
         stateMachineName={rivePose.stateMachineName}
         autoplay

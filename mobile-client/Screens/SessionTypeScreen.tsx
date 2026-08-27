@@ -47,13 +47,6 @@ const SessionTypeScreen = ({ navigation, user, activeWilds = [] }: Props) => {
           {selection === "solo" ? (
             <WildAvatar id={currentWild} pose="wave" size={200} animated />
           ) : (
-            /* <Rive
-              ref={riveRef}
-     resourceName={currentWild}
-      artboardName="Artboard"
-      stateMachineName="State Machine 1"
-      style={{width: 250, height: 250}}
-  />*/
             <View style={styles.groupWildsContainer}>
               <WildAvatar key={0} id={"ember"} pose="wave" size={120} animated />
               <WildAvatar key={2} id={currentWild} pose="still" size={120} animated />
