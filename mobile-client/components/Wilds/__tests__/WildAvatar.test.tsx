@@ -19,36 +19,25 @@ jest.mock("rive-react-native", () => {
 });
 
 describe("WildAvatar", () => {
-  it("uses Scout's Rive asset for the still pose", () => {
+  beforeEach(() => {
     const Rive = require("rive-react-native");
-
-    render(<WildAvatar id="scout" pose="still" />);
-
-    expect(Rive).toHaveBeenCalledWith(
-      expect.objectContaining({
-        testID: "wild-avatar-rive",
-        artboardName: "Artboard",
-        animationName: "idle",
-        autoplay: true,
-      }),
-      expect.anything(),
-    );
+    Rive.mockClear();
   });
 
-  it("uses Scout's wave animation for the wave pose", () => {
+  it("uses Scout's static image asset for the still pose", () => {
     const Rive = require("rive-react-native");
+    const { getByTestId } = render(<WildAvatar id="scout" pose="still" />);
 
-    render(<WildAvatar id="scout" pose="wave" />);
+    expect(getByTestId("wild-avatar-image")).toBeTruthy();
+    expect(Rive).not.toHaveBeenCalled();
+  });
 
-    expect(Rive).toHaveBeenCalledWith(
-      expect.objectContaining({
-        testID: "wild-avatar-rive",
-        artboardName: "Artboard",
-        animationName: "wave",
-        autoplay: true,
-      }),
-      expect.anything(),
-    );
+  it("uses Scout's static image asset for the wave pose until an animated Rive asset exists", () => {
+    const Rive = require("rive-react-native");
+    const { getByTestId } = render(<WildAvatar id="scout" pose="wave" />);
+
+    expect(getByTestId("wild-avatar-image")).toBeTruthy();
+    expect(Rive).not.toHaveBeenCalled();
   });
 
   it("falls back to image assets for wilds without Rive files", () => {
