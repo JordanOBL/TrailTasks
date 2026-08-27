@@ -33,7 +33,6 @@ const WildAvatar = ({ id, pose, size = 120 }: Props) => {
         artboardName={rivePose.artboardName}
         stateMachineName={rivePose.stateMachineName}
         autoplay
-        testID="wild-avatar-rive"
         style={{ width: size, height: size }}
         onError={() => setRiveFailed(true)}
       />
@@ -45,7 +44,7 @@ const WildAvatar = ({ id, pose, size = 120 }: Props) => {
     return null;
   }
 
-  return <Image testID="wild-avatar-image" source={imagePath} style={{ width: size, height: size }} resizeMode="contain" />;
+  return <Image source={imagePath} style={{ width: size, height: size }} resizeMode="contain" />;
 };
 
 export default WildAvatar;

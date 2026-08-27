@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Rive, { RiveRef } from "rive-react-native";
 import { darkTheme, lightTheme } from "../../theme";
 
 import React from "react";
@@ -16,18 +17,59 @@ const WildCard = React.memo(({ wild, switchActiveWild }: WildCardProps) => {
 console.log('WildCard wild:', wild);
   const styles = getStyles(theme);
 
+  const riveRef = React.useRef<RiveRef>(null);
+
+  function wave() {
+    riveRef.current?.fireState("State Machine 1", "wave");
+  }
+  function getRandom() {
+    return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
+  }
+
 const isActive = wild?.isActive;
 
+
+  React.useEffect(() => {
+    let timeout = null;
+
+    function scheduleWave() {
+      const delay = getRandom();
+      timeout = setTimeout(() => {
+        if (riveRef.current) {
+          wave();
+        }
+        scheduleWave(); // Recurse to schedule the next blink
+      }, delay);
+    }
+
+    scheduleWave(); // Start the blinking loop
+
+    return () => {
+      clearTimeout(timeout); // Clean up on unmount
+    };
+  }, [riveRef]);
   return (
     <View
      
       style={[styles.card, isActive && styles.activeWild]}
     >
-      <WildAvatar
-        id={wild.wildId}
-        key={wild.id}
-        pose={isActive ? "wave" : "rest"}
-      />
+      {wild.wildId === "scout" ? (
+        <Rive
+          ref={riveRef}
+          resourceName={wild.wildId}
+          artboardName="Artboard"
+          stateMachineName="State Machine 1"
+          style={{ width: 100, height: 100 }}
+          key={wild.id}
+        />
+      ) : (
+        <WildAvatar
+          id={wild.wildId}
+          key={wild.id}
+          pose={isActive ? 'wave' : 'rest'}
+          
+        />
+      )}
       <View style={styles.info}>
         <Text style={styles.name}>{wild.name}</Text>
         <Text style={styles.level}>{wild.species}</Text>
