@@ -171,13 +171,21 @@ const ParkDetails = () => {
           <View style={styles.wildRow}>
             <View style={{ alignItems: "center" }}>
               <WildAvatar id={wild.id} pose={wildPose} size={140} />
-              <Pressable
-                onPress={async () => {
-                  await user?.setActiveWild(wild.id);
-                  load(); // refresh data
-                }}>
-                <Text>Set Active</Text>
-              </Pressable>
+              {userWild && !userWild?.isActive ? (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.setActiveButton,
+                    pressed && styles.setActiveButtonPressed,
+                  ]}
+                  onPress={async () => {
+                    await user?.setActiveWild(wild.id);
+                    load();
+                  }}>
+                  <Text style={styles.setActiveButtonText}>Set Active</Text>
+                </Pressable>
+              ) : (
+                <></>
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.wildName}>{wild.wildName}</Text>
@@ -532,6 +540,38 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     xpBarFill: {
       height: "100%",
       backgroundColor: theme.progressBar, // uses same accent as park progress
+    },
+    setActiveButton: {
+      marginTop: 10,
+      paddingVertical: 7,
+      paddingHorizontal: 14,
+      borderRadius: 999,
+      backgroundColor: theme.buttonPrimary,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.buttonPrimary,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: theme.themeName === "darkTheme" ? 0.28 : 0.14,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+
+    setActiveButtonPressed: {
+      opacity: 0.82,
+      transform: [{ scale: 0.98 }],
+    },
+
+    setActiveButtonText: {
+      color: theme.buttonPrimaryText,
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0.2,
+    },
+    ActiveButtonText: {
+      color: theme.buttonPrimaryText,
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 0.2,
     },
   });
 

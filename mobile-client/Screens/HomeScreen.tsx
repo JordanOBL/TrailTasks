@@ -137,7 +137,7 @@ const HomeScreen: React.FC<Props> = ({
             xp={activeWild.xp}
             xpToLevel={activeWild.xpToNext}
             ringColor={"#00998aff"}>
-            <WildAvatar id={activeWild.wildId} pose={"still"} size={120} />
+            <WildAvatar id={activeWild.wildId} pose={"still"} size={100} />
           </XpRing>
         ) : (
           <Text style={styles.wildInfo}>No Active Wild</Text>

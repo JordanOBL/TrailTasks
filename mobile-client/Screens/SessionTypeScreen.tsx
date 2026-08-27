@@ -89,7 +89,7 @@ const SessionTypeScreen = ({ navigation }: Props) => {
       <View style={{ width: "100%", alignItems: "center" }}>
         <View style={{ width: "100%", alignItems: "center" }}>
           {selection === "solo" ? (
-            <WildAvatar id={currentWild} pose="wave" size={200} />
+            <WildAvatar id={currentWild} pose="still" size={200} />
           ) : (
             /* <Rive
               ref={riveRef}
@@ -99,9 +99,9 @@ const SessionTypeScreen = ({ navigation }: Props) => {
       style={{width: 250, height: 250}}
   />*/
             <View style={styles.groupWildsContainer}>
-              <WildAvatar key={0} id={"ember"} pose="wave" size={200} />
-              <WildAvatar key={2} id={"buckey"} pose="wave" size={200} />
-              <WildAvatar id={"scout"} pose="wave" size={200} />
+              <WildAvatar key={0} id={"ember"} pose="wave" size={120} />
+              <WildAvatar key={2} id={shownWildId || "buckey"} pose="still" size={120} />
+              <WildAvatar id={"scout"} pose="wave" size={120} />
             </View>
           )}
         </View>
