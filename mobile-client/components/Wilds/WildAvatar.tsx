@@ -11,7 +11,7 @@ interface Props {
   id: WildId;
   pose: Pose;
   size?: number;
-  animated: boolean;
+  animated?: boolean;
 }
 
 const WildAvatar = ({ id, pose, size = 120, animated = false }: Props) => {
@@ -20,7 +20,7 @@ const WildAvatar = ({ id, pose, size = 120, animated = false }: Props) => {
   const hiddenTheme = theme.themeName === "lightTheme" ? "hidden_light" : "hidden_dark";
   const themedPose = pose === "hidden" ? hiddenTheme : pose;
   const rivePose = RivePoseMap[id]?.[themedPose];
-  const imagePath = PoseMap[id]?.[themedPose] ?? PoseMap[id]["still"];
+  const imagePath = PoseMap[id]?.[themedPose] ?? PoseMap[id]?.["still"];
   const riveRef = useRef<RiveRef>(null);
 
   React.useEffect(() => {
@@ -56,13 +56,12 @@ const WildAvatar = ({ id, pose, size = 120, animated = false }: Props) => {
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [id, themedPose, rivePose]);
+  }, [animated, id, pose, rivePose, themedPose]);
 
   if (animated && rivePose && !riveFailed) {
     return (
       <Rive
         source={rivePose.source}
-        resourceName={id!}
         artboardName={rivePose.artboardName}
         stateMachineName={rivePose.stateMachineName}
         autoplay
