@@ -1,6 +1,6 @@
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Q } from "@nozbe/watermelondb";
-import { Park, Park_Wild, Trail, User, User_Park, User_Wild, Wild } from "../watermelon/models";
+import { Park, Park_Wild, User_Park, User_Wild, Wild } from "../watermelon/models";
 import React, { useCallback, useState } from "react";
 import { darkTheme, lightTheme } from "../theme";
 

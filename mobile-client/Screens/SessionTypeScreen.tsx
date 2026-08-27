@@ -1,65 +1,21 @@
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
-import Rive, { RiveRef } from "rive-react-native";
 
 import { Q } from "@nozbe/watermelondb";
+import { withObservables } from "@nozbe/watermelondb/react";
 import React from "react";
-import { User } from "../watermelon/models";
+import { User, User_Wild } from "../watermelon/models";
 import WildAvatar from "../components/Wilds/WildAvatar";
-import { useAuthContext } from "../services/AuthContext";
 
 interface Props {
   navigation: any;
+  user: User;
+  activeWilds?: User_Wild[];
 }
 
-const SessionTypeScreen = ({ navigation }: Props) => {
-  const { user, isProMember } = useAuthContext();
+const SessionTypeScreen = ({ navigation, user, activeWilds = [] }: Props) => {
   const [selection, setSelection] = React.useState("solo");
-  //const currentWild = 'scout';
 
-  //const riveRef = React.useRef<RiveRef>(null);
-
-  //   function blink()
-  //   {
-  //      riveRef.current?.fireState('State Machine 1', 'blink');
-
-  //   }
-  // function getRandom() {
-  //   return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
-  // }
-
-  // React.useEffect(() => {
-  //   let timeout = null;
-
-  //   function scheduleBlink() {
-  //     const delay = getRandom();
-  //     timeout = setTimeout(() => {
-  //       if (riveRef.current) blink();
-  //       scheduleBlink(); // Recurse to schedule the next blink
-  //     }, delay);
-  //   }
-
-  //   scheduleBlink(); // Start the blinking loop
-
-  //   return () => {
-  //     clearTimeout(timeout); // Clean up on unmount
-  //   };
-  // }, [riveRef]);
-
-  const [shownWildId, setShownWildId] = React.useState();
-
-  React.useEffect(() => {
-    if (user) {
-      (async () => {
-        const [currWild] = await user?.usersWilds.extend(Q.where("is_active", true));
-        console.log("CURRENT WILD IN SESSION TYPE SCREEN:", currWild);
-        if (currWild) {
-          setShownWildId(currWild.wildId);
-        }
-      })();
-    }
-  }, []);
-
-  const currentWild = shownWildId ? shownWildId : "scout";
+  const currentWild = activeWilds[0]?.wildId ?? "scout";
 
   async function toggleSwitch() {
     setSelection(previousState => (previousState === "solo" ? "group" : "solo"));
@@ -89,19 +45,12 @@ const SessionTypeScreen = ({ navigation }: Props) => {
       <View style={{ width: "100%", alignItems: "center" }}>
         <View style={{ width: "100%", alignItems: "center" }}>
           {selection === "solo" ? (
-            <WildAvatar id={currentWild} pose="still" size={200} />
+            <WildAvatar id={currentWild} pose="wave" size={200} animated />
           ) : (
-            /* <Rive
-              ref={riveRef}
-     resourceName={currentWild}
-      artboardName="Artboard"
-      stateMachineName="State Machine 1"
-      style={{width: 250, height: 250}}
-  />*/
             <View style={styles.groupWildsContainer}>
-              <WildAvatar key={0} id={"ember"} pose="wave" size={120} />
-              <WildAvatar key={2} id={shownWildId || "buckey"} pose="still" size={120} />
-              <WildAvatar id={"scout"} pose="wave" size={120} />
+              <WildAvatar key={0} id={"ember"} pose="wave" size={120} animated />
+              <WildAvatar key={2} id={currentWild} pose="still" size={120} animated />
+              <WildAvatar id={"scout"} pose="wave" size={120} animated />
             </View>
           )}
         </View>
@@ -136,7 +85,14 @@ const SessionTypeScreen = ({ navigation }: Props) => {
   );
 };
 
-export default SessionTypeScreen;
+const enhance = withObservables(["user"], ({ user }: Props) => ({
+  activeWilds: user.usersWilds.extend(Q.where("is_active", true), Q.take(1)).observe(),
+}));
+
+const EnhancedSessionTypeScreen = enhance(SessionTypeScreen);
+
+export { SessionTypeScreen };
+export default EnhancedSessionTypeScreen;
 
 const styles = StyleSheet.create({
   goButton: {
