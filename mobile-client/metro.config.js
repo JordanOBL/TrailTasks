@@ -13,7 +13,7 @@ module.exports = (async () => {
         resolver: {
             ...defaultConfig.resolver,
             sourceExts: [...defaultConfig.resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx', 'cjs', 'svg'], // Add SVG support
-            assetExts: defaultConfig.resolver.assetExts.filter(ext => ext !== 'svg'), // Exclude SVG from assetExts
+            assetExts: [...defaultConfig.resolver.assetExts.filter(ext => ext !== 'svg'), 'riv'], // Exclude SVG from assetExts, add Rive files as static assets
         },
     };
 })();

@@ -751,29 +751,36 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   @writer
   async setActiveWild(wildId: string) {
     try {
-      // Deactivate all current active wilds
-      const activeWilds = await this.usersWilds.extend(Q.where("is_active", true)).fetch();
-      const updates = activeWilds.map(wild =>
-        wild.prepareUpdate(w => {
-          w.isActive = false;
-        }),
-      );
-
-      // Activate the selected wild
       const [newActiveWild] = await this.usersWilds.extend(Q.where("wild_id", wildId)).fetch();
-      if (newActiveWild) {
-        updates.push(
-          newActiveWild.prepareUpdate(w => {
-            w.isActive = true;
-          }),
-        );
-      } else {
+
+      if (!newActiveWild) {
         throw new Error("User does not own the specified wild.");
       }
+
+      if (newActiveWild.isActive) {
+        return;
+      }
+
+      const activeWilds = await this.usersWilds.extend(Q.where("is_active", true)).fetch();
+
+      const updates = activeWilds
+        .filter(wild => wild.id !== newActiveWild.id)
+        .map(wild =>
+          wild.prepareUpdate(w => {
+            w.isActive = false;
+          }),
+        );
+
+      updates.push(
+        newActiveWild.prepareUpdate(w => {
+          w.isActive = true;
+        }),
+      );
 
       await this.database.batch(...updates);
     } catch (e) {
       handleError(e, "setActiveWild writer");
+      throw e;
     }
   }
 }

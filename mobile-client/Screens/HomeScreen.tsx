@@ -1,5 +1,4 @@
 import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Rive, { RiveRef } from "rive-react-native";
 import { User, User_Wild } from "../watermelon/models";
 import { darkTheme, lightTheme } from "../theme";
 
@@ -65,16 +64,6 @@ const HomeScreen: React.FC<Props> = ({
   const handleTutorialClose = () => {
     setShowTutorial(false); // Close the tutorial modal
   };
-  const riveRef = React.useRef<RiveRef>(null);
-
-  function wave() {
-    console.log(riveRef);
-    riveRef.current?.fireState("State Machine 1", "wave");
-  }
-  function getRandom() {
-    return Math.floor(Math.random() * 3000) + 5000; // Between 2s–5s
-  }
-
   //this useEffect checks daily streak and resets if needed
   React.useEffect(() => {
     if (user) {
@@ -90,29 +79,6 @@ const HomeScreen: React.FC<Props> = ({
       setShowTutorial(false);
     }
   }, [user, userWilds]);
-  // React.useEffect(() => {
-  //   let timeout: string | number | NodeJS.Timeout | null | undefined = null;
-
-  //   function scheduleWave() {
-  //     const delay = getRandom();
-
-  //     console.log(delay)
-  //     timeout = setTimeout(() => {
-  //       if (riveRef.current)
-  //       {
-  //         wave();
-  //       }
-  //       scheduleWave(); // Recurse to schedule the next blink
-  //     }, delay);
-  //   }
-
-  //   scheduleWave(); // Start the blinking loop
-
-  //   return () => {
-  //     clearTimeout(timeout); // Clean up on unmount
-  //   };
-  // }, [riveRef]);
-
   //this useEffect gets the correct Rank based on  the users miles
   useFocusEffect(
     React.useCallback(() => {
@@ -171,7 +137,7 @@ const HomeScreen: React.FC<Props> = ({
             xp={activeWild.xp}
             xpToLevel={activeWild.xpToNext}
             ringColor={"#00998aff"}>
-            <WildAvatar id={activeWild.wildId} pose={"still"} size={120} />
+            <WildAvatar id={activeWild.wildId} pose={"still"} size={100} />
           </XpRing>
         ) : (
           <Text style={styles.wildInfo}>No Active Wild</Text>
