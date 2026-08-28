@@ -45,7 +45,7 @@ const sessionCfg = {
 };
 
 describe("SettingsModal Pro indicators", () => {
-  it("marks custom time, sets, and auto-continue controls as Pro actions", () => {
+  it("groups custom time, sets, and auto-continue controls in one Pro section", () => {
     const screen = render(
       <SettingsModal
         visible
@@ -56,11 +56,13 @@ describe("SettingsModal Pro indicators", () => {
       />,
     );
 
-    expect(screen.getByTestId("focus-time-pro-badge")).toBeTruthy();
-    expect(screen.getByTestId("short-break-pro-badge")).toBeTruthy();
-    expect(screen.getByTestId("long-break-pro-badge")).toBeTruthy();
-    expect(screen.getByTestId("sets-pro-badge")).toBeTruthy();
-    expect(screen.getByTestId("auto-continue-pro-badge")).toBeTruthy();
-    expect(screen.getAllByText("Pro")).toHaveLength(5);
+    expect(screen.getByTestId("session-settings-pro-section")).toBeTruthy();
+    expect(screen.getByText("Customize your session flow")).toBeTruthy();
+    expect(screen.getByText("Focus Time")).toBeTruthy();
+    expect(screen.getByText("Short Break")).toBeTruthy();
+    expect(screen.getByText("Long Break")).toBeTruthy();
+    expect(screen.getByText("Sets")).toBeTruthy();
+    expect(screen.getByText("Auto-Continue")).toBeTruthy();
+    expect(screen.getAllByText("Pro")).toHaveLength(1);
   });
 });
