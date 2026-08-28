@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { User, User_Wild } from "../watermelon/models";
 import { darkTheme, lightTheme } from "../theme";
 
@@ -54,6 +54,7 @@ export const HomeScreen: React.FC<Props> = ({
   const styles = getStyles(theme); // dynamically generate styles based on theme
   userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
   const [activeWild] = activeWilds;
+  const progressBarWidth = Math.max(130, Dimensions.get("window").width - 210);
 
   const handleTutorialClose = () => {
     setShowTutorial(false); // Close the tutorial modal
@@ -157,6 +158,7 @@ export const HomeScreen: React.FC<Props> = ({
               height={12}
               borderRadius={999}
               barColor={"#00998aff"}
+              width={progressBarWidth}
             />
             <TouchableOpacity
               activeOpacity={0.85}

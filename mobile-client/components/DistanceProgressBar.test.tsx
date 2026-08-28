@@ -47,4 +47,13 @@ describe("DistanceProgressBar", () => {
 
     expect(mockBar).toHaveBeenCalledWith(expect.objectContaining({ progress: 1 }));
   });
+
+  it("uses an explicit width when rendered inside a compact parent", () => {
+    const user = { trailProgress: "1.25" };
+    const currentTrail = { trailDistance: "5.00" };
+
+    render(<DistanceProgressBar user={user} currentTrail={currentTrail} width={160} />);
+
+    expect(mockBar).toHaveBeenCalledWith(expect.objectContaining({ width: 160 }));
+  });
 });

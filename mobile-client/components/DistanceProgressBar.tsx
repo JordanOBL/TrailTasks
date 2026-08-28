@@ -1,7 +1,7 @@
 import * as Progress from 'react-native-progress';
 
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import React, { useRef } from 'react';
+import React from 'react';
 
 import { EventBus } from '../EventBus/EventBus';
 import { SessionDetails } from '../types/session';
@@ -18,6 +18,7 @@ interface Props {
   height?: number;
   borderRadius?: number;
   barColor?: string;
+  width?: number;
 }
 
 export const DistanceProgressBar = ({
@@ -27,10 +28,10 @@ export const DistanceProgressBar = ({
   sessionDetails,
   height,
   borderRadius,
-  barColor
+  barColor,
+  width: requestedWidth
 
 }: Props) => {
-  const width = Dimensions.get('window').width;
   const { theme } = useTheme();
 
   const isPaused =
@@ -42,13 +43,14 @@ export const DistanceProgressBar = ({
   const trailProgress = Number(user?.trailProgress ?? 0);
   const trailDistance = Number(currentTrail?.trailDistance ?? 0);
   const progress = trailDistance > 0 ? Math.max(0, Math.min(1, trailProgress / trailDistance)) : 0;
+  const width = requestedWidth ?? Dimensions.get('window').width - 50;
 
 
 
   return (
     <View style={{ alignItems: 'center' }}>
       <Progress.Bar
-        width={width - 50}
+        width={width}
         height={height ?? 40}
         borderWidth={0}
         borderRadius={ borderRadius ?? 10}
