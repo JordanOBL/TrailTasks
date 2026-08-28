@@ -36,43 +36,48 @@ const SettingsModal = ({
 }: Props) => {
   const { isProMember } = useAuthContext();
 
-  const onChangeHandler = useCallback((entry:string, value: string |string[] | {label:string, value: number} | boolean , isProMember: boolean) => {
-    console.log(value)
-    const proNotNeeded = ['sessionName', 'sessionCategory']
-    if(!isProMember && proNotNeeded.find(i => i === entry) == undefined){
-        Alert.alert('Pro Needed to change this value')
-       setSessionCfg(prev => ({...prev})) 
-    } else {
-        if(entry === 'totalSets'){
-            if(!(/^d+&/.test(value.toString()))){
-                setSessionCfg(prev => ({...prev, ['totalSets']: 3}))
-            }
-            return
+  const onChangeHandler = useCallback(
+    (
+      entry: string,
+      value: string | string[] | { label: string; value: number } | boolean,
+      isProMember: boolean,
+    ) => {
+      console.log(value);
+      const proNotNeeded = ["sessionName", "sessionCategory"];
+      if (!isProMember && proNotNeeded.find(i => i === entry) == undefined) {
+        Alert.alert("Pro Needed to change this value");
+        setSessionCfg(prev => ({ ...prev }));
+      } else {
+        if (entry === "totalSets") {
+          if (!/^d+&/.test(value.toString())) {
+            setSessionCfg(prev => ({ ...prev, ["totalSets"]: 3 }));
+          }
+          return;
         }
-        if(entry === 'sessionCategory'){
-            if(Array.isArray(value) && value){
-                setSessionCfg(prev => ({...prev, [entry]: value as [string, string]})) 
-            }
+        if (entry === "sessionCategory") {
+          if (Array.isArray(value) && value) {
+            setSessionCfg(prev => ({ ...prev, [entry]: value as [string, string] }));
+          }
         }
 
-        if(entry == 'autoContinue' && typeof value === 'boolean'){
-            setSessionCfg(prev => ({...prev, [entry]: value}))
+        if (entry == "autoContinue" && typeof value === "boolean") {
+          setSessionCfg(prev => ({ ...prev, [entry]: value }));
         }
-        if(typeof value == 'object' && 'value' in value){
-            setSessionCfg(prev => ({...prev, [entry]: value.value}))
+        if (typeof value == "object" && "value" in value) {
+          setSessionCfg(prev => ({ ...prev, [entry]: value.value }));
         }
-    }
-   
-  }, [sessionCfg])
+      }
+    },
+    [sessionCfg],
+  );
 
   const timeValueCreator = (
     sessionCfg: SessionCfg,
     key: keyof SessionCfg,
     isProMember: boolean,
   ): any => {
-    
     const value = Number(sessionCfg[key]);
-    if(!isProMember) return { label: `${value / 60} minutes`, value: sessionCfg[key] };
+    if (!isProMember) return { label: `${value / 60} minutes`, value: sessionCfg[key] };
     return { label: `${value / 60} minutes`, value: sessionCfg[key] };
   };
 
@@ -82,8 +87,7 @@ const SettingsModal = ({
       transparent={true}
       visible={visible}
       onRequestClose={() => setVisible(false)}
-      testID="settings-modal"
-    >
+      testID="settings-modal">
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>Session Settings</Text>
@@ -95,7 +99,7 @@ const SettingsModal = ({
                 testID="session-name-input"
                 value={sessionCfg.sessionName}
                 style={styles.input}
-                onChangeText={(value) => setSessionCfg(prev => ({...prev, sessionName: value}))}
+                onChangeText={value => setSessionCfg(prev => ({ ...prev, sessionName: value }))}
                 placeholder="Enter session name"
                 placeholderTextColor="rgba(255,255,255,0.3)"
               />
@@ -114,9 +118,9 @@ const SettingsModal = ({
                 placeholder="Select a category"
                 placeholderStyle={styles.placeholderStyle}
                 selectedTextStyle={styles.selectedTextStyle}
-                onChange={(value) => {
-                    const v: string[] = [ value.id, value.sessionCategoryName]
-                    onChangeHandler('sessionCategory', v, isProMember)
+                onChange={value => {
+                  const v: string[] = [value.id, value.sessionCategoryName];
+                  onChangeHandler("sessionCategory", v, isProMember);
                 }}
               />
             </View>
@@ -124,7 +128,7 @@ const SettingsModal = ({
             {/* Time Settings */}
             <View style={styles.row}>
               <View style={styles.column}>
-                <Text style={styles.label}>Focus Time</Text>
+                <LabelWithPro label="Focus Time" testID="focus-time-pro-badge" />
                 <Dropdown
                   testID="focus-time-dropdown"
                   style={styles.dropdown}
@@ -134,14 +138,14 @@ const SettingsModal = ({
                   placeholder="Select time"
                   placeholderStyle={styles.placeholderStyle}
                   selectedTextStyle={styles.selectedTextStyle}
-                  value={timeValueCreator(sessionCfg, 'focusTimeSec', isProMember)}
+                  value={timeValueCreator(sessionCfg, "focusTimeSec", isProMember)}
                   onChange={selectedItem => {
-                    onChangeHandler('focusTimeSec', selectedItem, isProMember)
+                    onChangeHandler("focusTimeSec", selectedItem, isProMember);
                   }}
                 />
               </View>
               <View style={styles.column}>
-                <Text style={styles.label}>Short Break</Text>
+                <LabelWithPro label="Short Break" testID="short-break-pro-badge" />
                 <Dropdown
                   testID="short-break-dropdown"
                   style={styles.dropdown}
@@ -151,14 +155,14 @@ const SettingsModal = ({
                   placeholder="Select time"
                   placeholderStyle={styles.placeholderStyle}
                   selectedTextStyle={styles.selectedTextStyle}
-                  value={timeValueCreator(sessionCfg, 'shortBreakSec', isProMember)}
+                  value={timeValueCreator(sessionCfg, "shortBreakSec", isProMember)}
                   onChange={selectedItem => {
-                     onChangeHandler('shortBreakSec', selectedItem, isProMember)
+                    onChangeHandler("shortBreakSec", selectedItem, isProMember);
                   }}
                 />
               </View>
               <View style={styles.column}>
-                <Text style={styles.label}>Long Break</Text>
+                <LabelWithPro label="Long Break" testID="long-break-pro-badge" />
                 <Dropdown
                   testID="long-break-dropdown"
                   style={styles.dropdown}
@@ -168,9 +172,9 @@ const SettingsModal = ({
                   placeholder="Select time"
                   placeholderStyle={styles.placeholderStyle}
                   selectedTextStyle={styles.selectedTextStyle}
-                  value={timeValueCreator(sessionCfg, 'longBreakSec', isProMember)}
+                  value={timeValueCreator(sessionCfg, "longBreakSec", isProMember)}
                   onChange={selectedItem => {
-                     onChangeHandler('longBreakSec', selectedItem, isProMember)
+                    onChangeHandler("longBreakSec", selectedItem, isProMember);
                   }}
                 />
               </View>
@@ -179,12 +183,12 @@ const SettingsModal = ({
             {/* Sets and Auto-Continue */}
             <View style={styles.row}>
               <View style={styles.column}>
-                <Text style={styles.label}>Sets</Text>
+                <LabelWithPro label="Sets" testID="sets-pro-badge" />
                 <TextInput
                   testID="sets-input"
                   value={String(sessionCfg.totalSets)}
                   onChangeText={value => {
-                     onChangeHandler('autoContinue', value, isProMember)
+                    onChangeHandler("autoContinue", value, isProMember);
                   }}
                   keyboardType="numeric"
                   style={styles.input}
@@ -192,14 +196,14 @@ const SettingsModal = ({
                 />
               </View>
               <View style={styles.column}>
-                <Text style={styles.label}>Auto-Continue</Text>
+                <LabelWithPro label="Auto-Continue" testID="auto-continue-pro-badge" />
                 <Switch
                   testID="auto-continue-switch"
                   trackColor={{ false: "#767577", true: "#81b0ff" }}
                   thumbColor={sessionCfg.autoContinue ? "#f5dd4b" : "#f4f3f4"}
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={() => {
-                    onChangeHandler('autoContinue', !sessionCfg.autoContinue, isProMember)
+                    onChangeHandler("autoContinue", !sessionCfg.autoContinue, isProMember);
                   }}
                   value={sessionCfg.autoContinue}
                 />
@@ -212,10 +216,9 @@ const SettingsModal = ({
             testID="save-and-close-button"
             style={styles.saveButton}
             onPress={() => {
-                // setSessionCfg(prev => ({...cfg}))
-                setVisible(false)
-            }}
-          >
+              // setSessionCfg(prev => ({...cfg}))
+              setVisible(false);
+            }}>
             <Text style={styles.buttonText}>Save & Close</Text>
           </Pressable>
         </View>
@@ -225,6 +228,19 @@ const SettingsModal = ({
 };
 
 export default SettingsModal;
+
+const LabelWithPro = ({ label, testID }: { label: string; testID: string }) => (
+  <View style={styles.labelRow}>
+    <Text style={styles.label}>{label}</Text>
+    <ProBadge testID={testID} />
+  </View>
+);
+
+const ProBadge = ({ testID }: { testID: string }) => (
+  <View style={styles.proBadge} testID={testID}>
+    <Text style={styles.proBadgeText}>Pro</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -256,6 +272,25 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#ccc",
     marginBottom: 5,
+  },
+  labelRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 6,
+    marginBottom: 5,
+  },
+  proBadge: {
+    backgroundColor: "rgb(7,254,213)",
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  proBadgeText: {
+    color: "#1c1c1c",
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
   },
   input: {
     backgroundColor: "#333",

@@ -244,8 +244,10 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
           <TouchableOpacity
             onPress={async () => {
               if (isQueued) {
-                const result = await user?.deleteFromQueuedTrails({ trailId: trail.id });
-                if (!result) {
+                const result = (await user?.deleteFromQueuedTrails({
+                  trailId: trail.id,
+                })) as unknown;
+                if (result === false) {
                   Alert.alert("Error", "Could not remove from queue. Please try again later.");
                 }
               } else {
@@ -266,9 +268,12 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
                   : "green",
               },
             ]}>
-            <Text style={styles.fullButtonText}>
-              {isQueued ? "Remove from Queue" : "Add to Queue"}
-            </Text>
+            <View style={styles.buttonContentRow}>
+              <Text style={styles.fullButtonText}>
+                {isQueued ? "Remove from Queue" : "Add to Queue"}
+              </Text>
+              <ProBadge testID="add-to-queue-pro-badge" theme={theme} />
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -333,6 +338,22 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
   );
 };
 
+const ProBadge = ({
+  testID,
+  theme,
+}: {
+  testID: string;
+  theme: typeof lightTheme | typeof darkTheme;
+}) => {
+  const styles = getStyles(theme);
+
+  return (
+    <View style={styles.proBadge} testID={testID}>
+      <Text style={styles.proBadgeText}>Pro</Text>
+    </View>
+  );
+};
+
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.background },
@@ -353,7 +374,26 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     statLabel: { fontSize: 12, color: theme.secondaryText, textAlign: "center" },
     buttonGroup: { marginTop: 20, gap: 10 },
     fullButton: { borderRadius: 14, paddingVertical: 14, alignItems: "center" },
+    buttonContentRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "center",
+    },
     fullButtonText: { color: theme.buttonText, fontSize: 16, fontWeight: "600" },
+    proBadge: {
+      backgroundColor: theme.button,
+      borderRadius: 999,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+    },
+    proBadgeText: {
+      color: "#000000",
+      fontSize: 10,
+      fontWeight: "900",
+      letterSpacing: 0.4,
+      textTransform: "uppercase",
+    },
     modalBackground: {
       flex: 1,
       justifyContent: "center",
