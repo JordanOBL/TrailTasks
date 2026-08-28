@@ -1,7 +1,7 @@
 import * as Progress from 'react-native-progress';
 
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import React, { useRef } from 'react';
+import React from 'react';
 
 import { EventBus } from '../EventBus/EventBus';
 import { SessionDetails } from '../types/session';
@@ -18,19 +18,20 @@ interface Props {
   height?: number;
   borderRadius?: number;
   barColor?: string;
+  width?: number;
 }
 
-const DistanceProgressBar = ({
+export const DistanceProgressBar = ({
   user,
   timer,
   currentTrail,
   sessionDetails,
   height,
   borderRadius,
-  barColor
+  barColor,
+  width: requestedWidth
 
 }: Props) => {
-  const width = Dimensions.get('window').width;
   const { theme } = useTheme();
 
   const isPaused =
@@ -39,24 +40,28 @@ const DistanceProgressBar = ({
     (timer && timer.isBreak);
 
   const progressColor = isPaused ? theme.progressBarPaused : theme.progressBar;
-  const isCompleted = Number(user.trailProgress) == Number(currentTrail.trailDistance)
+  const trailProgress = Number(user?.trailProgress ?? 0);
+  const trailDistance = Number(currentTrail?.trailDistance ?? 0);
+  const progress = trailDistance > 0 ? Math.max(0, Math.min(1, trailProgress / trailDistance)) : 0;
+  const width = requestedWidth ?? Dimensions.get('window').width - 50;
 
 
 
   return (
     <View style={{ alignItems: 'center' }}>
       <Progress.Bar
-        width={width - 50}
+        width={width}
         height={height ?? 40}
         borderWidth={0}
         borderRadius={ borderRadius ?? 10}
         unfilledColor={theme.progressBarBackground}
-        progress={Number(user.trailProgress) / Number(currentTrail.trailDistance)}
+        progress={progress}
         animationType="timing"
         useNativeDriver={true}
         color={barColor ?? progressColor}
       />
       <Text
+        testID="trail-progress-text"
         style={{
           color: theme.progressText,
           alignSelf: 'center',
@@ -65,7 +70,7 @@ const DistanceProgressBar = ({
           marginVertical: 5,
         }}
       >
-        {Number(user.trailProgress).toFixed(2)} / {Number(currentTrail.trailDistance).toFixed(2)} mi.
+        {trailProgress.toFixed(2)} / {trailDistance.toFixed(2)} mi.
       </Text>
     </View>
   );

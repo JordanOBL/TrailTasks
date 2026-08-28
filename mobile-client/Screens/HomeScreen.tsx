@@ -1,4 +1,12 @@
-import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { User, User_Wild } from "../watermelon/models";
 import { darkTheme, lightTheme } from "../theme";
 
@@ -17,11 +25,9 @@ import getUserRank from "../helpers/Ranks/getUserRank";
 import handleError from "../helpers/ErrorHandler";
 import { hasUnsyncedChanges } from "@nozbe/watermelondb/sync";
 import { sync } from "../watermelon/sync";
-import { useAuthContext } from "../services/AuthContext";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useInternetConnection } from "../contexts/InternetConnectionProvider";
-import useRevenueCat from "../helpers/RevenueCat/useRevenueCat";
 import { useTheme } from "../contexts/ThemeProvider";
 import { withObservables } from "@nozbe/watermelondb/react";
 
@@ -34,7 +40,7 @@ interface Props {
   activeWilds: User_Wild[];
 }
 
-const HomeScreen: React.FC<Props> = ({
+export const HomeScreen: React.FC<Props> = ({
   user,
   navigation,
   currentTrail,
@@ -52,14 +58,16 @@ const HomeScreen: React.FC<Props> = ({
     title: "loading",
   });
   const { isConnected } = useInternetConnection();
-  const [activeIndex, setActiveIndex] = React.useState(0);
-  const data = [...new Array(2).keys()]; // Your data array
-  const width = Dimensions.get("window").width;
   const [showTutorial, setShowTutorial] = React.useState(false);
   const styles = getStyles(theme); // dynamically generate styles based on theme
-  const { currentOffering, customerInfo, isProMember } = useAuthContext();
   userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
   const [activeWild] = activeWilds;
+  const { width: windowWidth } = useWindowDimensions();
+  const progressBarWidth = Math.max(220, windowWidth - 56);
+  const trailProgress = Number(user?.trailProgress ?? 0);
+  const trailDistance = Number(currentTrail?.trailDistance ?? 0);
+  const trailPercent =
+    trailDistance > 0 ? Math.min(100, Math.max(0, (trailProgress / trailDistance) * 100)) : 0;
 
   const handleTutorialClose = () => {
     setShowTutorial(false); // Close the tutorial modal
@@ -113,65 +121,96 @@ const HomeScreen: React.FC<Props> = ({
     <SafeAreaView testID="homescreen" style={styles.container}>
       {/* <SyncIndicator delay={3000} /> */}
       {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
-      <View
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}>
-        <Text style={styles.trailTokens}>Trail Tokens: {user?.trailTokens}</Text>
-        <Text style={[styles.onlineStatus, { color: isConnected ? "green" : "red" }]}>
-          {isConnected ? "Online" : "Offline"}
-        </Text>
-        <View>
-          <Text style={styles.dailyStreak} testID="daily-streak">
-            Daily Streak: {user?.dailyStreak}
-          </Text>
-          <SyncButton />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.statusRow}>
+          <View style={styles.statPill}>
+            <Text testID="trail-tokens" style={styles.statValue}>
+              {user?.trailTokens}
+            </Text>
+            <Text style={styles.statLabel}>Tokens</Text>
+          </View>
+          <View style={styles.statPill}>
+            <Text style={styles.statValue} testID="daily-streak">
+              {user?.dailyStreak}
+            </Text>
+            <Text style={styles.statLabel}>Day Streak</Text>
+          </View>
+          <View style={styles.syncStatus}>
+            <Text style={[styles.onlineStatus, { color: isConnected ? "#2ecc71" : "#ff6b6b" }]}>
+              {isConnected ? "Online" : "Offline"}
+            </Text>
+            <SyncButton />
+          </View>
         </View>
-      </View>
-      <View style={{ alignItems: "center", marginVertical: 10 }}>
-        {activeWild ? (
-          <XpRing
-            size={120}
-            xp={activeWild.xp}
-            xpToLevel={activeWild.xpToNext}
-            ringColor={"#00998aff"}>
-            <WildAvatar id={activeWild.wildId} pose={"wave"} size={100} animated={true} />
-          </XpRing>
-        ) : (
-          <Text style={styles.wildInfo}>No Active Wild</Text>
-        )}
-      </View>
-      <View style={styles.currentTrailContainer}>
-        <Text style={styles.trailText}>Current Trail:</Text>
-        <Text style={styles.trailName}>{currentTrail.trailName}</Text>
-        <DistanceProgressBar
-          user={user}
-          trail={currentTrail}
-          height={15}
-          borderRadius={999}
-          barColor={"#00998aff"}
-        />
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={[styles.ctaButton, { marginTop: 15 }]}
-          onPress={() => navigation.navigate("Timer")}>
-          <Text style={styles.ctaText}>Start a Session</Text>
-        </TouchableOpacity>
-      </View>
-      {/* <View style={styles.paginationDotsContainer}>
-          {data.map((item, index) => (
-            <View
-              key={index}
-              style={[
-                styles.paginationDot,
-                activeIndex === index && styles.activePaginationDot,
-              ]}
+
+        <View style={styles.dashboardRow}>
+          <View style={styles.wildCard}>
+            <View style={styles.cardHeaderRow}>
+              <Text style={styles.sectionEyebrow}>Active Wild</Text>
+            </View>
+            {activeWild ? (
+              <>
+                <XpRing
+                  size={112}
+                  xp={activeWild.xp}
+                  xpToLevel={activeWild.xpToNext}
+                  ringColor={"#00998aff"}>
+                  <WildAvatar id={activeWild.wildId} pose={"wave"} size={92} animated={true} />
+                </XpRing>
+                <Text testID="current-wild" style={styles.wildInfo} numberOfLines={1}>
+                  Current Wild: {activeWild.wildId}
+                </Text>
+                <Text testID="wild-xp" style={styles.wildMeta}>
+                  Wild XP: {activeWild.xp} / {activeWild.xpToNext}
+                </Text>
+              </>
+            ) : (
+              <View style={styles.emptyWildState}>
+                <Text style={styles.wildInfo}>No Active Wild</Text>
+                <Text style={styles.wildMeta}>Choose a companion to earn XP.</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.trailCard}>
+            <Text style={styles.sectionEyebrow}>Current Trail</Text>
+            <Text testID="current-trail" style={styles.trailName} numberOfLines={2}>
+              {currentTrail.trailName}
+            </Text>
+            <Text style={styles.trailPercent}>{trailPercent.toFixed(0)}% complete</Text>
+            <DistanceProgressBar
+              user={user}
+              currentTrail={currentTrail}
+              height={12}
+              borderRadius={999}
+              barColor={"#00998aff"}
+              width={progressBarWidth}
             />
-          ))}
-        </View> */}
-      <HomeScreenLinks user={user} navigation={navigation} />
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.ctaButton}
+              onPress={() => navigation.navigate("Timer")}>
+              <Text style={styles.ctaText}>Start a Session</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <HomeScreenLinks user={user} navigation={navigation} />
+
+        <View style={styles.weeklyTrailCard}>
+          <View style={styles.weeklyCopy}>
+            <Text style={styles.sectionEyebrow}>Trail of the Week</Text>
+            <Text style={styles.weeklyTitle}>Smoky Mountain Challenge</Text>
+            <Text style={styles.weeklyDescription}>
+              Earn bonus Wild XP on featured hikes this week. Global trail events coming soon.
+            </Text>
+          </View>
+          <View style={styles.bonusBadge}>
+            <Text style={styles.bonusValue}>2x</Text>
+            <Text style={styles.bonusLabel}>Wild XP</Text>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -192,31 +231,170 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     container: {
       flex: 1,
       backgroundColor: theme.background,
-      padding: 10,
     },
-    ctaButton: {
-      backgroundColor: theme.progressBar, // neon teal
-      paddingVertical: 16,
-      paddingHorizontal: 24,
-      borderRadius: 10,
+    scrollContent: {
+      padding: 12,
+      paddingBottom: 36,
+      gap: 12,
+    },
+    statusRow: {
+      flexDirection: "row",
+      gap: 8,
+      alignItems: "stretch",
+    },
+    statPill: {
+      flex: 1,
+      backgroundColor: theme.card,
+      borderRadius: 14,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      justifyContent: "center",
+    },
+    statValue: {
+      color: theme.button,
+      fontSize: 20,
+      fontWeight: "800",
+      lineHeight: 24,
+    },
+    statLabel: {
+      color: theme.secondaryText,
+      fontSize: 11,
+      fontWeight: "600",
+      marginTop: 2,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+    },
+    syncStatus: {
+      minWidth: 82,
+      backgroundColor: theme.card,
+      borderRadius: 14,
+      paddingVertical: 8,
+      paddingHorizontal: 8,
       alignItems: "center",
       justifyContent: "center",
-
-      // full width but with some margin – adjust to taste in parent
+    },
+    dashboardRow: {
+      gap: 12,
+    },
+    wildCard: {
+      minHeight: 176,
+      padding: 16,
+      borderRadius: 18,
+      backgroundColor: theme.card,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 6,
+      elevation: 3,
+    },
+    trailCard: {
+      padding: 16,
+      borderRadius: 18,
+      backgroundColor: theme.card,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 6,
+      elevation: 3,
+    },
+    cardHeaderRow: {
       alignSelf: "stretch",
-
-      // subtle glow / elevation
+      alignItems: "flex-start",
+      marginBottom: 6,
+    },
+    emptyWildState: {
+      minHeight: 112,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    sectionEyebrow: {
+      fontSize: 12,
+      color: theme.secondaryText,
+      fontWeight: "700",
+      textAlign: "left",
+      marginBottom: 4,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    trailPercent: {
+      color: theme.secondaryText,
+      fontSize: 13,
+      fontWeight: "600",
+      marginBottom: 8,
+    },
+    ctaButton: {
+      backgroundColor: theme.progressBar,
+      paddingVertical: 12,
+      paddingHorizontal: 18,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      alignSelf: "stretch",
+      marginTop: 8,
       shadowColor: theme.progressBar,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.5,
-      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.28,
+      shadowRadius: 10,
       elevation: 4,
     },
     ctaText: {
-      color: "#000", // black text pops on teal
-      fontSize: 18,
+      color: "#000",
+      fontSize: 16,
       fontWeight: "700",
       letterSpacing: 0.5,
+    },
+    weeklyTrailCard: {
+      flexDirection: "row",
+      gap: 14,
+      padding: 16,
+      borderRadius: 18,
+      backgroundColor: theme.card,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.12,
+      shadowRadius: 6,
+      elevation: 3,
+    },
+    weeklyCopy: {
+      flex: 1,
+    },
+    weeklyTitle: {
+      color: theme.button,
+      fontSize: 19,
+      fontWeight: "800",
+      marginBottom: 6,
+    },
+    weeklyDescription: {
+      color: theme.secondaryText,
+      fontSize: 13,
+      fontWeight: "500",
+      lineHeight: 18,
+    },
+    bonusBadge: {
+      width: 74,
+      height: 74,
+      borderRadius: 37,
+      backgroundColor: theme.background,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: theme.progressBar,
+    },
+    bonusValue: {
+      color: theme.button,
+      fontSize: 22,
+      fontWeight: "900",
+      lineHeight: 26,
+    },
+    bonusLabel: {
+      color: theme.secondaryText,
+      fontSize: 10,
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: 0.3,
     },
     loadingContainer: {
       flex: 1,
@@ -236,7 +414,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     onlineStatus: {
       fontSize: 12,
       fontWeight: "600",
-      marginTop: 2,
+      marginBottom: 4,
     },
     username: {
       color: theme.text,
@@ -277,28 +455,20 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       color: theme.secondaryText,
       marginBottom: 6,
     },
-    currentTrailContainer: {
-      padding: 16,
-      borderRadius: 12,
-      backgroundColor: theme.card,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-      elevation: 3,
-    },
     trailText: {
-      fontSize: 14,
+      fontSize: 12,
       color: theme.secondaryText,
-      fontWeight: "500",
-      textAlign: "center",
+      fontWeight: "700",
+      textAlign: "left",
       marginBottom: 4,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
     },
     trailName: {
-      fontSize: 17,
-      fontWeight: "600",
+      fontSize: 20,
+      fontWeight: "800",
       color: theme.button,
-      textAlign: "center",
+      textAlign: "left",
       marginBottom: 8,
     },
     trailTokens: {
@@ -327,7 +497,17 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       backgroundColor: theme.background,
     },
     wildInfo: {
-      color: "white",
+      color: theme.text,
+      fontSize: 11,
+      fontWeight: "700",
+      marginTop: 6,
+      textAlign: "center",
+    },
+    wildMeta: {
+      color: theme.secondaryText,
       fontSize: 10,
+      fontWeight: "600",
+      marginTop: 2,
+      textAlign: "center",
     },
   });
