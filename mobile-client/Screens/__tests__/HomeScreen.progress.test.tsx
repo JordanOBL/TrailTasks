@@ -132,7 +132,7 @@ describe("HomeScreen progress fields", () => {
       />,
     );
 
-    expect(screen.getByTestId("trail-tokens")).toHaveTextContent("Trail Tokens: 77");
+    expect(screen.getByTestId("trail-tokens")).toHaveTextContent("77");
     expect(screen.getByTestId("current-wild")).toHaveTextContent("Current Wild: ember");
     expect(screen.getByTestId("wild-xp")).toHaveTextContent("Wild XP: 42 / 100");
     expect(screen.getByTestId("wild-avatar")).toHaveTextContent("ember");

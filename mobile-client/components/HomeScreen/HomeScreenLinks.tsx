@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { darkTheme, lightTheme } from "../../theme";
 
 import React from "react";
@@ -10,38 +10,38 @@ interface Props {
   user: User;
   navigation: any;
 }
+
+const links = [
+  { label: "Profile", route: "Profile", needsSubscription: false },
+  { label: "Shop", route: "Shop", needsSubscription: false },
+  { label: "Leaderboards", route: "Leaderboards", needsSubscription: false },
+  { label: "Settings", route: "Settings", needsSubscription: false },
+];
+
 export default function HomeScreenLinks({ user, navigation }: Props) {
   const { theme } = useTheme();
   const styles = getStyles(theme);
-  const { currentOffering, customerInfo, isProMember } = useAuthContext();
+  const { isProMember } = useAuthContext();
 
   function handlePress(needsSubscription: boolean, link: string) {
-    if (!needsSubscription) {
+    if (!needsSubscription || isProMember) {
       navigation.navigate(link);
       return;
     }
-    if (!isProMember) {
-      navigation.navigate("Subscribe");
-      return;
-    }
-    navigation.navigate(link);
-    return;
+
+    navigation.navigate("Subscribe");
   }
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Profile")}>
-        <Text style={styles.text}>Profile</Text>
-      </Pressable>
-      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Shop")}>
-        <Text style={styles.text}>Shop</Text>
-      </Pressable>
-      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Leaderboards")}>
-        <Text style={styles.text}>Leaderboards</Text>
-      </Pressable>
-      <Pressable style={styles.screenLink} onPress={() => handlePress(false, "Settings")}>
-        <Text style={styles.text}>Settings</Text>
-      </Pressable>
+      {links.map(link => (
+        <Pressable
+          key={link.route}
+          style={styles.screenLink}
+          onPress={() => handlePress(link.needsSubscription, link.route)}>
+          <Text style={styles.text}>{link.label}</Text>
+        </Pressable>
+      ))}
     </View>
   );
 }
@@ -51,59 +51,26 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) => {
     container: {
       flexDirection: "row",
       flexWrap: "wrap",
-      justifyContent: "space-around", // Distributes items evenly with space around them
-      padding: 10,
+      gap: 8,
     },
 
     screenLink: {
-      width: "45%", // Approximately two columns with some spacing
-      height: 150,
+      flexBasis: "48%",
+      flexGrow: 1,
+      minHeight: 56,
       backgroundColor: theme.card,
-      marginVertical: 10,
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: 20,
+      borderRadius: 14,
+      paddingVertical: 14,
+      paddingHorizontal: 12,
     },
 
-    text: { color: theme.text },
+    text: {
+      color: theme.text,
+      fontSize: 15,
+      fontWeight: "700",
+      letterSpacing: 0.2,
+    },
   });
 };
-//     <ScrollView
-//   style={styles.linkContainer}
-//   contentContainerStyle={{flexGrow: 1, paddingBottom: 40}} // adjust for safety
-//   keyboardShouldPersistTaps="handled">
-//     <ScreenLink
-//     user={user}
-//     needsActiveSubscription={false}
-//     hasActiveSubscription={true}
-//     navigation={navigation}
-//     navTo={'Profile'}>
-//     Profile
-//   </ScreenLink>
-
-//   <ScreenLink
-//     user={user}
-//     needsActiveSubscription={false}
-//     hasActiveSubscription={true}
-//     navigation={navigation}
-//     navTo={'Shop'}>
-//     Shop
-//   </ScreenLink>
-
-//   <ScreenLink
-//     user={user}
-//     navigation={navigation}
-//     navTo={'Leaderboards'}
-//     needsActiveSubscription={true}
-//     hasActiveSubscription={isProMember}>
-//     Leaderboards
-//   </ScreenLink>
-//   <ScreenLink
-//     user={user}
-//     navigation={navigation}
-//     navTo={'Settings'}
-//     needsActiveSubscription={false}
-//     hasActiveSubscription={false}>
-//     Settings
-//   </ScreenLink>
-// </ScrollView>

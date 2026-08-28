@@ -3,7 +3,7 @@ import { render } from "@testing-library/react-native";
 
 import { DistanceProgressBar } from "./DistanceProgressBar";
 
-const mockBar = jest.fn(() => null);
+const mockBar = jest.fn((_props: any) => null);
 
 jest.mock("react-native-progress", () => ({
   Bar: (props: any) => mockBar(props),
