@@ -3,10 +3,12 @@ import React, { useCallback } from "react";
 
 import formatTime from "../../helpers/formatTime";
 import { useTheme } from "../../contexts/ThemeProvider";
+
 interface NormalizedSesttionCategoryNameId {
   sessionCategoryName: string;
-  sessionCategoryId: string;
+  sessionCategoryId: string | number;
 }
+
 interface Props {
   filteredUserSessions: any[];
   sessionCategories: NormalizedSesttionCategoryNameId[];
@@ -33,9 +35,12 @@ const SessionList = ({ filteredUserSessions }: Props) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
-  const renderSessionItem = useCallback(({ item }: any) => {
-    return <SessionCard key={item.id} styles={styles} item={item} />;
-  }, []);
+  const renderSessionItem = useCallback(
+    ({ item }: any) => {
+      return <SessionCard key={item.id} styles={styles} item={item} />;
+    },
+    [styles],
+  );
 
   if (filteredUserSessions.length === 0) {
     return (
@@ -50,7 +55,7 @@ const SessionList = ({ filteredUserSessions }: Props) => {
       testID="sessions-list"
       data={filteredUserSessions}
       renderItem={renderSessionItem}
-      keyExtractor={(item, index) => index.toString()}
+      keyExtractor={(item, index) => item.id?.toString() ?? index.toString()}
       contentContainerStyle={styles.container}
     />
   );
