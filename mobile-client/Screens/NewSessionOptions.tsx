@@ -77,7 +77,7 @@ const NewSessionOptions = () => {
     const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
 
     sessionCfgWithAddons.backpack.forEach((slot, index) => {
-      if (index > 2 && !isProMember) return;
+      if (index > 1 && !isProMember) return;
       if (slot.addon) {
         switch (slot.addon.effectType) {
           case "min_pace_increase":

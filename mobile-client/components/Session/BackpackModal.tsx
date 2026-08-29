@@ -90,7 +90,7 @@ const BackpackModal = ({
                   {slot.addon?.name ||
                     (user.totalMiles >= slot.minimumTotalMiles
                       ? "+"
-                      : `${index > 1 && !user.isProMember && "Pro\n"}Unlock at ${
+                      : `${index > 1 && !user.isProMember ? "Pro\n" : ""}Unlock at ${
                           slot.minimumTotalMiles
                         }`)}
                 </Text>
