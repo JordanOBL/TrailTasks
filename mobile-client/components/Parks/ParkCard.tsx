@@ -84,6 +84,7 @@ const ParkCard = React.memo(
           <Button
             mode="elevated"
             buttonColor="rgb(7,254,213)"
+            textColor="#000000"
             onPress={() => {
               navigation.navigate("ParkDetails", { wildId, parkId });
             }}>
