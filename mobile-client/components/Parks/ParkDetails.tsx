@@ -562,7 +562,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     },
 
     setActiveButtonText: {
-      color: theme.buttonPrimaryText,
+      color: "#000000",
       fontSize: 12,
       fontWeight: "700",
       letterSpacing: 0.2,

@@ -90,8 +90,11 @@ const BackpackModal = ({
                   {slot.addon?.name ||
                     (user.totalMiles >= slot.minimumTotalMiles
                       ? "+"
-                      : `Unlock at ${slot.minimumTotalMiles}`)}
+                      : `${index > 1 && !user.isProMember ? "Pro\n" : ""}Unlock at ${
+                          slot.minimumTotalMiles
+                        }`)}
                 </Text>
+                {}
               </TouchableOpacity>
             ))}
           </View>
@@ -162,6 +165,7 @@ const styles = StyleSheet.create({
   slotText: {
     fontSize: 14,
     fontWeight: "bold",
+    textAlign: "center",
   },
   addonList: {
     width: "100%",

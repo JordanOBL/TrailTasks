@@ -9,11 +9,9 @@ import {
   TextInput,
   View,
 } from "react-native";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback } from "react";
 
-import { Database } from "@nozbe/watermelondb";
 import { Dropdown } from "react-native-element-dropdown";
-import NewSessionHandlers from "../../helpers/Session/newSessionHandlers";
 import { SessionCfg } from "../../types/session";
 import { Session_Category } from "../../watermelon/models";
 import timeOptions from "../../helpers/Session/timeOptions";

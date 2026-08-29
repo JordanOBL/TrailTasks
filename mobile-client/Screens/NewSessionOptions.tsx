@@ -36,7 +36,7 @@ const baseAddonConfig = {
 
 const NewSessionOptions = () => {
   const db = useDatabase();
-  const { user } = useAuthContext();
+  const { user, isProMember } = useAuthContext();
   const { sessionEngineMgr, persistenceService } = useServices();
   const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(true);
   const [isBackpackModalVisible, setIsBackpackModalVisible] = useState(false);
@@ -76,7 +76,8 @@ const NewSessionOptions = () => {
   const closeBackpackModal = () => {
     const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
 
-    sessionCfgWithAddons.backpack.forEach(slot => {
+    sessionCfgWithAddons.backpack.forEach((slot, index) => {
+      if (index > 1 && !isProMember) return;
       if (slot.addon) {
         switch (slot.addon.effectType) {
           case "min_pace_increase":

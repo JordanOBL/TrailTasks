@@ -299,7 +299,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
                   user?.trailId == trail.id
                     ? "gray"
                     : isProMember || isFreeTrail || isPurchased || !isSubscribersOnly
-                    ? "#2196F3"
+                    ? "rgb(7,254,213)"
                     : "gray",
               },
             ]}>
@@ -380,7 +380,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       gap: 8,
       justifyContent: "center",
     },
-    fullButtonText: { color: theme.buttonText, fontSize: 16, fontWeight: "600" },
+    fullButtonText: { color: "#000000", fontSize: 16, fontWeight: "600" },
     proBadge: {
       backgroundColor: theme.button,
       borderRadius: 999,
