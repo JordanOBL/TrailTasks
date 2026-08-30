@@ -187,7 +187,7 @@ export async function pullCatalogChanges(database: Database, isConnected: boolea
 export async function sync(
   database: Database,
   isConnected: boolean = false,
-  userId: string = "0",
+  userId?: string,
   options: SyncOptions = {},
 ) {
   if (!isConnected) {
@@ -200,6 +200,11 @@ export async function sync(
     return;
   }
 
+  if ((options.fullUserSync || options.forceAccountPush) && !userId) {
+    console.warn("[Sync] Account sync requested without a user id.");
+    return;
+  }
+
   isRunning = true;
   let retryCount = 0;
   const maxRetries = 2;
@@ -207,7 +212,7 @@ export async function sync(
   const pushLocalChanges = async (lastPulledAt: number | null) => {
     const localChanges = await fetchLocalChanges(database);
     const changes = options.forceAccountPush
-      ? await fetchForcedAccountChanges(database, userId)
+      ? await fetchForcedAccountChanges(database, userId!)
       : localChanges.changes;
 
     const response = await fetch(

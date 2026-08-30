@@ -18,7 +18,8 @@ const SettingsScreen = ({ user, navigation }: Props) => {
   const database = useDatabase();
   const { isConnected } = useInternetConnection();
   const { theme, toggleTheme } = useTheme();
-  const { logout } = useAuthContext();
+  const { logout, user: authUser } = useAuthContext();
+  const accountUser = authUser || user;
 
   const currentThemeName = theme === darkTheme ? "dark" : "light";
 
@@ -32,14 +33,14 @@ const SettingsScreen = ({ user, navigation }: Props) => {
         <Text style={styles.optionText}>Subscription</Text>
       </TouchableOpacity>
 
-      <Pressable style={styles.option} onPress={() => sync(database, isConnected, user.id)}>
+      <Pressable style={styles.option} onPress={() => sync(database, isConnected, accountUser?.id)}>
         <Text style={styles.optionText}>Sync</Text>
       </Pressable>
 
       <Pressable
         style={styles.option}
         onPress={() =>
-          sync(database, isConnected, user.id, { fullUserSync: true, pullOnly: true })
+          sync(database, isConnected, accountUser?.id, { fullUserSync: true, pullOnly: true })
         }>
         <Text style={styles.optionText}>Force Account Pull</Text>
       </Pressable>
@@ -47,7 +48,10 @@ const SettingsScreen = ({ user, navigation }: Props) => {
       <Pressable
         style={styles.option}
         onPress={() =>
-          sync(database, isConnected, user.id, { pushOnly: true, forceAccountPush: true })
+          sync(database, isConnected, accountUser?.id, {
+            pushOnly: true,
+            forceAccountPush: true,
+          })
         }>
         <Text style={styles.optionText}>Force Account Push</Text>
       </Pressable>

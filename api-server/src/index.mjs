@@ -778,6 +778,7 @@ app.get('/pull', async (req, res) => {
         }
     } catch (err) {
         console.log('Error in server /pull', err);
+        return res.status(500).json({error: 'An error occurred during the pull operation.', details: err.message});
     }
 });
 
@@ -793,8 +794,12 @@ app.post('/push', async (req, res) => {
                 if (!rows[0]) return;
 
                 const cleanRows = cleanSyncRows(rows);
-                const updateOnDuplicate = Object.keys(cleanRows[0]).filter(key => key !== 'id');
-                await model.bulkCreate(cleanRows, {updateOnDuplicate});
+                for (const row of cleanRows) {
+                    const [updatedCount] = await model.update(row, {where: {id: row.id}});
+                    if (updatedCount === 0) {
+                        await model.create(row);
+                    }
+                }
             };
 
             await upsertRows(User, changes?.users?.updated);
