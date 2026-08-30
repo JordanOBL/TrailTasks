@@ -14,6 +14,8 @@ Completion of trails earns users trail tokens, which can be used to unlock new t
 4. Offline & Online Support
 Trail Tasks is designed to work seamlessly both offline and online. This ensures that users can continue their productivity journey without interruption, even in areas with limited connectivity. Online functionality enables users to view global leaderboards and compare their miles hiked with others, fostering a sense of community and competition.
 
+For the engineering sync model, device/account scenarios, and current MVP conflict limits, see `watermelon/README.md`.
+
 5. Detailed Productivity Stats
 Users can track their productivity over various time periods and session categories, giving them insight into their work habits and progress. This feature not only helps users stay motivated but also allows them to optimize their workflow for better results.
 
