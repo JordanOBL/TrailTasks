@@ -46,7 +46,9 @@ const SettingsScreen = ({ user, navigation }: Props) => {
 
       <Pressable
         style={styles.option}
-        onPress={() => sync(database, isConnected, user.id, { pushOnly: true })}>
+        onPress={() =>
+          sync(database, isConnected, user.id, { pushOnly: true, forceAccountPush: true })
+        }>
         <Text style={styles.optionText}>Force Account Push</Text>
       </Pressable>
 

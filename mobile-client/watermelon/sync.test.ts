@@ -1,9 +1,9 @@
-import { buildPullUrl, filterCatalogChanges } from "./sync";
+import { buildForcedAccountChanges, buildPullUrl, filterCatalogChanges } from "./sync";
 
 describe("sync helpers", () => {
   it("does not depend on URLSearchParams methods that are missing in React Native", () => {
     const originalUrlSearchParams = global.URLSearchParams;
-    // @ts-expect-error intentionally simulates the limited React Native runtime
+    // @ts-ignore intentionally simulates the limited React Native runtime
     global.URLSearchParams = undefined;
 
     try {
@@ -72,5 +72,35 @@ describe("sync helpers", () => {
       trails: { created: [], updated: [{ id: "trail-1" }], deleted: [] },
       wilds: { created: [], updated: [{ id: "wild-1" }], deleted: [] },
     });
+  });
+
+  it("builds force-push changes from synced account records", () => {
+    const changes = buildForcedAccountChanges({
+      users: [
+        {
+          id: "user-1",
+          _status: "synced",
+          _changed: "",
+          total_miles: "10.5",
+        },
+      ],
+      users_wilds: [
+        {
+          id: "user-wild-1",
+          user_id: "user-1",
+          wild_id: "wild-1",
+          _status: "synced",
+          _changed: "",
+          level: 3,
+        },
+      ],
+      trails: [{ id: "trail-1" }],
+    });
+
+    expect(changes.users.updated).toEqual([{ id: "user-1", total_miles: "10.5" }]);
+    expect(changes.users_wilds.updated).toEqual([
+      { id: "user-wild-1", user_id: "user-1", wild_id: "wild-1", level: 3 },
+    ]);
+    expect(changes).not.toHaveProperty("trails");
   });
 });

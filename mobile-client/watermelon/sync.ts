@@ -1,6 +1,6 @@
 import { Database } from "@nozbe/watermelondb";
-import SyncLogger from "@nozbe/watermelondb/sync/SyncLogger";
 import { synchronize } from "@nozbe/watermelondb/sync";
+import type { SyncDatabaseChangeSet } from "@nozbe/watermelondb/sync";
 import {
   applyRemoteChanges,
   fetchLocalChanges,
@@ -10,7 +10,6 @@ import {
 import Config from "react-native-config";
 import handleError from "../helpers/ErrorHandler";
 
-const logger = new SyncLogger(10);
 const CATALOG_LAST_PULLED_AT_KEY = "trailtasks_catalog_last_pulled_at";
 
 const CATALOG_TABLES = new Set([
@@ -23,6 +22,20 @@ const CATALOG_TABLES = new Set([
   "wilds",
   "parks_wilds",
 ]);
+
+const ACCOUNT_FORCE_PUSH_TABLES = [
+  "users",
+  "users_addons",
+  "users_completed_trails",
+  "users_queued_trails",
+  "users_parks",
+  "users_achievements",
+  "users_purchased_trails",
+  "users_sessions",
+  "users_friends",
+  "users_wilds",
+  "sessions_addons",
+] as const;
 
 let isRunning = false;
 
@@ -39,7 +52,51 @@ type SyncOptions = {
   fullUserSync?: boolean;
   pullOnly?: boolean;
   pushOnly?: boolean;
+  forceAccountPush?: boolean;
 };
+
+type RawRecord = Record<string, any>;
+
+export function buildForcedAccountChanges(recordsByTable: Record<string, RawRecord[]>) {
+  return ACCOUNT_FORCE_PUSH_TABLES.reduce((changes, tableName) => {
+    const records = recordsByTable[tableName] || [];
+    if (records.length > 0) {
+      changes[tableName] = {
+        created: [],
+        updated: records.map(({ _status, _changed, ...raw }) => raw),
+        deleted: [],
+      };
+    }
+
+    return changes;
+  }, {} as Record<string, { created: RawRecord[]; updated: RawRecord[]; deleted: string[] }>);
+}
+
+async function fetchForcedAccountChanges(database: Database, userId: string) {
+  const recordsByTable: Record<string, RawRecord[]> = {};
+
+  for (const tableName of ACCOUNT_FORCE_PUSH_TABLES) {
+    const records = await database
+      .get(tableName as any)
+      .query()
+      .fetch();
+    recordsByTable[tableName] = records
+      .map(record => ({ ...(record as any)._raw }))
+      .filter(record => {
+        if (tableName === "users") {
+          return record.id === userId;
+        }
+
+        if (tableName === "sessions_addons") {
+          return true;
+        }
+
+        return record.user_id === userId;
+      });
+  }
+
+  return buildForcedAccountChanges(recordsByTable);
+}
 
 export function buildPullUrl({
   baseUrl,
@@ -112,7 +169,7 @@ export async function pullCatalogChanges(database: Database, isConnected: boolea
     const catalogChanges = filterCatalogChanges(changes);
 
     await database.write(async () => {
-      await applyRemoteChanges(catalogChanges, {
+      await applyRemoteChanges(catalogChanges as SyncDatabaseChangeSet, {
         db: database,
         sendCreatedAsUpdated: true,
       });
@@ -149,12 +206,15 @@ export async function sync(
 
   const pushLocalChanges = async (lastPulledAt: number | null) => {
     const localChanges = await fetchLocalChanges(database);
+    const changes = options.forceAccountPush
+      ? await fetchForcedAccountChanges(database, userId)
+      : localChanges.changes;
 
     const response = await fetch(
       `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
       {
         method: "POST",
-        body: JSON.stringify({ changes: localChanges.changes }),
+        body: JSON.stringify({ changes }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -165,7 +225,9 @@ export async function sync(
       throw new Error(await response.text());
     }
 
-    await markLocalChangesAsSynced(database, localChanges);
+    if (!options.forceAccountPush) {
+      await markLocalChangesAsSynced(database, localChanges);
+    }
     console.debug("[Sync] Pushed local changes to server.");
   };
 
@@ -234,7 +296,6 @@ export async function sync(
             },
 
         sendCreatedAsUpdated: true,
-        log: logger,
       });
 
       console.debug("[Sync] Synchronization successful.");

@@ -20,6 +20,7 @@ import {
     User_Purchased_Trail,
     User_Session,
     User_Wild,
+    Users_Queued_Trail,
     Wild
 } from './db/sequelizeModel.js';
 import {Op, QueryTypes, Sequelize} from 'sequelize';
@@ -466,6 +467,7 @@ app.get('/pull', async (req, res) => {
                     users: await User.findAll({ where: { id: userId } }),
                     users_addons: await User_Addon.findAll({ where: fullUserWhere }),
                     users_completed_trails: await User_Completed_Trail.findAll({ where: fullUserWhere }),
+                    users_queued_trails: await Users_Queued_Trail.findAll({ where: fullUserWhere }),
                     users_parks: await User_Park.findAll({ where: fullUserWhere }),
                     users_achievements: await User_Achievement.findAll({ where: fullUserWhere }),
                     users_purchased_trails: await User_Purchased_Trail.findAll({ where: fullUserWhere }),
@@ -700,6 +702,11 @@ app.get('/pull', async (req, res) => {
                         updated: fullUserData ? fullUserData.users_completed_trails : updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
                         deleted: [],
                     },
+                    users_queued_trails: {
+                        created: [],
+                        updated: fullUserData ? fullUserData.users_queued_trails : [],
+                        deleted: [],
+                    },
                     users_parks:{
                         created: [],
                         updated: fullUserData ? fullUserData.users_parks : createdUserParks.length ? createdUserParks : [],
@@ -781,6 +788,27 @@ app.post('/push', async (req, res) => {
         const lastPulledAt = req.query.last_pulled_at;
         console.log('sending changes to pg', {changes, lastPulledAt});
         if (lastPulledAt !== 'null') {
+            const cleanSyncRows = rows => rows.map(({_status, _changed, ...row}) => row);
+            const upsertRows = async (model, rows = []) => {
+                if (!rows[0]) return;
+
+                const cleanRows = cleanSyncRows(rows);
+                const updateOnDuplicate = Object.keys(cleanRows[0]).filter(key => key !== 'id');
+                await model.bulkCreate(cleanRows, {updateOnDuplicate});
+            };
+
+            await upsertRows(User, changes?.users?.updated);
+            await upsertRows(User_Achievement, changes?.users_achievements?.updated);
+            await upsertRows(User_Addon, changes?.users_addons?.updated);
+            await upsertRows(User_Completed_Trail, changes?.users_completed_trails?.updated);
+            await upsertRows(Users_Queued_Trail, changes?.users_queued_trails?.updated);
+            await upsertRows(User_Park, changes?.users_parks?.updated);
+            await upsertRows(User_Purchased_Trail, changes?.users_purchased_trails?.updated);
+            await upsertRows(User_Session, changes?.users_sessions?.updated);
+            await upsertRows(User_Friend, changes?.users_friends?.updated);
+            await upsertRows(User_Wild, changes?.users_wilds?.updated);
+            await upsertRows(Session_Addon, changes?.sessions_addons?.updated);
+
             if (changes?.users?.created[0] !== undefined) {
                 const users = await User.bulkCreate(changes.users.created, {updateOnDuplicate: ['id']});
             }
