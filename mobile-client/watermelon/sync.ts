@@ -49,16 +49,20 @@ export function buildPullUrl({
   catalogOnly = false,
   fullUserSync = false,
 }: PullUrlParams) {
-  const params = new URLSearchParams({
-    last_pulled_at: lastPulledAt == null ? "null" : String(lastPulledAt),
-    schema_version: String(schemaVersion),
-  });
+  const params: [string, string][] = [
+    ["last_pulled_at", lastPulledAt == null ? "null" : String(lastPulledAt)],
+    ["schema_version", String(schemaVersion)],
+  ];
 
-  if (userId) params.set("userId", userId);
-  if (catalogOnly) params.set("catalog_only", "true");
-  if (fullUserSync) params.set("full_user_sync", "true");
+  if (userId) params.push(["userId", userId]);
+  if (catalogOnly) params.push(["catalog_only", "true"]);
+  if (fullUserSync) params.push(["full_user_sync", "true"]);
 
-  return `${baseUrl}/pull?${params.toString()}`;
+  const queryString = params
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&");
+
+  return `${baseUrl}/pull?${queryString}`;
 }
 
 export function filterCatalogChanges(changes: Record<string, unknown> = {}) {

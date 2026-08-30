@@ -1,6 +1,25 @@
 import { buildPullUrl, filterCatalogChanges } from "./sync";
 
 describe("sync helpers", () => {
+  it("does not depend on URLSearchParams methods that are missing in React Native", () => {
+    const originalUrlSearchParams = global.URLSearchParams;
+    // @ts-expect-error intentionally simulates the limited React Native runtime
+    global.URLSearchParams = undefined;
+
+    try {
+      expect(
+        buildPullUrl({
+          baseUrl: "http://localhost:5500",
+          lastPulledAt: 123,
+          schemaVersion: 1,
+          userId: "user 1",
+        }),
+      ).toBe("http://localhost:5500/pull?last_pulled_at=123&schema_version=1&userId=user%201");
+    } finally {
+      global.URLSearchParams = originalUrlSearchParams;
+    }
+  });
+
   it("builds catalog pull URLs without a user id so account sync timestamps stay separate", () => {
     const url = buildPullUrl({
       baseUrl: "http://localhost:5500",
