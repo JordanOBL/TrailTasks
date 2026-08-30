@@ -1,4 +1,4 @@
-import { Database } from "@nozbe/watermelondb";
+import { Database, Q } from "@nozbe/watermelondb";
 import { synchronize } from "@nozbe/watermelondb/sync";
 import type { SyncDatabaseChangeSet } from "@nozbe/watermelondb/sync";
 import {
@@ -56,6 +56,25 @@ type SyncOptions = {
 };
 
 type RawRecord = Record<string, any>;
+
+const ACCOUNT_REPLACEMENT_TABLES = ACCOUNT_FORCE_PUSH_TABLES.filter(
+  tableName => tableName !== "sessions_addons",
+);
+
+export function buildFullUserSyncStrategy(userId: string) {
+  return {
+    default: "incremental",
+    override: Object.fromEntries(
+      ACCOUNT_REPLACEMENT_TABLES.map(tableName => [tableName, "replacement"]),
+    ),
+    experimentalQueryRecordsForReplacement: Object.fromEntries(
+      ACCOUNT_REPLACEMENT_TABLES.map(tableName => [
+        tableName,
+        () => (tableName === "users" ? [Q.where("id", userId)] : [Q.where("user_id", userId)]),
+      ]),
+    ),
+  };
+}
 
 export function buildForcedAccountChanges(recordsByTable: Record<string, RawRecord[]>) {
   return ACCOUNT_FORCE_PUSH_TABLES.reduce((changes, tableName) => {
@@ -128,6 +147,28 @@ export function filterCatalogChanges(changes: Record<string, unknown> = {}) {
   );
 }
 
+function dedupeRowsById(rows: RawRecord[] = []) {
+  return [...new Map(rows.map(row => [row.id, row])).values()];
+}
+
+export function normalizeRemoteChanges(changes: Record<string, any> = {}) {
+  return Object.fromEntries(
+    Object.entries(changes).map(([tableName, tableChanges]) => {
+      const updatedIds = new Set((tableChanges.updated || []).map((row: RawRecord) => row.id));
+      return [
+        tableName,
+        {
+          created: dedupeRowsById(tableChanges.created || []).filter(
+            row => !updatedIds.has(row.id),
+          ),
+          updated: dedupeRowsById(tableChanges.updated || []),
+          deleted: [...new Set<string>(tableChanges.deleted || [])],
+        },
+      ];
+    }),
+  );
+}
+
 async function getCatalogLastPulledAt(database: Database) {
   const value = await database.adapter.getLocal(CATALOG_LAST_PULLED_AT_KEY);
   return parseInt(value, 10) || null;
@@ -166,7 +207,7 @@ export async function pullCatalogChanges(database: Database, isConnected: boolea
     }
 
     const { changes, timestamp } = await response.json();
-    const catalogChanges = filterCatalogChanges(changes);
+    const catalogChanges = normalizeRemoteChanges(filterCatalogChanges(changes));
 
     await database.write(async () => {
       await applyRemoteChanges(catalogChanges as SyncDatabaseChangeSet, {
@@ -266,7 +307,16 @@ export async function sync(
 
             const { changes, timestamp } = await response.json();
             console.debug(`[Sync] Pulled changes at ${timestamp}`);
-            return { changes, timestamp };
+            const pullResult: any = {
+              changes: normalizeRemoteChanges(changes),
+              timestamp,
+            };
+
+            if (options.fullUserSync && userId) {
+              pullResult.experimentalStrategy = buildFullUserSyncStrategy(userId);
+            }
+
+            return pullResult;
           } catch (err) {
             handleError(err, `sync() → pullChanges attempt ${retryCount + 1}`);
             throw err; // trigger retry

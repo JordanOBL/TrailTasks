@@ -1,4 +1,10 @@
-import { buildForcedAccountChanges, buildPullUrl, filterCatalogChanges } from "./sync";
+import {
+  buildForcedAccountChanges,
+  buildFullUserSyncStrategy,
+  buildPullUrl,
+  filterCatalogChanges,
+  normalizeRemoteChanges,
+} from "./sync";
 
 describe("sync helpers", () => {
   it("does not depend on URLSearchParams methods that are missing in React Native", () => {
@@ -102,5 +108,45 @@ describe("sync helpers", () => {
       { id: "user-wild-1", user_id: "user-1", wild_id: "wild-1", level: 3 },
     ]);
     expect(changes).not.toHaveProperty("trails");
+  });
+
+  it("normalizes pulled changes so duplicate ids cannot be applied as duplicate creates", () => {
+    const changes = normalizeRemoteChanges({
+      users_addons: {
+        created: [
+          { id: "user-addon-1", quantity: 1 },
+          { id: "user-addon-1", quantity: 2 },
+        ],
+        updated: [
+          { id: "user-addon-1", quantity: 3 },
+          { id: "user-addon-2", quantity: 1 },
+          { id: "user-addon-2", quantity: 4 },
+        ],
+        deleted: ["deleted-addon", "deleted-addon"],
+      },
+    });
+
+    expect(changes.users_addons).toEqual({
+      created: [],
+      updated: [
+        { id: "user-addon-1", quantity: 3 },
+        { id: "user-addon-2", quantity: 4 },
+      ],
+      deleted: ["deleted-addon"],
+    });
+  });
+
+  it("uses scoped replacement only for account tables during full account pulls", () => {
+    const strategy = buildFullUserSyncStrategy("user-1");
+
+    expect(strategy.default).toBe("incremental");
+    expect(strategy.override.users_sessions).toBe("replacement");
+    expect(strategy.override.users_wilds).toBe("replacement");
+    expect(strategy.override.users_parks).toBe("replacement");
+    expect(strategy.override.trails).toBeUndefined();
+    expect(strategy.override.parks).toBeUndefined();
+    expect(strategy.override.sessions_addons).toBeUndefined();
+    expect(strategy.experimentalQueryRecordsForReplacement.users).toBeDefined();
+    expect(strategy.experimentalQueryRecordsForReplacement.users_wilds).toBeDefined();
   });
 });
