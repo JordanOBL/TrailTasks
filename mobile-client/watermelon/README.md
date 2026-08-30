@@ -55,6 +55,14 @@ That means most users will stay logged in most of the time. In that logged-in ca
 
 The catalog-only pull exists for the logged-out case. Its purpose is to let the app refresh public catalog content without pretending to be a user and without advancing the account sync timestamp.
 
+Login/register behavior should follow these rules:
+
+- Register requires internet so the server can validate that username/email are unique before local offline progress starts.
+- Logging into an account that already exists locally stores that user in local storage and can run a full account pull to catch the device up from Postgres.
+- Logging into an account that does not exist locally checks the server first, saves the returned account rows into local WatermelonDB, then stores that user in local storage.
+- Later app launches restore the local-storage user automatically and run normal account sync for that `user.id`.
+- Normal logged-in account sync still includes catalog updates, so always-logged-in users do not miss new trails/catalog content.
+
 Shared-device behavior, such as siblings using the same tablet or a parent's phone, should be:
 
 ```text

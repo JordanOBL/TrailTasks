@@ -74,6 +74,8 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           password,
           watermelonDatabase,
         );
+        const hadLocalUser = !!localUser;
+
         if (!localUser && isConnected) {
           // Attempt remote login
           const remoteUser = (await checkGlobalUserExists(email.toLowerCase(), password)) as User &
@@ -96,10 +98,12 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
 
         //await setSubscriptionStatus(localUser, watermelonDatabase);
         await setLocalStorageUser(localUser, watermelonDatabase);
-        await sync(watermelonDatabase, isConnected, localUser.id, {
-          fullUserSync: true,
-          pullOnly: true,
-        });
+        if (hadLocalUser) {
+          await sync(watermelonDatabase, isConnected, localUser.id, {
+            fullUserSync: true,
+            pullOnly: true,
+          });
+        }
         setUser(localUser);
         setLoading(false);
       } catch (err) {
@@ -138,6 +142,12 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           setLoading(false);
           return;
         }
+        if (!isConnected) {
+          setError("Internet connection is required to create an account");
+          setLoading(false);
+          return;
+        }
+
         const result = await registerValidation(email.toLowerCase(), username.toLowerCase());
         if (result?.duplicateAttribute != "") {
           setError(result.message);
@@ -163,7 +173,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
         handleError(err, "register in useAuth");
       }
     },
-    [watermelonDatabase],
+    [isConnected, watermelonDatabase],
   );
 
   // Optional: logout or remove user from local storage
