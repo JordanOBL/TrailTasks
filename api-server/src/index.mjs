@@ -476,6 +476,30 @@ app.get('/pull', async (req, res) => {
                     users_wilds: await User_Wild.findAll({ where: fullUserWhere }),
                 }
                 : null;
+            if (catalogOnly) {
+                const updatedAddons = await Addon.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParks = await Park.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedTrails = await Trail.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedAchievements = await Achievement.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParkStates = await Park_State.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedSessionCategories = await Session_Category.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedWilds = await Wild.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParksWilds = await Park_Wild.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+
+                return res.json({
+                    changes: {
+                        addons: {created: [], updated: updatedAddons, deleted: []},
+                        parks: {created: [], updated: updatedParks, deleted: []},
+                        trails: {created: [], updated: updatedTrails, deleted: []},
+                        achievements: {created: [], updated: updatedAchievements, deleted: []},
+                        park_states: {created: [], updated: updatedParkStates, deleted: []},
+                        session_categories: {created: [], updated: updatedSessionCategories, deleted: []},
+                        wilds: {created: [], updated: updatedWilds, deleted: []},
+                        parks_wilds: {created: [], updated: updatedParksWilds, deleted: []},
+                    },
+                    timestamp: Date.now(),
+                });
+            }
             const createdAddons = await Addon.findAll({
                 where: {
                     createdAt: {
