@@ -1,8 +1,8 @@
-import 'react-native-gesture-handler';
-import 'react-native-reanimated';
+import "react-native-gesture-handler";
+import "react-native-reanimated";
 
-import { DarkTheme, NavigationContainer } from '@react-navigation/native';
-import {EventBus, Registry} from './EventBus/EventBus'
+import { DarkTheme, NavigationContainer } from "@react-navigation/native";
+import { EventBus, Registry } from "./EventBus/EventBus";
 import {
   PermissionsAndroid,
   Platform,
@@ -10,25 +10,22 @@ import {
   StatusBar,
   StyleSheet,
   useColorScheme,
-} from 'react-native';
-import React, { useEffect, useState } from 'react';
-import {
-  ReanimatedLogLevel,
-  configureReanimatedLogger,
-} from 'react-native-reanimated';
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { ReanimatedLogLevel, configureReanimatedLogger } from "react-native-reanimated";
 
 import AuthScreen from "./Screens/AuthScreen";
-import BootSplash from 'react-native-bootsplash';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import RNFS from 'react-native-fs';
-import TabNavigator from './components/Navigation/TabNavigator';
-import handleError from './helpers/ErrorHandler'; // Import the hook
+import BootSplash from "react-native-bootsplash";
+import { Colors } from "react-native/Libraries/NewAppScreen";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import RNFS from "react-native-fs";
+import TabNavigator from "./components/Navigation/TabNavigator";
+import handleError from "./helpers/ErrorHandler"; // Import the hook
 //import {markAllRecordsAsCreated} from "./helpers/markAllRecordsAsCreated";
-import { sync } from './watermelon/sync';
-import {useAuthContext} from "./services/AuthContext";
-import { useDatabase } from '@nozbe/watermelondb/react';
-import {useInternetConnection} from "./contexts/InternetConnectionProvider";
+import { pullCatalogChanges, sync } from "./watermelon/sync";
+import { useAuthContext } from "./services/AuthContext";
+import { useDatabase } from "@nozbe/watermelondb/react";
+import { useInternetConnection } from "./contexts/InternetConnectionProvider";
 
 // This is the default configuration
 configureReanimatedLogger({
@@ -38,82 +35,95 @@ configureReanimatedLogger({
 
 const App = () => {
   const watermelonDatabase = useDatabase();
-  const { user} = useAuthContext()
-  const {isConnected} = useInternetConnection()
+  const { user } = useAuthContext();
+  const { isConnected } = useInternetConnection();
 
-  const isDarkMode = useColorScheme() === 'dark';
-  const [form, setForm] = useState('login');
-  const eventBus = EventBus.getInstance()
-  console.log(eventBus)
+  const isDarkMode = useColorScheme() === "dark";
+  const [form, setForm] = useState("login");
+  const eventBus = EventBus.getInstance();
+  console.log(eventBus);
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-   const handleFormChange = () => {
-    if (form === 'login') {
-      setForm('register');
+  const handleFormChange = () => {
+    if (form === "login") {
+      setForm("register");
     } else {
-      setForm('login');
+      setForm("login");
     }
   };
   // @ts-ignore
   //const { currentOffering, customerInfo, isProMember, loading } = useRevenueCat({ userId: user?.id || '' });
 
   useEffect(() => {
-    const onLoad = async () => {
-      const registry: Registry[] = []
-      const bus = EventBus.getInstance()
+    const requestStartupPermissions = async () => {
       try {
-        let alive = true
-        if(!user) {
-          // This finds and prints file path in the phones memory for the sqlite DB
-          const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
-          console.debug(`DATABASE LOCATION: ${dbFilePath}`);
-          if (Platform.OS === 'android') {
-            await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
-            await PermissionsAndroid.request('android.permission.READ_EXTERNAL_STORAGE');
-            await PermissionsAndroid.request('android.permission.WRITE_EXTERNAL_STORAGE');
-          }
-          if(alive){
-            await sync(watermelonDatabase, isConnected);
-          }
-        } else {
-          await sync(watermelonDatabase, isConnected,user.id);
-        }
+        const dbFilePath = `${RNFS.DocumentDirectoryPath}/TrailTasks.db`;
+        console.debug(`DATABASE LOCATION: ${dbFilePath}`);
 
-        if(alive){
-          //push toast listensers
-        }
-
-        return () => {
-          alive = false;
-          registry.forEach(r => r.unregister())
-
+        if (Platform.OS === "android") {
+          await PermissionsAndroid.request("android.permission.POST_NOTIFICATIONS");
+          await PermissionsAndroid.request("android.permission.READ_EXTERNAL_STORAGE");
+          await PermissionsAndroid.request("android.permission.WRITE_EXTERNAL_STORAGE");
         }
       } catch (err) {
-        handleError(err, 'onLoad');
+        handleError(err, "requestStartupPermissions");
       }
     };
 
-
-    onLoad().finally(async ()=>{
-      await BootSplash.hide({ fade: true });
-    }).catch(e => handleError(e, 'useEffect onLoad'));
+    requestStartupPermissions()
+      .finally(async () => {
+        await BootSplash.hide({ fade: true });
+      })
+      .catch(e => handleError(e, "useEffect requestStartupPermissions"));
   }, []);
+
+  useEffect(() => {
+    const registry: Registry[] = [];
+    let alive = true;
+
+    const runStartupSync = async () => {
+      try {
+        if (user?.id) {
+          await sync(watermelonDatabase, isConnected, user.id);
+        } else {
+          await pullCatalogChanges(watermelonDatabase, isConnected);
+        }
+
+        if (alive) {
+          //push toast listeners
+        }
+      } catch (err) {
+        handleError(err, "runStartupSync");
+      }
+    };
+
+    runStartupSync().catch(e => handleError(e, "useEffect runStartupSync"));
+
+    return () => {
+      alive = false;
+      registry.forEach(r => r.unregister());
+    };
+  }, [isConnected, user?.id, watermelonDatabase]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer theme={DarkTheme}  onReady={() => {
-        BootSplash.hide({ fade: true });
-      }}>
+      <NavigationContainer
+        theme={DarkTheme}
+        onReady={() => {
+          BootSplash.hide({ fade: true });
+        }}>
         <SafeAreaView style={[backgroundStyle, styles.container]}>
           <StatusBar
-            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            barStyle={isDarkMode ? "light-content" : "dark-content"}
             backgroundColor={backgroundStyle.backgroundColor}
           />
 
           {user != null ? (
-            <TabNavigator  />
-          ) : <AuthScreen form={form} handleFormChange={handleFormChange}   />}
+            <TabNavigator />
+          ) : (
+            <AuthScreen form={form} handleFormChange={handleFormChange} />
+          )}
         </SafeAreaView>
       </NavigationContainer>
     </GestureHandlerRootView>
@@ -123,17 +133,16 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgb(31,33,35)',
-
+    backgroundColor: "rgb(31,33,35)",
   },
   title: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 40,
-    textAlign: 'center',
-    position: 'absolute',
+    textAlign: "center",
+    position: "absolute",
     top: 80,
     left: 110,
-    color: 'rgb(7,254,213)',
+    color: "rgb(7,254,213)",
   },
   sectionContainer: {
     marginTop: 32,
@@ -141,17 +150,16 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   sectionDescription: {
     marginTop: 8,
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: "400",
   },
   highlight: {
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });
 
 export default App;
-

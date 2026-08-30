@@ -388,6 +388,8 @@ app.get('/pull', async (req, res) => {
     try {
         let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
         const userId = req.query.userId;
+        const fullUserSync = req.query.full_user_sync === 'true';
+        const catalogOnly = req.query.catalog_only === 'true';
         console.debug('user in pull id', userId);
         console.log('last pulled at', {lastPulledAt});
         if (lastPulledAt === new Date(0).toISOString()) {
@@ -458,6 +460,20 @@ app.get('/pull', async (req, res) => {
             return res.json(responseData);
         } else {
             console.log(`Server: sending all data changes for user: ${userId} since last device pull at: ${lastPulledAt} `)
+            const fullUserWhere = userId ? { user_id: userId } : { user_id: '__missing_user__' };
+            const fullUserData = fullUserSync && userId && !catalogOnly
+                ? {
+                    users: await User.findAll({ where: { id: userId } }),
+                    users_addons: await User_Addon.findAll({ where: fullUserWhere }),
+                    users_completed_trails: await User_Completed_Trail.findAll({ where: fullUserWhere }),
+                    users_parks: await User_Park.findAll({ where: fullUserWhere }),
+                    users_achievements: await User_Achievement.findAll({ where: fullUserWhere }),
+                    users_purchased_trails: await User_Purchased_Trail.findAll({ where: fullUserWhere }),
+                    users_sessions: await User_Session.findAll({ where: fullUserWhere }),
+                    users_friends: await User_Friend.findAll({ where: fullUserWhere }),
+                    users_wilds: await User_Wild.findAll({ where: fullUserWhere }),
+                }
+                : null;
             const createdAddons = await Addon.findAll({
                 where: {
                     createdAt: {
@@ -671,43 +687,43 @@ app.get('/pull', async (req, res) => {
                     },
                     users: {
                         created: [],
-                        updated: updatedUsers.length ? updatedUsers : [],
+                        updated: fullUserData ? fullUserData.users : updatedUsers.length ? updatedUsers : [],
                         deleted: [],
                     },
                 users_addons: {
                     created: [],
-                    updated: [...updatedUserAddons],
+                    updated: fullUserData ? fullUserData.users_addons : [...updatedUserAddons],
                     deleted: [],
                 },
                     users_completed_trails: {
                         created: [],
-                        updated: updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
+                        updated: fullUserData ? fullUserData.users_completed_trails : updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
                         deleted: [],
                     },
                     users_parks:{
                         created: [],
-                        updated: createdUserParks.length ? createdUserParks : [],
+                        updated: fullUserData ? fullUserData.users_parks : createdUserParks.length ? createdUserParks : [],
                         deleted: [],
                     },
 
                     users_achievements: {
                         created: [],
-                        updated: createdUserAchievements,
+                        updated: fullUserData ? fullUserData.users_achievements : createdUserAchievements,
                         deleted: [],
                     },
                     users_purchased_trails: {
                         created: [],
-                        updated: createdUserPurchasedTrails,
+                        updated: fullUserData ? fullUserData.users_purchased_trails : createdUserPurchasedTrails,
                         deleted: [],
                     },
                     users_sessions: {
                         created: [],
-                        updated: updatedUserSessions,
+                        updated: fullUserData ? fullUserData.users_sessions : updatedUserSessions,
                         deleted: [],
                     },
                     users_friends: {
                         created: [],
-                        updated: updatedFriends,
+                        updated: fullUserData ? fullUserData.users_friends : updatedFriends,
                         deleted: [],
                     },
                     trails: {
@@ -737,7 +753,7 @@ app.get('/pull', async (req, res) => {
                     },
                     users_wilds:{
                         created: [],
-                        updated: updatedUserWilds,
+                        updated: fullUserData ? fullUserData.users_wilds : updatedUserWilds,
                         deleted: [],
                     },
                     parks_wilds: {
