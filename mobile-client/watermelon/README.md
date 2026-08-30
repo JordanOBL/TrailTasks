@@ -5,26 +5,65 @@ This document explains how Trail Tasks uses WatermelonDB, local SQLite, the API 
 ## Vocabulary
 
 - Local DB / on-device DB: the WatermelonDB SQLite database stored on one phone or emulator.
-- Server DB / remote DB / Postgres: the backend database behind the API server.
+- Server DB / remote DB / Postgres / server-synced DB: the backend database behind the API server.
 - Sync API: the server endpoints that move changes between WatermelonDB and Postgres.
-- Catalog data: public/global data such as trails, parks, wilds, achievements, addons, session categories, park states, and park-wild links.
-- Account data: user-owned data such as the user row, wild unlocks/progress, completed trails, purchased trails, sessions, addons, parks, friends, and queued trails.
+- Catalog data: public/global data such as trails, parks, wilds, achievements, addons, session categories, park states, and park-wild links. This is safe to cache on every device.
+- Account data: user-owned data such as the current user's row, wild unlocks/progress, completed trails, purchased trails, sessions, addons, parks, friends, and queued trails. A device should sync the logged-in user's account data, not every user's account data.
+- Social/shared data: server-scoped data such as leaderboards, friend search results, current group-room state, and other users' public profile/progress summaries. This should be requested from the server when online instead of fully synced into every device's local database.
 
 ## Source of truth model
 
-Trail Tasks is local-first and server-synced.
+Trail Tasks is local-first for personal gameplay and server-authoritative for shared/social gameplay.
 
 That means the local WatermelonDB SQLite database is the source of truth while the user is using one device. The UI should read from local WatermelonDB so the app keeps working offline.
 
-Postgres is the account-level source of truth across devices. It is how one device shares account progress with another device.
+Postgres is the server-synced source of truth for account identity, cross-device account data, and shared online/social features such as leaderboards, friend search, and group sessions.
+
+This does not mean each phone should store all server data. Each device should keep only the current user's account data plus offline-safe catalog data. Social screens should ask the server for small scoped views, such as top leaderboard rows, a friend search result, or the current group room state.
 
 A good mental model is:
 
 ```text
-one device while using app: WatermelonDB is source of truth
-multiple devices for same account: Postgres is the shared source of truth
-sync: reconciles the device truth with the account truth
+one device while using solo/offline app: WatermelonDB is source of truth
+same account across devices: Postgres is the shared account source of truth
+social/leaderboards/group sessions online: server/Postgres is authoritative
+sync: reconciles the device truth with the account/server truth
 ```
+
+## What belongs on the device
+
+Each device should store:
+
+- catalog data needed for offline browsing and gameplay;
+- the logged-in user's own account/progress data;
+- small optional caches of scoped social data, such as recently viewed friends.
+
+Each device should not store:
+
+- every user account;
+- the entire global leaderboard history;
+- all group-session rooms;
+- every other user's private progress rows.
+
+For example, a leaderboard screen should query the server for `top 100`, `my rank`, or `nearby ranks`. The phone can cache that response for display, but Postgres remains authoritative. A group session should use the server or future group-session service as the online source of truth for the shared room. The local DB can keep the current user's local session/account state, but it should not try to become a global social database.
+
+## Login, local storage, and auto-login
+
+After login, the app stores the active user identity in WatermelonDB local storage. On later app starts, `useAuth` checks local storage and restores that user automatically until logout removes the local storage keys.
+
+That means most users will stay logged in most of the time. In that logged-in case, app startup should run normal account sync with the restored `user.id`. Normal account sync still pulls catalog updates from the server response, so logged-in users continue receiving new trails, parks, wilds, addons, and other catalog changes.
+
+The catalog-only pull exists for the logged-out case. Its purpose is to let the app refresh public catalog content without pretending to be a user and without advancing the account sync timestamp.
+
+Shared-device behavior, such as siblings using the same tablet or a parent's phone, should be:
+
+```text
+User A logs in -> local storage restores User A on app start
+User A logs out -> local storage user keys are removed
+User B logs in -> local storage now restores User B on app start
+```
+
+Account sync should always use the currently restored/logged-in user's id. A device should not mix two users' account rows into one active session.
 
 ## Sync modes
 
