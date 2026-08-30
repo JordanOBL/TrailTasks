@@ -73,6 +73,129 @@ User B logs in -> local storage now restores User B on app start
 
 Account sync should always use the currently restored/logged-in user's id. A device should not mix two users' account rows into one active session.
 
+## Merge-first offline architecture
+
+Normal account sync should be a merge flow, not a destructive replacement flow.
+
+The product goal is:
+
+```text
+Device A creates offline facts
+Device B creates offline facts
+each device pushes those facts to Postgres when online
+Postgres merges the facts
+Postgres recomputes summary/cache fields
+each device pulls the merged account state
+```
+
+This is different from Force Account Pull. Force Account Pull is a recovery tool for the case where Postgres has already been verified as the best merged state and the current device should be rebuilt from it. It should not be the normal answer to two devices having different valid offline work.
+
+### Facts vs summaries
+
+Trail Tasks should treat activity/progression rows as durable facts and user summary fields as cached answers.
+
+Example:
+
+```text
+users_sessions rows = facts about hikes that happened
+users.total_miles = cached/derived answer from those session rows
+```
+
+That means `users.total_miles` should not be the primary truth for mileage. It should be recalculated from merged `users_sessions.total_distance_hiked` rows whenever possible. If two devices both hiked offline, the safest merge is to preserve both devices' session rows, then recompute total miles from the union.
+
+Good mental model:
+
+```text
+rows/events are facts
+summary fields are caches
+normal sync merges facts
+server recomputes caches
+```
+
+### Trail completion is not one session -> one trail
+
+Trail Tasks allows flexible trail completion:
+
+- one trail can be completed across multiple sessions;
+- one session can complete one trail;
+- one session can complete multiple trails;
+- one session can complete the same trail more than once if the user keeps going.
+
+Because of that, simply adding `trail_id` to `users_sessions` is not enough to model progress correctly. A session is the container for hiking time/distance. Trail progress/completions may need their own fact rows that can connect a session to one or more trail-completion events.
+
+A better future shape is a join/event table such as:
+
+```text
+users_session_trail_completions
+  id
+  user_id
+  session_id
+  trail_id
+  distance_applied
+  completed_at
+  completion_order
+```
+
+The exact schema can change, but the principle is important: trail completions are facts that may occur inside sessions, not necessarily a single column on the session row.
+
+### Table-level merge rules
+
+Different tables need different conflict rules. A single generic “last write wins” rule is not safe enough for a great offline MVP.
+
+Recommended MVP direction:
+
+| Table / data | Normal sync behavior | Why |
+| --- | --- | --- |
+| `users_sessions` | Union/upsert by `id`; do not delete during normal sync | A session row is a fact that a hike happened somewhere. |
+| `users.total_miles` | Derived from merged `users_sessions.total_distance_hiked` | Prevents one device's stale summary from overwriting another device's hike. |
+| `users_completed_trails` | Merge by logical key such as `user_id + trail_id`, or move to completion event rows | Trails can be completed multiple times and across sessions, so completion history needs explicit facts. |
+| `users_achievements` | Union/upsert by `user_id + achievement_id`; keep earliest `completed_at` | If earned anywhere, the achievement should remain earned. |
+| `users_purchased_trails` | Union/upsert by `user_id + trail_id`; keep earliest purchase time | If purchased anywhere, the purchase should remain. |
+| `users_wilds` | Union/upsert by `user_id + wild_id`; keep safest/highest progression values | Missing wild rows usually mean a device is behind, not that the wild should be removed. |
+| `users_parks` | Union/upsert by `user_id + park_id`; keep max `park_level`, latest `last_completed`, and true if either side redeemed | Park progress is an unlock/progression record and should not disappear because another device is behind. |
+| `users_addons.quantity` | Conflict-risk until modeled as transactions | Quantity can go up and down; “more is true” can restore consumed addons by mistake. |
+| `users.trail_tokens` | Conflict-risk until modeled as transactions | Tokens can be earned and spent; balances should eventually come from a token ledger. |
+| `users.trail_progress` / active trail | Needs explicit rule or derived progress from trail-progress events | Two devices can progress different active trail states offline. |
+| active wild | Needs explicit one-active-wild conflict rule, likely latest action wins | Different devices can select different active wilds offline. |
+| daily streak | Best derived from activity/session dates long-term | Date-based state can conflict across offline devices. |
+
+### “More rows” usually means “more complete,” but not always
+
+For history/unlock tables, a source with more valid rows is usually more complete:
+
+```text
+more sessions -> probably more hike history
+more wild unlock rows -> probably more complete wild progress
+more park rows -> probably more complete park progress
+```
+
+Those rows should normally be merged into the server, not deleted from the device.
+
+For balances and mutable state, “more” is not always correct:
+
+```text
+more addon quantity may be stale if another device consumed addons offline
+more tokens may be stale if another device spent tokens offline
+higher trail_progress may conflict with a different active trail choice
+```
+
+Those values need derived calculations, transaction rows, or clear conflict rules.
+
+### Best MVP compromise
+
+The MVP does not need a full CRDT/event-sourcing system, but it should avoid losing the user's real work.
+
+Before release, the highest-value hardening is:
+
+1. Make session history append/merge-safe.
+2. Stop treating `users.total_miles` as authoritative.
+3. Recompute total miles from merged `users_sessions` rows locally and/or on the server.
+4. Make park/wild/achievement/purchase rows union/idempotent.
+5. Treat tokens, addon quantities, active trail, active wild, and daily streak as known conflict-risk areas until they get explicit transaction/event models.
+6. Keep destructive replacement behavior limited to clearly labeled recovery tools after Postgres has been verified as the merged account state.
+
+This keeps the MVP practical while moving the app toward senior-level offline-first architecture: protect user-created facts first, derive summaries second, and only replace local state when the server is intentionally trusted.
+
 ## Sync modes
 
 ### Startup catalog pull
