@@ -20,6 +20,7 @@ import {
     User_Purchased_Trail,
     User_Session,
     User_Wild,
+    Users_Queued_Trail,
     Wild
 } from './db/sequelizeModel.js';
 import {Op, QueryTypes, Sequelize} from 'sequelize';
@@ -388,6 +389,8 @@ app.get('/pull', async (req, res) => {
     try {
         let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
         const userId = req.query.userId;
+        const fullUserSync = req.query.full_user_sync === 'true';
+        const catalogOnly = req.query.catalog_only === 'true';
         console.debug('user in pull id', userId);
         console.log('last pulled at', {lastPulledAt});
         if (lastPulledAt === new Date(0).toISOString()) {
@@ -458,6 +461,45 @@ app.get('/pull', async (req, res) => {
             return res.json(responseData);
         } else {
             console.log(`Server: sending all data changes for user: ${userId} since last device pull at: ${lastPulledAt} `)
+            const fullUserWhere = userId ? { user_id: userId } : { user_id: '__missing_user__' };
+            const fullUserData = fullUserSync && userId && !catalogOnly
+                ? {
+                    users: await User.findAll({ where: { id: userId } }),
+                    users_addons: await User_Addon.findAll({ where: fullUserWhere }),
+                    users_completed_trails: await User_Completed_Trail.findAll({ where: fullUserWhere }),
+                    users_queued_trails: await Users_Queued_Trail.findAll({ where: fullUserWhere }),
+                    users_parks: await User_Park.findAll({ where: fullUserWhere }),
+                    users_achievements: await User_Achievement.findAll({ where: fullUserWhere }),
+                    users_purchased_trails: await User_Purchased_Trail.findAll({ where: fullUserWhere }),
+                    users_sessions: await User_Session.findAll({ where: fullUserWhere }),
+                    users_friends: await User_Friend.findAll({ where: fullUserWhere }),
+                    users_wilds: await User_Wild.findAll({ where: fullUserWhere }),
+                }
+                : null;
+            if (catalogOnly) {
+                const updatedAddons = await Addon.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParks = await Park.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedTrails = await Trail.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedAchievements = await Achievement.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParkStates = await Park_State.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedSessionCategories = await Session_Category.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedWilds = await Wild.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParksWilds = await Park_Wild.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+
+                return res.json({
+                    changes: {
+                        addons: {created: [], updated: updatedAddons, deleted: []},
+                        parks: {created: [], updated: updatedParks, deleted: []},
+                        trails: {created: [], updated: updatedTrails, deleted: []},
+                        achievements: {created: [], updated: updatedAchievements, deleted: []},
+                        park_states: {created: [], updated: updatedParkStates, deleted: []},
+                        session_categories: {created: [], updated: updatedSessionCategories, deleted: []},
+                        wilds: {created: [], updated: updatedWilds, deleted: []},
+                        parks_wilds: {created: [], updated: updatedParksWilds, deleted: []},
+                    },
+                    timestamp: Date.now(),
+                });
+            }
             const createdAddons = await Addon.findAll({
                 where: {
                     createdAt: {
@@ -671,43 +713,48 @@ app.get('/pull', async (req, res) => {
                     },
                     users: {
                         created: [],
-                        updated: updatedUsers.length ? updatedUsers : [],
+                        updated: fullUserData ? fullUserData.users : updatedUsers.length ? updatedUsers : [],
                         deleted: [],
                     },
                 users_addons: {
                     created: [],
-                    updated: [...updatedUserAddons],
+                    updated: fullUserData ? fullUserData.users_addons : [...updatedUserAddons],
                     deleted: [],
                 },
                     users_completed_trails: {
                         created: [],
-                        updated: updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
+                        updated: fullUserData ? fullUserData.users_completed_trails : updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
+                        deleted: [],
+                    },
+                    users_queued_trails: {
+                        created: [],
+                        updated: fullUserData ? fullUserData.users_queued_trails : [],
                         deleted: [],
                     },
                     users_parks:{
                         created: [],
-                        updated: createdUserParks.length ? createdUserParks : [],
+                        updated: fullUserData ? fullUserData.users_parks : createdUserParks.length ? createdUserParks : [],
                         deleted: [],
                     },
 
                     users_achievements: {
                         created: [],
-                        updated: createdUserAchievements,
+                        updated: fullUserData ? fullUserData.users_achievements : createdUserAchievements,
                         deleted: [],
                     },
                     users_purchased_trails: {
                         created: [],
-                        updated: createdUserPurchasedTrails,
+                        updated: fullUserData ? fullUserData.users_purchased_trails : createdUserPurchasedTrails,
                         deleted: [],
                     },
                     users_sessions: {
                         created: [],
-                        updated: updatedUserSessions,
+                        updated: fullUserData ? fullUserData.users_sessions : updatedUserSessions,
                         deleted: [],
                     },
                     users_friends: {
                         created: [],
-                        updated: updatedFriends,
+                        updated: fullUserData ? fullUserData.users_friends : updatedFriends,
                         deleted: [],
                     },
                     trails: {
@@ -737,7 +784,7 @@ app.get('/pull', async (req, res) => {
                     },
                     users_wilds:{
                         created: [],
-                        updated: updatedUserWilds,
+                        updated: fullUserData ? fullUserData.users_wilds : updatedUserWilds,
                         deleted: [],
                     },
                     parks_wilds: {
@@ -755,6 +802,7 @@ app.get('/pull', async (req, res) => {
         }
     } catch (err) {
         console.log('Error in server /pull', err);
+        return res.status(500).json({error: 'An error occurred during the pull operation.', details: err.message});
     }
 });
 
@@ -765,6 +813,31 @@ app.post('/push', async (req, res) => {
         const lastPulledAt = req.query.last_pulled_at;
         console.log('sending changes to pg', {changes, lastPulledAt});
         if (lastPulledAt !== 'null') {
+            const cleanSyncRows = rows => rows.map(({_status, _changed, ...row}) => row);
+            const upsertRows = async (model, rows = []) => {
+                if (!rows[0]) return;
+
+                const cleanRows = cleanSyncRows(rows);
+                for (const row of cleanRows) {
+                    const [updatedCount] = await model.update(row, {where: {id: row.id}});
+                    if (updatedCount === 0) {
+                        await model.create(row);
+                    }
+                }
+            };
+
+            await upsertRows(User, changes?.users?.updated);
+            await upsertRows(User_Achievement, changes?.users_achievements?.updated);
+            await upsertRows(User_Addon, changes?.users_addons?.updated);
+            await upsertRows(User_Completed_Trail, changes?.users_completed_trails?.updated);
+            await upsertRows(Users_Queued_Trail, changes?.users_queued_trails?.updated);
+            await upsertRows(User_Park, changes?.users_parks?.updated);
+            await upsertRows(User_Purchased_Trail, changes?.users_purchased_trails?.updated);
+            await upsertRows(User_Session, changes?.users_sessions?.updated);
+            await upsertRows(User_Friend, changes?.users_friends?.updated);
+            await upsertRows(User_Wild, changes?.users_wilds?.updated);
+            await upsertRows(Session_Addon, changes?.sessions_addons?.updated);
+
             if (changes?.users?.created[0] !== undefined) {
                 const users = await User.bulkCreate(changes.users.created, {updateOnDuplicate: ['id']});
             }
