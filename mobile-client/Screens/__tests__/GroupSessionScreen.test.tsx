@@ -9,7 +9,19 @@ import {InternetConnectionProvider} from '../../contexts/InternetConnectionProvi
 import {sync} from '../../watermelon/sync';
 import {TestWrapper} from '../../__mocks__/TestWrapper';
 
-describe('GroupSessionScreen', () => {
+describe('GroupSessionScreen deferred MVP wrapper', () => {
+	it('shows the coming soon screen without mounting group-session controls', () => {
+		const {getByTestId, getByText, queryByTestId} = render(<TestWrapper>
+			<GroupSessionScreen />
+		</TestWrapper>);
+
+		expect(getByTestId('coming-soon-screen')).toBeTruthy();
+		expect(getByText('Group sessions are coming soon')).toBeTruthy();
+		expect(queryByTestId('create-room-button')).toBeNull();
+	});
+});
+
+describe.skip('GroupSessionScreen implementation (deferred post-MVP)', () => {
 
 	const mockUserA = createMockUserBase({
 		id: 'A',

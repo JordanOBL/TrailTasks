@@ -1,0 +1,451 @@
+// SessionEngine.ts
+
+import { Addon, User, User_Session } from "../watermelon/models";
+import { EventBus, NewTrailAssignedPayload } from "../EventBus/EventBus";
+
+import { SessionCfg } from "../types/session";
+
+export type SessionPhase = "IDLE" | "FOCUS" | "SHORT_BREAK" | "LONG_BREAK" | "COMPLETED";
+export type SessionType = "SOLO" | "GROUP";
+export interface SessionSnapshot {
+  sessionId: string;
+  userId: string;
+  sessionName: string;
+  sessionCategory: [string, string];
+  phase: string;
+  totalElapsedSec: number;
+  elapsedInPhaseSec: number;
+  distanceNeeded: number;
+  currentSet: number;
+  completedSets: number;
+  totalSets: number;
+  currentPaceMph: number;
+  totalDistanceMiles: number;
+  currentTrailDistance: number;
+  focusTimeSec: number;
+  shortBreakSec: number;
+  longBreakSec: number;
+  autoContinue: boolean;
+  totalStrikes: number;
+  completedTrails: { id: string; distance: number }[];
+  isPaused: boolean;
+  tokenBonusFlat: number;
+  tokenBonusPercent: number;
+  startedAt: number | null;
+  consecutiveSecWithoutStrikes: number;
+  extraSets: number;
+}
+
+export class SessionEngine {
+  static instance: SessionEngine | null;
+  private bus: EventBus;
+  private phase: SessionPhase = "IDLE";
+  private user: User;
+  private isProMember: boolean;
+
+  // config
+  private readonly session: User_Session | null;
+  private readonly sessionId: string;
+  private readonly userId: string;
+  private readonly type: string;
+  private readonly sessionName: string;
+  private readonly sessionCategory: [string, string];
+  private totalSets: number;
+  private readonly focusTimeSec: number;
+  private readonly shortBreakSec: number;
+  private readonly longBreakSec: number;
+  private readonly autoContinue: boolean;
+
+  // pacing
+  private readonly minPaceMph: number;
+  private readonly maxPaceMph: number;
+  private readonly paceIncreaseIntervalSec: number;
+  private readonly paceIncreaseValueMph: number;
+  private readonly backpack: { addon: Addon | null; minimumTotalMiles: number }[];
+  readonly tokenBonusFlat: number;
+  readonly tokenBonusPercent: number;
+
+  // runtime state
+  private startTimestampMs: number | null = null;
+  private totalElapsedSec = 0;
+  private elapsedInPhaseSec = 0;
+  private distanceNeeded: number;
+  private currentTrailDistance: number;
+  private currentSet = 1;
+  private completedSets = 0;
+  private extraSets = 0;
+  private isPaused = false;
+  private currentPaceMph: number;
+  private totalDistanceMiles = 0;
+  private completedTrails: { id: string; distance: number }[] = [];
+  private totalStrikes = 0;
+  private strikePacePenaltyMph = 0.25;
+  private consecutiveSecWithoutStrikes = 0;
+
+  // timer
+  private tickTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly tickRateMs = 1000;
+
+  constructor(bus: EventBus, cfg: SessionCfg, user: User, isProMember: boolean) {
+    this.bus = bus;
+    this.session = cfg.session;
+    this.sessionId = cfg.sessionId;
+    this.type = cfg.type;
+    this.user = user;
+    this.isProMember = isProMember;
+    this.userId = cfg.userId;
+    this.sessionName = cfg.sessionName;
+    this.sessionCategory = cfg.sessionCategory ?? null;
+    this.distanceNeeded = cfg.distanceNeeded;
+    this.currentTrailDistance = cfg.currentTrailDistance ?? 0;
+    this.totalSets = cfg.totalSets ?? 3;
+    this.focusTimeSec = cfg.focusTimeSec ?? 1500;
+    this.shortBreakSec = cfg.shortBreakSec ?? 300;
+    this.longBreakSec = cfg.longBreakSec ?? 900;
+    this.autoContinue = cfg.autoContinue ?? true;
+    this.tokenBonusFlat = cfg.tokenBonusFlat ?? 0;
+    this.tokenBonusPercent = cfg.tokenBonusPercent ?? 1;
+    this.minPaceMph = cfg.minPaceMph ?? 2;
+    this.maxPaceMph = cfg.maxPaceMph ?? 5;
+    this.paceIncreaseIntervalSec = cfg.paceIncreaseIntervalSec ?? 900;
+    this.paceIncreaseValueMph = cfg.paceIncreaseValueMph ?? 0.25;
+
+    this.strikePacePenaltyMph = 0;
+
+    this.currentPaceMph = cfg.currentPaceMph ?? this.minPaceMph;
+    this.backpack = cfg.backpack;
+  }
+
+  /* -------------------- public commands -------------------- */
+  register() {
+    this.bus.on("UI_PAUSE_REQUESTED", () => this.pause());
+    this.bus.on("UI_RESUME_REQUESTED", () => this.resume());
+    this.bus.on("UI_QUIT_REQUESTED", () => this.quit());
+    this.bus.on("UI_BREAK_SKIP_REQUESTED", () => this.skipBreak());
+    this.bus.on("NEW_TRAIL_ASSIGNED", (payload: NewTrailAssignedPayload) => {
+      this.distanceNeeded += payload.newTrailDistance;
+      this.currentTrailDistance = payload.newTrailDistance;
+    });
+  }
+
+  start() {
+    if (this.phase !== "IDLE") return;
+
+    this.phase = "FOCUS";
+    this.startTimestampMs = Date.now();
+    this.totalElapsedSec = 0;
+    this.elapsedInPhaseSec = 0;
+    this.currentSet = 1;
+    this.completedSets = 0;
+
+    // announce
+    this.bus.emit("SESSION_STARTED", { snapshot: this.buildSnapshot() });
+    this.bus.emit("SESSION_PHASE_CHANGED", {
+      snapshot: this.buildSnapshot(),
+      from: "IDLE",
+      to: "FOCUS",
+      reason: "start",
+    });
+
+    // emit initial tick so UI can render immediately
+    this.bus.emit("SESSION_TICK", { snapshot: this.buildSnapshot() });
+
+    // start tick loop
+    this.startTickLoop();
+  }
+
+  pause() {
+    if (this.tickTimer) {
+      clearInterval(this.tickTimer);
+      this.tickTimer = null;
+    }
+    if (this.phase === "FOCUS") {
+      this.totalStrikes++;
+      this.consecutiveSecWithoutStrikes = 0;
+      // Begin dropping pace with pace resets if user has 3+ strikes (addon to increases this)
+      if (this.totalStrikes === 3) {
+        let next = this.currentPaceMph - this.strikePacePenaltyMph;
+        this.currentPaceMph = Math.max(this.minPaceMph, next);
+      }
+    }
+    // could emit a PAUSED event later if you want
+    this.isPaused = true;
+
+    this.bus.emit("SESSION_PAUSED", { snapshot: this.buildSnapshot() });
+  }
+
+  resume() {
+    if (this.tickTimer) return;
+    if (this.phase === "COMPLETED" || this.phase === "IDLE") return;
+    this.isPaused = false;
+    this.startTickLoop();
+  }
+
+  quit() {
+    this.finishSession("ended_early");
+  }
+
+  beginBreak(isLong: boolean = false) {
+    if (this.phase !== "FOCUS") return;
+    this.phase = isLong ? "LONG_BREAK" : "SHORT_BREAK";
+    this.elapsedInPhaseSec = 0;
+    this.bus.emit("SESSION_PHASE_CHANGED", {
+      snapshot: this.buildSnapshot(),
+      from: "FOCUS",
+      to: this.phase,
+      reason: "set_completed",
+    });
+  }
+
+  trailCompleted() {
+    const { trailId, trailStartedAt } = this.user;
+    if (!trailId || !trailStartedAt) {
+      console.error("Error: Missing information for trail completion in SessionEngine.");
+      return;
+    }
+    const isProMember = this.user.isProMember ?? false; // Default to false if undefined
+    this.completedTrails.push({ id: trailId, distance: this.currentTrailDistance });
+    this.bus.emit("SESSION_TRAIL_COMPLETED", {
+      completedTrailId: trailId,
+      isProMember,
+      trailStartedAt,
+    });
+  }
+
+  skipBreak() {
+    if (this.phase !== "SHORT_BREAK" && this.phase !== "LONG_BREAK") return;
+
+    if (this.phase === "SHORT_BREAK") {
+      this.elapsedInPhaseSec = this.shortBreakSec;
+    } else if (this.phase === "LONG_BREAK") {
+      this.elapsedInPhaseSec = this.longBreakSec;
+    }
+
+    this.bus.emit("SESSION_BREAK_SKIPPED", { snapshot: this.buildSnapshot() });
+  }
+
+  async increaseDistance() {
+    this.totalDistanceMiles += 0.01;
+    //check if trail complete
+
+    if (Number(this.totalDistanceMiles.toFixed(2)) >= Number(this.distanceNeeded.toFixed(2))) {
+      this.trailCompleted();
+    }
+
+    this.bus.emit("SESSION_DISTANCE_INCREASED", {
+      session: this.session,
+      snapshot: this.buildSnapshot(),
+    });
+  }
+
+  /* -------------------- private ticking logic -------------------- */
+
+  private startTickLoop() {
+    this.tickTimer = setInterval(() => this.onTick(), this.tickRateMs);
+  }
+
+  private onTick() {
+    this.totalElapsedSec += 1;
+    this.elapsedInPhaseSec += 1;
+    // distance = speed (mph) * hours
+    //this.totalDistanceMiles += this.currentPaceMph * (1 / 3600);
+
+    // emit tick snapshot
+    this.bus.emit("SESSION_TICK", { snapshot: this.buildSnapshot() });
+
+    if (this.phase === "FOCUS") {
+      this.consecutiveSecWithoutStrikes += 1;
+      // pace increase?
+      if (this.canBumpPace()) {
+        this.bumpPace();
+      }
+
+      //increaseDistance
+      if (this.shouldIncreaseDistance()) {
+        this.increaseDistance();
+      }
+
+      // end of focus set?
+      if (this.elapsedInPhaseSec >= this.focusTimeSec) {
+        this.handleSetComplete();
+      }
+    } else if (this.phase === "SHORT_BREAK" || this.phase === "LONG_BREAK") {
+      const breakTarget = this.phase === "SHORT_BREAK" ? this.shortBreakSec : this.longBreakSec;
+      if (this.elapsedInPhaseSec >= breakTarget) {
+        if (this.phase == "SHORT_BREAK") {
+          this.phase = "FOCUS";
+          this.elapsedInPhaseSec = 0;
+          this.bus.emit("SESSION_PHASE_CHANGED", {
+            snapshot: this.buildSnapshot(),
+            from: "SHORT_BREAK",
+            to: "FOCUS",
+            reason: "break_ended",
+          });
+        } else {
+          if (this.autoContinue && this.completedSets === this.totalSets) {
+            // auto start another session
+            this.extraSets = this.totalSets;
+            this.elapsedInPhaseSec = 0;
+            this.phase = "FOCUS";
+            this.bus.emit("SESSION_PHASE_CHANGED", {
+              snapshot: this.buildSnapshot(),
+              from: "LONG_BREAK",
+              to: "FOCUS",
+              reason: "break_ended",
+            });
+          } else {
+            this.finishSession("all_sets_completed");
+          }
+        }
+      }
+    }
+  }
+
+  // if user under 3 strikes we simply reset consecutiveTImeWithoutStrikes.
+  // Later we can add if user has 3+ strikes we decrease pace.
+  // Later we can add if user has 5+ strikes user wil need total strikes times the amount of time it takes to increase pace
+  private canBumpPace(): boolean {
+    return this.getConsecutiveSecWithoutStrikes() >= this.getPaceIncreaseIntervalSec();
+  }
+
+  private bumpPace() {
+    const next = this.currentPaceMph + this.paceIncreaseValueMph;
+    this.currentPaceMph = Math.min(next, this.maxPaceMph);
+    this.consecutiveSecWithoutStrikes = 0;
+    this.bus.emit("SESSION_PACE_INCREASED", { snapshot: this.buildSnapshot() });
+  }
+
+  private handleSetComplete() {
+    this.completedSets += 1;
+    this.bus.emit("SESSION_SET_COMPLETED", {
+      snapshot: this.buildSnapshot(),
+      setNumber: this.currentSet,
+    });
+
+    // if (this.completedSets >= this.totalSets) {
+    //   this.finishSession("all_sets_completed");
+    //   return;
+    // }
+
+    // prepare next set
+    this.currentSet += 1;
+    this.elapsedInPhaseSec = 0;
+
+    // go to break
+    const isLong = this.shouldTakeLongBreak();
+    this.phase = isLong ? "LONG_BREAK" : "SHORT_BREAK";
+    this.bus.emit("SESSION_PHASE_CHANGED", {
+      snapshot: this.buildSnapshot(),
+      from: "FOCUS",
+      to: this.phase,
+      reason: "set_completed",
+    });
+  }
+
+  private shouldTakeLongBreak(): boolean {
+    // example rule: every 3rd set → long break
+    return this.completedSets % 3 === 0;
+  }
+
+  public shouldIncreaseDistance(): boolean {
+    return (
+      this.elapsedInPhaseSec > 0 &&
+      this.elapsedInPhaseSec % Math.floor((0.01 / this.currentPaceMph) * 3600) === 0
+    );
+  }
+
+  private finishSession(reason: "all_sets_completed" | "ended_early") {
+    if (this.tickTimer) {
+      clearInterval(this.tickTimer);
+      this.tickTimer = null;
+    }
+    this.phase = "COMPLETED";
+    this.bus.emit("SESSION_COMPLETED", {
+      //send final snapshot so the rewardsService can send rewards and final snapshot of session to ui and persistenceService
+      snapshot: this.buildSnapshot(),
+      reason,
+    });
+  }
+
+  public getElapsedSecForTenthMileIncrease() {
+    return Math.floor((0.01 / this.currentPaceMph) * 3600);
+  }
+
+  // Getters
+
+  public getType(): string {
+    return this.type;
+  }
+
+  public getTickRate(): number {
+    return this.tickRateMs;
+  }
+
+  public getPaceIncreaseIntervalSec(): number {
+    return this.paceIncreaseIntervalSec;
+  }
+
+  public getFocusTimeSec(): number {
+    return this.focusTimeSec;
+  }
+
+  public getShortBreakTimeSec(): number {
+    return this.shortBreakSec;
+  }
+
+  public getLongBreakTimeSec(): number {
+    return this.longBreakSec;
+  }
+
+  public getCompletedSets(): number {
+    return this.completedSets;
+  }
+
+  public getConsecutiveSecWithoutStrikes() {
+    return this.consecutiveSecWithoutStrikes;
+  }
+
+  public getTotalStrikes(): number {
+    return this.totalStrikes;
+  }
+
+  public getCurrentPace(): number {
+    return this.currentPaceMph;
+  }
+
+  public getPaceIncreaseValueMph() {
+    return this.paceIncreaseValueMph;
+  }
+  /* -------------------- snapshot -------------------- */
+
+  public buildSnapshot(): SessionSnapshot {
+    return {
+      sessionId: this.sessionId,
+      userId: this.userId,
+      sessionName: this.sessionName,
+      sessionCategory: this.sessionCategory,
+      phase: this.phase,
+      isPaused: this.isPaused,
+      totalElapsedSec: this.totalElapsedSec,
+      distanceNeeded: this.distanceNeeded,
+      currentTrailDistance: this.currentTrailDistance,
+      elapsedInPhaseSec: this.elapsedInPhaseSec,
+      currentSet: this.currentSet,
+      completedSets: this.completedSets,
+      totalSets: this.totalSets,
+      currentPaceMph: this.currentPaceMph,
+      completedTrails: this.completedTrails,
+      totalDistanceMiles: Number(this.totalDistanceMiles.toFixed(2)),
+      focusTimeSec: this.focusTimeSec,
+      shortBreakSec: this.shortBreakSec,
+      longBreakSec: this.longBreakSec,
+      autoContinue: this.autoContinue,
+      totalStrikes: this.totalStrikes,
+      consecutiveSecWithoutStrikes: this.getConsecutiveSecWithoutStrikes(),
+      tokenBonusFlat: this.tokenBonusFlat,
+      tokenBonusPercent: this.tokenBonusPercent,
+      startedAt: this.startTimestampMs,
+      extraSets: this.extraSets,
+    };
+  }
+}

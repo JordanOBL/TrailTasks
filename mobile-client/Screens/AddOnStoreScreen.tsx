@@ -1,16 +1,18 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
+import { Addon, User } from '../watermelon/models';
+import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import React, { useState } from 'react';
-import { sync } from '../watermelon/sync';
-import { useDatabase } from '@nozbe/watermelondb/react';
-import { useInternetConnection } from '../hooks/useInternetConnection';
-import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
-import handleError from "../helpers/ErrorHandler";
-import useAddons from '../helpers/Addons/useAddons';
-import { withObservables } from '@nozbe/watermelondb/react';
-import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
-import { useTheme } from '../contexts/ThemeProvider';
 
-const AddOnStoreScreen = ({ user, userAddons }) => {
+import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
+//import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
+import handleError from "../helpers/ErrorHandler";
+import { sync } from '../watermelon/sync';
+import useAddons from '../helpers/Addons/useAddons';
+import { useDatabase } from '@nozbe/watermelondb/react';
+import { useInternetConnection } from '../contexts/InternetConnectionProvider';
+import { useTheme } from '../contexts/ThemeProvider';
+import { withObservables } from '@nozbe/watermelondb/react';
+
+const AddOnStoreScreen = ({ user, userAddons }:{user:User, userAddons: Addon[]}) => {
   const { addons, loading, error } = useAddons();
   const watermelondb = useDatabase();
   const { isConnected } = useInternetConnection();
@@ -23,7 +25,7 @@ const AddOnStoreScreen = ({ user, userAddons }) => {
     return <Text style={{ color: theme.text }}>Error loading Add-Ons: {error}</Text>;
   }
 
-  async function handleAddonPurchase(addon) {
+  async function handleAddonPurchase(addon: Addon) {
     try {
       let successMessage = await user.buyAddon(addon);
       if (successMessage) {
@@ -31,7 +33,7 @@ const AddOnStoreScreen = ({ user, userAddons }) => {
       }
       Alert.alert('Success', successMessage);
     } catch (err) {
-      Alert.alert('Purchase Failed', err.message);
+      Alert.alert('Purchase Failed');
     }
   }
 

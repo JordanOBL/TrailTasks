@@ -70,5 +70,12 @@ export const InternetConnectionProvider = ({ children }: any) => {
   );
 };
 
-export { InternetConnectionContext };
+export const useInternetConnection = () => {
+  const ctx = useContext(InternetConnectionContext)
+  if (!ctx){
+    throw new Error('useInternetConnection must be used within <InternetProvider>');
+  }
+  return ctx
+
+}
 

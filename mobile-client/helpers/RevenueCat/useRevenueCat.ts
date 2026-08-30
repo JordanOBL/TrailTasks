@@ -26,6 +26,9 @@ const useRevenueCat = ({ userId }: Props) => {
         await Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
 
         const apiKey = Platform.OS === 'android' ? Config.REVCAT_GOOGLE : Config.REVCAT_APPLE;
+        if (!apiKey) {
+          throw new Error('RevenueCat API key is missing');
+        }
         await Purchases.configure({ apiKey, appUserID: userId });
 
         setIsConfigured(true);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTheme } from '../../contexts/ThemeProvider';
 import Purchases from 'react-native-purchases';
+import { darkTheme, lightTheme } from '../../theme';
 
 const RestorePurchasesButton = () => {
   const { theme } = useTheme();
@@ -39,7 +40,7 @@ const RestorePurchasesButton = () => {
   );
 };
 
-const getStyles = (theme) =>
+const getStyles = (theme: typeof darkTheme | typeof lightTheme) =>
   StyleSheet.create({
     button: {
       marginTop: 20,

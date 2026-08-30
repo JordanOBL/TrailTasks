@@ -17,7 +17,7 @@ const formatTime = (seconds: number) => {
 		formattedTime.push(`${remainingSeconds} sec`);
 	}
 
-	return formattedTime.join(' ');
+	return formattedTime.join(' ') || '0 sec';
 };
 
 export default formatTime
