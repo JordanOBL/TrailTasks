@@ -6,6 +6,7 @@ import {
   field,
   immutableRelation,
   lazy,
+  reader,
   relation,
   text,
   writer,
@@ -118,6 +119,16 @@ export class User extends Model {
   @children("users_wilds") usersWilds; // Added to track user progress in parks
   @children("users_friends") friends;
   @children("cached_friends") cachedFriends;
+
+  @reader
+  async calculateTotalMiles(): Promise<number> {
+    const sessions = await this.usersSessions.fetch();
+    const totalMiles = sessions.reduce((sum, session) => {
+      return sum + Number(session.totalDistanceHiked || 0);
+    }, 0);
+
+    return Number(totalMiles.toFixed(2)) || 0;
+  }
 
   @writer
   async addRoomId(roomId) {
@@ -312,7 +323,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     await this.database.batch(
       user.prepareUpdate(updatedUser => {
         updatedUser.trailProgress = (Number(user.trailProgress) + 0.01).toFixed(2);
-        updatedUser.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
       }),
 
       userSession.prepareUpdate(session => {
@@ -364,7 +374,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
             user.trailId = queuedTrailRecord.id;
             user.trailProgress = "0.00";
             user.trailStartedAt = formatDateTime(new Date());
-            user.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
           }),
           queuedTrail.prepareDestroyPermanently(), // destroy the QUEUE ITEM, not the Trail
         );
@@ -432,7 +441,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     await this.update(user => {
       user.trailProgress = "0.00"; // fixed spelling
       user.trailId = chosenTrail!.id;
-      user.totalMiles = (Number(user.totalMiles) + 0.01).toFixed(2);
       user.trailStartedAt = formatDateTime(new Date());
     });
 
@@ -514,7 +522,9 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       // 1. Check if user has enough miles:
       //    They need to have *at least* addOn.requiredTotalMiles.
       //    If user.totalMiles < requiredTotalMiles, they don't qualify.
-      if (this.totalMiles < addOn.requiredTotalMiles) {
+      const totalMiles = await this.callReader(() => this.calculateTotalMiles());
+
+      if (totalMiles < addOn.requiredTotalMiles) {
         throw new Error(
           `You must have at least ${addOn.requiredTotalMiles} miles to purchase ${addOn.name}`,
         );

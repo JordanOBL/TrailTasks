@@ -1,6 +1,6 @@
-import { Addon, User } from '../watermelon/models';
-import { Alert, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import { Addon, User, User_Session } from '../watermelon/models';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
 
 import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
 //import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
@@ -12,11 +12,40 @@ import { useInternetConnection } from '../contexts/InternetConnectionProvider';
 import { useTheme } from '../contexts/ThemeProvider';
 import { withObservables } from '@nozbe/watermelondb/react';
 
-const AddOnStoreScreen = ({ user, userAddons }:{user:User, userAddons: Addon[]}) => {
+const AddOnStoreScreen = ({
+  user,
+  userAddons,
+  userSessions,
+}: {
+  user: User;
+  userAddons: Addon[];
+  userSessions: User_Session[];
+}) => {
   const { addons, loading, error } = useAddons();
   const watermelondb = useDatabase();
   const { isConnected } = useInternetConnection();
   const { theme } = useTheme(); // 👈 use your theme context
+  const [totalMiles, setTotalMiles] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const computeTotalMiles = async () => {
+      const calculatedTotalMiles = await watermelondb.read(async () => {
+        return await user.calculateTotalMiles();
+      });
+
+      if (isMounted) {
+        setTotalMiles(calculatedTotalMiles);
+      }
+    };
+
+    computeTotalMiles();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, userSessions, watermelondb]);
 
   if (loading) {
     return <Text style={{ color: theme.text }}>Loading Add-Ons...</Text>;
@@ -41,7 +70,7 @@ const AddOnStoreScreen = ({ user, userAddons }:{user:User, userAddons: Addon[]})
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.topBar]}>
         <Text style={[styles.tokens, { color: theme.button }]}>{`Trail Tokens: ${user.trailTokens}`}</Text>
-        <Text style={[styles.miles, { color: theme.text }]}>{`Total Miles: ${user.totalMiles}`}</Text>
+        <Text style={[styles.miles, { color: theme.text }]}>{`Total Miles: ${totalMiles.toFixed(2)}`}</Text>
       </View>
       <EnhancedAddOnStore
         availableAddOns={addons}
@@ -56,6 +85,7 @@ const AddOnStoreScreen = ({ user, userAddons }:{user:User, userAddons: Addon[]})
 const enhance = withObservables(['user', 'userAddons'], ({ user }) => ({
   user,
   userAddons: user.usersAddons,
+  userSessions: user.usersSessions,
 }));
 
 const EnhancedAddOnStoreScreen = enhance(AddOnStoreScreen);
