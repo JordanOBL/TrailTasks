@@ -326,7 +326,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       }),
 
       userSession.prepareUpdate(session => {
-        session.totalDistanceHiked = Number(session.totalDistanceHiked + 0.01);
+        session.totalDistanceHiked = Number((Number(session.totalDistanceHiked || 0) + 0.01).toFixed(2));
         //new totalsessiontime = current time minus start time
         session.totalSessionTime = snapshot.totalElapseSec;
       }),
