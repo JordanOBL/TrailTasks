@@ -102,6 +102,24 @@ export function resolveFullUserSyncConflict(
   };
 }
 
+export function resolveSyncConflict(
+  table: string,
+  local: RawRecord,
+  remote: RawRecord,
+  resolved: RawRecord,
+  fullUserSync = false,
+) {
+  if (table === "users_sessions") {
+    return resolveFullUserSyncConflict(table, local, remote, resolved);
+  }
+
+  if (fullUserSync) {
+    return resolveFullUserSyncConflict(table, local, remote, resolved);
+  }
+
+  return resolved;
+}
+
 export function buildFullUserSyncStrategy(userId: string) {
   return {
     default: "incremental",
@@ -392,7 +410,8 @@ export async function sync(
             },
 
         sendCreatedAsUpdated: true,
-        conflictResolver: options.fullUserSync ? resolveFullUserSyncConflict : undefined,
+        conflictResolver: (table, local, remote, resolved) =>
+          resolveSyncConflict(table, local, remote, resolved, options.fullUserSync),
       });
 
       console.debug("[Sync] Synchronization successful.");
