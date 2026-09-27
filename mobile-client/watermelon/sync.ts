@@ -58,8 +58,49 @@ type SyncOptions = {
 type RawRecord = Record<string, any>;
 
 const ACCOUNT_REPLACEMENT_TABLES = ACCOUNT_FORCE_PUSH_TABLES.filter(
-  tableName => tableName !== "sessions_addons",
+  tableName => tableName !== "sessions_addons" && tableName !== "users_sessions",
 );
+const ACCOUNT_REPLACEMENT_TABLE_SET = new Set<string>(ACCOUNT_REPLACEMENT_TABLES);
+
+export function roundToHundredths(value: unknown) {
+  return Number((Number(value) || 0).toFixed(2));
+}
+
+export function resolveFullUserSyncConflict(
+  table: string,
+  local: RawRecord,
+  remote: RawRecord,
+  resolved: RawRecord,
+) {
+  if (table === "users_sessions") {
+    return {
+      ...resolved,
+      ...remote,
+      id: local.id,
+      total_distance_hiked: roundToHundredths(
+        Math.max(Number(local.total_distance_hiked) || 0, Number(remote.total_distance_hiked) || 0),
+      ),
+      total_session_time: Math.max(
+        Number(local.total_session_time) || 0,
+        Number(remote.total_session_time) || 0,
+      ),
+      _status: "updated",
+      _changed: "total_distance_hiked,total_session_time",
+    };
+  }
+
+  if (!ACCOUNT_REPLACEMENT_TABLE_SET.has(table)) {
+    return resolved;
+  }
+
+  return {
+    ...resolved,
+    ...remote,
+    id: local.id,
+    _status: "synced",
+    _changed: "",
+  };
+}
 
 export function buildFullUserSyncStrategy(userId: string) {
   return {
@@ -351,6 +392,7 @@ export async function sync(
             },
 
         sendCreatedAsUpdated: true,
+        conflictResolver: options.fullUserSync ? resolveFullUserSyncConflict : undefined,
       });
 
       console.debug("[Sync] Synchronization successful.");

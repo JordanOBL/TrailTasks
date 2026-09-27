@@ -4,6 +4,8 @@ import {
   buildPullUrl,
   filterCatalogChanges,
   normalizeRemoteChanges,
+  roundToHundredths,
+  resolveFullUserSyncConflict,
 } from "./sync";
 
 describe("sync helpers", () => {
@@ -140,7 +142,7 @@ describe("sync helpers", () => {
     const strategy = buildFullUserSyncStrategy("user-1");
 
     expect(strategy.default).toBe("incremental");
-    expect(strategy.override.users_sessions).toBe("replacement");
+    expect(strategy.override.users_sessions).toBeUndefined();
     expect(strategy.override.users_wilds).toBe("replacement");
     expect(strategy.override.users_parks).toBe("replacement");
     expect(strategy.override.trails).toBeUndefined();
@@ -148,5 +150,80 @@ describe("sync helpers", () => {
     expect(strategy.override.sessions_addons).toBeUndefined();
     expect(strategy.experimentalQueryRecordsForReplacement.users).toBeDefined();
     expect(strategy.experimentalQueryRecordsForReplacement.users_wilds).toBeDefined();
+  });
+
+  it("rounds session mileage to the hundredth", () => {
+    expect(roundToHundredths(0.004)).toBe(0);
+    expect(roundToHundredths(0.005)).toBe(0.01);
+    expect(roundToHundredths(0.024)).toBe(0.02);
+    expect(roundToHundredths("1.236")).toBe(1.24);
+  });
+
+  it("merges session facts during full account pull conflicts", () => {
+    const resolved = resolveFullUserSyncConflict(
+      "users_sessions",
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: 0.5,
+        total_session_time: 30,
+        _status: "updated",
+        _changed: "total_distance_hiked,total_session_time",
+      },
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: "0.424",
+        total_session_time: 60,
+      },
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: 0,
+        total_session_time: 30,
+        _status: "updated",
+        _changed: "total_distance_hiked,total_session_time",
+      },
+    );
+
+    expect(resolved).toEqual({
+      id: "session-1",
+      user_id: "user-1",
+      total_distance_hiked: 0.5,
+      total_session_time: 60,
+      _status: "updated",
+      _changed: "total_distance_hiked,total_session_time",
+    });
+  });
+
+  it("merges higher remote session distance when local has stale zero", () => {
+    const resolved = resolveFullUserSyncConflict(
+      "users_sessions",
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: 0,
+        total_session_time: 0,
+        _status: "updated",
+        _changed: "total_distance_hiked,total_session_time",
+      },
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: "0.024",
+        total_session_time: 30,
+      },
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: 0,
+        total_session_time: 0,
+        _status: "updated",
+        _changed: "total_distance_hiked,total_session_time",
+      },
+    );
+
+    expect(resolved.total_distance_hiked).toBe(0.02);
+    expect(resolved.total_session_time).toBe(30);
   });
 });
