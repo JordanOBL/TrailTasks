@@ -72,6 +72,7 @@ const NewSessionOptions = () => {
   const [currentTrail, setCurrentTrail] = useState<Trail | null>(null);
   const [currentPark, setCurrentPark] = useState<Park | null>(null);
   const [usersAddonSelection, setUsersAddonSelection] = useState<Addon[]>([]);
+  const [totalMiles, setTotalMiles] = useState(0);
 
   const closeBackpackModal = () => {
     const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
@@ -119,7 +120,10 @@ const NewSessionOptions = () => {
           db.get<Session_Category>("session_categories").query().fetch(),
           db.get<Trail>("trails").query(Q.where("id", user?.trailId)).fetch(),
         ]);
-        const usersAddons = await user.usersAddons;
+        const [usersAddons, calculatedTotalMiles] = await Promise.all([
+          user.usersAddons,
+          user.calculateTotalMiles(),
+        ]);
         if (!sc) {
           throw Error("Error getting session categories");
         }
@@ -135,6 +139,7 @@ const NewSessionOptions = () => {
           setCurrentPark(park);
           setCategories(sc);
           setUsersAddonSelection(usersAddons);
+          setTotalMiles(calculatedTotalMiles);
           setLoading(false);
         }
       } catch (e) {
@@ -269,6 +274,7 @@ const NewSessionOptions = () => {
         sessionCfg={sessionCfg}
         setSessionCfg={setSessionCfg}
         user={user}
+        totalMiles={totalMiles}
         usersAddons={usersAddonSelection}
       />
     </SafeAreaView>
