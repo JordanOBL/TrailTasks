@@ -17,6 +17,10 @@ type AuthContextType = {
   isProMember: boolean;
   customerInfo: any;
   currentOffering: any;
+  revenueCatLoading: boolean;
+  revenueCatError: string;
+  purchasePackage: (selectedPackage: any) => Promise<any>;
+  restorePurchases: () => Promise<any>;
   
 };
 

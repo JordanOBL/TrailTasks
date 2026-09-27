@@ -10,19 +10,25 @@ import {
 } from "react-native";
 import { useAuthContext } from "../services/AuthContext";
 import SubscriptionOptionCard from "../components/RevenueCat/SubscriptionOptionCard";
-import Purchases from "react-native-purchases";
 import { useTheme } from "../contexts/ThemeProvider";
 import { darkTheme, lightTheme } from "../theme";
 
 const SubscribeScreen = ({ navigation }: { navigation: any }) => {
-  const { currentOffering, isProMember } = useAuthContext();
+  const {
+    currentOffering,
+    isProMember,
+    revenueCatLoading,
+    revenueCatError,
+    purchasePackage,
+  } = useAuthContext();
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const FEATURES = [
     "Access All Trails",
     "Use Trail Queue Feature",
-    "Pomdoro Time Selections",
+    "Pomodoro Time Selections",
     "Multiple Session Tracking Filters",
     "Complete Sessions With Friends in Group Sessions",
     "Access All Leaderboards",
@@ -30,33 +36,70 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
   ];
 
   const handlePurchase = async () => {
-    if (!selectedPackage) return;
+    if (!selectedPackage || purchaseLoading) return;
 
     try {
-      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
-      if (
-        customerInfo.entitlements.active &&
-        Object.keys(customerInfo.entitlements.active).length > 0
-      ) {
+      setPurchaseLoading(true);
+      const customerInfo = await purchasePackage(selectedPackage);
+      if (customerInfo?.entitlements?.active && Object.keys(customerInfo.entitlements.active).length > 0) {
         Alert.alert("🎉 Success!", "You are now a Trail Tasks Pro member.");
         navigation.goBack();
+      } else {
+        Alert.alert(
+          "Purchase complete",
+          "RevenueCat did not return an active Pro entitlement yet. Restore purchases or try again in a moment.",
+        );
       }
-    } catch (err: unknown) {
-      console.warn("❌ Purchase error:", err);
-      Alert.alert("Error", err instanceof Error ? err.message : "Something went wrong.");
+    } catch (err: any) {
+      if (!err?.userCancelled) {
+        Alert.alert("Error", err instanceof Error ? err.message : "Something went wrong.");
+      }
+    } finally {
+      setPurchaseLoading(false);
     }
   };
 
-  if (!currentOffering) {
+  if (isProMember) {
     return (
-      <View style={styles.loading}>
+      <View style={styles.centerState} testID="subscribe-active-state">
+        <Text style={styles.header}>Trail Tasks Pro is active</Text>
+        <Text style={styles.subHeader}>Your Pro entitlement is already enabled on this account.</Text>
+        <TouchableOpacity style={styles.subscribeButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.subscribeButtonText}>Back to Trail Tasks</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (revenueCatLoading && !currentOffering) {
+    return (
+      <View style={styles.centerState} testID="subscribe-loading-state">
         <ActivityIndicator size="large" color={theme.button} />
+        <Text style={styles.stateText}>Loading subscription options…</Text>
+      </View>
+    );
+  }
+
+  if (revenueCatError) {
+    return (
+      <View style={styles.centerState} testID="subscribe-error-state">
+        <Text style={styles.header}>Trail Tasks Pro is unavailable</Text>
+        <Text style={styles.subHeader}>{revenueCatError}</Text>
+      </View>
+    );
+  }
+
+  if (!currentOffering?.annual && !currentOffering?.monthly) {
+    return (
+      <View style={styles.centerState} testID="subscribe-empty-state">
+        <Text style={styles.header}>No subscription options available</Text>
+        <Text style={styles.subHeader}>Please try again later or restore purchases from Subscription Settings.</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} testID="subscribe-screen">
       <Text style={styles.emoji}>⛰️</Text>
       <Text style={styles.header}>Unlock Trail Tasks Pro</Text>
       <Text style={styles.subHeader}>
@@ -87,8 +130,12 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
       )}
 
       {selectedPackage && (
-        <TouchableOpacity style={styles.subscribeButton} onPress={handlePurchase}>
-          <Text style={styles.subscribeButtonText}>Subscribe Now</Text>
+        <TouchableOpacity
+          style={[styles.subscribeButton, purchaseLoading && styles.disabledButton]}
+          onPress={handlePurchase}
+          disabled={purchaseLoading}
+          testID="subscribe-now-button">
+          <Text style={styles.subscribeButtonText}>{purchaseLoading ? "Subscribing…" : "Subscribe Now"}</Text>
         </TouchableOpacity>
       )}
     </ScrollView>
@@ -103,11 +150,17 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       backgroundColor: theme.background,
       alignItems: "center",
     },
-    loading: {
+    centerState: {
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
       backgroundColor: theme.background,
+      padding: 24,
+    },
+    stateText: {
+      color: theme.secondaryText,
+      marginTop: 12,
+      textAlign: "center",
     },
     emoji: {
       fontSize: 40,
@@ -148,6 +201,9 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       shadowOpacity: 0.2,
       shadowRadius: 6,
       elevation: 4,
+    },
+    disabledButton: {
+      opacity: 0.6,
     },
     subscribeButtonText: {
       color: theme.buttonText,
