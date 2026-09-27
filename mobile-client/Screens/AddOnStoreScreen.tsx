@@ -31,9 +31,7 @@ const AddOnStoreScreen = ({
     let isMounted = true;
 
     const computeTotalMiles = async () => {
-      const calculatedTotalMiles = await watermelondb.read(async () => {
-        return await user.calculateTotalMiles();
-      });
+      const calculatedTotalMiles = await user.calculateTotalMiles();
 
       if (isMounted) {
         setTotalMiles(calculatedTotalMiles);
@@ -76,6 +74,7 @@ const AddOnStoreScreen = ({
         availableAddOns={addons}
         usersAddons={userAddons}
         user={user}
+        totalMiles={totalMiles}
         onPurchase={handleAddonPurchase}
       />
     </SafeAreaView>
