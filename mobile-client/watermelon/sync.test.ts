@@ -4,6 +4,7 @@ import {
   buildPullUrl,
   filterCatalogChanges,
   normalizeRemoteChanges,
+  resolveFullUserSyncConflict,
 } from "./sync";
 
 describe("sync helpers", () => {
@@ -148,5 +149,38 @@ describe("sync helpers", () => {
     expect(strategy.override.sessions_addons).toBeUndefined();
     expect(strategy.experimentalQueryRecordsForReplacement.users).toBeDefined();
     expect(strategy.experimentalQueryRecordsForReplacement.users_wilds).toBeDefined();
+  });
+
+  it("lets server account rows win during full account pull conflicts", () => {
+    const resolved = resolveFullUserSyncConflict(
+      "users_sessions",
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: 0,
+        _status: "updated",
+        _changed: "total_distance_hiked",
+      },
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: "0.42",
+      },
+      {
+        id: "session-1",
+        user_id: "user-1",
+        total_distance_hiked: 0,
+        _status: "updated",
+        _changed: "total_distance_hiked",
+      },
+    );
+
+    expect(resolved).toEqual({
+      id: "session-1",
+      user_id: "user-1",
+      total_distance_hiked: "0.42",
+      _status: "synced",
+      _changed: "",
+    });
   });
 });

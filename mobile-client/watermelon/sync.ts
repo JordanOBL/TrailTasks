@@ -60,6 +60,26 @@ type RawRecord = Record<string, any>;
 const ACCOUNT_REPLACEMENT_TABLES = ACCOUNT_FORCE_PUSH_TABLES.filter(
   tableName => tableName !== "sessions_addons",
 );
+const ACCOUNT_REPLACEMENT_TABLE_SET = new Set<string>(ACCOUNT_REPLACEMENT_TABLES);
+
+export function resolveFullUserSyncConflict(
+  table: string,
+  local: RawRecord,
+  remote: RawRecord,
+  resolved: RawRecord,
+) {
+  if (!ACCOUNT_REPLACEMENT_TABLE_SET.has(table)) {
+    return resolved;
+  }
+
+  return {
+    ...resolved,
+    ...remote,
+    id: local.id,
+    _status: "synced",
+    _changed: "",
+  };
+}
 
 export function buildFullUserSyncStrategy(userId: string) {
   return {
@@ -351,6 +371,7 @@ export async function sync(
             },
 
         sendCreatedAsUpdated: true,
+        conflictResolver: options.fullUserSync ? resolveFullUserSyncConflict : undefined,
       });
 
       console.debug("[Sync] Synchronization successful.");
