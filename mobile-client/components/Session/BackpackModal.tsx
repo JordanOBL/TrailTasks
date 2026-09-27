@@ -19,15 +19,17 @@ interface backpackModalProps {
   sessionCfg: SessionCfg;
   setSessionCfg: React.Dispatch<React.SetStateAction<SessionCfg>>;
   user: User;
+  totalMiles: number;
   usersAddons: Addon[];
 }
 
-const BackpackModal = ({
+export const BackpackModal = ({
   isVisible,
   onClose,
   sessionCfg,
   setSessionCfg,
   user,
+  totalMiles,
   usersAddons,
 }: backpackModalProps) => {
   const selectAddon = (addon: Addon | null) => {
@@ -65,7 +67,7 @@ const BackpackModal = ({
                   styles.backpackSlot,
                   {
                     borderColor:
-                      user.totalMiles < slot.minimumTotalMiles
+                      totalMiles < slot.minimumTotalMiles
                         ? "grey"
                         : slot.addon
                         ? "rgb(235, 33, 26)"
@@ -84,11 +86,11 @@ const BackpackModal = ({
                   style={[
                     styles.slotText,
                     {
-                      color: user.totalMiles >= slot.minimumTotalMiles ? "white" : "grey",
+                      color: totalMiles >= slot.minimumTotalMiles ? "white" : "grey",
                     },
                   ]}>
                   {slot.addon?.name ||
-                    (user.totalMiles >= slot.minimumTotalMiles
+                    (totalMiles >= slot.minimumTotalMiles
                       ? "+"
                       : `${index > 1 && !user.isProMember ? "Pro\n" : ""}Unlock at ${
                           slot.minimumTotalMiles
