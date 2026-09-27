@@ -6,6 +6,7 @@ import {
   normalizeRemoteChanges,
   roundToHundredths,
   resolveFullUserSyncConflict,
+  resolveSyncConflict,
 } from "./sync";
 
 describe("sync helpers", () => {
@@ -225,5 +226,23 @@ describe("sync helpers", () => {
 
     expect(resolved.total_distance_hiked).toBe(0.02);
     expect(resolved.total_session_time).toBe(30);
+  });
+
+  it("leaves non-session normal sync conflicts to Watermelon's resolved value", () => {
+    const resolved = {
+      id: "user-1",
+      trail_tokens: 50,
+      _status: "updated",
+      _changed: "trail_tokens",
+    };
+
+    expect(
+      resolveSyncConflict(
+        "users",
+        { id: "user-1", trail_tokens: 25 },
+        { id: "user-1", trail_tokens: 50 },
+        resolved,
+      ),
+    ).toBe(resolved);
   });
 });

@@ -825,6 +825,32 @@ app.post('/push', async (req, res) => {
                     }
                 }
             };
+            const upsertSessionRows = async (rows = []) => {
+                if (!rows[0]) return;
+
+                const cleanRows = cleanSyncRows(rows);
+                for (const row of cleanRows) {
+                    const existing = await User_Session.findOne({where: {id: row.id}});
+                    const mergedRow = existing
+                        ? {
+                            ...row,
+                            total_distance_hiked: Number(Math.max(
+                                Number(existing.total_distance_hiked) || 0,
+                                Number(row.total_distance_hiked) || 0,
+                            ).toFixed(2)),
+                            total_session_time: Math.max(
+                                Number(existing.total_session_time) || 0,
+                                Number(row.total_session_time) || 0,
+                            ),
+                        }
+                        : row;
+
+                    const [updatedCount] = await User_Session.update(mergedRow, {where: {id: row.id}});
+                    if (updatedCount === 0) {
+                        await User_Session.create(mergedRow);
+                    }
+                }
+            };
 
             await upsertRows(User, changes?.users?.updated);
             await upsertRows(User_Achievement, changes?.users_achievements?.updated);
@@ -833,7 +859,7 @@ app.post('/push', async (req, res) => {
             await upsertRows(Users_Queued_Trail, changes?.users_queued_trails?.updated);
             await upsertRows(User_Park, changes?.users_parks?.updated);
             await upsertRows(User_Purchased_Trail, changes?.users_purchased_trails?.updated);
-            await upsertRows(User_Session, changes?.users_sessions?.updated);
+            await upsertSessionRows(changes?.users_sessions?.updated);
             await upsertRows(User_Friend, changes?.users_friends?.updated);
             await upsertRows(User_Wild, changes?.users_wilds?.updated);
             await upsertRows(Session_Addon, changes?.sessions_addons?.updated);
@@ -857,9 +883,7 @@ app.post('/push', async (req, res) => {
                 );
             }
             if (changes?.users_sessions?.created[0] !== undefined) {
-                const users_sessions = await User_Session.bulkCreate(
-                    changes.users_sessions.created, {updateOnDuplicate: ['id']}
-                );
+                await upsertSessionRows(changes.users_sessions.created);
             }
             if(changes?.sessions_addons?.created[0] !== undefined) {
                 const sessions_addons = await Session_Addon.bulkCreate(
@@ -931,20 +955,7 @@ app.post('/push', async (req, res) => {
                 await Promise.all(updateQueries);
             }
             if (changes?.users_sessions?.updated[0] !== undefined) {
-                const updateQueries = changes.users_sessions.updated.map(
-                    (remoteEntry) => {
-                        //console.log({remoteEntry});
-                        return User_Session.update(
-                            {...remoteEntry},
-                            {
-                                where: {
-                                    id: remoteEntry.id,
-                                },
-                            }
-                        );
-                    }
-                );
-                await Promise.all(updateQueries);
+                await upsertSessionRows(changes.users_sessions.updated);
             }
 
             if (changes?.users_parks?.updated[0] !== undefined) {
