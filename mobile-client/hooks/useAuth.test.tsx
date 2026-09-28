@@ -4,7 +4,6 @@ import { useAuth } from './useAuth';
 import {
   checkGlobalUserExists,
   checkLocalUserExists,
-  saveUserToLocalDB,
   setLocalStorageUser,
 } from '../services/auth';
 import { sync } from '../watermelon/sync';
@@ -29,7 +28,6 @@ jest.mock('../services/auth', () => ({
   checkLocalUserExists: jest.fn(),
   createNewUser: jest.fn(),
   registerValidation: jest.fn(),
-  saveUserToLocalDB: jest.fn(),
   setLocalStorageUser: jest.fn(),
 }));
 
@@ -41,7 +39,6 @@ jest.mock('../helpers/ErrorHandler', () => jest.fn());
 
 const mockCheckGlobalUserExists = checkGlobalUserExists as jest.Mock;
 const mockCheckLocalUserExists = checkLocalUserExists as jest.Mock;
-const mockSaveUserToLocalDB = saveUserToLocalDB as jest.Mock;
 const mockSetLocalStorageUser = setLocalStorageUser as jest.Mock;
 const mockSync = sync as jest.Mock;
 
@@ -69,7 +66,6 @@ describe('useAuth login', () => {
       await result.current.login('Jordan@Example.com', 'password');
     });
 
-    expect(mockSaveUserToLocalDB).not.toHaveBeenCalled();
     expect(mockSync).toHaveBeenCalledWith(watermelonDatabase, true, 'user-1', {
       fullUserSync: true,
       pullOnly: true,
