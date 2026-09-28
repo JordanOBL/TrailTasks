@@ -5,7 +5,6 @@ import {
   checkLocalUserExists,
   createNewUser,
   registerValidation,
-  saveUserToLocalDB,
   setLocalStorageUser,
 } from "../services/auth";
 import { useCallback, useEffect, useState } from "react";
@@ -85,12 +84,14 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
         const hadLocalUser = !!localUser;
 
         if (!localUser && isConnected) {
-          // Attempt remote login
+          // Verify remote credentials, then let the Watermelon sync path pull account data.
           const remoteUser = (await checkGlobalUserExists(email.toLowerCase(), password)) as User &
             GlobalExistingUserResponseSuccess;
-          if (remoteUser) {
-            // Write remote data to local DB (this is your large block that creates user, sessions, etc.)
-            await saveUserToLocalDB(remoteUser, watermelonDatabase);
+          if (remoteUser?.user?.id) {
+            await sync(watermelonDatabase, isConnected, remoteUser.user.id, {
+              fullUserSync: true,
+              pullOnly: true,
+            });
             localUser = await checkLocalUserExists(
               email.toLowerCase(),
               password,
