@@ -27,7 +27,15 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
   const [user, setUser] = useState<any>(initialUser);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const { currentOffering, customerInfo, isProMember } = useRevenueCat({ userId: user?.id });
+  const {
+    currentOffering,
+    customerInfo,
+    isProMember,
+    loading: revenueCatLoading,
+    error: revenueCatError,
+    purchasePackage,
+    restorePurchases,
+  } = useRevenueCat({ userId: user?.id });
 
   // Observe user changes (only if user is a Watermelon model)
   //  useEffect(() => {
@@ -204,5 +212,9 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
     currentOffering,
     customerInfo,
     isProMember,
+    revenueCatLoading,
+    revenueCatError,
+    purchasePackage,
+    restorePurchases,
   };
 }

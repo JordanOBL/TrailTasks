@@ -6,9 +6,12 @@ import { Platform, Linking, TouchableOpacity, View, StyleSheet, Text } from "rea
 import { darkTheme, lightTheme } from "../theme";
 
 const SubscriptionSettingsScreen = ({ navigation }: { navigation: any }) => {
-  const { customerInfo, currentOffering, isProMember } = useAuthContext();
+  const { customerInfo, currentOffering, isProMember, revenueCatLoading, revenueCatError } = useAuthContext();
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const latestExpirationDate = customerInfo?.latestExpirationDate
+    ? new Date(customerInfo.latestExpirationDate).toDateString()
+    : "Unavailable";
 
   return (
     <View style={styles.container}>
@@ -22,16 +25,17 @@ const SubscriptionSettingsScreen = ({ navigation }: { navigation: any }) => {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Plan Details</Text>
 
+        {revenueCatLoading && <Text style={styles.detail}>Checking subscription status…</Text>}
+        {revenueCatError && <Text style={styles.warning}>{revenueCatError}</Text>}
+
         {isProMember ? (
           <>
             <Text style={styles.detail}>Status: ✅ Active</Text>
-            <Text style={styles.detail}>Plan: {customerInfo?.activeSubscriptions[0]}</Text>
+            <Text style={styles.detail}>Plan: {customerInfo?.activeSubscriptions?.[0] || "Trail Tasks Pro"}</Text>
             <Text style={styles.detail}>
-              Price: {currentOffering?.monthly?.product.priceString || ""} / month
+              Price: {currentOffering?.monthly?.product.priceString || "Unavailable"} / month
             </Text>
-            <Text style={styles.detail}>
-              Renews: {new Date(customerInfo?.latestExpirationDate || "").toDateString()}
-            </Text>
+            <Text style={styles.detail}>Renews: {latestExpirationDate}</Text>
 
             <RestorePurchasesButton />
 
@@ -101,6 +105,11 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       fontSize: 15,
       color: theme.secondaryText,
       marginBottom: 6,
+    },
+    warning: {
+      fontSize: 14,
+      color: "#ffcc66",
+      marginBottom: 12,
     },
     manageButton: {
       marginTop: 16,
