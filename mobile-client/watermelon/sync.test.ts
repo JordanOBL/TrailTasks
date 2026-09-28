@@ -139,6 +139,21 @@ describe("sync helpers", () => {
     });
   });
 
+  it("normalizes pulled session distance strings before Watermelon sanitizes numeric fields", () => {
+    const changes = normalizeRemoteChanges({
+      users_sessions: {
+        created: [{ id: "created-session", total_distance_hiked: "0.024", total_session_time: "30" }],
+        updated: [{ id: "updated-session", total_distance_hiked: "1.236", total_session_time: "60" }],
+        deleted: [],
+      },
+    });
+
+    expect(changes.users_sessions.created[0].total_distance_hiked).toBe(0.02);
+    expect(changes.users_sessions.created[0].total_session_time).toBe(30);
+    expect(changes.users_sessions.updated[0].total_distance_hiked).toBe(1.24);
+    expect(changes.users_sessions.updated[0].total_session_time).toBe(60);
+  });
+
   it("uses scoped replacement only for account tables during full account pulls", () => {
     const strategy = buildFullUserSyncStrategy("user-1");
 

@@ -393,7 +393,7 @@ app.get('/pull', async (req, res) => {
         const catalogOnly = req.query.catalog_only === 'true';
         console.debug('user in pull id', userId);
         console.log('last pulled at', {lastPulledAt});
-        if (lastPulledAt === new Date(0).toISOString()) {
+        if (lastPulledAt === new Date(0).toISOString() && !fullUserSync) {
             console.log("Initial Data Pull From Server...")
             const createdAddons = await Addon.findAll({});
             const createdAchievements = await Achievement.findAll({});
