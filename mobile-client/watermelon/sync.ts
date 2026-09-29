@@ -258,6 +258,11 @@ export async function pullCatalogChanges(database: Database, isConnected: boolea
     return;
   }
 
+  if (!Config.DATABASE_PULL_URL) {
+    throw new Error("Error syncing with DB, DATABASE_PULL_URL missing in config");
+    return;
+  }
+
   if (isRunning) {
     console.debug("[Catalog Sync] Already running. Skipping new call.");
     return;
@@ -367,7 +372,7 @@ export async function sync(
           try {
             console.debug("[Sync] Pull URL:", Config.DATABASE_PULL_URL);
             const url = buildPullUrl({
-              baseUrl: Config.DATABASE_PULL_URL,
+              baseUrl: Config.DATABASE_PULL_URL!,
               lastPulledAt,
               schemaVersion,
               userId,
