@@ -210,17 +210,32 @@ function dedupeRowsById(rows: RawRecord[] = []) {
   return [...new Map(rows.map(row => [row.id, row])).values()];
 }
 
+function normalizeRemoteRow(tableName: string, row: RawRecord) {
+  if (tableName !== "users_sessions") {
+    return row;
+  }
+
+  return {
+    ...row,
+    total_distance_hiked: roundToHundredths(row.total_distance_hiked),
+    total_session_time: Number(row.total_session_time) || 0,
+  };
+}
+
 export function normalizeRemoteChanges(changes: Record<string, any> = {}) {
   return Object.fromEntries(
     Object.entries(changes).map(([tableName, tableChanges]) => {
-      const updatedIds = new Set((tableChanges.updated || []).map((row: RawRecord) => row.id));
+      const updatedRows = dedupeRowsById(tableChanges.updated || []).map(row =>
+        normalizeRemoteRow(tableName, row),
+      );
+      const updatedIds = new Set(updatedRows.map((row: RawRecord) => row.id));
       return [
         tableName,
         {
-          created: dedupeRowsById(tableChanges.created || []).filter(
-            row => !updatedIds.has(row.id),
-          ),
-          updated: dedupeRowsById(tableChanges.updated || []),
+          created: dedupeRowsById(tableChanges.created || [])
+            .filter(row => !updatedIds.has(row.id))
+            .map(row => normalizeRemoteRow(tableName, row)),
+          updated: updatedRows,
           deleted: [...new Set<string>(tableChanges.deleted || [])],
         },
       ];
@@ -240,6 +255,11 @@ async function setCatalogLastPulledAt(database: Database, timestamp: number) {
 export async function pullCatalogChanges(database: Database, isConnected: boolean = false) {
   if (!isConnected) {
     console.debug("[Catalog Sync] Not connected to the internet.");
+    return;
+  }
+
+  if (!Config.DATABASE_PULL_URL) {
+    throw new Error("Error syncing with DB, DATABASE_PULL_URL missing in config");
     return;
   }
 
@@ -352,7 +372,7 @@ export async function sync(
           try {
             console.debug("[Sync] Pull URL:", Config.DATABASE_PULL_URL);
             const url = buildPullUrl({
-              baseUrl: Config.DATABASE_PULL_URL,
+              baseUrl: Config.DATABASE_PULL_URL!,
               lastPulledAt,
               schemaVersion,
               userId,

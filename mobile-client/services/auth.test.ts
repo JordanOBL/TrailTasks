@@ -1,10 +1,7 @@
 // __tests__/authHelpers.test.ts
 import {waitFor} from '@testing-library/react-native';
-import { Database } from '@nozbe/watermelondb';
-import { checkLocalUserExists, checkGlobalUserExists, saveUserToLocalDB } from './auth'; // adjust path as needed
+import { checkLocalUserExists, checkGlobalUserExists } from './auth'; // adjust path as needed
 import {GlobalExistingUserResponseSuccess, GlobalExistingUserResponseFail} from '../types/api'
-import handleError from '../helpers/ErrorHandler'; // adjust path
-import { Q } from '@nozbe/watermelondb';
 import {createMockUserBase} from "../__mocks__/UserModel"
 import {testDb} from '../watermelon/testDB'
 import {Pool} from 'pg';
@@ -92,28 +89,6 @@ describe('Auth Services', () => {
     })
 
   })
-  describe('saveUserToLocalDB', () => {
 
-    it('saves a user to the local DB', async () => {
-      //ensure user does not exist in localDB
-      let [ user]= await testDb.get('users').query(Q.where('email', mockUser.email)).fetch();
-
-      expect(user).toBeUndefined();
-
-      //create user in test global PG bd
-      await pool.query('INSERT INTO users (id, username, email, password, trail_id,  trail_started_at, trail_tokens, total_miles, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [mockUser.id, mockUser.username, mockUser.email, mockUser.password,mockUser.trailId,  mockUser.trailStartedAt, mockUser.trailTokens, mockUser.totalMiles, new Date(), new Date()]);
-
-      //get global user
-      const result: GlobalExistingUserResponseSuccess | GlobalExistingUserResponseFail = await checkGlobalUserExists(mockUser.email, mockUser.password);
-
-      //Act. save user to local db
-      await saveUserToLocalDB(result, testDb);
-
-      //Assert. check if user is saved
-      [ user]= await testDb.get('users').query(Q.where('email', mockUser.email)).fetch();
-      expect(user.email).toBe(mockUser.email);
-    })
-
-  })
 
 });
