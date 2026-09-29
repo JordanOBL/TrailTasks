@@ -252,7 +252,7 @@ export function normalizeRemoteChanges(changes: Record<string, any> = {}) {
 
 async function getCatalogLastPulledAt(database: Database) {
   const value = await database.adapter.getLocal(CATALOG_LAST_PULLED_AT_KEY);
-  return parseInt(value, 10) || null;
+  return parseInt(value ?? "", 10) || null;
 }
 
 async function setCatalogLastPulledAt(database: Database, timestamp: number) {
@@ -380,7 +380,7 @@ export async function sync(
             console.debug("[Sync] Pull URL:", Config.DATABASE_PULL_URL);
             const url = buildPullUrl({
               baseUrl: Config.DATABASE_PULL_URL!,
-              lastPulledAt,
+              lastPulledAt: lastPulledAt ?? null,
               schemaVersion,
               userId,
               fullUserSync: options.fullUserSync,
