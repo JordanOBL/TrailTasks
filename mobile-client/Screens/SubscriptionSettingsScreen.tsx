@@ -52,6 +52,7 @@ const SubscriptionSettingsScreen = ({ navigation }: { navigation: any }) => {
         ) : (
           <>
             <Text style={styles.detail}>No active subscription.</Text>
+            <RestorePurchasesButton />
             <TouchableOpacity
               style={styles.subscribeButton}
               onPress={() => navigation.navigate("Subscribe")}>
