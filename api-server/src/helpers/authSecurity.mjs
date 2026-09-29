@@ -48,8 +48,13 @@ export function verifyPassword(candidatePassword, storedPassword) {
 
 export function prepareUserRowsForStorage(rows = []) {
   return rows.map(row => {
-    if (!row?.password) {
+    if (!row || !Object.prototype.hasOwnProperty.call(row, 'password')) {
       return row;
+    }
+
+    if (!row.password) {
+      const { password, password_hash, ...rowWithoutBlankPassword } = row;
+      return rowWithoutBlankPassword;
     }
 
     return {

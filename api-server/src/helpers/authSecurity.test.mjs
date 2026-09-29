@@ -35,6 +35,23 @@ test('prepareUserRowsForStorage hashes plaintext user passwords without rehashin
   assert.equal(existingUser.password, alreadyHashed);
 });
 
+test('prepareUserRowsForStorage omits redacted blank passwords so sync cannot clear stored hashes', () => {
+  const [existingUserUpdate] = prepareUserRowsForStorage([
+    {
+      id: 'existing-user',
+      email: 'existing@example.com',
+      username: 'existing',
+      password: '',
+    },
+  ]);
+
+  assert.deepEqual(existingUserUpdate, {
+    id: 'existing-user',
+    email: 'existing@example.com',
+    username: 'existing',
+  });
+});
+
 test('redactUserForClient removes password fields from Sequelize-like user payloads', () => {
   const safeUser = redactUserForClient({
     toJSON: () => ({
