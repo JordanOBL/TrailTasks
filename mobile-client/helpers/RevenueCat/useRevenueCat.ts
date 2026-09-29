@@ -140,6 +140,12 @@ const useRevenueCat = ({ userId }: Props) => {
 
   const purchasePackage = useCallback(
     async (selectedPackage: PurchasesPackage) => {
+      if (!isConfigured) {
+        const unavailableError = new Error('RevenueCat is not configured for this build.');
+        setError(unavailableError.message);
+        throw unavailableError;
+      }
+
       setError('');
       setLoading(true);
       try {
@@ -155,10 +161,16 @@ const useRevenueCat = ({ userId }: Props) => {
         setLoading(false);
       }
     },
-    [applyCustomerInfo],
+    [applyCustomerInfo, isConfigured],
   );
 
   const restorePurchases = useCallback(async () => {
+    if (!isConfigured) {
+      const unavailableError = new Error('RevenueCat is not configured for this build.');
+      setError(unavailableError.message);
+      throw unavailableError;
+    }
+
     setError('');
     setLoading(true);
     try {
@@ -171,7 +183,7 @@ const useRevenueCat = ({ userId }: Props) => {
     } finally {
       setLoading(false);
     }
-  }, [applyCustomerInfo]);
+  }, [applyCustomerInfo, isConfigured]);
 
   return {
     currentOffering,

@@ -24,7 +24,7 @@ jest.mock("../../contexts/ThemeProvider", () => ({
 
 jest.mock("../../components/RevenueCat/RestorePurchasesButton", () => {
   const { Text } = require("react-native");
-  return () => <Text>Restore Purchases</Text>;
+  return () => <Text testID="restore-purchases-button">Restore Purchases</Text>;
 });
 
 describe("SubscriptionSettingsScreen", () => {
@@ -44,5 +44,12 @@ describe("SubscriptionSettingsScreen", () => {
     expect(screen.getByText("RevenueCat unavailable in this build.")).toBeTruthy();
     expect(screen.getByText("No active subscription.")).toBeTruthy();
     expect(screen.getByText("Subscribe to Trail Tasks Pro")).toBeTruthy();
+  });
+
+  it("keeps restore available for users who are not currently recognized as Pro", () => {
+    const screen = render(<SubscriptionSettingsScreen navigation={{ navigate: jest.fn() }} />);
+
+    expect(screen.getByText("No active subscription.")).toBeTruthy();
+    expect(screen.getByTestId("restore-purchases-button")).toBeTruthy();
   });
 });

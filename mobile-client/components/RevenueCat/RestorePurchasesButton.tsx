@@ -6,9 +6,11 @@ import { darkTheme, lightTheme } from '../../theme';
 
 const RestorePurchasesButton = () => {
   const { theme } = useTheme();
-  const { restorePurchases } = useAuthContext();
+  const { restorePurchases, revenueCatConfigured, revenueCatLoading, revenueCatError } = useAuthContext();
   const styles = getStyles(theme);
   const [loading, setLoading] = React.useState(false);
+  const restoreUnavailable = revenueCatLoading || !revenueCatConfigured || !!revenueCatError;
+  const disabled = loading || restoreUnavailable;
 
   const handleRestore = async () => {
     try {
@@ -30,11 +32,15 @@ const RestorePurchasesButton = () => {
   };
 
   return (
-    <TouchableOpacity onPress={handleRestore} style={styles.button} disabled={loading} testID="restore-purchases-button">
+    <TouchableOpacity
+      onPress={handleRestore}
+      style={[styles.button, disabled && styles.disabledButton]}
+      disabled={disabled}
+      testID="restore-purchases-button">
       {loading ? (
         <ActivityIndicator color={theme.background} />
       ) : (
-        <Text style={styles.text}>Restore Purchases</Text>
+        <Text style={styles.text}>{restoreUnavailable ? 'Restore unavailable' : 'Restore Purchases'}</Text>
       )}
     </TouchableOpacity>
   );
@@ -59,6 +65,9 @@ const getStyles = (theme: typeof darkTheme | typeof lightTheme) =>
       color: theme.background,
       fontWeight: '600',
       fontSize: 16,
+    },
+    disabledButton: {
+      opacity: 0.55,
     },
   });
 
