@@ -139,7 +139,7 @@ export const HomeScreen: React.FC<Props> = ({
             <Text style={[styles.onlineStatus, { color: isConnected ? "#2ecc71" : "#ff6b6b" }]}>
               {isConnected ? "Online" : "Offline"}
             </Text>
-            <SyncButton />
+            {/* <SyncButton /> */}
           </View>
         </View>
 

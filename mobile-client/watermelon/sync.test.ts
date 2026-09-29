@@ -154,6 +154,23 @@ describe("sync helpers", () => {
     expect(changes.users_sessions.updated[0].total_session_time).toBe(60);
   });
 
+  it("normalizes redacted user rows so Watermelon can store them without server password payloads", () => {
+    const changes = normalizeRemoteChanges({
+      users: {
+        created: [],
+        updated: [{ id: "user-1", email: "user@example.com", username: "user" }],
+        deleted: [],
+      },
+    });
+
+    expect(changes.users.updated[0]).toEqual({
+      id: "user-1",
+      email: "user@example.com",
+      username: "user",
+      password: "",
+    });
+  });
+
   it("uses scoped replacement only for account tables during full account pulls", () => {
     const strategy = buildFullUserSyncStrategy("user-1");
 

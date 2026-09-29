@@ -33,6 +33,12 @@ import InitialSessionCategories from "./helpers/Session/InitialSessionCategories
 import InitialTrails from "./helpers/Trails/InitialTrails.js";
 import InitialWilds from './helpers/Wild/InitialWilds.js'
 import achievementsWithIds from './assets/Achievements/addAchievementIds.js';
+import {
+    prepareUserRowsForStorage,
+    redactUserForClient,
+    redactUsersForClient,
+    verifyPassword,
+} from './helpers/authSecurity.mjs';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import cron from 'node-cron';
@@ -110,12 +116,13 @@ const findUser = async (req, res, next) => {
     try {
         email = email.toLowerCase();
         
-        // Query the database for the user
-        const user = await User.findOne({ where: { email, password } });
-        console.log('user from server findUser()', user);
+        // Query the database for the user and verify the candidate password in application code.
+        // This supports both hashed MVP rows and legacy development plaintext rows.
+        const user = await User.findOne({ where: { email } });
+        console.log('user from server findUser()', user ? { id: user.id, email: user.email } : null);
 
         // Set userId in res.locals
-        if (user) {
+        if (user && verifyPassword(password, user.password)) {
 
             const userSessions = await User_Session.findAll({ where: { user_id: user.id } });
             const userPurchasedTrails = await User_Purchased_Trail.findAll({ where: { user_id: user.id } });
@@ -125,7 +132,7 @@ const findUser = async (req, res, next) => {
             const userParks = await User_Park.findAll({where: {user_id: user.id}});
             const userFriends = await User_Friend.findAll({where: {user_id: user.id}});
             const userWilds = await User_Wild.findAll({where: {user_id: user.id}});
-            res.locals.user = user;
+            res.locals.user = redactUserForClient(user);
             res.locals.userWilds = userWilds;
             res.locals.userSessions = userSessions;
             res.locals.userPurchasedTrails = userPurchasedTrails;
@@ -464,7 +471,7 @@ app.get('/pull', async (req, res) => {
             const fullUserWhere = userId ? { user_id: userId } : { user_id: '__missing_user__' };
             const fullUserData = fullUserSync && userId && !catalogOnly
                 ? {
-                    users: await User.findAll({ where: { id: userId } }),
+                    users: redactUsersForClient(await User.findAll({ where: { id: userId } })),
                     users_addons: await User_Addon.findAll({ where: fullUserWhere }),
                     users_completed_trails: await User_Completed_Trail.findAll({ where: fullUserWhere }),
                     users_queued_trails: await Users_Queued_Trail.findAll({ where: fullUserWhere }),
@@ -713,7 +720,7 @@ app.get('/pull', async (req, res) => {
                     },
                     users: {
                         created: [],
-                        updated: fullUserData ? fullUserData.users : updatedUsers.length ? updatedUsers : [],
+                        updated: fullUserData ? fullUserData.users : updatedUsers.length ? redactUsersForClient(updatedUsers) : [],
                         deleted: [],
                     },
                 users_addons: {
@@ -811,9 +818,21 @@ app.post('/push', async (req, res) => {
     try {
         const changes = await req.body.changes;
         const lastPulledAt = req.query.last_pulled_at;
-        console.log('sending changes to pg', {changes, lastPulledAt});
+        const safeChangesForLog = {
+            ...changes,
+            users: changes?.users
+                ? {
+                    ...changes.users,
+                    created: redactUsersForClient(changes.users.created || []),
+                    updated: redactUsersForClient(changes.users.updated || []),
+                }
+                : undefined,
+        };
+        console.log('sending changes to pg', {changes: safeChangesForLog, lastPulledAt});
         if (lastPulledAt !== 'null') {
             const cleanSyncRows = rows => rows.map(({_status, _changed, ...row}) => row);
+            const userCreatedRows = prepareUserRowsForStorage(cleanSyncRows(changes?.users?.created || []));
+            const userUpdatedRows = prepareUserRowsForStorage(cleanSyncRows(changes?.users?.updated || []));
             const upsertRows = async (model, rows = []) => {
                 if (!rows[0]) return;
 
@@ -852,7 +871,7 @@ app.post('/push', async (req, res) => {
                 }
             };
 
-            await upsertRows(User, changes?.users?.updated);
+            await upsertRows(User, userUpdatedRows);
             await upsertRows(User_Achievement, changes?.users_achievements?.updated);
             await upsertRows(User_Addon, changes?.users_addons?.updated);
             await upsertRows(User_Completed_Trail, changes?.users_completed_trails?.updated);
@@ -864,8 +883,8 @@ app.post('/push', async (req, res) => {
             await upsertRows(User_Wild, changes?.users_wilds?.updated);
             await upsertRows(Session_Addon, changes?.sessions_addons?.updated);
 
-            if (changes?.users?.created[0] !== undefined) {
-                const users = await User.bulkCreate(changes.users.created, {updateOnDuplicate: ['id']});
+            if (userCreatedRows[0] !== undefined) {
+                const users = await User.bulkCreate(userCreatedRows, {updateOnDuplicate: ['id']});
             }
             if (changes?.users_achievements?.created[0] !== undefined) {
                 const users_achievements = await User_Achievement.bulkCreate(
@@ -912,8 +931,8 @@ app.post('/push', async (req, res) => {
                 );
             }
             //updates to created rows in pg database
-            if (changes?.users?.updated[0] !== undefined) {
-                const updateQueries = changes.users.updated.map((remoteEntry) => {
+            if (userUpdatedRows[0] !== undefined) {
+                const updateQueries = userUpdatedRows.map((remoteEntry) => {
                     //console.log({remoteEntry});
                     return User.update({...remoteEntry}, {
                         where: {

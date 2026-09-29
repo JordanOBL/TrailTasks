@@ -43,21 +43,26 @@ const mockSetLocalStorageUser = setLocalStorageUser as jest.Mock;
 const mockSync = sync as jest.Mock;
 
 describe('useAuth login', () => {
-  const watermelonDatabase = { localStorage: { set: jest.fn(), remove: jest.fn() } } as any;
+  const syncedLocalUser = { id: 'user-1', email: 'jordan@example.com' };
+  const mockFindUserById = jest.fn();
+  const watermelonDatabase = {
+    localStorage: { set: jest.fn(), remove: jest.fn() },
+    collections: {
+      get: jest.fn(() => ({ find: mockFindUserById })),
+    },
+  } as any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockSetLocalStorageUser.mockResolvedValue(true);
     mockSync.mockResolvedValue(undefined);
+    mockFindUserById.mockResolvedValue(syncedLocalUser);
   });
 
-  it('uses full account sync instead of manually saving the whole user tree on first remote login', async () => {
+  it('uses full account sync then fetches the synced user by id on first remote login', async () => {
     const remoteUser = { user: { id: 'user-1', email: 'jordan@example.com' } };
-    const syncedLocalUser = { id: 'user-1', email: 'jordan@example.com' };
 
-    mockCheckLocalUserExists
-      .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce(syncedLocalUser);
+    mockCheckLocalUserExists.mockResolvedValueOnce(undefined);
     mockCheckGlobalUserExists.mockResolvedValue(remoteUser);
 
     const { result } = renderHook(() => useAuth({ watermelonDatabase }));
@@ -70,6 +75,9 @@ describe('useAuth login', () => {
       fullUserSync: true,
       pullOnly: true,
     });
+    expect(watermelonDatabase.collections.get).toHaveBeenCalledWith('users');
+    expect(mockFindUserById).toHaveBeenCalledWith('user-1');
+    expect(mockCheckLocalUserExists).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(result.current.user).toBe(syncedLocalUser));
   });
 });
