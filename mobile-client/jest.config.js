@@ -21,6 +21,8 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
     '^react-native-config$': '<rootDir>/__mocks__/react-native-config.js',
+    '^rive-react-native$': '<rootDir>/__mocks__/rive-react-native.js',
+    '\\.(png|jpg|jpeg|gif|webp|svg|riv)$': '<rootDir>/__mocks__/assetMock.js',
   },
 };
 
