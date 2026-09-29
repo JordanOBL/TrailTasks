@@ -211,6 +211,13 @@ function dedupeRowsById(rows: RawRecord[] = []) {
 }
 
 function normalizeRemoteRow(tableName: string, row: RawRecord) {
+  if (tableName === "users") {
+    return {
+      ...row,
+      password: row.password || "",
+    };
+  }
+
   if (tableName !== "users_sessions") {
     return row;
   }

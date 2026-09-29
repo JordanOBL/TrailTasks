@@ -92,11 +92,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
               fullUserSync: true,
               pullOnly: true,
             });
-            localUser = await checkLocalUserExists(
-              email.toLowerCase(),
-              password,
-              watermelonDatabase,
-            );
+            localUser = await watermelonDatabase.collections.get('users').find(remoteUser.user.id);
           }
         }
         if (!localUser) {
