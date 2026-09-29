@@ -6,6 +6,7 @@ import { darkTheme, lightTheme } from "../theme";
 
 import ParkCard from "../components/Parks/ParkCard";
 import WildAvatar from "../components/Wilds/WildAvatar";
+import formatTime from "../helpers/formatTime";
 import { useAuthContext } from "../services/AuthContext";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -23,6 +24,16 @@ interface ParkCardData {
   wildId: string;
 }
 
+interface CompletedSessionData {
+  id: string;
+  sessionName: string;
+  sessionDescription?: string;
+  sessionCategoryName?: string;
+  totalSessionTime: number;
+  totalDistanceHiked: string | number;
+  dateAdded?: string;
+}
+
 const LogbookScreen = ({ navigation }: Props) => {
   const { user } = useAuthContext();
   const { theme } = useTheme();
@@ -32,17 +43,19 @@ const LogbookScreen = ({ navigation }: Props) => {
   const [parks, setParks] = useState<Park[]>([]);
   const [userParks, setUserParks] = useState<User_Park[] | null>(null);
   const [userWilds, setUserWilds] = useState<User_Wild[] | null>(null);
+  const [completedSessions, setCompletedSessions] = useState<CompletedSessionData[] | null>(null);
   const [activeWild, setActiveWild] = useState<Wild | null>(null);
   const [activeUserWild, setActiveUserWild] = useState<User_Wild | null>(null);
   const styles = getStyles(theme);
 
   const load = useCallback(async () => {
     if (!user) return;
-    const [parksWilds, parks, userParks, userWilds] = await Promise.all([
+    const [parksWilds, parks, userParks, userWilds, userSessions] = await Promise.all([
       db.get<Park_Wild>("parks_wilds").query().fetch(),
       db.get<Park>("parks").query().fetch(),
       user?.usersParks,
       user?.usersWilds,
+      user?.usersSessions,
     ]);
 
     if (userWilds.length > 0) {
@@ -62,6 +75,7 @@ const LogbookScreen = ({ navigation }: Props) => {
     setParks(parks);
     setUserParks(userParks);
     setUserWilds(userWilds);
+    setCompletedSessions(normalizeCompletedSessions(userSessions ?? []));
   }, [db, user]);
 
   useFocusEffect(
@@ -107,7 +121,14 @@ const LogbookScreen = ({ navigation }: Props) => {
     [user, navigation],
   );
 
-  if (!user || !parksWilds || !parks || userParks === null || userWilds === null) {
+  if (
+    !user ||
+    !parksWilds ||
+    !parks ||
+    userParks === null ||
+    userWilds === null ||
+    completedSessions === null
+  ) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -135,6 +156,7 @@ const LogbookScreen = ({ navigation }: Props) => {
       />
       <FlatList
         data={parkCardData}
+        ListHeaderComponent={<CompletedSessionsSection sessions={completedSessions} />}
         keyExtractor={item => item.parkId}
         numColumns={2}
         initialNumToRender={10}
@@ -142,6 +164,62 @@ const LogbookScreen = ({ navigation }: Props) => {
         windowSize={5}
         renderItem={renderParkCard}
       />
+    </View>
+  );
+};
+
+const normalizeCompletedSessions = (sessions: any[]): CompletedSessionData[] => {
+  return sessions
+    .map(session => ({
+      id: session.id,
+      sessionName: session.sessionName ?? session.session_name ?? "Untitled session",
+      sessionDescription: session.sessionDescription ?? session.session_description,
+      sessionCategoryName:
+        session.sessionCategoryName ?? session.session_category_name ?? "Solo session",
+      totalSessionTime: Number(session.totalSessionTime ?? session.total_session_time ?? 0),
+      totalDistanceHiked: session.totalDistanceHiked ?? session.total_distance_hiked ?? "0.00",
+      dateAdded: session.dateAdded ?? session.date_added,
+    }))
+    .sort((a, b) => String(b.dateAdded ?? "").localeCompare(String(a.dateAdded ?? "")));
+};
+
+const CompletedSessionsSection = ({ sessions }: { sessions: CompletedSessionData[] }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
+  return (
+    <View testID="completed-sessions-section" style={styles.completedSessionsSection}>
+      <Text style={styles.sectionTitle}>Completed Sessions</Text>
+      {sessions.length === 0 ? (
+        <View testID="completed-sessions-empty-state" style={styles.completedSessionEmptyCard}>
+          <Text style={styles.completedSessionEmptyTitle}>No completed sessions yet</Text>
+          <Text style={styles.completedSessionEmptyText}>
+            Finish a solo hike and it will show up here with distance, time, and category.
+          </Text>
+        </View>
+      ) : (
+        sessions.map(session => (
+          <View
+            key={session.id}
+            testID={`logbook-session-${session.id}`}
+            style={styles.completedSessionCard}>
+            <Text style={styles.completedSessionTitle}>{session.sessionName}</Text>
+            <Text style={styles.completedSessionCategory}>{session.sessionCategoryName}</Text>
+            {!!session.sessionDescription && (
+              <Text style={styles.completedSessionDescription}>{session.sessionDescription}</Text>
+            )}
+            {!!session.dateAdded && (
+              <Text style={styles.completedSessionDate}>{session.dateAdded}</Text>
+            )}
+            <View style={styles.completedSessionStatsRow}>
+              <Text style={styles.completedSessionStat}>{session.totalDistanceHiked} mi</Text>
+              <Text style={styles.completedSessionStat}>
+                {formatTime(session.totalSessionTime)}
+              </Text>
+            </View>
+          </View>
+        ))
+      )}
     </View>
   );
 };
@@ -253,6 +331,74 @@ const getStyles = (theme: theme) => {
       textAlign: "center",
       padding: 16,
       color: "white",
+    },
+    completedSessionsSection: {
+      marginBottom: 18,
+      gap: 10,
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: "700",
+    },
+    completedSessionCard: {
+      padding: 14,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card ?? theme.background,
+      marginBottom: 10,
+    },
+    completedSessionTitle: {
+      color: "rgb(7,254,213)",
+      fontSize: 16,
+      fontWeight: "700",
+      marginBottom: 4,
+    },
+    completedSessionCategory: {
+      color: theme.text,
+      fontSize: 13,
+      fontWeight: "600",
+      marginBottom: 4,
+    },
+    completedSessionDescription: {
+      color: theme.secondaryText,
+      fontSize: 13,
+      marginBottom: 4,
+    },
+    completedSessionDate: {
+      color: theme.secondaryText,
+      fontSize: 12,
+      marginBottom: 8,
+    },
+    completedSessionStatsRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      borderTopWidth: 1,
+      borderTopColor: theme.border,
+      paddingTop: 8,
+    },
+    completedSessionStat: {
+      color: theme.text,
+      fontSize: 13,
+      fontWeight: "600",
+    },
+    completedSessionEmptyCard: {
+      padding: 14,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card ?? theme.background,
+    },
+    completedSessionEmptyTitle: {
+      color: theme.text,
+      fontSize: 15,
+      fontWeight: "700",
+      marginBottom: 4,
+    },
+    completedSessionEmptyText: {
+      color: theme.secondaryText,
+      fontSize: 13,
     },
     listContent: {
       alignItems: "center", // Centers the grid content
