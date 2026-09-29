@@ -36,7 +36,7 @@ describe('FilterBy', () => {
 				total_distance_hiked: 10,
 				date_added: '2022-01-03T24:00:00.000Z',
 			},
-		//Year
+		//within the current year window
 			{
 				user_session_id: 4,
 				user_id: 1,
@@ -46,7 +46,7 @@ describe('FilterBy', () => {
 				session_description: 'Session 4 description',
 				total_session_time: 60,
 				total_distance_hiked: 10,
-				date_added: '2025-01-03T24:00:00.000Z',
+				date_added: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
 			},
 		];
 

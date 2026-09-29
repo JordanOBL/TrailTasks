@@ -1,22 +1,6 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
-import { WrappedApp} from '../../index';
-import {testDb as watermelonDatabase} from '../../watermelon/testDB';
-import {createMockUserBase, createUser} from '../../__mocks__/UserModel';
 import Rewards from './Rewards';
 
 describe('Rewards', ()=> {
-let testUser
-  // Reset the local database
-  beforeAll(async () => {
-    await watermelonDatabase.write(async () => {
-      await watermelonDatabase.unsafeResetDatabase();
-    })
- 
-    // Create a mock user
-    const mockUser = createMockUserBase()
-    testUser = await createUser(watermelonDatabase, mockUser)
-    
-  })
 
   it('gives user correct tokens 10 tokens for 15 minutes', async () => {
     const setSessionDetails = jest.fn()
