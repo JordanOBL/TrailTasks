@@ -1,4 +1,4 @@
-package com.trailtasks.app
+package app.trailtasks
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
