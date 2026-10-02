@@ -3,7 +3,8 @@ module.exports = {
   "env": {
     "es2021": true,
     "node": true,
-    "browser": true
+    "browser": true,
+     "jest": true
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {

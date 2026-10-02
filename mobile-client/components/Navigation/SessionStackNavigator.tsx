@@ -1,9 +1,8 @@
-import EnhancedSessionScreen from '../../Screens/SessionScreen';
 import GroupSessionScreen from '../../Screens/GroupSessionScreen';
 import SessionTypeScreen from '../../Screens/SessionTypeScreen';
-import {User} from '../../watermelon/models';
 import {createStackNavigator} from '@react-navigation/stack';
 import {useAuthContext} from '../../services/AuthContext';
+import EnhancedSessionScreen from '../../Screens/SessionScreen';
 const Session = createStackNavigator()
 
 export function SessionStackNavigator()

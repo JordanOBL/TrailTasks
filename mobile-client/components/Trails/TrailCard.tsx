@@ -56,7 +56,7 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statIcon}>🕒</Text>
-            <Text style={styles.statText}>{calculateEstimatedTime(trail?.trail_distance)}</Text>
+            <Text style={styles.statText}>{calculateEstimatedTime(Number(trail?.trail_distance))}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statIcon}>🌟</Text>

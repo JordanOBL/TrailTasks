@@ -175,21 +175,12 @@ const schema = appSchema({
         {name: 'session_category_id', type: 'string'}, //ref
         {name: 'date_added', type: 'string', isIndexed: true},
         {name: 'total_session_time', type: 'number', isIndexed: true},
-        {name: 'total_distance_hiked', type: 'string'},
+        {name: 'total_distance_hiked', type: 'number'},
         {name: 'created_at', type: 'number'},
         {name: 'updated_at', type: 'number'},
       ],
     }),
-//    tableSchema({
-//      name: 'users_subscriptions',
-//      columns: [
-//        {name: 'user_id', type: 'string'}, //ref
-//        {name: 'is_active', type: 'boolean'}, //ref
-//        {name: 'expires_at', type: 'string', isOptional: true}, //ref
-//        {name: 'created_at', type: 'number'},
-//        {name: 'updated_at', type: 'number'},
-//      ],
-//    }),
+
     tableSchema({
       name: 'addons',
       columns: [

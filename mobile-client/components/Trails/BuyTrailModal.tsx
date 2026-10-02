@@ -1,55 +1,38 @@
-import React, {useState} from 'react';
-import {Modal, Pressable, StyleSheet, Text, View} from 'react-native';
+import React, { useState } from "react";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import FullTrailDetails from "../../types/fullTrailDetails";
 
 interface Props {
   isVisible: boolean;
   onClose: () => void;
-  trail: FullTrailDetails ;
+  trail: FullTrailDetails;
   trailTokens: number;
   onBuyTrail: (trail: FullTrailDetails, cost: number) => void;
 }
 
-const BuyTrailModal = ({
-  isVisible,
-  onClose,
-  trail,
-  trailTokens,
-  onBuyTrail,
-}: Props) => {
-  const [error, setError] = useState('');
-  const trailDistance = parseInt(trail.trail_distance)
-  const unlockCost =
-      trailDistance < 5
-          ? 5
-          : trailDistance < 10
-              ? 10
-              : trailDistance < 20
-                  ? 25
-                  : 50;
+const BuyTrailModal = ({ isVisible, onClose, trail, trailTokens, onBuyTrail }: Props) => {
+  const [error, setError] = useState("");
+  const trailDistance = parseInt(trail.trail_distance);
+  const unlockCost = trailDistance < 5 ? 5 : trailDistance < 10 ? 10 : trailDistance < 20 ? 25 : 50;
 
   const handleBuyTrail = () => {
     if (trailTokens >= unlockCost) {
       onBuyTrail(trail, unlockCost);
       onClose();
     } else {
-      setError('Not enough trail tokens to buy this trail.');
+      setError("Not enough trail tokens to buy this trail.");
     }
   };
 
   return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}>
+    <Modal animationType="fade" transparent={true} visible={isVisible} onRequestClose={onClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           {/*<Text style={styles.modalText}>Buying Trail</Text>*/}
           <Text style={styles.descriptionText}>
             Are you sure you want to buy the "{trail.trail_name}" trail
           </Text>
-          <Text style={[styles.descriptionText, {fontWeight: 'bold', fontSize:18}]}>
+          <Text style={[styles.descriptionText, { fontWeight: "bold", fontSize: 18 }]}>
             Pay {unlockCost} Trail Tokens?
           </Text>
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -58,13 +41,11 @@ const BuyTrailModal = ({
               style={[styles.button, styles.buttonCancel]}
               onPress={() => {
                 onClose();
-                setError('');
+                setError("");
               }}>
               <Text style={styles.textStyle}>Cancel</Text>
             </Pressable>
-            <Pressable
-              style={[styles.button, styles.buttonBuy]}
-              onPress={handleBuyTrail}>
+            <Pressable style={[styles.button, styles.buttonBuy]} onPress={handleBuyTrail}>
               <Text style={styles.textStyle}>Buy</Text>
             </Pressable>
           </View>
@@ -77,17 +58,17 @@ const BuyTrailModal = ({
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 22,
   },
   modalView: {
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -98,43 +79,43 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 20,
-    fontWeight: 'bold',
-    color: 'black',
+    fontWeight: "bold",
+    color: "black",
   },
   descriptionText: {
     marginBottom: 15,
-    textAlign: 'center',
-    color: 'black',
+    textAlign: "center",
+    color: "black",
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
     marginTop: 10,
   },
   button: {
     borderRadius: 20,
     padding: 10,
     elevation: 2,
-    minWidth: '40%',
+    minWidth: "40%",
   },
   buttonCancel: {
-    backgroundColor: 'grey',
+    backgroundColor: "grey",
   },
   buttonBuy: {
-    backgroundColor: 'green',
+    backgroundColor: "rgb(7,254,213)",
   },
   textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "#000000",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 

@@ -20,6 +20,7 @@ import {
     User_Purchased_Trail,
     User_Session,
     User_Wild,
+    Users_Queued_Trail,
     Wild
 } from './db/sequelizeModel.js';
 import {Op, QueryTypes, Sequelize} from 'sequelize';
@@ -32,6 +33,12 @@ import InitialSessionCategories from "./helpers/Session/InitialSessionCategories
 import InitialTrails from "./helpers/Trails/InitialTrails.js";
 import InitialWilds from './helpers/Wild/InitialWilds.js'
 import achievementsWithIds from './assets/Achievements/addAchievementIds.js';
+import {
+    prepareUserRowsForStorage,
+    redactUserForClient,
+    redactUsersForClient,
+    verifyPassword,
+} from './helpers/authSecurity.mjs';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import cron from 'node-cron';
@@ -109,12 +116,13 @@ const findUser = async (req, res, next) => {
     try {
         email = email.toLowerCase();
         
-        // Query the database for the user
-        const user = await User.findOne({ where: { email, password } });
-        console.log('user from server findUser()', user);
+        // Query the database for the user and verify the candidate password in application code.
+        // This supports both hashed MVP rows and legacy development plaintext rows.
+        const user = await User.findOne({ where: { email } });
+        console.log('user from server findUser()', user ? { id: user.id, email: user.email } : null);
 
         // Set userId in res.locals
-        if (user) {
+        if (user && verifyPassword(password, user.password)) {
 
             const userSessions = await User_Session.findAll({ where: { user_id: user.id } });
             const userPurchasedTrails = await User_Purchased_Trail.findAll({ where: { user_id: user.id } });
@@ -124,7 +132,7 @@ const findUser = async (req, res, next) => {
             const userParks = await User_Park.findAll({where: {user_id: user.id}});
             const userFriends = await User_Friend.findAll({where: {user_id: user.id}});
             const userWilds = await User_Wild.findAll({where: {user_id: user.id}});
-            res.locals.user = user;
+            res.locals.user = redactUserForClient(user);
             res.locals.userWilds = userWilds;
             res.locals.userSessions = userSessions;
             res.locals.userPurchasedTrails = userPurchasedTrails;
@@ -388,9 +396,11 @@ app.get('/pull', async (req, res) => {
     try {
         let lastPulledAt = getSafeLastPulledAt(req.query.last_pulled_at);
         const userId = req.query.userId;
+        const fullUserSync = req.query.full_user_sync === 'true';
+        const catalogOnly = req.query.catalog_only === 'true';
         console.debug('user in pull id', userId);
         console.log('last pulled at', {lastPulledAt});
-        if (lastPulledAt === new Date(0).toISOString()) {
+        if (lastPulledAt === new Date(0).toISOString() && !fullUserSync) {
             console.log("Initial Data Pull From Server...")
             const createdAddons = await Addon.findAll({});
             const createdAchievements = await Achievement.findAll({});
@@ -458,6 +468,45 @@ app.get('/pull', async (req, res) => {
             return res.json(responseData);
         } else {
             console.log(`Server: sending all data changes for user: ${userId} since last device pull at: ${lastPulledAt} `)
+            const fullUserWhere = userId ? { user_id: userId } : { user_id: '__missing_user__' };
+            const fullUserData = fullUserSync && userId && !catalogOnly
+                ? {
+                    users: redactUsersForClient(await User.findAll({ where: { id: userId } })),
+                    users_addons: await User_Addon.findAll({ where: fullUserWhere }),
+                    users_completed_trails: await User_Completed_Trail.findAll({ where: fullUserWhere }),
+                    users_queued_trails: await Users_Queued_Trail.findAll({ where: fullUserWhere }),
+                    users_parks: await User_Park.findAll({ where: fullUserWhere }),
+                    users_achievements: await User_Achievement.findAll({ where: fullUserWhere }),
+                    users_purchased_trails: await User_Purchased_Trail.findAll({ where: fullUserWhere }),
+                    users_sessions: await User_Session.findAll({ where: fullUserWhere }),
+                    users_friends: await User_Friend.findAll({ where: fullUserWhere }),
+                    users_wilds: await User_Wild.findAll({ where: fullUserWhere }),
+                }
+                : null;
+            if (catalogOnly) {
+                const updatedAddons = await Addon.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParks = await Park.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedTrails = await Trail.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedAchievements = await Achievement.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParkStates = await Park_State.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedSessionCategories = await Session_Category.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedWilds = await Wild.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+                const updatedParksWilds = await Park_Wild.findAll({where: {updatedAt: {[Sequelize.Op.gt]: lastPulledAt}}});
+
+                return res.json({
+                    changes: {
+                        addons: {created: [], updated: updatedAddons, deleted: []},
+                        parks: {created: [], updated: updatedParks, deleted: []},
+                        trails: {created: [], updated: updatedTrails, deleted: []},
+                        achievements: {created: [], updated: updatedAchievements, deleted: []},
+                        park_states: {created: [], updated: updatedParkStates, deleted: []},
+                        session_categories: {created: [], updated: updatedSessionCategories, deleted: []},
+                        wilds: {created: [], updated: updatedWilds, deleted: []},
+                        parks_wilds: {created: [], updated: updatedParksWilds, deleted: []},
+                    },
+                    timestamp: Date.now(),
+                });
+            }
             const createdAddons = await Addon.findAll({
                 where: {
                     createdAt: {
@@ -671,43 +720,48 @@ app.get('/pull', async (req, res) => {
                     },
                     users: {
                         created: [],
-                        updated: updatedUsers.length ? updatedUsers : [],
+                        updated: fullUserData ? fullUserData.users : updatedUsers.length ? redactUsersForClient(updatedUsers) : [],
                         deleted: [],
                     },
                 users_addons: {
                     created: [],
-                    updated: [...updatedUserAddons],
+                    updated: fullUserData ? fullUserData.users_addons : [...updatedUserAddons],
                     deleted: [],
                 },
                     users_completed_trails: {
                         created: [],
-                        updated: updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
+                        updated: fullUserData ? fullUserData.users_completed_trails : updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
+                        deleted: [],
+                    },
+                    users_queued_trails: {
+                        created: [],
+                        updated: fullUserData ? fullUserData.users_queued_trails : [],
                         deleted: [],
                     },
                     users_parks:{
                         created: [],
-                        updated: createdUserParks.length ? createdUserParks : [],
+                        updated: fullUserData ? fullUserData.users_parks : createdUserParks.length ? createdUserParks : [],
                         deleted: [],
                     },
 
                     users_achievements: {
                         created: [],
-                        updated: createdUserAchievements,
+                        updated: fullUserData ? fullUserData.users_achievements : createdUserAchievements,
                         deleted: [],
                     },
                     users_purchased_trails: {
                         created: [],
-                        updated: createdUserPurchasedTrails,
+                        updated: fullUserData ? fullUserData.users_purchased_trails : createdUserPurchasedTrails,
                         deleted: [],
                     },
                     users_sessions: {
                         created: [],
-                        updated: updatedUserSessions,
+                        updated: fullUserData ? fullUserData.users_sessions : updatedUserSessions,
                         deleted: [],
                     },
                     users_friends: {
                         created: [],
-                        updated: updatedFriends,
+                        updated: fullUserData ? fullUserData.users_friends : updatedFriends,
                         deleted: [],
                     },
                     trails: {
@@ -737,7 +791,7 @@ app.get('/pull', async (req, res) => {
                     },
                     users_wilds:{
                         created: [],
-                        updated: updatedUserWilds,
+                        updated: fullUserData ? fullUserData.users_wilds : updatedUserWilds,
                         deleted: [],
                     },
                     parks_wilds: {
@@ -755,6 +809,7 @@ app.get('/pull', async (req, res) => {
         }
     } catch (err) {
         console.log('Error in server /pull', err);
+        return res.status(500).json({error: 'An error occurred during the pull operation.', details: err.message});
     }
 });
 
@@ -763,10 +818,73 @@ app.post('/push', async (req, res) => {
     try {
         const changes = await req.body.changes;
         const lastPulledAt = req.query.last_pulled_at;
-        console.log('sending changes to pg', {changes, lastPulledAt});
+        const safeChangesForLog = {
+            ...changes,
+            users: changes?.users
+                ? {
+                    ...changes.users,
+                    created: redactUsersForClient(changes.users.created || []),
+                    updated: redactUsersForClient(changes.users.updated || []),
+                }
+                : undefined,
+        };
+        console.log('sending changes to pg', {changes: safeChangesForLog, lastPulledAt});
         if (lastPulledAt !== 'null') {
-            if (changes?.users?.created[0] !== undefined) {
-                const users = await User.bulkCreate(changes.users.created, {updateOnDuplicate: ['id']});
+            const cleanSyncRows = rows => rows.map(({_status, _changed, ...row}) => row);
+            const userCreatedRows = prepareUserRowsForStorage(cleanSyncRows(changes?.users?.created || []));
+            const userUpdatedRows = prepareUserRowsForStorage(cleanSyncRows(changes?.users?.updated || []));
+            const upsertRows = async (model, rows = []) => {
+                if (!rows[0]) return;
+
+                const cleanRows = cleanSyncRows(rows);
+                for (const row of cleanRows) {
+                    const [updatedCount] = await model.update(row, {where: {id: row.id}});
+                    if (updatedCount === 0) {
+                        await model.create(row);
+                    }
+                }
+            };
+            const upsertSessionRows = async (rows = []) => {
+                if (!rows[0]) return;
+
+                const cleanRows = cleanSyncRows(rows);
+                for (const row of cleanRows) {
+                    const existing = await User_Session.findOne({where: {id: row.id}});
+                    const mergedRow = existing
+                        ? {
+                            ...row,
+                            total_distance_hiked: Number(Math.max(
+                                Number(existing.total_distance_hiked) || 0,
+                                Number(row.total_distance_hiked) || 0,
+                            ).toFixed(2)),
+                            total_session_time: Math.max(
+                                Number(existing.total_session_time) || 0,
+                                Number(row.total_session_time) || 0,
+                            ),
+                        }
+                        : row;
+
+                    const [updatedCount] = await User_Session.update(mergedRow, {where: {id: row.id}});
+                    if (updatedCount === 0) {
+                        await User_Session.create(mergedRow);
+                    }
+                }
+            };
+
+            await upsertRows(User, userUpdatedRows);
+            await upsertRows(User_Achievement, changes?.users_achievements?.updated);
+            await upsertRows(User_Addon, changes?.users_addons?.updated);
+            await upsertRows(User_Completed_Trail, changes?.users_completed_trails?.updated);
+            await upsertRows(Users_Queued_Trail, changes?.users_queued_trails?.updated);
+            await upsertRows(User_Park, changes?.users_parks?.updated);
+            await upsertRows(User_Purchased_Trail, changes?.users_purchased_trails?.updated);
+            await upsertSessionRows(changes?.users_sessions?.updated);
+            await upsertRows(User_Friend, changes?.users_friends?.updated);
+            await upsertRows(User_Wild, changes?.users_wilds?.updated);
+            await upsertRows(Session_Addon, changes?.sessions_addons?.updated);
+
+            if (userCreatedRows[0] !== undefined) {
+                const users = await User.bulkCreate(userCreatedRows, {updateOnDuplicate: ['id']});
             }
             if (changes?.users_achievements?.created[0] !== undefined) {
                 const users_achievements = await User_Achievement.bulkCreate(
@@ -784,9 +902,7 @@ app.post('/push', async (req, res) => {
                 );
             }
             if (changes?.users_sessions?.created[0] !== undefined) {
-                const users_sessions = await User_Session.bulkCreate(
-                    changes.users_sessions.created, {updateOnDuplicate: ['id']}
-                );
+                await upsertSessionRows(changes.users_sessions.created);
             }
             if(changes?.sessions_addons?.created[0] !== undefined) {
                 const sessions_addons = await Session_Addon.bulkCreate(
@@ -815,8 +931,8 @@ app.post('/push', async (req, res) => {
                 );
             }
             //updates to created rows in pg database
-            if (changes?.users?.updated[0] !== undefined) {
-                const updateQueries = changes.users.updated.map((remoteEntry) => {
+            if (userUpdatedRows[0] !== undefined) {
+                const updateQueries = userUpdatedRows.map((remoteEntry) => {
                     //console.log({remoteEntry});
                     return User.update({...remoteEntry}, {
                         where: {
@@ -830,7 +946,7 @@ app.post('/push', async (req, res) => {
             if (changes?.users_wilds?.updated[0] !== undefined) {
                 const updateQueries = changes.users_wilds.updated.map((remoteEntry) => {
                     //console.log({remoteEntry});
-                    return User.update({...remoteEntry}, {
+                    return User_Wild.update({...remoteEntry}, {
                         where: {
                             user_id: remoteEntry.user_id,
                             wild_id: remoteEntry.wild_id,
@@ -858,20 +974,7 @@ app.post('/push', async (req, res) => {
                 await Promise.all(updateQueries);
             }
             if (changes?.users_sessions?.updated[0] !== undefined) {
-                const updateQueries = changes.users_sessions.updated.map(
-                    (remoteEntry) => {
-                        //console.log({remoteEntry});
-                        return User_Session.update(
-                            {...remoteEntry},
-                            {
-                                where: {
-                                    id: remoteEntry.id,
-                                },
-                            }
-                        );
-                    }
-                );
-                await Promise.all(updateQueries);
+                await upsertSessionRows(changes.users_sessions.updated);
             }
 
             if (changes?.users_parks?.updated[0] !== undefined) {

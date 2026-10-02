@@ -1,8 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeProvider';
+import { darkTheme, lightTheme } from '../../theme';
 
-const SubscriptionOptionCard = ({ product, isPopular, onPress, selected }) => {
+interface SubscriptionOptionCardProps {
+  product: any;
+  isPopular: boolean;
+  onPress: () => void;
+  selected: boolean;
+}
+
+const SubscriptionOptionCard = ({ product, isPopular, onPress, selected }: SubscriptionOptionCardProps) => {
   const { theme } = useTheme();
   const styles = getStyles(theme, selected);
 
@@ -25,7 +33,7 @@ const SubscriptionOptionCard = ({ product, isPopular, onPress, selected }) => {
   );
 };
 
-const getStyles = (theme, selected) =>
+const getStyles = (theme: typeof darkTheme | typeof lightTheme, selected: boolean) =>
   StyleSheet.create({
     card: {
       backgroundColor: selected ? theme.button : theme.card,

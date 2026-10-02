@@ -17,6 +17,7 @@
       "./node_modules/@types",
       "./types"
     ],
+    "types": ["jest", "node"],
     "paths": {
       "*": [
         "./node_modules/*"

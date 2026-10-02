@@ -1,4 +1,27 @@
-const addonImages = {
+enum addonName {
+  "HikingPolesI",
+    "HikingPolesII",
+    "HikingPolesIII",
+    "WaterBottleI",
+    "WaterBottleII",
+    "WaterBottleIII",
+    "TrailMixI",
+    "TrailMixII",
+    "TrailMixIII",
+    "FirstAidI",
+    "FirstAidII",
+    "FirstAidIII",
+    "RunningShoesI",
+    "RunningShoesII",
+    "RunningShoesIII",
+    "TreasureMapI",
+    "TreasureMapII",
+    "TreasureMapIII",
+    "UltralightI",
+    "UltralightII",
+    "UltralightIII"
+}
+const addonImages: Record<string, any> = {
   HikingPolesI: require('../../assets/addons/HikingPoles1.png'),
   HikingPolesII: require('../../assets/addons/HikingPoles2.png'),
   HikingPolesIII: require('../../assets/addons/HikingPoles3.png'),

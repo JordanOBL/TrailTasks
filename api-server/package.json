@@ -11,7 +11,7 @@
     "build": "npm run build-js",
     "start:prod": "cross-env NODE_ENV=production node dist/index.mjs",
     "build-js": "babel src --out-dir dist --copy-files --ignore '**/*.spec.js' && mv dist/index.js dist/index.mjs",
-    "test": "jest",
+    "test": "node --test \"src/**/*.test.mjs\"",
     "start:test": "cross-env NODE_ENV=test nodemon src/index.mjs"
 
   },

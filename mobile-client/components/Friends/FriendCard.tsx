@@ -1,15 +1,22 @@
-import { StyleSheet, Text, View, Pressable } from 'react-native';
-import React from 'react';
-import getUserRank from '../../helpers/Ranks/getUserRank';
-import { withObservables } from '@nozbe/watermelondb/react';
-import { useTheme } from '../../contexts/ThemeProvider';
+import { StyleSheet, Text, View, Pressable } from "react-native";
+import React from "react";
+import getUserRank from "../../helpers/Ranks/getUserRank";
+import { withObservables } from "@nozbe/watermelondb/react";
+import { useTheme } from "../../contexts/ThemeProvider";
+import { Cached_Friend } from "../../watermelon/models";
+import { lightTheme, darkTheme } from "../../theme";
 
-const FriendCard = ({ friend, isConnected, handleAction }) => {
+interface FriendCardProps {
+  friend: Cached_Friend;
+  isConnected: boolean;
+  handleAction: (arg: string) => void;
+}
+const FriendCard = ({ friend, isConnected, handleAction }: FriendCardProps) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
   if (!friend || (!friend.friendId && !friend.friend_id)) {
-    console.warn('[FriendCard] Invalid friend data:', friend);
+    console.warn("[FriendCard] Invalid friend data:", friend);
     return null;
   }
 
@@ -22,8 +29,7 @@ const FriendCard = ({ friend, isConnected, handleAction }) => {
           testID={`${friend.friendId}-friend-username`}
           style={styles.username}
           numberOfLines={1}
-          ellipsizeMode="tail"
-        >
+          ellipsizeMode="tail">
           {friend.username}
         </Text>
         <Text testID={`${friend.friendId}-friend-rank`} style={styles.subtext}>
@@ -44,28 +50,25 @@ const FriendCard = ({ friend, isConnected, handleAction }) => {
         ]}
         disabled={!isConnected || !friend.roomId}
         onPress={() => handleAction(friend.roomId)}
-        testID={`join-room-${friend.roomId || friend.room_id}-button`}
-      >
-        <Text style={styles.buttonText}>
-          {!isConnected ? 'No connection' : 'Join'}
-        </Text>
+        testID={`join-room-${friend.roomId || friend.room_id}-button`}>
+        <Text style={styles.buttonText}>{!isConnected ? "No connection" : "Join"}</Text>
       </Pressable>
     </View>
   );
 };
 
-const enhance = withObservables(['cachedFriends'], ({ friend }) => ({
+const enhance = withObservables(["cachedFriends"], ({ friend }) => ({
   friend,
 }));
 const EnhancedFriendCard = enhance(FriendCard);
 export default EnhancedFriendCard;
 
-const getStyles = (theme) =>
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({
     card: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       backgroundColor: theme.card,
       padding: 14,
       marginHorizontal: 16,
@@ -73,7 +76,7 @@ const getStyles = (theme) =>
       borderRadius: 10,
       borderWidth: 1,
       borderColor: theme.border,
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOpacity: 0.05,
       shadowOffset: { width: 0, height: 2 },
       shadowRadius: 3,
@@ -85,7 +88,7 @@ const getStyles = (theme) =>
     },
     username: {
       fontSize: 17,
-      fontWeight: '600',
+      fontWeight: "600",
       color: theme.text,
       marginBottom: 4,
     },
@@ -101,15 +104,14 @@ const getStyles = (theme) =>
       borderRadius: 6,
     },
     disabledButton: {
-      backgroundColor: 'gray',
+      backgroundColor: "gray",
     },
     buttonPressed: {
       opacity: 0.8,
     },
     buttonText: {
       color: theme.buttonText,
-      fontWeight: '600',
+      fontWeight: "600",
       fontSize: 15,
     },
   });
-

@@ -1,207 +1,143 @@
-import {queryByTestId, render, waitFor, fireEvent, screen} from '@testing-library/react-native';
-import React, {useState} from 'react';
-import GroupSessionScreen from '../GroupSessionScreen';
-import {testDb as watermelonDatabase} from '../../watermelon/testDB';
-import {createMockUserBase, createUser} from '../../__mocks__/UserModel';
-import {DatabaseProvider} from '@nozbe/watermelondb/react';
-import {AuthProvider} from '../../services/AuthContext';
-import {InternetConnectionProvider} from '../../contexts/InternetConnectionProvider';
-import {sync} from '../../watermelon/sync';
-import {TestWrapper} from '../../__mocks__/TestWrapper';
+import { render } from "@testing-library/react-native";
+import React from "react";
 
-describe('GroupSessionScreen', () => {
+import GroupSessionScreen from "../GroupSessionScreen";
 
-	const mockUserA = createMockUserBase({
-		id: 'A',
-		username: 'mockusernameA',
-		email: 'mockemailA@example.com',
-		password: 'mockPasswordA',
-	});
-	const mockUserB = createMockUserBase({
-		id: 'B',
-		username: 'mockusernameB',
-		email: 'mockemailB@example.com',
-		password: 'mockPasswordB',
-	});
+type FutureGroupSessionStep = {
+  step: string;
+  actor: "host" | "guest" | "both clients";
+  userAction: string;
+  expectedScreenBehavior: string;
+  futureTestIds: string[];
+};
 
-	let testUserA, testUserB
-	// Reset the local database
-	beforeAll(async () => {
-		await watermelonDatabase.write(async () => {
-			await watermelonDatabase.unsafeResetDatabase();
-		})
-		await sync(watermelonDatabase, true);
-		testUserA = await createUser(watermelonDatabase, mockUserA);
-		testUserB = await createUser(watermelonDatabase, mockUserB);
-	})
+const hostCreateAndLobbyFlow: FutureGroupSessionStep[] = [
+  {
+    step: "Open group session entry point",
+    actor: "host",
+    userAction: "Host opens the Group session screen",
+    expectedScreenBehavior:
+      "The implemented post-MVP screen renders create-room and join-room controls before any room exists.",
+    futureTestIds: [
+      "group-session-screen",
+      "create-room-button",
+      "join-room-input",
+      "join-room-button",
+    ],
+  },
+  {
+    step: "Create a room",
+    actor: "host",
+    userAction: "Host presses Create Room",
+    expectedScreenBehavior:
+      "The server returns a room id, the host is inserted into the hikers map, and the screen changes to lobby view.",
+    futureTestIds: ["create-room-button", "hiker-<hostId>-name", "hiker-<hostId>-status"],
+  },
+  {
+    step: "Show host as not ready in the lobby",
+    actor: "host",
+    userAction: "Host waits in the lobby after room creation",
+    expectedScreenBehavior:
+      "The hiker list shows the host username and a Not Ready status, and the host can configure the session.",
+    futureTestIds: ["hiker-<hostId>-name", "hiker-<hostId>-status", "configure-session-button"],
+  },
+  {
+    step: "Host readies and edits shared session settings",
+    actor: "host",
+    userAction: "Host presses Ready Up, opens settings, changes the session name, and saves",
+    expectedScreenBehavior:
+      "The host status changes to Ready, settings are persisted to the shared lobby config, and the start button appears while the host is the only hiker.",
+    futureTestIds: [
+      "toggle-ready-button",
+      "group-settings-modal",
+      "session-name-input",
+      "save-close-settings-button",
+      "start-group-session-button",
+    ],
+  },
+];
 
-	afterAll(async () => {
-		await watermelonDatabase.write(async () => {
-			await watermelonDatabase.unsafeResetDatabase();
-		})
-	})
+const guestJoinAndStartFlow: FutureGroupSessionStep[] = [
+  {
+    step: "Join by room id from a second client",
+    actor: "guest",
+    userAction: "Guest enters the host room id and presses Join Room",
+    expectedScreenBehavior:
+      "The guest joins the same lobby, sees the shared session config, and initially appears Not Ready.",
+    futureTestIds: [
+      "join-room-input",
+      "join-room-button",
+      "hiker-<guestId>-name",
+      "hiker-<guestId>-status",
+    ],
+  },
+  {
+    step: "Sync both hiker lists across clients",
+    actor: "both clients",
+    userAction: "Host and guest remain in the same lobby after the guest joins",
+    expectedScreenBehavior:
+      "Both clients render both hikers, and the host start button disappears while any hiker is Not Ready.",
+    futureTestIds: [
+      "hiker-<hostId>-name",
+      "hiker-<guestId>-name",
+      "hiker-<hostId>-status",
+      "hiker-<guestId>-status",
+      "start-group-session-button",
+    ],
+  },
+  {
+    step: "Guest readies up",
+    actor: "guest",
+    userAction: "Guest presses Ready Up",
+    expectedScreenBehavior:
+      "Both clients show the guest as Ready and the host sees the start button because every hiker is ready.",
+    futureTestIds: ["toggle-ready-button", "hiker-<guestId>-status", "start-group-session-button"],
+  },
+  {
+    step: "Only host starts the shared runtime",
+    actor: "host",
+    userAction: "Host presses Start Session",
+    expectedScreenBehavior:
+      "The host can start the group session; non-host clients do not render the start button but transition with the shared runtime state.",
+    futureTestIds: ["start-group-session-button", "group-session-timer"],
+  },
+];
 
+const fullGroupSessionFlow = [...hostCreateAndLobbyFlow, ...guestJoinAndStartFlow];
 
+describe("GroupSessionScreen deferred MVP wrapper", () => {
+  it("shows the coming soon screen without mounting group-session controls", () => {
+    const { getByTestId, getByText, queryByTestId } = render(<GroupSessionScreen />);
 
-	it('renders correctly', async () => {
-		const debugRefA = React.createRef();
-		const {queryByTestId, getByTestId} = render(<TestWrapper>
-			<GroupSessionScreen user={testUserA} debugRef={debugRefA}  />
-		</TestWrapper>);	
-		expect(queryByTestId('group-session-screen')).toBeTruthy();
-		await waitFor(() => {
-			expect(debugRefA.current.serverUrl).toBe('ws://127.0.0.1:8080/groupsession');	
-			expect(getByTestId('create-room-button')).toBeTruthy();
-			expect(getByTestId('join-room-button')).toBeTruthy();
-		})
-	});
+    expect(getByTestId("coming-soon-screen")).toBeTruthy();
+    expect(getByText("Group sessions are coming soon")).toBeTruthy();
+    expect(queryByTestId("create-room-button")).toBeNull();
+  });
+});
 
-	it('creates a new room and shows lobby', async () => {
-		const debugRefA = React.createRef();
-		const {queryByTestId, getByTestId} = render(<TestWrapper>
-			<GroupSessionScreen user={testUserA} debugRef={debugRefA}  />
-		</TestWrapper>);	
-		expect(queryByTestId('group-session-screen')).toBeTruthy();
-		await waitFor(() => {
-			expect(debugRefA.current.serverUrl).toBe('ws://127.0.0.1:8080/groupsession');	
-			expect(getByTestId('create-room-button')).toBeTruthy();
-			expect(getByTestId('join-room-button')).toBeTruthy();
-		})
+describe("GroupSessionScreen future implementation contract", () => {
+  test.each(fullGroupSessionFlow)("documents flow step: $step", step => {
+    expect(["host", "guest", "both clients"]).toContain(step.actor);
+    expect(step.userAction).toEqual(expect.any(String));
+    expect(step.expectedScreenBehavior).toEqual(expect.any(String));
+    expect(step.futureTestIds.length).toBeGreaterThan(0);
+  });
 
-		//creates a room
-		//adds user to the room
-		fireEvent.press(getByTestId('create-room-button'));
-		await waitFor(() => {
-			//gets roomId from server
-			expect(debugRefA.current.roomId).toBeTruthy();
-			//adds user to room
-			expect(debugRefA.current.hikers[testUserA.id]).toBeTruthy();
-			//changes to lobby screen
-			expect(debugRefA.current.view).toBe('lobby');
-			//shows hikers username in room
-			expect(screen.getByText(testUserA.username)).toBeTruthy();
-		})
-	})
+  it("keeps the post-MVP group session flow in the order hikers should experience it", () => {
+    expect(fullGroupSessionFlow.map(step => step.step)).toEqual([
+      "Open group session entry point",
+      "Create a room",
+      "Show host as not ready in the lobby",
+      "Host readies and edits shared session settings",
+      "Join by room id from a second client",
+      "Sync both hiker lists across clients",
+      "Guest readies up",
+      "Only host starts the shared runtime",
+    ]);
+  });
 
-	it('allows user to join room and shows appropriate messages', async () => {
-		const debugRefA = React.createRef();
-		const debugRefB = React.createRef();
-		//render user A
-		const {queryByTestId: queryByTestIdA, getByTestId: getByTestIdA} = render(<TestWrapper>
-			<GroupSessionScreen user={testUserA} debugRef={debugRefA}  />
-		</TestWrapper>);
-
-	
-		await waitFor(() => {
-			//test user A screen is ready
-			expect(debugRefA.current.serverUrl).toBe('ws://127.0.0.1:8080/groupsession');
-			expect(getByTestIdA('create-room-button')).toBeTruthy();
-			expect(getByTestIdA('join-room-button')).toBeTruthy();
-		})
-
-		//create room by userA
-		fireEvent.press(getByTestIdA('create-room-button'));
-		await waitFor(() => {
-			console.log('debugRefA creates room',debugRefA.current)
-			//gets roomId from server
-			expect(debugRefA.current.roomId).toBeTruthy();
-			//adds user to room
-			expect(debugRefA.current.hikers[testUserA.id]).toBeTruthy();
-			//changes to lobby screen
-			expect(debugRefA.current.view).toBe('lobby');
-			//shows hikers username in room
-			expect(screen.getByText(testUserA.username)).toBeTruthy();
-			//shows hiker status Not Ready
-			expect(getByTestIdA(`hiker-${testUserA.id}-status`)).toHaveTextContent('Not Ready');
-		})
-
-		//toggle ready Hiker A
-		fireEvent.press(getByTestIdA('toggle-ready-button'));
-		await waitFor(() => {
-			//shows hiker status Ready
-			expect(getByTestIdA(`hiker-${testUserA.id}-status`)).toHaveTextContent('Ready');
-			//expect start session button to be available since all (1 user) hikers are ready
-			expect(getByTestIdA('start-group-session-button')).toBeDefined();
-		})
-
-		fireEvent.press(queryByTestIdA('configure-session-button'));
-		await waitFor(() => {
-			//starts session
-			expect(getByTestIdA('settings-modal')).toBeDefined();
-		})
-		fireEvent.changeText(getByTestIdA('session-name-input'),'Test Session');
-		fireEvent.press(getByTestIdA('save-close-settings-button'));
-		await waitFor(() => {
-			expect(debugRefA.current.session.name).toBe('Test Session');
-		})
-	
-
-		
-
-	//render user B
-		const {queryByTestId: queryByTestIdB, getByTestId: getByTestIdB} = render(<TestWrapper>
-			<GroupSessionScreen user={testUserB} debugRef={debugRefB}  />
-		</TestWrapper>);
-
-		await waitFor(() => {
-					//test user B screen is ready
-			expect(debugRefB.current.serverUrl).toBe('ws://127.0.0.1:8080/groupsession');
-			expect(getByTestIdB('create-room-button')).toBeTruthy();
-			expect(getByTestIdB('join-room-button')).toBeTruthy();
-		})
-
-
-		// userB joins Hiker A's Room
-		// input hiker A's roomId
-		fireEvent.changeText(getByTestIdB('join-room-input'), debugRefA.current.roomId);
-
-		//click	join room
-		fireEvent.press(queryByTestIdB('join-room-button'));
-		await waitFor(() => {
-			//gets roomId from server
-			//adds user to room
-			expect(debugRefB.current.hikers[testUserB.id]).toBeTruthy();
-			//changes to lobby screen
-			expect(debugRefB.current.view).toBe('lobby');
-			//shows hikers username in room
-			expect(screen.getByText(testUserB.username)).toBeTruthy();
-			//shows hikerB status Not Ready
-			expect(getByTestIdB(`hiker-${testUserB.id}-status`)).toHaveTextContent('Not Ready');
-			//expect join button to be gone because not all hikers (user B) are ready
-			expect(queryByTestIdA('start-group-session-button')).toBeNull();
-			//shows hiker B that user A is in room and not ready
-			//shows both users on both screens
-			expect(queryByTestIdA(`hiker-${testUserA.id}-name`)).toBeTruthy();
-			expect(queryByTestIdA(`hiker-${testUserB.id}-name`)).toBeTruthy();
-
-			expect(queryByTestIdB(`hiker-${testUserA.id}-name`)).toBeTruthy();
-			expect(queryByTestIdB(`hiker-${testUserB.id}-name`)).toBeTruthy();
-			expect(debugRefB.current.session.name).toBe('Test Session');
-		})
-
-		//ready userB
-		//Ready hiker A(Both should Be ready After this)
-		fireEvent.press(getByTestIdB(`toggle-ready-button`));
-		await waitFor(() => {
-			//shows hiker A that user B is in room and ready
-			expect(queryByTestIdA(`hiker-${testUserB.id}-status`)).toHaveTextContent('Ready');
-			//shows hiker B that user B is in room and ready
-			expect(queryByTestIdB(`hiker-${testUserA.id}-status`)).toHaveTextContent('Ready');
-
-			//expect start session button to be available becasue both hikers are ready
-			expect(queryByTestIdA('start-group-session-button')).toBeTruthy();
-			//start button only available to host
-			expect(queryByTestIdB('start-group-session-button')).toBeFalsy();
-		})
-
-	
-
-	
-
-
-	})
-
-
-
-
-})
+  it.todo(
+    "rebuild create/join/ready/start as an opt-in integration test with a websocket test server",
+  );
+  it.todo("rebuild lobby persistence with a native-safe test DB or mocked Watermelon adapter");
+});

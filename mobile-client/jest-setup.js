@@ -242,10 +242,26 @@ jest.mock('./helpers/RevenueCat/useRevenueCat', () => ({
 }));
 
 //theme
-jest.mock('./contexts/ThemeProvider', () => ({
-  useTheme: () => ({
-    theme: 'lightTheme',
-    toggleTheme: jest.fn(), // noop
-  }),
-}));
+jest.mock('./contexts/ThemeProvider', () => {
+  const React = require('react');
+  const mockTheme = {
+    background: '#000000',
+    card: '#121212',
+    text: '#ffffff',
+    secondaryText: '#aaaaaa',
+    border: '#333333',
+    button: '#13B3AC',
+    buttonText: '#ffffff',
+    inputBackground: '#1f1f1f',
+    linkDisabled: '#777777',
+  };
+
+  return {
+    ThemeProvider: ({ children }) => <>{children}</>,
+    useTheme: () => ({
+      theme: mockTheme,
+      toggleTheme: jest.fn(), // noop
+    }),
+  };
+});
 

@@ -12,12 +12,22 @@ import {
 import EnhancedAddonListItem from '../AddOnStore/AddonListItem';
 import { withObservables } from '@nozbe/watermelondb/react';
 
-const NewSessionBackpack = ({
+interface NewSessionBackpackProps {
+  sessionDetails: any;
+  setSessionDetails: (sessionDetails: any) => void;
+  user: any;
+  totalMiles?: number;
+  usersAddons: any[];
+}
+
+export const NewSessionBackpack = ({
                               sessionDetails,
                               setSessionDetails,
                               user,
+                              totalMiles,
                               usersAddons,
-                            }) => {
+                            }: NewSessionBackpackProps) => {
+  const derivedTotalMiles = totalMiles ?? Number(user?.totalMiles || 0);
   const [isDrawerVisible, setDrawerVisible] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [drawerAnimation] = useState(new Animated.Value(0));
@@ -82,28 +92,28 @@ const NewSessionBackpack = ({
                         styles.addonSlot,
                         {
                           borderColor:
-                              user.totalMiles >= slot.minimumTotalMiles
+                              derivedTotalMiles >= slot.minimumTotalMiles
                                   ? 'rgb(7,254,213)'
                                   : 'grey',
                         },
                       ]}
-                      disabled={user.totalMiles < slot.minimumTotalMiles}
+                      disabled={derivedTotalMiles < slot.minimumTotalMiles}
                       onPress={() => openDrawer(index)}
                   >
                     <Text
                         style={{
                           color:
-                              user.totalMiles >= slot.minimumTotalMiles
+                              derivedTotalMiles >= slot.minimumTotalMiles
                                   ? 'rgb(7,254,213)'
                                   : 'grey',
                           fontWeight: 'bold',
                           fontSize:
-                              user.totalMiles >= slot.minimumTotalMiles ? 18 : 14,
+                              derivedTotalMiles >= slot.minimumTotalMiles ? 18 : 14,
                         }}
                     >
                       {slot.addon
                           ? slot.addon.name
-                          : user.totalMiles >= slot.minimumTotalMiles
+                          : derivedTotalMiles >= slot.minimumTotalMiles
                               ? '+'
                               : `Unlock at ${slot.minimumTotalMiles} miles`}
                     </Text>
