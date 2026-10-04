@@ -37,6 +37,10 @@ target 'TrailTasks' do
       # :ccache_enabled => true
     )
     installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+      end
+
       targets_to_ignore = %w(RCT-Folly-RCT-Folly_privacy React-Core-React-Core_privacy)
 
       if targets_to_ignore.include? target.name
@@ -56,6 +60,23 @@ target 'TrailTasks' do
         # 2. Also remove the React-Core-RCTI18nStrings target if needed
       if target.name == "React-Core-RCTI18nStrings"
         target.remove_from_project
+      end
+    end
+
+    # RevenueCat 5.22.2 exposes a stored property layout that Xcode 27 / Swift 6
+    # treats as a synthesized memberwise initializer collision. Patch the
+    # generated Pods source during install so clean checkouts build reliably.
+    revenuecat_paywall_color = File.join(
+      installer.sandbox.root.to_s,
+      'RevenueCat/Sources/Paywalls/PaywallColor.swift'
+    )
+    if File.exist?(revenuecat_paywall_color)
+      old_line = '    fileprivate var _underlyingColor: (any Sendable)?'
+      new_line = '    fileprivate let _underlyingColor: (any Sendable)?'
+      paywall_color_contents = File.read(revenuecat_paywall_color)
+      if paywall_color_contents.include?(old_line)
+        File.chmod(0644, revenuecat_paywall_color)
+        File.write(revenuecat_paywall_color, paywall_color_contents.sub(old_line, new_line))
       end
     end
   end
