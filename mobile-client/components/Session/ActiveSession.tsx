@@ -23,6 +23,7 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
   const { bus, sessionEngineMgr } = useServices();
   const sEngineRef = useRef<SessionEngine | null>(null);
   const [showQuitSessionModal, setShowQuitSessionModal] = useState(false);
+  const [isQuitConfirmed, setIsQuitConfirmed] = useState(false);
   const [snapshot, setSnapshot] = useState<SessionSnapshot | null>(null);
 
   useEffect(() => {
@@ -32,6 +33,19 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
       setSnapshot(snapshot);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isQuitConfirmed || showQuitSessionModal) {
+      return;
+    }
+
+    const quitTimer = setTimeout(() => {
+      bus.emit("UI_QUIT_REQUESTED");
+    }, 350);
+
+    return () => clearTimeout(quitTimer);
+  }, [bus, isQuitConfirmed, showQuitSessionModal]);
+
   useBusEvent("SESSION_TICK", (payload: SessionSnapshotPayload) => setSnapshot(payload.snapshot));
   useBusEvent("SESSION_PAUSED", (payload: SessionSnapshotPayload) => {
     setSnapshot(payload.snapshot);
@@ -173,10 +187,8 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
             setShowQuitSessionModal(false);
           }}
           quit={() => {
+            setIsQuitConfirmed(true);
             setShowQuitSessionModal(false);
-            setTimeout(() => {
-              bus.emit("UI_QUIT_REQUESTED");
-            }, 0);
           }}
           sessionDetails={snapshot}
         />

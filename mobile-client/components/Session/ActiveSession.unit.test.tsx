@@ -1,5 +1,5 @@
 import { jest, describe, test, afterAll, afterEach, expect, beforeEach } from "@jest/globals";
-import { render, screen, userEvent } from "@testing-library/react-native";
+import { render, screen, userEvent, act, fireEvent } from "@testing-library/react-native";
 import { createMockUserBase } from "../../__mocks__/UserModel";
 import EnhancedActiveSession from "./ActiveSession";
 import formatCountdown from "../../helpers/Timer/formatCountdown";
@@ -186,5 +186,24 @@ describe("active Session UI screen", () => {
 
     await user.press(await screen.findByTestId("pause-resume-button"));
     expect(mockBus.emit).toHaveBeenCalledWith("UI_RESUME_REQUESTED");
+  });
+
+  test("confirming quit hides the modal before emitting the quit request", async () => {
+    jest.useFakeTimers();
+
+    render(<EnhancedActiveSession />);
+
+    fireEvent.press(screen.getByTestId("stop-button"));
+    expect(screen.getByTestId("quit-session-modal")).toBeDefined();
+
+    fireEvent.press(screen.getByTestId("confirm-quit-button"));
+    expect(mockBus.emit).not.toHaveBeenCalledWith("UI_QUIT_REQUESTED");
+
+    act(() => {
+      jest.advanceTimersByTime(350);
+    });
+
+    expect(mockBus.emit).toHaveBeenCalledWith("UI_QUIT_REQUESTED");
+    jest.useRealTimers();
   });
 });

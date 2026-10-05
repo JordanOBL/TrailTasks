@@ -5,35 +5,34 @@ import { SessionSnapshot } from "../sessionEngine/sessionEngine";
 import { User } from "../watermelon/models";
 import handleError from "../helpers/ErrorHandler";
 
-export type  Rewards = {
+export type Rewards = {
   trailRewards: number;
   wildXpRewards: number;
   timeRewards: number;
   totalTokenRewards: number;
-}
+};
 type TrailTokenRules = {
   // e.g. distance * perMileMultiplier
-  perMileMultiplier: number;   // was "distance * 3"
-  minPerTrail: number;         // was "Math.max(5, ...)"
+  perMileMultiplier: number; // was "distance * 3"
+  minPerTrail: number; // was "Math.max(5, ...)"
 };
 
 type WildXpRules = {
-  xpPerMile: number;           // was "miles * 10"
+  xpPerMile: number; // was "miles * 10"
 };
 
 type TimeTokenRules = {
-    minThresholdMinutes: number,
-    tokensPerThreshold: number,
-    bonusThresholdMinutes: number,
-    bonusThresholdMultiplier: number
-}
+  minThresholdMinutes: number;
+  tokensPerThreshold: number;
+  bonusThresholdMinutes: number;
+  bonusThresholdMultiplier: number;
+};
 
 type RewardRules = {
   trailTokens: TrailTokenRules;
   wildXp: WildXpRules;
   timeTokens: TimeTokenRules;
 };
-
 
 export default class RewardService {
   private bus: EventBus;
@@ -76,9 +75,12 @@ export default class RewardService {
     unregisterList.push(
       this.bus.on("SESSION_COMPLETED", (payload: SessionCompletedPayload) => {
         void this.calculateRewards(payload.snapshot).catch(e => {
-          handleError(e, "RewardService.register() - Error calculating rewards on SESSION_COMPLETED event");
-        })
-  }),
+          handleError(
+            e,
+            "RewardService.register() - Error calculating rewards on SESSION_COMPLETED event",
+          );
+        });
+      }),
     );
 
     return () => {
@@ -155,36 +157,36 @@ export default class RewardService {
   }
 
   private async calculateActiveWildXpReward(session: SessionSnapshot): Promise<number> {
-      /*
+    /*
             RULES: 
                 ALL users  gain wild xp for active wild for either partial distance hiked or overal session time
                 PRO users gain set xp amount per completed trail to that trails inactive wild.
             */
 
-      //calcualte active wild xp
-      const user = await this.db.get<User>("users").find(session.userId);
+    //calcualte active wild xp
+    const user = await this.db.get<User>("users").find(session.userId);
 
-      if (!user) {
-        throw new Error("No User found with params passed from session");
-      }
+    if (!user) {
+      throw new Error("No User found with params passed from session");
+    }
 
-      const activeWild = await user.usersWilds.extend(Q.where("is_active", true));
+    const [activeWild] = await user.usersWilds.extend(Q.where("is_active", true)).fetch();
 
-      if (!activeWild) {
-        return 0;
-      }
+    if (!activeWild) {
+      return 0;
+    }
 
-      //if Pro
-      //for each completed trail grant that trails wild 10xp in persistenceService if wild.id in user.wilds array
-      //meaning the user has unlocked that user wild
+    //if Pro
+    //for each completed trail grant that trails wild 10xp in persistenceService if wild.id in user.wilds array
+    //meaning the user has unlocked that user wild
 
-      // if(this.isProMember && session.completedTrails.length > 0){
-      //     const uw = await this.user.usersWilds
-      //     if(uw.length === 1){
+    // if(this.isProMember && session.completedTrails.length > 0){
+    //     const uw = await this.user.usersWilds
+    //     if(uw.length === 1){
 
-      //     }
-      //     session.completedTrails.map()
-      // }
+    //     }
+    //     session.completedTrails.map()
+    // }
     return Math.floor(Number(session.totalDistanceMiles)) * this.rules.wildXp.xpPerMile;
   }
 
