@@ -1,6 +1,11 @@
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { User, User_Completed_Trail, User_Purchased_Trail, User_Queued_Trail } from "../watermelon/models";
+import {
+  User,
+  User_Completed_Trail,
+  User_Purchased_Trail,
+  User_Queued_Trail,
+} from "../watermelon/models";
 import { darkTheme, lightTheme } from "../theme";
 
 import FullTrailDetails from "../types/fullTrailDetails";
@@ -59,9 +64,9 @@ const TrailsList = ({
         userPurchasedTrails.some(purchasedTrail => trail.id === purchasedTrail.trailId),
       );
     } else if (filter === "Free") {
-      filtered = trailsCollection.filter(trail => trail.is_free === true);
+      filtered = trailsCollection.filter(trail => trail.is_free == true);
     } else if (filter === "Trail Of The Week") {
-      filtered = trailsCollection.filter(trail => trail.trail_of_the_week === true);
+      filtered = trailsCollection.filter(trail => trail.trail_of_the_week == true);
     } else if (filter === "Completed") {
       filtered = trailsCollection.filter(trail =>
         completedTrails.some(completedTrail => trail.id === completedTrail.trailId),
@@ -70,10 +75,11 @@ const TrailsList = ({
 
     if (debouncedSearchQuery) {
       const normalizedQuery = debouncedSearchQuery.toLowerCase();
-      filtered = filtered.filter((trail: FullTrailDetails) =>
-        trail.trail_name.toLowerCase().includes(normalizedQuery) ||
-        trail.park_name.toLowerCase().includes(normalizedQuery) ||
-        trail.state.toLowerCase().includes(normalizedQuery),
+      filtered = filtered.filter(
+        (trail: FullTrailDetails) =>
+          trail.trail_name.toLowerCase().includes(normalizedQuery) ||
+          trail.park_name.toLowerCase().includes(normalizedQuery) ||
+          trail.state.toLowerCase().includes(normalizedQuery),
       );
     }
 
