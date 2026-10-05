@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { darkTheme, lightTheme } from "../theme";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -87,6 +87,30 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     trail?.id,
     user?.trailId,
   ]);
+
+  useEffect(() => {
+    const relation = user?.usersQueuedTrails;
+    if (!relation || typeof relation.observe !== "function") return;
+
+    const subscription = relation.observe().subscribe(setQueued);
+    return () => subscription.unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    const relation = user?.usersPurchasedTrails;
+    if (!relation || typeof relation.observe !== "function") return;
+
+    const subscription = relation.observe().subscribe(setPurchasedTrails);
+    return () => subscription.unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    const relation = user?.usersCompletedTrails;
+    if (!relation || typeof relation.observe !== "function") return;
+
+    const subscription = relation.observe().subscribe(setCompletedTrails);
+    return () => subscription.unsubscribe();
+  }, [user]);
 
   const load = useCallback(async () => {
     try {
@@ -239,16 +263,26 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
           <View style={styles.imageOverlay} />
 
           <View style={styles.topBadgeRow}>
-            <View style={[styles.statusPill, styles[`${status.tone}Pill`]]}>
-              <Text style={[styles.statusPillText, styles[`${status.tone}PillText`]]}>
-                {status.label}
-              </Text>
-            </View>
-            {trail.trail_of_the_week && (
-              <View style={styles.featuredPill}>
-                <Text style={styles.featuredPillText}>★ This Week</Text>
+            <View style={styles.badgesGroup}>
+              <View style={[styles.statusPill, styles[`${status.tone}Pill`]]}>
+                <Text style={[styles.statusPillText, styles[`${status.tone}PillText`]]}>
+                  {status.label}
+                </Text>
               </View>
-            )}
+              {trail.trail_of_the_week && (
+                <View style={styles.featuredPill}>
+                  <Text style={styles.featuredPillText}>★ This Week</Text>
+                </View>
+              )}
+            </View>
+
+            <TouchableOpacity
+              accessibilityLabel="Close trail details"
+              accessibilityRole="button"
+              onPress={() => navigation.goBack()}
+              style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.heroTitleBlock}>
@@ -286,16 +320,42 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
             <TouchableOpacity
               onPress={async () => {
                 if (isQueued) {
-                  const result = (await user?.deleteFromQueuedTrails({
-                    trailId: trail.id,
-                  })) as unknown;
-                  if (result === false) {
-                    Alert.alert("Error", "Could not remove from queue. Please try again later.");
+                  const previousQueuedTrails = queuedTrails;
+                  setQueued(currentQueuedTrails =>
+                    currentQueuedTrails.filter(queuedTrail => queuedTrail.trailId !== trail.id),
+                  );
+
+                  try {
+                    const result = (await user?.deleteFromQueuedTrails({
+                      trailId: trail.id,
+                    })) as unknown;
+                    if (result === false) {
+                      setQueued(previousQueuedTrails);
+                      Alert.alert("Error", "Could not remove from queue. Please try again later.");
+                    }
+                  } catch (err) {
+                    setQueued(previousQueuedTrails);
+                    handleError(err, "deleteFromQueuedTrails in TrailDetailScreen");
                   }
                 } else {
-                  const result = await user?.addToQueuedTrails({ trailId: trail.id });
-                  if (!result) {
-                    Alert.alert("Error", "Could not add to queue. Please try again later.");
+                  const previousQueuedTrails = queuedTrails;
+                  setQueued(currentQueuedTrails => {
+                    if (currentQueuedTrails.some(queuedTrail => queuedTrail.trailId === trail.id)) {
+                      return currentQueuedTrails;
+                    }
+
+                    return [...currentQueuedTrails, { trailId: trail.id }];
+                  });
+
+                  try {
+                    const result = await user?.addToQueuedTrails({ trailId: trail.id });
+                    if (!result) {
+                      setQueued(previousQueuedTrails);
+                      Alert.alert("Error", "Could not add to queue. Please try again later.");
+                    }
+                  } catch (err) {
+                    setQueued(previousQueuedTrails);
+                    handleError(err, "addToQueuedTrails in TrailDetailScreen");
                   }
                 }
               }}
@@ -434,6 +494,30 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       gap: 8,
       justifyContent: "space-between",
       padding: 16,
+    },
+    badgesGroup: {
+      alignItems: "flex-start",
+      flex: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      paddingRight: 10,
+    },
+    closeButton: {
+      alignItems: "center",
+      backgroundColor: "rgba(18, 18, 18, 0.68)",
+      borderColor: "rgba(255, 255, 255, 0.28)",
+      borderRadius: 999,
+      borderWidth: 1,
+      height: 36,
+      justifyContent: "center",
+      width: 36,
+    },
+    closeButtonText: {
+      color: "#ffffff",
+      fontSize: 26,
+      fontWeight: "700",
+      lineHeight: 28,
     },
     statusPill: {
       borderRadius: 999,
