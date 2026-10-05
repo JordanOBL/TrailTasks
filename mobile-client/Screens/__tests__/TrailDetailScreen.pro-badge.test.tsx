@@ -178,4 +178,28 @@ describe("TrailDetailScreen Pro gating indicators", () => {
 
     expect(goBack).toHaveBeenCalledTimes(1);
   });
+
+  it("does not render empty external-link strings as raw text", async () => {
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{
+          params: {
+            fullTrail: {
+              ...fullTrail,
+              nps_url: "",
+              all_trails_url: "",
+              hiking_project_url: "",
+            },
+          },
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Misty Ridge")).toBeTruthy();
+    });
+
+    expect(screen.queryByText("Explore this trail")).toBeNull();
+  });
 });

@@ -61,6 +61,10 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     [completedTrails, trail],
   );
   const canUseTrail = isFreeTrail || isPurchased || (isSubscribersOnly && isProMember);
+  const hasExternalLinks = Boolean(
+    trail?.nps_url || trail?.all_trails_url || trail?.hiking_project_url,
+  );
+  const isTrailOfTheWeek = Boolean(trail?.trail_of_the_week);
   const reward = useMemo(() => {
     const trailDistance = Number(trail?.trail_distance ?? 0);
     return trail?.trail_of_the_week
@@ -269,7 +273,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
                   {status.label}
                 </Text>
               </View>
-              {trail.trail_of_the_week && (
+              {isTrailOfTheWeek && (
                 <View style={styles.featuredPill}>
                   <Text style={styles.featuredPillText}>★ This Week</Text>
                 </View>
@@ -406,24 +410,24 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
             </TouchableOpacity>
           </View>
 
-          {(trail.nps_url || trail.all_trails_url || trail.hiking_project_url) && (
+          {hasExternalLinks && (
             <View style={styles.linksContainer}>
               <Text style={styles.sectionTitle}>Explore this trail</Text>
-              {trail.nps_url && (
+              {Boolean(trail.nps_url) && (
                 <TouchableOpacity
                   style={styles.linkButton}
                   onPress={() => Linking.openURL(trail.nps_url!)}>
                   <Text style={styles.linkText}>NPS Website →</Text>
                 </TouchableOpacity>
               )}
-              {trail.all_trails_url && (
+              {Boolean(trail.all_trails_url) && (
                 <TouchableOpacity
                   style={styles.linkButton}
                   onPress={() => Linking.openURL(trail.all_trails_url!)}>
                   <Text style={styles.linkText}>AllTrails →</Text>
                 </TouchableOpacity>
               )}
-              {trail.hiking_project_url && (
+              {Boolean(trail.hiking_project_url) && (
                 <TouchableOpacity
                   style={styles.linkButton}
                   onPress={() => Linking.openURL(trail.hiking_project_url!)}>
