@@ -76,6 +76,22 @@ jest.mock("../../components/DistanceProgressBar", () => {
   });
 });
 
+jest.mock("../../components/Wilds/WildAvatar", () => {
+  const { Text } = require("react-native");
+
+  return jest.fn(({ id }: { id: string }) => {
+    return <Text testID="active-wild-avatar">{id}</Text>;
+  });
+});
+
+jest.mock("../../contexts/ThemeProvider", () => {
+  const { darkTheme } = require("../../theme");
+
+  return {
+    useTheme: () => ({ theme: darkTheme }),
+  };
+});
+
 jest.mock("@nozbe/watermelondb/react", () => {
   return {
     withObservables: jest.fn((deps: string[]) => (Component: any) => {
@@ -104,6 +120,10 @@ jest.mock("@nozbe/watermelondb/react", () => {
 
         if (deps.includes("userPurchasedTrails")) {
           injectedProps.userPurchasedTrails = [];
+        }
+
+        if (deps.includes("activeWilds")) {
+          injectedProps.activeWilds = [{ wildId: "ember" }];
         }
 
         return <Component {...props} {...injectedProps} />;
@@ -146,6 +166,8 @@ describe("active Session UI screen", () => {
       totalDistanceMiles.toFixed(2) + " mi.",
     );
     expect((await screen.findByTestId("trails")).props.children).toBe(0);
+    expect(await screen.findByText("Focus Trek")).toBeDefined();
+    expect((await screen.findByTestId("active-wild-avatar")).props.children).toBe("ember");
   });
   test("The pause button emits the pause event", async () => {
     const user = userEvent.setup();
