@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { darkTheme, lightTheme } from "../theme";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -61,12 +61,60 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     [completedTrails, trail],
   );
   const canUseTrail = isFreeTrail || isPurchased || (isSubscribersOnly && isProMember);
+  const hasExternalLinks = Boolean(
+    trail?.nps_url || trail?.all_trails_url || trail?.hiking_project_url,
+  );
+  const isTrailOfTheWeek = Boolean(trail?.trail_of_the_week);
   const reward = useMemo(() => {
     const trailDistance = Number(trail?.trail_distance ?? 0);
     return trail?.trail_of_the_week
       ? Math.ceil(trailDistance) * 10
       : Math.max(5, Math.ceil(trailDistance * 3));
   }, [trail]);
+  const status = useMemo(() => {
+    if (user?.trailId === trail?.id) return { label: "Currently Hiking", tone: "active" as const };
+    if (isCompleted) return { label: "Completed", tone: "success" as const };
+    if (isQueued) return { label: "In Queue", tone: "queued" as const };
+    if (isFreeTrail) return { label: "Free Trail", tone: "open" as const };
+    if (isPurchased) return { label: "Purchased", tone: "open" as const };
+    if (isSubscribersOnly && !isProMember) return { label: "Pro", tone: "locked" as const };
+    if (isSubscribersOnly && isProMember)
+      return { label: "Included with Pro", tone: "open" as const };
+    return { label: "Unlock", tone: "locked" as const };
+  }, [
+    isCompleted,
+    isFreeTrail,
+    isProMember,
+    isPurchased,
+    isQueued,
+    isSubscribersOnly,
+    trail?.id,
+    user?.trailId,
+  ]);
+
+  useEffect(() => {
+    const relation = user?.usersQueuedTrails;
+    if (!relation || typeof relation.observe !== "function") return;
+
+    const subscription = relation.observe().subscribe(setQueued);
+    return () => subscription.unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    const relation = user?.usersPurchasedTrails;
+    if (!relation || typeof relation.observe !== "function") return;
+
+    const subscription = relation.observe().subscribe(setPurchasedTrails);
+    return () => subscription.unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    const relation = user?.usersCompletedTrails;
+    if (!relation || typeof relation.observe !== "function") return;
+
+    const subscription = relation.observe().subscribe(setCompletedTrails);
+    return () => subscription.unsubscribe();
+  }, [user]);
 
   const load = useCallback(async () => {
     try {
@@ -183,10 +231,10 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
               <TouchableOpacity
                 style={styles.linkButton}
                 onPress={() => setShowReplaceTrailModal(false)}>
-                <Text style={styles.fullButtonText}>Cancel</Text>
+                <Text style={styles.linkText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.linkButton} onPress={handleReplaceTrail}>
-                <Text style={styles.fullButtonText}>Start New</Text>
+                <Text style={styles.linkText}>Start New</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -206,134 +254,189 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
         }}
       />
 
-      <Image
-        style={styles.trailImage}
-        source={
-          trail?.trail_image_url ? { uri: trail.trail_image_url } : require("../assets/LOGO.png")
-        }
-      />
+      <View style={styles.detailCard}>
+        <View style={styles.heroShell}>
+          <Image
+            style={styles.trailImage}
+            source={
+              trail?.trail_image_url
+                ? { uri: trail.trail_image_url }
+                : require("../assets/LOGO.png")
+            }
+          />
+          <View style={styles.imageOverlay} />
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.trailName}>{trail.trail_name}</Text>
-        <Text style={styles.parkName}>
-          {trail.park_name}, {trail?.state_code}
-        </Text>
-        <Text style={styles.statusText}>{isCompleted ? "✅ Completed" : "Not Completed"}</Text>
-
-        <View style={styles.statsGrid}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{trail.trail_distance} mi</Text>
-            <Text style={styles.statLabel}>Distance</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{trail.trail_elevation} ft</Text>
-            <Text style={styles.statLabel}>Elevation</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>
-              {calculateEstimatedTime(Number(trail.trail_distance))}
-            </Text>
-            <Text style={styles.statLabel}>Est. Time</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{reward}</Text>
-            <Text style={styles.statLabel}>Reward</Text>
-          </View>
-        </View>
-
-        <View style={styles.buttonGroup}>
-          <TouchableOpacity
-            onPress={async () => {
-              if (isQueued) {
-                const result = (await user?.deleteFromQueuedTrails({
-                  trailId: trail.id,
-                })) as unknown;
-                if (result === false) {
-                  Alert.alert("Error", "Could not remove from queue. Please try again later.");
-                }
-              } else {
-                const result = await user?.addToQueuedTrails({ trailId: trail.id });
-                if (!result) {
-                  Alert.alert("Error", "Could not add to queue. Please try again later.");
-                }
-              }
-            }}
-            disabled={!isProMember || user?.trailId === trail.id || !canUseTrail}
-            style={[
-              styles.fullButton,
-              {
-                backgroundColor: isQueued
-                  ? "red"
-                  : !isProMember || !canUseTrail
-                  ? "gray"
-                  : "green",
-              },
-            ]}>
-            <View style={styles.buttonContentRow}>
-              <Text style={styles.fullButtonText}>
-                {isQueued ? "Remove from Queue" : "Add to Queue"}
-              </Text>
-              {!isProMember && <ProBadge testID="add-to-queue-pro-badge" theme={theme} />}
+          <View style={styles.topBadgeRow}>
+            <View style={styles.badgesGroup}>
+              <View style={[styles.statusPill, styles[`${status.tone}Pill`]]}>
+                <Text style={[styles.statusPillText, styles[`${status.tone}PillText`]]}>
+                  {status.label}
+                </Text>
+              </View>
+              {isTrailOfTheWeek && (
+                <View style={styles.featuredPill}>
+                  <Text style={styles.featuredPillText}>★ This Week</Text>
+                </View>
+              )}
             </View>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            disabled={user?.trailId === trail.id}
-            onPress={() => {
-              if (canUseTrail) {
-                setShowReplaceTrailModal(true);
-                return;
-              } else if (isSubscribersOnly && !isProMember) {
-                navigation.navigate("Basecamp", {
-                  screen: "Subscribe",
-                });
+            <TouchableOpacity
+              accessibilityLabel="Close trail details"
+              accessibilityRole="button"
+              onPress={() => navigation.goBack()}
+              style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
+          </View>
 
-                return;
-              } else {
-                handleBuyTrail();
-              }
-            }}
-            style={[
-              styles.fullButton,
-              {
-                backgroundColor:
-                  user?.trailId == trail.id
-                    ? "gray"
-                    : isProMember || isFreeTrail || isPurchased || !isSubscribersOnly
-                    ? "rgb(7,254,213)"
-                    : "gray",
-              },
-            ]}>
-            <Text style={styles.fullButtonText}>{getPurchaseButtonText()}</Text>
-          </TouchableOpacity>
+          <View style={styles.heroTitleBlock}>
+            <Text style={styles.trailName}>{trail.trail_name}</Text>
+            <Text style={styles.parkName}>
+              {trail.park_name}
+              {trail?.state_code ? `, ${trail.state_code}` : ""}
+            </Text>
+          </View>
         </View>
 
-        {(trail.nps_url || trail.all_trails_url || trail.hiking_project_url) && (
-          <View style={styles.linksContainer}>
-            <Text style={styles.sectionTitle}>🌐 Explore This Trail</Text>
-            {trail.nps_url && (
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => Linking.openURL(trail.nps_url!)}>
-                <Text style={styles.linkText}>NPS Website</Text>
-              </TouchableOpacity>
-            )}
-            {trail.all_trails_url && (
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => Linking.openURL(trail.all_trails_url!)}>
-                <Text style={styles.linkText}>AllTrails</Text>
-              </TouchableOpacity>
-            )}
-            {trail.hiking_project_url && (
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => Linking.openURL(trail.hiking_project_url!)}>
-                <Text style={styles.linkText}>Hiking Project</Text>
-              </TouchableOpacity>
-            )}
+        <View style={styles.infoContainer}>
+          <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Distance</Text>
+              <Text style={styles.statValue}>{trail.trail_distance} mi</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Time</Text>
+              <Text style={styles.statValue}>
+                {calculateEstimatedTime(Number(trail.trail_distance))}
+              </Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Elevation</Text>
+              <Text style={styles.statValue}>{trail.trail_elevation} ft</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Reward</Text>
+              <Text style={styles.statValue}>{reward}</Text>
+            </View>
           </View>
-        )}
+
+          <View style={styles.actionPanel}>
+            <TouchableOpacity
+              onPress={async () => {
+                if (isQueued) {
+                  const previousQueuedTrails = queuedTrails;
+                  setQueued(currentQueuedTrails =>
+                    currentQueuedTrails.filter(queuedTrail => queuedTrail.trailId !== trail.id),
+                  );
+
+                  try {
+                    const result = (await user?.deleteFromQueuedTrails({
+                      trailId: trail.id,
+                    })) as unknown;
+                    if (result === false) {
+                      setQueued(previousQueuedTrails);
+                      Alert.alert("Error", "Could not remove from queue. Please try again later.");
+                    }
+                  } catch (err) {
+                    setQueued(previousQueuedTrails);
+                    handleError(err, "deleteFromQueuedTrails in TrailDetailScreen");
+                  }
+                } else {
+                  const previousQueuedTrails = queuedTrails;
+                  setQueued(currentQueuedTrails => {
+                    if (currentQueuedTrails.some(queuedTrail => queuedTrail.trailId === trail.id)) {
+                      return currentQueuedTrails;
+                    }
+
+                    return [...currentQueuedTrails, { trailId: trail.id }];
+                  });
+
+                  try {
+                    const result = await user?.addToQueuedTrails({ trailId: trail.id });
+                    if (!result) {
+                      setQueued(previousQueuedTrails);
+                      Alert.alert("Error", "Could not add to queue. Please try again later.");
+                    }
+                  } catch (err) {
+                    setQueued(previousQueuedTrails);
+                    handleError(err, "addToQueuedTrails in TrailDetailScreen");
+                  }
+                }
+              }}
+              disabled={!isProMember || user?.trailId === trail.id || !canUseTrail}
+              style={[
+                styles.fullButton,
+                styles.secondaryButton,
+                (!isProMember || user?.trailId === trail.id || !canUseTrail) &&
+                  styles.disabledButton,
+                isQueued && styles.removeButton,
+              ]}>
+              <View style={styles.buttonContentRow}>
+                <Text
+                  style={[
+                    styles.fullButtonText,
+                    styles.secondaryButtonText,
+                    (isQueued || !isProMember || user?.trailId === trail.id || !canUseTrail) &&
+                      styles.fullButtonTextOnDark,
+                  ]}>
+                  {isQueued ? "Remove from Queue" : "Add to Queue"}
+                </Text>
+                {!isProMember && <ProBadge testID="add-to-queue-pro-badge" theme={theme} />}
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              disabled={user?.trailId === trail.id}
+              onPress={() => {
+                if (canUseTrail) {
+                  setShowReplaceTrailModal(true);
+                  return;
+                } else if (isSubscribersOnly && !isProMember) {
+                  navigation.navigate("Basecamp", {
+                    screen: "Subscribe",
+                  });
+
+                  return;
+                } else {
+                  handleBuyTrail();
+                }
+              }}
+              style={[
+                styles.fullButton,
+                styles.primaryButton,
+                user?.trailId === trail.id && styles.disabledButton,
+              ]}>
+              <Text style={styles.fullButtonText}>{getPurchaseButtonText()}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {hasExternalLinks && (
+            <View style={styles.linksContainer}>
+              <Text style={styles.sectionTitle}>Explore this trail</Text>
+              {Boolean(trail.nps_url) && (
+                <TouchableOpacity
+                  style={styles.linkButton}
+                  onPress={() => Linking.openURL(trail.nps_url!)}>
+                  <Text style={styles.linkText}>NPS Website →</Text>
+                </TouchableOpacity>
+              )}
+              {Boolean(trail.all_trails_url) && (
+                <TouchableOpacity
+                  style={styles.linkButton}
+                  onPress={() => Linking.openURL(trail.all_trails_url!)}>
+                  <Text style={styles.linkText}>AllTrails →</Text>
+                </TouchableOpacity>
+              )}
+              {Boolean(trail.hiking_project_url) && (
+                <TouchableOpacity
+                  style={styles.linkButton}
+                  onPress={() => Linking.openURL(trail.hiking_project_url!)}>
+                  <Text style={styles.linkText}>Hiking Project →</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
       </View>
     </ScrollView>
   );
@@ -357,31 +460,219 @@ const ProBadge = ({
 
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.background },
-    trailImage: { width: "100%", height: 240 },
-    infoContainer: { padding: 20 },
-    trailName: { fontSize: 24, fontWeight: "bold", color: theme.trailHeaderText },
-    parkName: { fontSize: 16, fontWeight: "500", color: theme.parkNameText },
-    statusText: { fontSize: 12, color: "gray", marginVertical: 4 },
-    statsGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
-    statBox: {
-      width: "48%",
-      backgroundColor: theme.card,
-      padding: 10,
-      borderRadius: 10,
-      marginBottom: 12,
+    container: {
+      flex: 1,
+      backgroundColor: theme.exploreBackground ?? theme.background,
     },
-    statValue: { fontSize: 18, fontWeight: "bold", color: theme.text, textAlign: "center" },
-    statLabel: { fontSize: 12, color: theme.secondaryText, textAlign: "center" },
+    detailCard: {
+      backgroundColor: theme.trailCardBackground ?? theme.card,
+      borderColor: theme.border,
+      borderRadius: 28,
+      borderWidth: 1,
+      margin: 18,
+      overflow: "hidden",
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.24,
+      shadowRadius: 20,
+      elevation: 7,
+    },
+    heroShell: {
+      height: 300,
+      justifyContent: "space-between",
+      overflow: "hidden",
+    },
+    trailImage: {
+      ...StyleSheet.absoluteFillObject,
+      height: "100%",
+      width: "100%",
+    },
+    imageOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(0, 0, 0, 0.36)",
+    },
+    topBadgeRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      justifyContent: "space-between",
+      padding: 16,
+    },
+    badgesGroup: {
+      alignItems: "flex-start",
+      flex: 1,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      paddingRight: 10,
+    },
+    closeButton: {
+      alignItems: "center",
+      backgroundColor: "rgba(18, 18, 18, 0.68)",
+      borderColor: "rgba(255, 255, 255, 0.28)",
+      borderRadius: 999,
+      borderWidth: 1,
+      height: 36,
+      justifyContent: "center",
+      width: 36,
+    },
+    closeButtonText: {
+      color: "#ffffff",
+      fontSize: 26,
+      fontWeight: "700",
+      lineHeight: 28,
+    },
+    statusPill: {
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    statusPillText: {
+      fontSize: 11,
+      fontWeight: "900",
+      letterSpacing: 0.4,
+      textTransform: "uppercase",
+    },
+    activePill: {
+      backgroundColor: theme.button,
+    },
+    activePillText: {
+      color: theme.buttonText,
+    },
+    successPill: {
+      backgroundColor: theme.completedBadge,
+    },
+    successPillText: {
+      color: theme.completedBadgeText,
+    },
+    queuedPill: {
+      backgroundColor: "rgba(255, 255, 255, 0.88)",
+    },
+    queuedPillText: {
+      color: "#111111",
+    },
+    openPill: {
+      backgroundColor: "rgba(19, 179, 172, 0.92)",
+    },
+    openPillText: {
+      color: "#ffffff",
+    },
+    lockedPill: {
+      backgroundColor: "rgba(18, 18, 18, 0.78)",
+      borderColor: "rgba(255, 255, 255, 0.26)",
+      borderWidth: 1,
+    },
+    lockedPillText: {
+      color: "#ffffff",
+    },
+    featuredPill: {
+      backgroundColor: "rgba(255, 204, 0, 0.92)",
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    featuredPillText: {
+      color: "#121212",
+      fontSize: 11,
+      fontWeight: "900",
+      letterSpacing: 0.3,
+      textTransform: "uppercase",
+    },
+    heroTitleBlock: {
+      padding: 18,
+      paddingTop: 44,
+    },
+    trailName: {
+      color: "#ffffff",
+      fontSize: 30,
+      fontWeight: "900",
+      letterSpacing: -0.4,
+      lineHeight: 34,
+      textShadowColor: "rgba(0, 0, 0, 0.5)",
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 9,
+    },
+    parkName: {
+      color: "rgba(255, 255, 255, 0.88)",
+      fontSize: 15,
+      fontWeight: "800",
+      marginTop: 6,
+    },
+    infoContainer: {
+      backgroundColor: theme.trailCardOverlay ?? theme.card,
+      padding: 16,
+    },
+    statsGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+    statBox: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 18,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: "46%",
+      paddingHorizontal: 14,
+      paddingVertical: 13,
+    },
+    statLabel: {
+      color: theme.secondaryText,
+      fontSize: 11,
+      fontWeight: "800",
+      marginBottom: 5,
+      textTransform: "uppercase",
+    },
+    statValue: {
+      color: theme.trailCardText ?? theme.text,
+      fontSize: 16,
+      fontWeight: "900",
+    },
     buttonGroup: { marginTop: 20, gap: 10 },
-    fullButton: { borderRadius: 14, paddingVertical: 14, alignItems: "center" },
+    actionPanel: {
+      gap: 11,
+      marginTop: 18,
+    },
+    fullButton: {
+      alignItems: "center",
+      borderRadius: 18,
+      paddingVertical: 15,
+    },
+    primaryButton: {
+      backgroundColor: theme.button,
+    },
+    secondaryButton: {
+      backgroundColor: theme.card,
+      borderColor: theme.button,
+      borderWidth: 1,
+    },
+    disabledButton: {
+      backgroundColor: "#6f7478",
+      borderColor: "#6f7478",
+    },
+    removeButton: {
+      backgroundColor: "#c62828",
+      borderColor: "#c62828",
+    },
     buttonContentRow: {
       alignItems: "center",
       flexDirection: "row",
       gap: 8,
       justifyContent: "center",
     },
-    fullButtonText: { color: "#000000", fontSize: 16, fontWeight: "600" },
+    fullButtonText: {
+      color: theme.buttonText,
+      fontSize: 16,
+      fontWeight: "900",
+    },
+    secondaryButtonText: {
+      color: theme.button,
+    },
+    fullButtonTextOnDark: {
+      color: "#ffffff",
+    },
     proBadge: {
       backgroundColor: theme.button,
       borderRadius: 999,
@@ -389,31 +680,65 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       paddingVertical: 2,
     },
     proBadgeText: {
-      color: "#000000",
+      color: theme.buttonText,
       fontSize: 10,
       fontWeight: "900",
       letterSpacing: 0.4,
       textTransform: "uppercase",
     },
     modalBackground: {
+      alignItems: "center",
+      backgroundColor: theme.modalBackground ?? "#000000aa",
       flex: 1,
       justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "#000000aa",
     },
-    modalContainer: { backgroundColor: "#fff", padding: 20, borderRadius: 12, width: "85%" },
-    modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10, textAlign: "center" },
-    modalText: { fontSize: 14, marginBottom: 20, textAlign: "center" },
-    linksContainer: { marginTop: 30 },
-    sectionTitle: { fontSize: 16, fontWeight: "600", marginBottom: 10, color: theme.text },
+    modalContainer: {
+      backgroundColor: theme.modalCard ?? theme.card,
+      borderColor: theme.border,
+      borderRadius: 18,
+      borderWidth: 1,
+      padding: 20,
+      width: "85%",
+    },
+    modalTitle: {
+      color: theme.text,
+      fontSize: 20,
+      fontWeight: "900",
+      marginBottom: 10,
+      textAlign: "center",
+    },
+    modalText: {
+      color: theme.secondaryText,
+      fontSize: 14,
+      lineHeight: 20,
+      marginBottom: 20,
+      textAlign: "center",
+    },
+    linksContainer: {
+      borderTopColor: theme.border,
+      borderTopWidth: 1,
+      marginTop: 20,
+      paddingTop: 16,
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontSize: 16,
+      fontWeight: "900",
+      marginBottom: 10,
+    },
     linkButton: {
-      backgroundColor: theme.button,
-      padding: 10,
-      borderRadius: 10,
-      marginBottom: 8,
       alignItems: "center",
+      backgroundColor: theme.linkBackground ?? theme.card,
+      borderColor: theme.linkBorder ?? theme.border,
+      borderRadius: 14,
+      borderWidth: 1,
+      marginBottom: 9,
+      padding: 12,
     },
-    linkText: { color: theme.buttonText, fontWeight: "500" },
+    linkText: {
+      color: theme.linkText ?? theme.text,
+      fontWeight: "800",
+    },
   });
 
 export default TrailDetailScreen;

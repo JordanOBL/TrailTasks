@@ -1,9 +1,12 @@
 import React from "react";
-import { render, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import TrailDetailScreen from "../TrailDetailScreen";
 
 let mockIsProMember = false;
+let mockQueuedTrails: Array<{ trailId: string }> = [];
+let mockAddToQueuedTrails = jest.fn();
+let mockDeleteFromQueuedTrails = jest.fn();
 
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
@@ -39,11 +42,11 @@ jest.mock("../../services/AuthContext", () => ({
       id: "user-1",
       trailId: "current-trail",
       trailTokens: 100,
-      usersQueuedTrails: [],
+      usersQueuedTrails: mockQueuedTrails,
       usersPurchasedTrails: [],
       usersCompletedTrails: [],
-      addToQueuedTrails: jest.fn(),
-      deleteFromQueuedTrails: jest.fn(),
+      addToQueuedTrails: mockAddToQueuedTrails,
+      deleteFromQueuedTrails: mockDeleteFromQueuedTrails,
       purchaseTrail: jest.fn(),
       updateUserTrail: jest.fn(),
     },
@@ -98,6 +101,9 @@ const fullTrail = {
 describe("TrailDetailScreen Pro gating indicators", () => {
   beforeEach(() => {
     mockIsProMember = false;
+    mockQueuedTrails = [];
+    mockAddToQueuedTrails = jest.fn().mockResolvedValue({ trailId: "trail-1" });
+    mockDeleteFromQueuedTrails = jest.fn().mockResolvedValue(undefined);
   });
 
   it("marks Add to Queue as a Pro action for free users", async () => {
@@ -132,5 +138,68 @@ describe("TrailDetailScreen Pro gating indicators", () => {
 
     expect(screen.queryByTestId("add-to-queue-pro-badge")).toBeNull();
     expect(screen.queryByText("Pro")).toBeNull();
+  });
+
+  it("updates queue state immediately after tapping Add to Queue", async () => {
+    mockIsProMember = true;
+
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{ params: { fullTrail } }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Add to Queue")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText("Add to Queue"));
+
+    expect(screen.getByText("Remove from Queue")).toBeTruthy();
+    expect(mockAddToQueuedTrails).toHaveBeenCalledWith({ trailId: "trail-1" });
+  });
+
+  it("closes trail details from the hero close button", async () => {
+    const goBack = jest.fn();
+
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack, navigate: jest.fn() }}
+        route={{ params: { fullTrail } }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Close trail details")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByLabelText("Close trail details"));
+
+    expect(goBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not render empty external-link strings as raw text", async () => {
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{
+          params: {
+            fullTrail: {
+              ...fullTrail,
+              nps_url: "",
+              all_trails_url: "",
+              hiking_project_url: "",
+            },
+          },
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Misty Ridge")).toBeTruthy();
+    });
+
+    expect(screen.queryByText("Explore this trail")).toBeNull();
   });
 });

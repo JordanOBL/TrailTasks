@@ -1,53 +1,55 @@
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  FlatList,
-  StyleSheet,
-  View,
-} from 'react-native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { User, User_Completed_Trail, User_Purchased_Trail, User_Queued_Trail } from "../watermelon/models";
-import { darkTheme, lightTheme } from '../theme';
+  User,
+  User_Completed_Trail,
+  User_Purchased_Trail,
+  User_Queued_Trail,
+} from "../watermelon/models";
+import { darkTheme, lightTheme } from "../theme";
 
-import FilterSearch from "./FilterSearch";
 import FullTrailDetails from "../types/fullTrailDetails";
-import TrailCard from './Trails/TrailCard';
-import {useNavigation} from "@react-navigation/native";
-import { useTheme } from '../contexts/ThemeProvider';
-import {withObservables}from "@nozbe/watermelondb/react";
+import TrailCard from "./Trails/TrailCard";
+import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../contexts/ThemeProvider";
 
 interface Props {
   trailsCollection: FullTrailDetails[];
   user: User;
   completedTrails: User_Completed_Trail[];
   queuedTrails: User_Queued_Trail[];
-  userPurchasedTrails: User_Purchased_Trail[]
+  userPurchasedTrails: User_Purchased_Trail[];
   queuedTrailMap: Record<string, boolean>;
 }
 
+const filterParams = ["All", "Free", "Trail Of The Week", "User Purchased", "Completed"];
+
 const TrailsList = ({
-                      trailsCollection,
-                      user,
-                      userPurchasedTrails,
-    completedTrails, queuedTrailMap
-                    }: Props) => {
-  const [filter, setFilter] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  trailsCollection,
+  user,
+  userPurchasedTrails,
+  completedTrails,
+  queuedTrailMap,
+}: Props) => {
+  const [filter, setFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
-  const [showDropdown, setShowDropdown] = useState(false);
   const { theme } = useTheme();
   const navigation = useNavigation();
-const styles = getStyles(theme);
+  const styles = getStyles(theme);
 
-const handleTrailPress = useCallback((trail: FullTrailDetails):void => {
-//@ts-ignore
-  navigation.navigate('TrailDetails', { fullTrail: trail, trailId: null });
-}, [trailsCollection, navigation]);
+  const handleTrailPress = useCallback(
+    (trail: FullTrailDetails): void => {
+      // @ts-ignore
+      navigation.navigate("TrailDetails", { fullTrail: trail, trailId: null });
+    },
+    [navigation],
+  );
 
-
-  // Debounce the search query input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-    }, 800); // Delay in milliseconds
+    }, 400);
 
     return () => {
       clearTimeout(handler);
@@ -57,71 +59,112 @@ const handleTrailPress = useCallback((trail: FullTrailDetails):void => {
   const filteredTrails = useMemo(() => {
     let filtered = trailsCollection;
 
-    if (filter === 'User Purchased') {
+    if (filter === "User Purchased") {
       filtered = trailsCollection.filter(trail =>
-          userPurchasedTrails.some(purchasedTrail => trail.id == purchasedTrail.trailId)
+        userPurchasedTrails.some(purchasedTrail => trail.id === purchasedTrail.trailId),
       );
-    } else if (filter === 'Free') {
-      
+    } else if (filter === "Free") {
       filtered = trailsCollection.filter(trail => trail.is_free == true);
-    } else if (filter === 'Trail Of The Week') {
-  
+    } else if (filter === "Trail Of The Week") {
       filtered = trailsCollection.filter(trail => trail.trail_of_the_week == true);
-    } else if (filter === 'Completed'){
+    } else if (filter === "Completed") {
       filtered = trailsCollection.filter(trail =>
-          completedTrails.some(completedTrail => trail.id == completedTrail.trailId));
+        completedTrails.some(completedTrail => trail.id === completedTrail.trailId),
+      );
     }
 
     if (debouncedSearchQuery) {
-      filtered = filtered.filter((trail: FullTrailDetails) =>
-          trail.trail_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-          trail.park_name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
-          trail.state.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+      const normalizedQuery = debouncedSearchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (trail: FullTrailDetails) =>
+          trail.trail_name.toLowerCase().includes(normalizedQuery) ||
+          trail.park_name.toLowerCase().includes(normalizedQuery) ||
+          trail.state.toLowerCase().includes(normalizedQuery),
       );
     }
 
     return filtered;
-  }, [filter, debouncedSearchQuery, trailsCollection, user]);
+  }, [completedTrails, debouncedSearchQuery, filter, trailsCollection, userPurchasedTrails]);
 
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
+  const renderTrailItem = useCallback(
+    ({ item }: { item: FullTrailDetails }) => (
+      <TrailCard
+        trail={item}
+        key={item.id}
+        isQueued={queuedTrailMap && item?.id in queuedTrailMap ? queuedTrailMap[item.id] : false}
+        handleTrailPress={handleTrailPress}
+      />
+    ),
+    [handleTrailPress, queuedTrailMap],
+  );
 
-  const selectFilter = (value: React.SetStateAction<string>) => {
-    setFilter(value);
-    setShowDropdown(false);
-  };
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
+      <Text style={styles.eyebrow}>Explore</Text>
+      <Text style={styles.title}>Find your next trail</Text>
+      <Text style={styles.subtitle}>
+        Search national parks, queue future hikes, and unlock subscriber-only adventures.
+      </Text>
 
-  const renderTrailItem = useCallback(({ item }: {item: FullTrailDetails}) => (
-      <TrailCard trail={item} key={item.id} isQueued={queuedTrailMap && item?.id in queuedTrailMap ? queuedTrailMap[item.id] : false} handleTrailPress={handleTrailPress} />
-  ), [user, queuedTrailMap]);
-
-  return (
-      <View style={styles.container}>
-        <FilterSearch
-            showSearch={true}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectFilter={selectFilter}
-            filter={filter}
-            toggleDropdown={toggleDropdown}
-            showDropdown={showDropdown}
-            filterParams={['All', 'User Purchased', 'Free', 'Trail Of The Week', 'Completed']}
-        />
-        <FlatList
-            data={filteredTrails}
-            renderItem={renderTrailItem}
-            keyExtractor={(item, index) => `${item.id}-${index}`}
-            contentContainerStyle={styles.trailsContainer}
-            initialNumToRender={5}
-            maxToRenderPerBatch={5}
-            windowSize={10}
-            getItemLayout={(data, index) => (
-                { length: 350, offset: 350 * index, index }
-            )}
-            removeClippedSubviews={true}
+      <View style={styles.searchCard}>
+        <Text style={styles.searchIcon}>⌕</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search trails, parks, or states"
+          placeholderTextColor={theme.secondaryText}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
         />
       </View>
+
+      <FlatList
+        data={filterParams}
+        horizontal
+        keyExtractor={item => item}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filtersRow}
+        renderItem={({ item }) => {
+          const selected = item === filter;
+          return (
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => setFilter(item)}
+              style={[styles.filterChip, selected && styles.filterChipSelected]}>
+              <Text style={[styles.filterText, selected && styles.filterTextSelected]}>{item}</Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+
+      <View style={styles.resultRow}>
+        <Text style={styles.resultText}>
+          {filteredTrails.length} {filteredTrails.length === 1 ? "trail" : "trails"}
+        </Text>
+        {filter !== "All" && <Text style={styles.resultFilter}>Filtered by {filter}</Text>}
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={filteredTrails}
+        renderItem={renderTrailItem}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No trails found</Text>
+            <Text style={styles.emptyText}>Try another search term or filter.</Text>
+          </View>
+        }
+        contentContainerStyle={styles.trailsContainer}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        removeClippedSubviews={true}
+      />
+    </View>
   );
 };
 
@@ -134,82 +177,124 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       backgroundColor: theme.exploreBackground,
     },
     trailsContainer: {
-      padding: 10,
-      paddingBottom: 20,
+      paddingBottom: 28,
     },
-    trailCard: {
-      backgroundColor: theme.trailCardBackground,
-      borderRadius: 15,
-      marginBottom: 10,
-      overflow: 'hidden',
-      elevation: 3,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.5,
-      shadowRadius: 5,
+    headerContainer: {
+      paddingHorizontal: 18,
+      paddingTop: 18,
+      paddingBottom: 8,
     },
-    trailName: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: theme.trailCardText,
+    eyebrow: {
+      color: theme.button,
+      fontSize: 12,
+      fontWeight: "900",
+      letterSpacing: 1.2,
+      marginBottom: 6,
+      textTransform: "uppercase",
     },
-    parkName: {
-      color: theme.trailCardSecondaryText,
-      marginBottom: 5,
+    title: {
+      color: theme.text,
+      fontSize: 30,
+      fontWeight: "900",
+      letterSpacing: -0.4,
+      lineHeight: 35,
     },
-    trailStatText: {
+    subtitle: {
+      color: theme.secondaryText,
       fontSize: 14,
-      color: theme.trailCardSecondaryText,
+      fontWeight: "500",
+      lineHeight: 20,
+      marginTop: 8,
+      marginBottom: 16,
     },
-    actionButton: {
-      padding: 10,
-      backgroundColor: theme.buttonPrimary,
-      alignItems: 'center',
-      justifyContent: 'center',
+    searchCard: {
+      alignItems: "center",
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 18,
+      borderWidth: 1,
+      flexDirection: "row",
+      paddingHorizontal: 14,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.14,
+      shadowRadius: 12,
+      elevation: 3,
     },
-    actionButtonText: {
-      color: theme.buttonPrimaryText,
-      fontWeight: 'bold',
+    searchIcon: {
+      color: theme.button,
+      fontSize: 24,
+      fontWeight: "900",
+      marginRight: 8,
     },
-    modalBackground: {
+    searchInput: {
+      color: theme.inputText,
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: theme.modalBackgroundOverlay,
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 10000,
-      elevation: 10,
+      fontSize: 15,
+      fontWeight: "600",
+      paddingVertical: 13,
     },
-    modalContainer: {
-      backgroundColor: theme.modalBackgroundCard,
-      borderRadius: 10,
-      padding: 20,
-      width: '80%',
-      zIndex: 10001,
-      elevation: 10,
+    filtersRow: {
+      gap: 10,
+      paddingTop: 14,
+      paddingBottom: 12,
     },
-    modalTitle: {
+    filterChip: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+    },
+    filterChipSelected: {
+      backgroundColor: theme.button,
+      borderColor: theme.button,
+    },
+    filterText: {
+      color: theme.secondaryText,
+      fontSize: 13,
+      fontWeight: "800",
+    },
+    filterTextSelected: {
+      color: theme.buttonText,
+    },
+    resultRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 2,
+    },
+    resultText: {
+      color: theme.text,
+      fontSize: 15,
+      fontWeight: "900",
+    },
+    resultFilter: {
+      color: theme.secondaryText,
+      fontSize: 12,
+      fontWeight: "700",
+    },
+    emptyCard: {
+      alignItems: "center",
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 22,
+      borderWidth: 1,
+      marginHorizontal: 18,
+      marginTop: 16,
+      padding: 24,
+    },
+    emptyTitle: {
+      color: theme.text,
       fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
-      textAlign: 'center',
-      color: theme.modalText,
+      fontWeight: "900",
+      marginBottom: 4,
     },
-    modalText: {
-      fontSize: 16,
-      marginBottom: 20,
-      textAlign: 'center',
-      color: theme.modalText,
-    },
-    buttonCancel: {
-      backgroundColor: 'gray',
-    },
-    buttonConfirm: {
-      backgroundColor: 'green',
+    emptyText: {
+      color: theme.secondaryText,
+      fontSize: 14,
+      fontWeight: "600",
+      textAlign: "center",
     },
   });
-
