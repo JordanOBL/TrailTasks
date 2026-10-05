@@ -60,6 +60,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     () => !!trail && completedTrails.some(t => t.trailId === trail.id),
     [completedTrails, trail],
   );
+  const canUseTrail = isFreeTrail || isPurchased || (isSubscribersOnly && isProMember);
   const reward = useMemo(() => {
     const trailDistance = Number(trail?.trail_distance ?? 0);
     return trail?.trail_of_the_week
@@ -139,7 +140,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
 
   const getPurchaseButtonText = () => {
     if (user?.trailId === trail?.id) return "In Progress";
-    if (isFreeTrail || isPurchased) return "Start Now";
+    if (canUseTrail) return "Start Now";
     if (isSubscribersOnly && !isProMember) return "Unlock With Subscription";
     return `Buy ${reward}`;
   };
@@ -257,13 +258,13 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
                 }
               }
             }}
-            disabled={!isProMember || user?.trailId === trail.id || (!isPurchased && !isFreeTrail)}
+            disabled={!isProMember || user?.trailId === trail.id || !canUseTrail}
             style={[
               styles.fullButton,
               {
                 backgroundColor: isQueued
                   ? "red"
-                  : !isProMember || (!isPurchased && !isFreeTrail)
+                  : !isProMember || !canUseTrail
                   ? "gray"
                   : "green",
               },
@@ -272,14 +273,14 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
               <Text style={styles.fullButtonText}>
                 {isQueued ? "Remove from Queue" : "Add to Queue"}
               </Text>
-              <ProBadge testID="add-to-queue-pro-badge" theme={theme} />
+              {!isProMember && <ProBadge testID="add-to-queue-pro-badge" theme={theme} />}
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
             disabled={user?.trailId === trail.id}
             onPress={() => {
-              if (isFreeTrail || isPurchased) {
+              if (canUseTrail) {
                 setShowReplaceTrailModal(true);
                 return;
               } else if (isSubscribersOnly && !isProMember) {

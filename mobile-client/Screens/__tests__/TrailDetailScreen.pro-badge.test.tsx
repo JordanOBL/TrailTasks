@@ -3,6 +3,8 @@ import { render, waitFor } from "@testing-library/react-native";
 
 import TrailDetailScreen from "../TrailDetailScreen";
 
+let mockIsProMember = false;
+
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
 
@@ -32,7 +34,7 @@ jest.mock("../../components/Trails/BuyTrailModal", () => {
 
 jest.mock("../../services/AuthContext", () => ({
   useAuthContext: jest.fn(() => ({
-    isProMember: false,
+    isProMember: mockIsProMember,
     user: {
       id: "user-1",
       trailId: "current-trail",
@@ -94,6 +96,10 @@ const fullTrail = {
 };
 
 describe("TrailDetailScreen Pro gating indicators", () => {
+  beforeEach(() => {
+    mockIsProMember = false;
+  });
+
   it("marks Add to Queue as a Pro action for free users", async () => {
     const screen = render(
       <TrailDetailScreen
@@ -108,5 +114,23 @@ describe("TrailDetailScreen Pro gating indicators", () => {
 
     expect(screen.getByTestId("add-to-queue-pro-badge")).toBeTruthy();
     expect(screen.getByText("Pro")).toBeTruthy();
+  });
+
+  it("hides Add to Queue Pro badge for active Pro users", async () => {
+    mockIsProMember = true;
+
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{ params: { fullTrail } }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Add to Queue")).toBeTruthy();
+    });
+
+    expect(screen.queryByTestId("add-to-queue-pro-badge")).toBeNull();
+    expect(screen.queryByText("Pro")).toBeNull();
   });
 });

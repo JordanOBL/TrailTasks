@@ -56,7 +56,7 @@ const ScreenLink = ({
       <View style={styles.copyContainer}>
         <View style={styles.titleRow}>
           <Text style={[styles.title, isLocked && styles.lockedText]}>{children}</Text>
-          {needsActiveSubscription && (
+          {isLocked && (
             <View style={[styles.badge, isLocked && styles.lockedBadge]}>
               <Text style={[styles.badgeText, isLocked && styles.lockedBadgeText]}>Pro</Text>
             </View>
