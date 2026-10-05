@@ -1,4 +1,4 @@
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import React from "react";
 import { SessionSnapshot } from "../../sessionEngine/sessionEngine";
@@ -13,44 +13,48 @@ interface Props {
 const QuitSessionModal = ({ isVisible, sessionDetails, cancel, quit }: Props) => {
   const unfinishedSets = sessionDetails.totalSets - sessionDetails.completedSets;
 
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <Modal transparent={true} visible={isVisible} animationType="none" testID="quit-session-modal">
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.titleText}>Quit Session Early!?</Text>
+    <View style={styles.modalBackground} testID="quit-session-modal">
+      <View style={styles.modalContainer}>
+        <Text style={styles.titleText}>Quit Session Early!?</Text>
 
-          {sessionDetails.completedSets < 3 && (
-            <View style={styles.messageContainer}>
-              <Text style={styles.messageText}>
-                You have {unfinishedSets} sets left to recieve session rewards.{" "}
-              </Text>
-            </View>
-          )}
-          <TouchableOpacity
-            style={styles.buttonEndSession}
-            testID="confirm-quit-button"
-            onPress={() => quit()}>
-            <Text style={styles.buttonText}>Quit Session</Text>
-          </TouchableOpacity>
+        {sessionDetails.completedSets < 3 && (
+          <View style={styles.messageContainer}>
+            <Text style={styles.messageText}>
+              You have {unfinishedSets} sets left to recieve session rewards.{" "}
+            </Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.buttonEndSession}
+          testID="confirm-quit-button"
+          onPress={() => quit()}>
+          <Text style={styles.buttonText}>Quit Session</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            testID="confirm-cancel-button"
-            style={styles.buttonNewSet}
-            onPress={() => cancel()}>
-            <Text style={styles.buttonText}>Cancel (Resume)</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          testID="confirm-cancel-button"
+          style={styles.buttonNewSet}
+          onPress={() => cancel()}>
+          <Text style={styles.buttonText}>Cancel (Resume)</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   modalBackground: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 100,
+    elevation: 100,
   },
   modalContainer: {
     backgroundColor: "white",

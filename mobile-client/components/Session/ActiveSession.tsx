@@ -177,22 +177,21 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
 
   return (
     <SafeAreaView style={styles.container} testID="active-session-screen">
+      <QuitSessionModal
+        isVisible={showQuitSessionModal}
+        cancel={() => {
+          let next = !snapshot.isPaused;
+          setSnapshot(prev => ({ ...prev!, isPaused: next }));
+          bus.emit("UI_RESUME_REQUESTED");
+          setShowQuitSessionModal(false);
+        }}
+        quit={() => {
+          setIsQuitConfirmed(true);
+          setShowQuitSessionModal(false);
+        }}
+        sessionDetails={snapshot}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <QuitSessionModal
-          isVisible={showQuitSessionModal}
-          cancel={() => {
-            let next = !snapshot.isPaused;
-            setSnapshot(prev => ({ ...prev!, isPaused: next }));
-            bus.emit("UI_RESUME_REQUESTED");
-            setShowQuitSessionModal(false);
-          }}
-          quit={() => {
-            setIsQuitConfirmed(true);
-            setShowQuitSessionModal(false);
-          }}
-          sessionDetails={snapshot}
-        />
-
         <View style={styles.heroCard}>
           <View style={styles.heroHeader}>
             <View>
