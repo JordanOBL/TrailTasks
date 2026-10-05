@@ -174,7 +174,9 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
           }}
           quit={() => {
             setShowQuitSessionModal(false);
-            bus.emit("UI_QUIT_REQUESTED");
+            setTimeout(() => {
+              bus.emit("UI_QUIT_REQUESTED");
+            }, 0);
           }}
           sessionDetails={snapshot}
         />
@@ -190,17 +192,21 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
             </View>
           </View>
 
-          <View style={styles.companionStage}>
-            <View style={styles.wildHalo}>
+          <View style={styles.timerPanel}>
+            <SessionTimer snapshot={snapshot} />
+          </View>
+
+          <View style={styles.companionCard}>
+            <View style={styles.wildBadge}>
               <WildAvatar
                 id={activeWildId}
                 pose={snapshot.isPaused ? "still" : "wave"}
-                size={150}
+                size={96}
                 animated
               />
             </View>
-            <View style={styles.timerPanel}>
-              <SessionTimer snapshot={snapshot} />
+            <View style={styles.companionTextBlock}>
+              <Text style={styles.companionLabel}>Trail companion</Text>
               <Text style={styles.companionCopy}>{companionCopy}</Text>
             </View>
           </View>
@@ -380,35 +386,51 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       fontWeight: "700",
       textTransform: "uppercase",
     },
-    companionStage: {
-      alignItems: "center",
-      flexDirection: "row",
-      gap: 12,
-      justifyContent: "space-between",
-    },
-    wildHalo: {
-      alignItems: "center",
-      backgroundColor: theme.progressBarBackground,
-      borderColor: theme.border,
-      borderRadius: 24,
-      borderWidth: 1,
-      flex: 0.86,
-      minHeight: 166,
-      justifyContent: "center",
-    },
     timerPanel: {
       alignItems: "center",
-      flex: 1,
       justifyContent: "center",
-      minWidth: 178,
+      marginBottom: 12,
+      marginTop: 2,
+    },
+    companionCard: {
+      alignItems: "center",
+      alignSelf: "center",
+      backgroundColor: theme.progressBarBackground,
+      borderColor: theme.border,
+      borderRadius: 20,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "center",
+      maxWidth: 360,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      width: "100%",
+    },
+    wildBadge: {
+      alignItems: "center",
+      flexShrink: 0,
+      height: 104,
+      justifyContent: "center",
+      width: 104,
+    },
+    companionTextBlock: {
+      flex: 1,
+      minWidth: 0,
+    },
+    companionLabel: {
+      color: theme.button,
+      fontSize: 11,
+      fontWeight: "700",
+      letterSpacing: 0.9,
+      marginBottom: 4,
+      textTransform: "uppercase",
     },
     companionCopy: {
       color: theme.secondaryText,
       fontSize: 13,
       fontWeight: "500",
       lineHeight: 18,
-      marginTop: -2,
-      textAlign: "center",
     },
     controlsCard: {
       backgroundColor: theme.card,
