@@ -22,6 +22,7 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
   const isPurchased = !!trail.is_purchased;
   const isFree = !!trail.is_free;
   const isProLocked = !!trail.is_subscribers_only && !isProMember;
+  const isTrailOfTheWeek = Boolean(trail.trail_of_the_week);
 
   const getTrailStatus = () => {
     if (currentTrail) return { label: "Currently Hiking", tone: "active" as const };
@@ -30,7 +31,8 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
     if (isFree) return { label: "Free Trail", tone: "open" as const };
     if (isPurchased) return { label: "Purchased", tone: "open" as const };
     if (isProLocked) return { label: "Pro", tone: "locked" as const };
-    if (trail.is_subscribers_only && isProMember) return { label: "Included with Pro", tone: "open" as const };
+    if (trail.is_subscribers_only && isProMember)
+      return { label: "Included with Pro", tone: "open" as const };
     return { label: "Unlock", tone: "locked" as const };
   };
 
@@ -45,7 +47,9 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
       <View style={styles.imageShell}>
         <Image
           source={
-            trail.trail_image_url ? { uri: trail.trail_image_url } : require("../../assets/LOGO.png")
+            trail.trail_image_url
+              ? { uri: trail.trail_image_url }
+              : require("../../assets/LOGO.png")
           }
           style={styles.image}
         />
@@ -57,7 +61,7 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
               {status.label}
             </Text>
           </View>
-          {trail.trail_of_the_week && (
+          {isTrailOfTheWeek && (
             <View style={styles.featuredPill}>
               <Text style={styles.featuredPillText}>★ This Week</Text>
             </View>
@@ -69,7 +73,8 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
             {trail?.trail_name}
           </Text>
           <Text style={styles.parkName} numberOfLines={1}>
-            {trail?.park_name}{trail?.state_code ? `, ${trail.state_code}` : ""}
+            {trail?.park_name}
+            {trail?.state_code ? `, ${trail.state_code}` : ""}
           </Text>
         </View>
       </View>
