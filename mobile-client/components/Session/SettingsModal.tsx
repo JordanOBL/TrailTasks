@@ -125,8 +125,12 @@ const SettingsModal = ({
 
             <View style={styles.proSection} testID="session-settings-pro-section">
               <View style={styles.proSectionHeader}>
-                <Text style={styles.proSectionTitle}>Pro</Text>
-                <Text style={styles.proSectionSubtitle}>Customize your session flow</Text>
+                {!isProMember && <Text style={styles.proSectionTitle}>Pro</Text>}
+                <Text style={styles.proSectionSubtitle}>
+                  {isProMember
+                    ? "Customize your session flow"
+                    : "Subscribe to customize your session flow"}
+                </Text>
               </View>
 
               {/* Time Settings */}

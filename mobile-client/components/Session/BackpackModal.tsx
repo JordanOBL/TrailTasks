@@ -12,6 +12,7 @@ import {
 import EnhancedAddonListItem from "../AddOnStore/AddonListItem";
 import { SessionCfg } from "../../types/session";
 import { Addon, User } from "../../watermelon/models";
+import { useAuthContext } from "../../services/AuthContext";
 
 interface backpackModalProps {
   isVisible: boolean;
@@ -32,6 +33,8 @@ export const BackpackModal = ({
   totalMiles,
   usersAddons,
 }: backpackModalProps) => {
+  const { isProMember } = useAuthContext();
+
   const selectAddon = (addon: Addon | null) => {
     const position = sessionCfg.backpack.findIndex(slot => slot.addon === null);
 
@@ -92,7 +95,7 @@ export const BackpackModal = ({
                   {slot.addon?.name ||
                     (totalMiles >= slot.minimumTotalMiles
                       ? "+"
-                      : `${index > 1 && !user.isProMember ? "Pro\n" : ""}Unlock at ${
+                      : `${index > 1 && !isProMember ? "Pro\n" : ""}Unlock at ${
                           slot.minimumTotalMiles
                         }`)}
                 </Text>

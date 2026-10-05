@@ -3,6 +3,8 @@ import { render } from "@testing-library/react-native";
 
 import SettingsModal from "../../components/Session/SettingsModal";
 
+let mockIsProMember = false;
+
 jest.mock("react-native-element-dropdown", () => {
   const React = require("react");
   const { Text } = require("react-native");
@@ -14,7 +16,7 @@ jest.mock("react-native-element-dropdown", () => {
 
 jest.mock("../../services/AuthContext", () => ({
   useAuthContext: jest.fn(() => ({
-    isProMember: false,
+    isProMember: mockIsProMember,
   })),
 }));
 
@@ -45,6 +47,10 @@ const sessionCfg = {
 };
 
 describe("SettingsModal Pro indicators", () => {
+  beforeEach(() => {
+    mockIsProMember = false;
+  });
+
   it("groups custom time, sets, and auto-continue controls in one Pro section", () => {
     const screen = render(
       <SettingsModal
@@ -57,12 +63,29 @@ describe("SettingsModal Pro indicators", () => {
     );
 
     expect(screen.getByTestId("session-settings-pro-section")).toBeTruthy();
-    expect(screen.getByText("Customize your session flow")).toBeTruthy();
+    expect(screen.getByText("Subscribe to customize your session flow")).toBeTruthy();
     expect(screen.getByText("Focus Time")).toBeTruthy();
     expect(screen.getByText("Short Break")).toBeTruthy();
     expect(screen.getByText("Long Break")).toBeTruthy();
     expect(screen.getByText("Sets")).toBeTruthy();
     expect(screen.getByText("Auto-Continue")).toBeTruthy();
     expect(screen.getAllByText("Pro")).toHaveLength(1);
+  });
+
+  it("hides the Pro label after the user has an active Pro entitlement", () => {
+    mockIsProMember = true;
+
+    const screen = render(
+      <SettingsModal
+        visible
+        sessionCfg={sessionCfg as any}
+        setSessionCfg={jest.fn()}
+        setVisible={jest.fn()}
+        sessionCategories={[]}
+      />,
+    );
+
+    expect(screen.queryByText("Pro")).toBeNull();
+    expect(screen.getByText("Customize your session flow")).toBeTruthy();
   });
 });

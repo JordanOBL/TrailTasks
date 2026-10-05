@@ -82,6 +82,7 @@ describe("ProfileScreen", () => {
     );
 
     expect(screen.getByText("Pro member")).toBeTruthy();
+    expect(screen.queryByText("Pro")).toBeNull();
 
     fireEvent.press(screen.getByText("Upcoming Trails"));
 
