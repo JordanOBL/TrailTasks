@@ -173,6 +173,7 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
             setShowQuitSessionModal(false);
           }}
           quit={() => {
+            setShowQuitSessionModal(false);
             bus.emit("UI_QUIT_REQUESTED");
           }}
           sessionDetails={snapshot}
@@ -325,20 +326,20 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     scrollContent: {
       padding: 16,
       paddingBottom: 32,
-      gap: 14,
+      gap: 12,
     },
     heroCard: {
       backgroundColor: theme.card,
       borderColor: theme.border,
-      borderRadius: 28,
+      borderRadius: 26,
       borderWidth: 1,
       overflow: "hidden",
       padding: 18,
       shadowColor: theme.shadow,
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.24,
-      shadowRadius: 18,
-      elevation: 7,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.16,
+      shadowRadius: 16,
+      elevation: 5,
     },
     heroHeader: {
       alignItems: "flex-start",
@@ -350,14 +351,14 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     eyebrow: {
       color: theme.button,
       fontSize: 11,
-      fontWeight: "900",
+      fontWeight: "700",
       letterSpacing: 1.1,
       textTransform: "uppercase",
     },
     heroTitle: {
       color: theme.text,
-      fontSize: 24,
-      fontWeight: "900",
+      fontSize: 23,
+      fontWeight: "700",
       letterSpacing: -0.3,
       marginTop: 4,
     },
@@ -376,7 +377,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     phasePillText: {
       color: theme.text,
       fontSize: 11,
-      fontWeight: "900",
+      fontWeight: "700",
       textTransform: "uppercase",
     },
     companionStage: {
@@ -389,30 +390,30 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       alignItems: "center",
       backgroundColor: theme.progressBarBackground,
       borderColor: theme.border,
-      borderRadius: 28,
+      borderRadius: 24,
       borderWidth: 1,
-      flex: 0.9,
-      minHeight: 172,
+      flex: 0.86,
+      minHeight: 166,
       justifyContent: "center",
     },
     timerPanel: {
       alignItems: "center",
       flex: 1,
       justifyContent: "center",
-      minWidth: 0,
+      minWidth: 178,
     },
     companionCopy: {
       color: theme.secondaryText,
       fontSize: 13,
-      fontWeight: "700",
+      fontWeight: "500",
       lineHeight: 18,
-      marginTop: -6,
+      marginTop: -2,
       textAlign: "center",
     },
     controlsCard: {
       backgroundColor: theme.card,
       borderColor: theme.border,
-      borderRadius: 24,
+      borderRadius: 22,
       borderWidth: 1,
       flexDirection: "row",
       gap: 10,
@@ -420,7 +421,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     },
     controlButton: {
       alignItems: "center",
-      borderRadius: 18,
+      borderRadius: 16,
       flex: 1,
       flexDirection: "row",
       gap: 8,
@@ -432,7 +433,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       backgroundColor: theme.button,
     },
     stopButton: {
-      backgroundColor: "#c62828",
+      backgroundColor: "rgba(198, 40, 40, 0.9)",
     },
     skipButton: {
       backgroundColor: "rgba(255, 255, 255, 0.12)",
@@ -446,7 +447,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     controlButtonText: {
       color: "#ffffff",
       fontSize: 14,
-      fontWeight: "900",
+      fontWeight: "700",
     },
     primaryControlButtonText: {
       color: theme.buttonText,
@@ -454,7 +455,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     trailCard: {
       backgroundColor: theme.card,
       borderColor: theme.border,
-      borderRadius: 24,
+      borderRadius: 22,
       borderWidth: 1,
       padding: 16,
     },
@@ -467,25 +468,25 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     trailDistance: {
       color: theme.secondaryText,
       fontSize: 12,
-      fontWeight: "800",
+      fontWeight: "500",
     },
     trailName: {
       color: theme.text,
-      fontSize: 21,
-      fontWeight: "900",
+      fontSize: 20,
+      fontWeight: "700",
       marginBottom: 12,
     },
     statsCard: {
       backgroundColor: theme.card,
       borderColor: theme.border,
-      borderRadius: 24,
+      borderRadius: 22,
       borderWidth: 1,
       padding: 16,
     },
     sectionTitle: {
       color: theme.text,
       fontSize: 18,
-      fontWeight: "900",
+      fontWeight: "700",
       marginBottom: 12,
     },
     statsGrid: {
@@ -506,14 +507,14 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     infoLabel: {
       color: theme.secondaryText,
       fontSize: 11,
-      fontWeight: "900",
+      fontWeight: "700",
       marginBottom: 5,
       textTransform: "uppercase",
     },
     infoValue: {
       color: theme.text,
       fontSize: 14,
-      fontWeight: "900",
+      fontWeight: "600",
     },
   });
 
