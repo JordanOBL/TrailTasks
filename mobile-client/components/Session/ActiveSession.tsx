@@ -2,20 +2,28 @@ import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } fr
 import React, { useEffect, useRef, useState } from "react";
 import { SessionEngine, SessionSnapshot } from "../../sessionEngine/sessionEngine";
 import { useNavigation, usePreventRemove } from "@react-navigation/native"; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
+import { darkTheme, lightTheme } from "../../theme";
+
 import EnhancedDistanceProgressBar from "../DistanceProgressBar";
 import Icon from "react-native-vector-icons/Ionicons";
+import { Q } from "@nozbe/watermelondb";
 import QuitSessionModal from "./QuitSessionModal";
 import { SessionSnapshotPayload } from "../../EventBus/EventBus";
 import SessionTimer from "../Timer/SessionTimer";
+import WildAvatar from "../Wilds/WildAvatar";
 import useBusEvent from "../../EventBus/useBusEvent";
 import { useServices } from "../../contexts/ServiceProvider";
+import { useTheme } from "../../contexts/ThemeProvider";
 import { withObservables } from "@nozbe/watermelondb/react";
 
-const ActiveSession = ({ user, currentTrail }: any) => {
+const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
   const navigation = useNavigation();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { bus, sessionEngineMgr } = useServices();
   const sEngineRef = useRef<SessionEngine | null>(null);
   const [showQuitSessionModal, setShowQuitSessionModal] = useState(false);
+  const [isQuitConfirmed, setIsQuitConfirmed] = useState(false);
   const [snapshot, setSnapshot] = useState<SessionSnapshot | null>(null);
 
   useEffect(() => {
@@ -25,6 +33,19 @@ const ActiveSession = ({ user, currentTrail }: any) => {
       setSnapshot(snapshot);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isQuitConfirmed || showQuitSessionModal) {
+      return;
+    }
+
+    const quitTimer = setTimeout(() => {
+      bus.emit("UI_QUIT_REQUESTED");
+    }, 350);
+
+    return () => clearTimeout(quitTimer);
+  }, [bus, isQuitConfirmed, showQuitSessionModal]);
+
   useBusEvent("SESSION_TICK", (payload: SessionSnapshotPayload) => setSnapshot(payload.snapshot));
   useBusEvent("SESSION_PAUSED", (payload: SessionSnapshotPayload) => {
     setSnapshot(payload.snapshot);
@@ -140,85 +161,153 @@ const ActiveSession = ({ user, currentTrail }: any) => {
     return <Text>No Session</Text>;
   }
 
+  const activeWildId = activeWilds[0]?.wildId ?? "scout";
+  const phaseLabel = snapshot.phase.includes("BREAK")
+    ? "Recovery Break"
+    : snapshot.phase === "COMPLETED"
+    ? "Session Complete"
+    : snapshot.isPaused
+    ? "Paused Trek"
+    : "Focus Trek";
+  const companionCopy = snapshot.phase.includes("BREAK")
+    ? "Your wild is catching its breath with you."
+    : snapshot.isPaused
+    ? "Paused beside the trail. Ready when you are."
+    : "Your wild is pacing this trail with you.";
+
   return (
     <SafeAreaView style={styles.container} testID="active-session-screen">
-      <ScrollView style={{ paddingBottom: 80 }}>
-        <QuitSessionModal
-          isVisible={showQuitSessionModal}
-          cancel={() => {
-            let next = !snapshot.isPaused;
-            setSnapshot(prev => ({ ...prev!, isPaused: next }));
-            bus.emit("UI_RESUME_REQUESTED");
-            setShowQuitSessionModal(false);
-          }}
-          quit={() => {
-            bus.emit("UI_QUIT_REQUESTED");
-          }}
-          sessionDetails={snapshot}
-        />
-        {/* <ContinueSessionModal
-					isVisible={timer.isCompleted}
-					showResultsScreen={showResultsScreen}
-					onAddSession={onAddSession}
-					onAddSet={onAddSet}
-					focusTime={timer.focusTime}
-					endSession={endSession}
-				/> */}
+      <QuitSessionModal
+        isVisible={showQuitSessionModal}
+        cancel={() => {
+          let next = !snapshot.isPaused;
+          setSnapshot(prev => ({ ...prev!, isPaused: next }));
+          bus.emit("UI_RESUME_REQUESTED");
+          setShowQuitSessionModal(false);
+        }}
+        quit={() => {
+          setIsQuitConfirmed(true);
+          setShowQuitSessionModal(false);
+        }}
+        sessionDetails={snapshot}
+      />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.heroCard}>
+          <View style={styles.heroHeader}>
+            <View>
+              <Text style={styles.eyebrow}>Active Session</Text>
+              <Text style={styles.heroTitle}>{snapshot.sessionName || "Trail Focus"}</Text>
+            </View>
+            <View style={[styles.phasePill, snapshot.isPaused && styles.pausedPill]}>
+              <Text style={styles.phasePillText}>{phaseLabel}</Text>
+            </View>
+          </View>
 
-        <SessionTimer snapshot={snapshot} />
-        <View style={styles.buttonsContainer}>
-          {/* Stop Button */}
+          <View style={styles.timerPanel}>
+            <SessionTimer snapshot={snapshot} />
+          </View>
+
+          <View style={styles.companionCard}>
+            <View style={styles.wildBadge}>
+              <WildAvatar
+                id={activeWildId}
+                pose={snapshot.isPaused ? "still" : "wave"}
+                size={96}
+                animated
+              />
+            </View>
+            <View style={styles.companionTextBlock}>
+              <Text style={styles.companionLabel}>Trail companion</Text>
+              <Text style={styles.companionCopy}>{companionCopy}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.controlsCard}>
           <Pressable
             testID="stop-button"
-            style={[styles.button, styles.endSessionButton]}
+            accessibilityLabel="Quit session"
+            style={({ pressed }) => [
+              styles.controlButton,
+              styles.stopButton,
+              pressed && styles.buttonPressed,
+            ]}
             onPress={() => {
               let next = !snapshot.isPaused;
               setShowQuitSessionModal(true);
               setSnapshot(prev => ({ ...prev!, isPaused: next }));
               bus.emit("UI_PAUSE_REQUESTED");
             }}>
-            <Icon name="square" size={28} color="white" />
+            <Icon name="square" size={24} color="#ffffff" />
+            <Text style={styles.controlButtonText}>Quit</Text>
           </Pressable>
 
-          {/* Pause/Resume Button (conditionally rendered icon) */}
           <Pressable
             testID="pause-resume-button"
+            accessibilityLabel={snapshot.isPaused ? "Resume session" : "Pause session"}
             onPress={() => {
               let next = !snapshot.isPaused;
               setSnapshot(prev => ({ ...prev!, isPaused: next }));
               snapshot.isPaused ? bus.emit("UI_RESUME_REQUESTED") : bus.emit("UI_PAUSE_REQUESTED");
             }}
-            style={[styles.button, styles.pauseResumeButton]}>
-            <Icon name={snapshot.isPaused ? "play" : "pause"} size={28} color="white" />
+            style={({ pressed }) => [
+              styles.controlButton,
+              styles.primaryControlButton,
+              pressed && styles.buttonPressed,
+            ]}>
+            <Icon name={snapshot.isPaused ? "play" : "pause"} size={26} color={theme.buttonText} />
+            <Text style={[styles.controlButtonText, styles.primaryControlButtonText]}>
+              {snapshot.isPaused ? "Resume" : "Pause"}
+            </Text>
           </Pressable>
-          {/* Skip Break Button (conditionally rendered) */}
+
           {snapshot.phase.includes("BREAK") && (
             <Pressable
               testID="skip-break-button"
+              accessibilityLabel="Skip break"
               onPress={() => {
                 bus.emit("UI_BREAK_SKIP_REQUESTED");
               }}
-              style={[styles.button, styles.skipBreakButton]}>
-              <Icon name="play-skip-forward" size={28} color="white" />
+              style={({ pressed }) => [
+                styles.controlButton,
+                styles.skipButton,
+                pressed && styles.buttonPressed,
+              ]}>
+              <Icon name="play-skip-forward" size={24} color="#ffffff" />
+              <Text style={styles.controlButtonText}>Skip</Text>
             </Pressable>
           )}
         </View>
-        <View style={styles.trailNameContainer}>
-          <Text style={styles.trailName} testID="current-trail-name">
-            {currentTrail.trailName}
+
+        <View style={styles.trailCard}>
+          <View style={styles.trailHeaderRow}>
+            <Text style={styles.eyebrow}>Current Trail</Text>
+            <Text style={styles.trailDistance}>
+              {snapshot.totalDistanceMiles.toFixed(2)} mi today
+            </Text>
+          </View>
+          <Text style={styles.trailName} testID="current-trail-name" numberOfLines={2}>
+            {currentTrail?.trailName ?? "Current trail"}
           </Text>
           <EnhancedDistanceProgressBar user={user} trail={currentTrail} />
         </View>
-        {/* <ActiveSessionBackpack sessionDetails={sessionDetails} user={user} /> */}
-        <View style={styles.statsContainer}>
+
+        <View style={styles.statsCard}>
+          <Text style={styles.sectionTitle}>Trek stats</Text>
           <View style={styles.statsGrid}>
-            <StatBox label="Pace" value={`${snapshot.currentPaceMph} mph`} />
-            <StatBox label="Sets" value={`${snapshot.completedSets} / ${snapshot.totalSets}`} />
-            <StatBox label="Strikes" value={snapshot.totalStrikes} />
-            <StatBox label="Total-Dist." value={`${snapshot.totalDistanceMiles.toFixed(2)} mi.`} />
-            {/* <StatBox label="Reward" value={Number( session.totalTokensEarned)} /> */}
-            {/* <StatBox  label="Achievements" value={earnedAchievements.length} /> */}
-            <StatBox label="Trails" value={snapshot.completedTrails.length} />
+            <StatBox styles={styles} label="Pace" value={`${snapshot.currentPaceMph} mph`} />
+            <StatBox
+              styles={styles}
+              label="Sets"
+              value={`${snapshot.completedSets} / ${snapshot.totalSets}`}
+            />
+            <StatBox styles={styles} label="Strikes" value={snapshot.totalStrikes} />
+            <StatBox
+              styles={styles}
+              label="Total-Dist."
+              value={`${snapshot.totalDistanceMiles.toFixed(2)} mi.`}
+            />
+            <StatBox styles={styles} label="Trails" value={snapshot.completedTrails.length} />
           </View>
         </View>
       </ScrollView>
@@ -226,93 +315,241 @@ const ActiveSession = ({ user, currentTrail }: any) => {
   );
 };
 
-const StatBox = React.memo(({ label, value }: { label: string; value: string | number }) => (
-  <View key={`${label}:${value}`} style={styles.infoBox}>
-    <Text style={styles.infoLabel}>{label}</Text>
-    <Text testID={label.toLowerCase()} style={styles.infoValue}>
-      {value}
-    </Text>
-  </View>
-));
-
-const ActionButton = ({ onPress, label, buttonStyle }: any) => (
-  <Pressable onPress={onPress} style={[styles.button, buttonStyle]}>
-    <Text style={styles.buttonText}>{label}</Text>
-  </Pressable>
+const StatBox = React.memo(
+  ({
+    label,
+    value,
+    styles,
+  }: {
+    label: string;
+    value: string | number;
+    styles: ReturnType<typeof getStyles>;
+  }) => (
+    <View key={`${label}:${value}`} style={styles.infoBox}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text testID={label.toLowerCase()} style={styles.infoValue}>
+        {value}
+      </Text>
+    </View>
+  ),
 );
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "black",
-    padding: 20,
-  },
-  trailNameContainer: {
-    marginBottom: 10,
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 10,
-  },
-  trailName: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
-    marginVertical: 10,
-  },
-  statsContainer: {
-    backgroundColor: "rgba(255,255,255,.1)",
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 20,
-  },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  infoBox: {
-    width: "30%",
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  infoLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#aaa",
-    marginBottom: 5,
-  },
-  infoValue: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
-  buttonsContainer: {
-    display: "flex",
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-  },
-  endSessionButton: {
-    backgroundColor: "transparent",
-  },
-  skipBreakButton: {
-    backgroundColor: "transparent",
-  },
-  pauseResumeButton: {
-    backgroundColor: "transparent",
-  },
-});
+const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    scrollContent: {
+      padding: 16,
+      paddingBottom: 32,
+      gap: 12,
+    },
+    heroCard: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 26,
+      borderWidth: 1,
+      overflow: "hidden",
+      padding: 18,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.16,
+      shadowRadius: 16,
+      elevation: 5,
+    },
+    heroHeader: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      marginBottom: 12,
+    },
+    eyebrow: {
+      color: theme.button,
+      fontSize: 11,
+      fontWeight: "700",
+      letterSpacing: 1.1,
+      textTransform: "uppercase",
+    },
+    heroTitle: {
+      color: theme.text,
+      fontSize: 23,
+      fontWeight: "700",
+      letterSpacing: -0.3,
+      marginTop: 4,
+    },
+    phasePill: {
+      backgroundColor: "rgba(19, 179, 172, 0.18)",
+      borderColor: theme.button,
+      borderRadius: 999,
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+    },
+    pausedPill: {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      borderColor: theme.border,
+    },
+    phasePillText: {
+      color: theme.text,
+      fontSize: 11,
+      fontWeight: "700",
+      textTransform: "uppercase",
+    },
+    timerPanel: {
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 12,
+      marginTop: 2,
+    },
+    companionCard: {
+      alignItems: "center",
+      alignSelf: "center",
+      backgroundColor: theme.progressBarBackground,
+      borderColor: theme.border,
+      borderRadius: 20,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "center",
+      maxWidth: 360,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      width: "100%",
+    },
+    wildBadge: {
+      alignItems: "center",
+      flexShrink: 0,
+      height: 104,
+      justifyContent: "center",
+      width: 104,
+    },
+    companionTextBlock: {
+      flex: 1,
+      minWidth: 0,
+    },
+    companionLabel: {
+      color: theme.button,
+      fontSize: 11,
+      fontWeight: "700",
+      letterSpacing: 0.9,
+      marginBottom: 4,
+      textTransform: "uppercase",
+    },
+    companionCopy: {
+      color: theme.secondaryText,
+      fontSize: 13,
+      fontWeight: "500",
+      lineHeight: 18,
+    },
+    controlsCard: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 22,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 10,
+      padding: 12,
+    },
+    controlButton: {
+      alignItems: "center",
+      borderRadius: 16,
+      flex: 1,
+      flexDirection: "row",
+      gap: 8,
+      justifyContent: "center",
+      paddingHorizontal: 10,
+      paddingVertical: 14,
+    },
+    primaryControlButton: {
+      backgroundColor: theme.button,
+    },
+    stopButton: {
+      backgroundColor: "rgba(198, 40, 40, 0.9)",
+    },
+    skipButton: {
+      backgroundColor: "rgba(255, 255, 255, 0.12)",
+      borderColor: theme.border,
+      borderWidth: 1,
+    },
+    buttonPressed: {
+      opacity: 0.78,
+      transform: [{ scale: 0.98 }],
+    },
+    controlButtonText: {
+      color: "#ffffff",
+      fontSize: 14,
+      fontWeight: "700",
+    },
+    primaryControlButtonText: {
+      color: theme.buttonText,
+    },
+    trailCard: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 22,
+      borderWidth: 1,
+      padding: 16,
+    },
+    trailHeaderRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 8,
+    },
+    trailDistance: {
+      color: theme.secondaryText,
+      fontSize: 12,
+      fontWeight: "500",
+    },
+    trailName: {
+      color: theme.text,
+      fontSize: 20,
+      fontWeight: "700",
+      marginBottom: 12,
+    },
+    statsCard: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 22,
+      borderWidth: 1,
+      padding: 16,
+    },
+    sectionTitle: {
+      color: theme.text,
+      fontSize: 18,
+      fontWeight: "700",
+      marginBottom: 12,
+    },
+    statsGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+    infoBox: {
+      backgroundColor: theme.inputBackground,
+      borderColor: theme.border,
+      borderRadius: 16,
+      borderWidth: 1,
+      flexGrow: 1,
+      minWidth: "30%",
+      paddingHorizontal: 10,
+      paddingVertical: 12,
+    },
+    infoLabel: {
+      color: theme.secondaryText,
+      fontSize: 11,
+      fontWeight: "700",
+      marginBottom: 5,
+      textTransform: "uppercase",
+    },
+    infoValue: {
+      color: theme.text,
+      fontSize: 14,
+      fontWeight: "600",
+    },
+  });
 
 const enhance = withObservables(
   [
@@ -322,6 +559,7 @@ const enhance = withObservables(
     "queuedTrails",
     "usersAchievements",
     "userPurchasedTrails",
+    "activeWilds",
   ],
   ({ user }) => ({
     user: user.observe(),
@@ -330,6 +568,7 @@ const enhance = withObservables(
     queuedTrails: user.usersQueuedTrails.observe(),
     userAchievements: user.usersAchievements.observe(),
     userPurchasedTrails: user.usersPurchasedTrails.observe(),
+    activeWilds: user.usersWilds.extend(Q.where("is_active", true), Q.take(1)).observe(),
   }),
 );
 

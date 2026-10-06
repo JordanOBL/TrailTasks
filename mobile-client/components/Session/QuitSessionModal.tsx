@@ -1,7 +1,7 @@
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import React from 'react';
-import { SessionSnapshot } from '../../sessionEngine/sessionEngine';
+import React from "react";
+import { SessionSnapshot } from "../../sessionEngine/sessionEngine";
 
 interface Props {
   isVisible: boolean;
@@ -11,97 +11,109 @@ interface Props {
 }
 
 const QuitSessionModal = ({ isVisible, sessionDetails, cancel, quit }: Props) => {
-  const unfinishedSets = sessionDetails.totalSets - sessionDetails.completedSets
-  
+  const unfinishedSets = sessionDetails.totalSets - sessionDetails.completedSets;
+
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <Modal transparent={true} visible={isVisible} animationType="fade" testID="quit-session-modal">
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.titleText}>Quit Session Early!?</Text>
+    <View style={styles.modalBackground} testID="quit-session-modal">
+      <View style={styles.modalContainer}>
+        <Text style={styles.titleText}>Quit Session Early!?</Text>
 
-          {( sessionDetails.completedSets < 3 ) && <View style={styles.messageContainer}>
-            <Text style={styles.messageText}>You have {unfinishedSets} sets left to recieve session rewards. </Text>
-                    </View> }
-          <TouchableOpacity style={styles.buttonEndSession} testID="confirm-quit-button" onPress={() => quit()}>
-            <Text style={styles.buttonText}>Quit Session</Text>
-          </TouchableOpacity>
+        {sessionDetails.completedSets < 3 && (
+          <View style={styles.messageContainer}>
+            <Text style={styles.messageText}>
+              You have {unfinishedSets} sets left to recieve session rewards.{" "}
+            </Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.buttonEndSession}
+          testID="confirm-quit-button"
+          onPress={() => quit()}>
+          <Text style={styles.buttonText}>Quit Session</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity testID="confirm-cancel-button" style={styles.buttonNewSet} onPress={() => cancel()}>
-            <Text  style={styles.buttonText}>Cancel (Resume)</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          testID="confirm-cancel-button"
+          style={styles.buttonNewSet}
+          onPress={() => cancel()}>
+          <Text style={styles.buttonText}>Cancel (Resume)</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   modalBackground: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 100,
+    elevation: 100,
   },
   modalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
   titleText: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#00796B', // Teal color
+    fontWeight: "bold",
+    color: "#00796B", // Teal color
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   messageContainer: {
     marginBottom: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   messageText: {
     fontSize: 16,
-    color: 'black',
-    textAlign: 'center',
+    color: "black",
+    textAlign: "center",
     marginBottom: 10,
   },
   buttonOneMore: {
-    backgroundColor: '#009688', // Lighter teal color
+    backgroundColor: "#009688", // Lighter teal color
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   buttonNewSet: {
-    backgroundColor: '#00796B', // Darker teal color
+    backgroundColor: "#00796B", // Darker teal color
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   buttonEndSession: {
-    backgroundColor: '#004D40', // Darkest teal color
+    backgroundColor: "#004D40", // Darkest teal color
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   buttonRewardText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
-
- 
 });
 
 export default QuitSessionModal;

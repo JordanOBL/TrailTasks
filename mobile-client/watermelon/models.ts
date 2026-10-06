@@ -326,7 +326,9 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       }),
 
       userSession.prepareUpdate(session => {
-        session.totalDistanceHiked = Number((Number(session.totalDistanceHiked || 0) + 0.01).toFixed(2));
+        session.totalDistanceHiked = Number(
+          (Number(session.totalDistanceHiked || 0) + 0.01).toFixed(2),
+        );
         //new totalsessiontime = current time minus start time
         session.totalSessionTime = snapshot.totalElapseSec;
       }),
@@ -678,6 +680,9 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         wild.userId = this.id;
         wild.wildId = parkWild.id; // Assuming '1' is a default wild ID
         wild.isActive = true;
+        wild.level = 1;
+        wild.xp = 0;
+        wild.xpToNext = 100;
         wild.unlockedAt = new Date().toISOString();
       });
     } else if (this.prestigeLevel == existingParkPass.parkLevel) {
@@ -730,6 +735,10 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         this.usersWilds.extend(Q.where("is_active", true)).fetch(),
       ]);
 
+      if (!currentSession) {
+        throw new Error(`Cannot finalize missing session ${args.snapshot.sessionId}`);
+      }
+
       batchOperations.push(
         this.prepareUpdate(updatedUser => {
           updatedUser.trailTokens += args.rewards.totalTokenRewards;
@@ -738,18 +747,23 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           session.totalDistanceHiked = Number(args.snapshot.totalDistanceMiles.toFixed(2));
           session.totalSessionTime = args.snapshot.totalElapsedSec;
         }),
-        activeWild
-          ? activeWild.prepareUpdate(wild => {
-              wild.xp += args.rewards.wildXpRewards;
-              //level up logic
-              while (wild.xp >= wild.xpToNext) {
-                wild.xp -= wild.xpToNext;
-                wild.level += 1;
-                wild.xpToNext = Math.floor(wild.xpToNext * 1.5); // Increase XP needed for next level
-              }
-            })
-          : null,
       );
+
+      if (activeWild) {
+        batchOperations.push(
+          activeWild.prepareUpdate(wild => {
+            const nextProgress = calculateWildXpProgress({
+              currentXp: wild.xp,
+              xpToNext: wild.xpToNext,
+              level: wild.level,
+              rewardXp: args.rewards.wildXpRewards,
+            });
+            wild.xp = nextProgress.xp;
+            wild.level = nextProgress.level;
+            wild.xpToNext = nextProgress.xpToNext;
+          }),
+        );
+      }
 
       await this.database.batch(...batchOperations);
     } catch (e) {
@@ -837,6 +851,40 @@ export class Cached_Friend extends Model {
   @date("updated_at") updatedAt;
 
   @immutableRelation("users", "user_id") user;
+}
+
+export function calculateWildXpProgress({
+  currentXp,
+  xpToNext,
+  level,
+  rewardXp,
+}: {
+  currentXp: number;
+  xpToNext: number;
+  level: number;
+  rewardXp: number;
+}) {
+  let nextXp = Number(xpToNext);
+  let totalXp = Number(currentXp) + Number(rewardXp);
+  let nextLevel = Number(level);
+
+  if (!Number.isFinite(totalXp)) {
+    totalXp = 0;
+  }
+  if (!Number.isFinite(nextLevel) || nextLevel < 1) {
+    nextLevel = 1;
+  }
+  if (!Number.isFinite(nextXp) || nextXp <= 0) {
+    nextXp = 100;
+  }
+
+  while (totalXp >= nextXp) {
+    totalXp -= nextXp;
+    nextLevel += 1;
+    nextXp = Math.max(1, Math.floor(nextXp * 1.5));
+  }
+
+  return { xp: totalXp, level: nextLevel, xpToNext: nextXp };
 }
 
 export class Wild extends Model {

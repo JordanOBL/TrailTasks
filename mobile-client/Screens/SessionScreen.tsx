@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { RewardsCalculatedPayload } from "../EventBus/EventBus";
+import { RewardsCalculatedPayload, SessionCompletedPayload } from "../EventBus/EventBus";
 import React, { useState } from "react";
 
 import { darkTheme, lightTheme } from "../theme";
@@ -37,7 +37,10 @@ const SessionScreen = () => {
 
   //this sets the view when engine emits
   useEventBus("SESSION_STARTED", () => setView("ACTIVE"));
-  useEventBus("SESSION_COMPLETED", () => setView("REWARDS_SOLO"));
+  useEventBus("SESSION_COMPLETED", (payload: SessionCompletedPayload) => {
+    setFinalSnapshot(payload.snapshot);
+    setView("REWARDS_SOLO");
+  });
   useEventBus("REWARDS_CALCULATED", (payload: RewardsCalculatedPayload) => {
     setRewards(prev => ({ ...prev, ...payload.rewards }));
     setFinalSnapshot({ ...payload.finalSnapshot });
@@ -49,7 +52,7 @@ const SessionScreen = () => {
     setView("OPTIONS");
     setRewards({ trailRewards: 0, wildXpRewards: 0, timeRewards: 0, totalTokenRewards: 0 });
     setFinalSnapshot(null);
-  }, []);
+  }, [sessionEngineMgr]);
 
   // })
   // const handleEndSession = React.useCallback(async () => {
@@ -119,6 +122,7 @@ const enhance = withObservables(["user", "userAchievements", "currentTrail"], ({
 
 //Enhanced because if a user leaves backpack modal to buy an addon, this reloads the session screen automatically following the user, so when they go back to use the addon they purchased it will be there
 const EnhancedSessionScreen = enhance(SessionScreen);
+export { SessionScreen };
 export default EnhancedSessionScreen;
 
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>

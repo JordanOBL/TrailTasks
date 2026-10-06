@@ -19,7 +19,9 @@ describe("RewardService", () => {
     bus = EventBus.getInstance();
     user = createMockUserBase({
       usersWilds: {
-        extend: () => true,
+        extend: () => ({
+          fetch: jest.fn(async () => [{ id: "active-wild" }]),
+        }),
       },
     });
     db = {
@@ -66,13 +68,25 @@ describe("RewardService", () => {
 
   test("calculateWildXp returns the correct wild xp (10 * totalSessionDistance)", async () => {
     const expected = 10;
-    jest.spyOn(user.usersWilds, "extend").mockReturnValue(true as never);
+    jest.spyOn(user.usersWilds, "extend").mockReturnValue({
+      fetch: jest.fn(async () => [{ id: "active-wild" }]),
+    } as never);
 
     const result = await (rewardService as any).calculateActiveWildXpReward(snapshot);
 
     await waitFor(() => {
       expect(result).toEqual(expected);
     });
+  });
+
+  test("calculateWildXp returns zero when no active wild exists", async () => {
+    jest.spyOn(user.usersWilds, "extend").mockReturnValue({
+      fetch: jest.fn(async () => []),
+    } as never);
+
+    const result = await (rewardService as any).calculateActiveWildXpReward(snapshot);
+
+    expect(result).toEqual(0);
   });
 
   test("calculateTrailTokens returns 0 trail tokens if 0 trail completed", () => {

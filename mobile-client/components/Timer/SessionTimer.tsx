@@ -27,7 +27,7 @@ const SessionTimer = React.memo(({ snapshot }: { snapshot: SessionSnapshot }) =>
         ]}>
         {timerDisplay()}
       </Text>
-      <Text style={{ color: "#D3E5EB" }}>{formatCountdown(snapshot.totalElapsedSec)}</Text>
+      <Text style={styles.elapsedText}>{formatCountdown(snapshot.totalElapsedSec)}</Text>
     </View>
   );
 });
@@ -36,17 +36,27 @@ export default SessionTimer;
 const styles = StyleSheet.create({
   timerContainer: {
     alignItems: "center",
-    marginBottom: 20,
+    minWidth: 170,
   },
   timerText: {
-    fontSize: 60,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 10,
-    marginBottom: 10,
     color: "rgb(7,254,213)",
+    fontSize: 52,
+    fontVariant: ["tabular-nums"],
+    fontWeight: "500",
+    letterSpacing: 0.5,
+    lineHeight: 62,
+    marginBottom: 4,
+    textAlign: "center",
+    width: 170,
   },
   pausedText: {
     color: "#D3E5EB",
+  },
+  elapsedText: {
+    color: "#8EA7AE",
+    fontSize: 13,
+    fontVariant: ["tabular-nums"],
+    fontWeight: "500",
+    letterSpacing: 0.4,
   },
 });
