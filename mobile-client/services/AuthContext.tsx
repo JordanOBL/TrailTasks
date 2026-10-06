@@ -22,6 +22,7 @@ type AuthContextType = {
   revenueCatError: string;
   purchasePackage: (selectedPackage: any) => Promise<any>;
   restorePurchases: () => Promise<any>;
+  refreshCustomerInfo: () => Promise<any>;
   
 };
 

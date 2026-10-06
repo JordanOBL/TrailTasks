@@ -35,6 +35,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
     error: revenueCatError,
     purchasePackage,
     restorePurchases,
+    refreshCustomerInfo,
   } = useRevenueCat({ userId: user?.id });
 
   // Observe user changes (only if user is a Watermelon model)
@@ -215,5 +216,6 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
     revenueCatError,
     purchasePackage,
     restorePurchases,
+    refreshCustomerInfo,
   };
 }

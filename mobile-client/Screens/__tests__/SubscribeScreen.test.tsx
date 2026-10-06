@@ -43,8 +43,10 @@ const baseAuthContext = {
   },
   isProMember: false,
   revenueCatLoading: false,
+  revenueCatConfigured: true,
   revenueCatError: "",
   purchasePackage: mockPurchasePackage,
+  restorePurchases: jest.fn(),
 };
 
 describe("SubscribeScreen", () => {
@@ -66,6 +68,22 @@ describe("SubscribeScreen", () => {
     expect(screen.getByTestId("subscribe-error-state")).toBeTruthy();
     expect(screen.getByText("Trail Tasks Pro is unavailable")).toBeTruthy();
     expect(screen.getByText(/RevenueCat is not configured/)).toBeTruthy();
+  });
+
+  it("renders package options from the offering fallback package list", () => {
+    mockAuthContext = {
+      ...baseAuthContext,
+      currentOffering: {
+        annual: null,
+        monthly: null,
+        availablePackages: [annualPackage],
+      },
+    };
+
+    const screen = render(<SubscribeScreen navigation={navigation as any} />);
+
+    expect(screen.getByText(/Trail Tasks Annual/)).toBeTruthy();
+    expect(screen.getByText("$29.99 / year")).toBeTruthy();
   });
 
   it("purchases the selected RevenueCat package through AuthContext so entitlement state can update centrally", async () => {

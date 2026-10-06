@@ -6,10 +6,10 @@ import { darkTheme, lightTheme } from '../../theme';
 
 const RestorePurchasesButton = () => {
   const { theme } = useTheme();
-  const { restorePurchases, revenueCatConfigured, revenueCatLoading, revenueCatError } = useAuthContext();
+  const { restorePurchases, revenueCatConfigured, revenueCatLoading } = useAuthContext();
   const styles = getStyles(theme);
   const [loading, setLoading] = React.useState(false);
-  const restoreUnavailable = revenueCatLoading || !revenueCatConfigured || !!revenueCatError;
+  const restoreUnavailable = revenueCatLoading || !revenueCatConfigured;
   const disabled = loading || restoreUnavailable;
 
   const handleRestore = async () => {
@@ -17,7 +17,7 @@ const RestorePurchasesButton = () => {
       setLoading(true);
       const customerInfo = await restorePurchases();
 
-      const hasActive = Object.keys(customerInfo?.entitlements?.active || {}).length > 0;
+      const hasActive = !!customerInfo?.entitlements?.active?.pro;
 
       if (hasActive) {
         Alert.alert('✅ Restored', 'Your purchases have been restored!');
