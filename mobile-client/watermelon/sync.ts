@@ -37,7 +37,47 @@ const ACCOUNT_FORCE_PUSH_TABLES = [
   "sessions_addons",
 ] as const;
 
-let isRunning = false;
+let syncQueue: Promise<void> = Promise.resolve();
+const coalescedSyncs = new Map<string, Promise<void>>();
+
+function enqueueSync(label: string, operation: () => Promise<void>) {
+  const queuedOperation = syncQueue
+    .catch(() => undefined)
+    .then(async () => {
+      await operation();
+    });
+
+  syncQueue = queuedOperation.catch(err => {
+    handleError(err, `${label} queued operation`);
+  });
+
+  return queuedOperation;
+}
+
+function enqueueCoalescedSync(
+  label: string,
+  coalesceKey: string | undefined,
+  operation: () => Promise<void>,
+) {
+  if (!coalesceKey) {
+    return enqueueSync(label, operation);
+  }
+
+  const existingSync = coalescedSyncs.get(coalesceKey);
+  if (existingSync) {
+    console.debug(`[Sync] Coalescing duplicate request for ${coalesceKey}.`);
+    return existingSync;
+  }
+
+  const queuedSync = enqueueSync(label, operation).finally(() => {
+    if (coalescedSyncs.get(coalesceKey) === queuedSync) {
+      coalescedSyncs.delete(coalesceKey);
+    }
+  });
+
+  coalescedSyncs.set(coalesceKey, queuedSync);
+  return queuedSync;
+}
 
 type PullUrlParams = {
   baseUrl: string;
@@ -53,6 +93,7 @@ type SyncOptions = {
   pullOnly?: boolean;
   pushOnly?: boolean;
   forceAccountPush?: boolean;
+  coalesceKey?: string;
 };
 
 type RawRecord = Record<string, any>;
@@ -267,48 +308,40 @@ export async function pullCatalogChanges(database: Database, isConnected: boolea
 
   if (!Config.DATABASE_PULL_URL) {
     throw new Error("Error syncing with DB, DATABASE_PULL_URL missing in config");
-    return;
   }
 
-  if (isRunning) {
-    console.debug("[Catalog Sync] Already running. Skipping new call.");
-    return;
-  }
-
-  isRunning = true;
-
-  try {
-    const lastPulledAt = await getCatalogLastPulledAt(database);
-    const url = buildPullUrl({
-      baseUrl: Config.DATABASE_PULL_URL,
-      lastPulledAt,
-      schemaVersion: database.schema.version,
-      catalogOnly: true,
-    });
-
-    console.debug("[Catalog Sync] Pull URL:", Config.DATABASE_PULL_URL);
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-
-    const { changes, timestamp } = await response.json();
-    const catalogChanges = normalizeRemoteChanges(filterCatalogChanges(changes));
-
-    await database.write(async () => {
-      await applyRemoteChanges(catalogChanges as SyncDatabaseChangeSet, {
-        db: database,
-        sendCreatedAsUpdated: true,
+  return enqueueSync("pullCatalogChanges()", async () => {
+    try {
+      const lastPulledAt = await getCatalogLastPulledAt(database);
+      const url = buildPullUrl({
+        baseUrl: Config.DATABASE_PULL_URL!,
+        lastPulledAt,
+        schemaVersion: database.schema.version,
+        catalogOnly: true,
       });
-      await setCatalogLastPulledAt(database, timestamp);
-    }, "sync-pull-catalog");
 
-    console.debug(`[Catalog Sync] Pulled catalog changes at ${timestamp}`);
-  } catch (err) {
-    handleError(err, "pullCatalogChanges()");
-  } finally {
-    isRunning = false;
-  }
+      console.debug("[Catalog Sync] Pull URL:", Config.DATABASE_PULL_URL);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const { changes, timestamp } = await response.json();
+      const catalogChanges = normalizeRemoteChanges(filterCatalogChanges(changes));
+
+      await database.write(async () => {
+        await applyRemoteChanges(catalogChanges as SyncDatabaseChangeSet, {
+          db: database,
+          sendCreatedAsUpdated: true,
+        });
+        await setCatalogLastPulledAt(database, timestamp);
+      }, "sync-pull-catalog");
+
+      console.debug(`[Catalog Sync] Pulled catalog changes at ${timestamp}`);
+    } catch (err) {
+      handleError(err, "pullCatalogChanges()");
+    }
+  });
 }
 
 export async function sync(
@@ -322,137 +355,131 @@ export async function sync(
     return;
   }
 
-  if (isRunning) {
-    console.debug("[Sync] Already running. Skipping new call.");
-    return;
-  }
-
   if ((options.fullUserSync || options.forceAccountPush) && !userId) {
     console.warn("[Sync] Account sync requested without a user id.");
     return;
   }
 
-  isRunning = true;
-  let retryCount = 0;
-  const maxRetries = 2;
+  return enqueueCoalescedSync("sync()", options.coalesceKey, async () => {
+    let retryCount = 0;
+    const maxRetries = 2;
 
-  const pushLocalChanges = async (lastPulledAt: number | null) => {
-    const localChanges = await fetchLocalChanges(database);
-    const changes = options.forceAccountPush
-      ? await fetchForcedAccountChanges(database, userId!)
-      : localChanges.changes;
+    const pushLocalChanges = async (lastPulledAt: number | null) => {
+      const localChanges = await fetchLocalChanges(database);
+      const changes = options.forceAccountPush
+        ? await fetchForcedAccountChanges(database, userId!)
+        : localChanges.changes;
 
-    const response = await fetch(
-      `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
-      {
-        method: "POST",
-        body: JSON.stringify({ changes }),
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
+        {
+          method: "POST",
+          body: JSON.stringify({ changes }),
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      },
-    );
+      );
 
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-
-    if (!options.forceAccountPush) {
-      await markLocalChangesAsSynced(database, localChanges);
-    }
-    console.debug("[Sync] Pushed local changes to server.");
-  };
-
-  while (retryCount < maxRetries) {
-    try {
-      console.debug(`[Sync] Attempt ${retryCount + 1}...`);
-
-      if (options.pushOnly) {
-        console.debug("[Sync] Push-only URL:", Config.DATABASE_PUSH_URL);
-        await pushLocalChanges(await getLastPulledAt(database));
-        break;
+      if (!response.ok) {
+        throw new Error(await response.text());
       }
 
-      await synchronize({
-        database,
-        pullChanges: async ({ lastPulledAt, schemaVersion }) => {
-          try {
-            console.debug("[Sync] Pull URL:", Config.DATABASE_PULL_URL);
-            const url = buildPullUrl({
-              baseUrl: Config.DATABASE_PULL_URL!,
-              lastPulledAt: lastPulledAt ?? null,
-              schemaVersion,
-              userId,
-              fullUserSync: options.fullUserSync,
-            });
+      if (!options.forceAccountPush) {
+        await markLocalChangesAsSynced(database, localChanges);
+      }
+      console.debug("[Sync] Pushed local changes to server.");
+    };
 
-            const response = await fetch(url);
-            if (!response.ok) {
-              throw new Error(await response.text());
-            }
+    while (retryCount < maxRetries) {
+      try {
+        console.debug(`[Sync] Attempt ${retryCount + 1}...`);
 
-            const { changes, timestamp } = await response.json();
-            console.debug(`[Sync] Pulled changes at ${timestamp}`);
-            const pullResult: any = {
-              changes: normalizeRemoteChanges(changes),
-              timestamp,
-            };
+        if (options.pushOnly) {
+          console.debug("[Sync] Push-only URL:", Config.DATABASE_PUSH_URL);
+          await pushLocalChanges(await getLastPulledAt(database));
+          break;
+        }
 
-            if (options.fullUserSync && userId) {
-              pullResult.experimentalStrategy = buildFullUserSyncStrategy(userId);
-            }
+        await synchronize({
+          database,
+          pullChanges: async ({ lastPulledAt, schemaVersion }) => {
+            try {
+              console.debug("[Sync] Pull URL:", Config.DATABASE_PULL_URL);
+              const url = buildPullUrl({
+                baseUrl: Config.DATABASE_PULL_URL!,
+                lastPulledAt: lastPulledAt ?? null,
+                schemaVersion,
+                userId,
+                fullUserSync: options.fullUserSync,
+              });
 
-            return pullResult;
-          } catch (err) {
-            handleError(err, `sync() → pullChanges attempt ${retryCount + 1}`);
-            throw err; // trigger retry
-          }
-        },
-
-        pushChanges: options.pullOnly
-          ? undefined
-          : async ({ changes, lastPulledAt }) => {
-              try {
-                // example
-                console.debug("[Sync] Push URL:", Config.DATABASE_PUSH_URL);
-                const response = await fetch(
-                  `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
-                  {
-                    method: "POST",
-                    body: JSON.stringify({ changes }),
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                  },
-                );
-                if (!response.ok) {
-                  throw new Error(await response.text());
-                }
-
-                console.debug("[Sync] Pushed local changes to server.");
-              } catch (err) {
-                handleError(err, `sync() → pushChanges attempt ${retryCount + 1}`);
-                throw err; // trigger retry
+              const response = await fetch(url);
+              if (!response.ok) {
+                throw new Error(await response.text());
               }
-            },
 
-        sendCreatedAsUpdated: true,
-        conflictResolver: (table, local, remote, resolved) =>
-          resolveSyncConflict(table, local, remote, resolved, options.fullUserSync),
-      });
+              const { changes, timestamp } = await response.json();
+              console.debug(`[Sync] Pulled changes at ${timestamp}`);
+              const pullResult: any = {
+                changes: normalizeRemoteChanges(changes),
+                timestamp,
+              };
 
-      console.debug("[Sync] Synchronization successful.");
-      break; // ✅ success, break out of retry loop
-    } catch (err) {
-      retryCount++;
-      if (retryCount >= maxRetries) {
-        console.warn(`[Sync] All ${maxRetries} attempts failed.`);
-        handleError(err, "sync() final retry");
-      } else {
-        console.debug(`[Sync] Retrying... (${retryCount}/${maxRetries})`);
+              if (options.fullUserSync && userId) {
+                pullResult.experimentalStrategy = buildFullUserSyncStrategy(userId);
+              }
+
+              return pullResult;
+            } catch (err) {
+              handleError(err, `sync() → pullChanges attempt ${retryCount + 1}`);
+              throw err; // trigger retry
+            }
+          },
+
+          pushChanges: options.pullOnly
+            ? undefined
+            : async ({ changes, lastPulledAt }) => {
+                try {
+                  // example
+                  console.debug("[Sync] Push URL:", Config.DATABASE_PUSH_URL);
+                  const response = await fetch(
+                    `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
+                    {
+                      method: "POST",
+                      body: JSON.stringify({ changes }),
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                    },
+                  );
+                  if (!response.ok) {
+                    throw new Error(await response.text());
+                  }
+
+                  console.debug("[Sync] Pushed local changes to server.");
+                } catch (err) {
+                  handleError(err, `sync() → pushChanges attempt ${retryCount + 1}`);
+                  throw err; // trigger retry
+                }
+              },
+
+          sendCreatedAsUpdated: true,
+          conflictResolver: (table, local, remote, resolved) =>
+            resolveSyncConflict(table, local, remote, resolved, options.fullUserSync),
+        });
+
+        console.debug("[Sync] Synchronization successful.");
+        break; // ✅ success, break out of retry loop
+      } catch (err) {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          console.warn(`[Sync] All ${maxRetries} attempts failed.`);
+          handleError(err, "sync() final retry");
+        } else {
+          console.debug(`[Sync] Retrying... (${retryCount}/${maxRetries})`);
+        }
       }
     }
-  }
-
-  isRunning = false;
+  });
 }

@@ -102,7 +102,9 @@ export const HomeScreen: React.FC<Props> = ({
 
       checkUnsyncedChanges().then(result => {
         if (result) {
-          sync(watermelonDatabase, isConnected, user.id).catch(err =>
+          sync(watermelonDatabase, isConnected, user.id, {
+            coalesceKey: `account:${user.id}`,
+          }).catch(err =>
             handleError(err, "useCallback sync HomeScreen"),
           );
         }
