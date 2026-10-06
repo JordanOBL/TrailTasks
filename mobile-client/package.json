@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android:emulator:dev": "bash ./update-ip.sh && ANDROID_SERIAL=emulator-5554 ENVFILE=.env.development react-native run-android --port=8082 --deviceId=emulator-5554",
+    "android:emulator:dev": "bash ./update-ip.sh android-emulator && ANDROID_SERIAL=emulator-5554 ENVFILE=.env.development react-native run-android --port=8082 --deviceId=emulator-5554",
     "android:device:dev": "bash ./update-ip.sh && ANDROID_SERIAL=R5CRB0Q5XRX ENVFILE=.env.development react-native run-android --port=8084 --deviceId=R5CRB0Q5XRX",
     "android:all:dev": "bash ./update-ip.sh && ENVFILE=.env.development react-native run-android --port=8081",
     "android:test": "ENVFILE=.env.test react-native run-android",

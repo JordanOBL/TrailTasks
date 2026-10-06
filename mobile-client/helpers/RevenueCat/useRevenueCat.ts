@@ -108,6 +108,7 @@ const useRevenueCat = ({ userId }: Props) => {
         if (alive) {
           setCurrentOffering(offerings.current ?? null);
           applyCustomerInfo(info);
+          setError('');
         }
       } catch (err) {
         if (alive) {
@@ -129,6 +130,8 @@ const useRevenueCat = ({ userId }: Props) => {
   }, [applyCustomerInfo, isConfigured]);
 
   useEffect(() => {
+    if (!isConfigured) return undefined;
+
     const removeListener: any = Purchases.addCustomerInfoUpdateListener(updatedInfo => {
       applyCustomerInfo(updatedInfo);
     });
@@ -136,7 +139,7 @@ const useRevenueCat = ({ userId }: Props) => {
     return () => {
       removeListener?.();
     };
-  }, [applyCustomerInfo]);
+  }, [applyCustomerInfo, isConfigured]);
 
   const purchasePackage = useCallback(
     async (selectedPackage: PurchasesPackage) => {

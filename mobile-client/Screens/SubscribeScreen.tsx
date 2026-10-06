@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useAuthContext } from "../services/AuthContext";
+import RestorePurchasesButton from "../components/RevenueCat/RestorePurchasesButton";
 import SubscriptionOptionCard from "../components/RevenueCat/SubscriptionOptionCard";
 import { useTheme } from "../contexts/ThemeProvider";
 import { darkTheme, lightTheme } from "../theme";
@@ -17,6 +18,7 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
   const {
     currentOffering,
     isProMember,
+    revenueCatConfigured,
     revenueCatLoading,
     revenueCatError,
     purchasePackage,
@@ -25,6 +27,21 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
   const styles = getStyles(theme);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const purchasablePackages = React.useMemo(() => {
+    if (!currentOffering) return [];
+
+    const packages = [
+      currentOffering.annual,
+      currentOffering.monthly,
+      ...(currentOffering.availablePackages || []),
+    ].filter(Boolean);
+
+    return Array.from(new Map(packages.map((pkg: any) => [pkg.identifier, pkg])).values());
+  }, [currentOffering]);
+  const selectedPackageIsAvailable = purchasablePackages.some(
+    (pkg: any) => pkg.identifier === selectedPackage?.identifier,
+  );
+  const canPurchase = revenueCatConfigured && !revenueCatLoading && selectedPackageIsAvailable;
   const FEATURES = [
     "Access All Trails",
     "Use Trail Queue Feature",
@@ -36,7 +53,7 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
   ];
 
   const handlePurchase = async () => {
-    if (!selectedPackage || purchaseLoading) return;
+    if (!selectedPackage || purchaseLoading || !canPurchase) return;
 
     try {
       setPurchaseLoading(true);
@@ -64,6 +81,7 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
       <View style={styles.centerState} testID="subscribe-active-state">
         <Text style={styles.header}>Trail Tasks Pro is active</Text>
         <Text style={styles.subHeader}>Your Pro entitlement is already enabled on this account.</Text>
+        <RestorePurchasesButton />
         <TouchableOpacity style={styles.subscribeButton} onPress={() => navigation.goBack()}>
           <Text style={styles.subscribeButtonText}>Back to Trail Tasks</Text>
         </TouchableOpacity>
@@ -85,15 +103,17 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
       <View style={styles.centerState} testID="subscribe-error-state">
         <Text style={styles.header}>Trail Tasks Pro is unavailable</Text>
         <Text style={styles.subHeader}>{revenueCatError}</Text>
+        <RestorePurchasesButton />
       </View>
     );
   }
 
-  if (!currentOffering?.annual && !currentOffering?.monthly) {
+  if (purchasablePackages.length === 0) {
     return (
       <View style={styles.centerState} testID="subscribe-empty-state">
         <Text style={styles.header}>No subscription options available</Text>
         <Text style={styles.subHeader}>Please try again later or restore purchases from Subscription Settings.</Text>
+        <RestorePurchasesButton />
       </View>
     );
   }
@@ -112,28 +132,21 @@ const SubscribeScreen = ({ navigation }: { navigation: any }) => {
           </Text>
         ))}
       </View>
-      {currentOffering.annual && (
+      {purchasablePackages.map((pkg: any, index: number) => (
         <SubscriptionOptionCard
-          product={currentOffering.annual.product}
-          isPopular={true}
-          selected={selectedPackage?.identifier === currentOffering.annual.identifier}
-          onPress={() => setSelectedPackage(currentOffering.annual)}
+          key={pkg.identifier}
+          product={pkg.product}
+          isPopular={pkg.identifier === currentOffering?.annual?.identifier || index === 0}
+          selected={selectedPackage?.identifier === pkg.identifier}
+          onPress={() => setSelectedPackage(pkg)}
         />
-      )}
-      {currentOffering.monthly && (
-        <SubscriptionOptionCard
-          product={currentOffering.monthly.product}
-          isPopular={false}
-          selected={selectedPackage?.identifier === currentOffering.monthly.identifier}
-          onPress={() => setSelectedPackage(currentOffering.monthly)}
-        />
-      )}
+      ))}
 
       {selectedPackage && (
         <TouchableOpacity
-          style={[styles.subscribeButton, purchaseLoading && styles.disabledButton]}
+          style={[styles.subscribeButton, (!canPurchase || purchaseLoading) && styles.disabledButton]}
           onPress={handlePurchase}
-          disabled={purchaseLoading}
+          disabled={!canPurchase || purchaseLoading}
           testID="subscribe-now-button">
           <Text style={styles.subscribeButtonText}>{purchaseLoading ? "Subscribing…" : "Subscribe Now"}</Text>
         </TouchableOpacity>
