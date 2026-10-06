@@ -2,12 +2,15 @@
 set -euo pipefail
 
 # Updates React Native env files with an API host reachable from the target.
-# Defaults to LAN IP for physical devices. Pass android-emulator to use the
-# Android emulator host alias: 10.0.2.2.
+# Targets:
+#   physical/device/lan  -> host LAN IP for real phones on the same network
+#   android-emulator     -> 10.0.2.2 Android emulator alias for host machine
+#   ios-simulator        -> localhost for iOS Simulator on the host machine
 #
 # Examples:
-#   bash ./update-ip.sh                 # physical device / LAN IP
-#   bash ./update-ip.sh android-emulator # Android emulator / host machine
+#   bash ./update-ip.sh                  # physical device / LAN IP
+#   bash ./update-ip.sh android-emulator  # Android emulator / host machine
+#   bash ./update-ip.sh ios-simulator     # iOS Simulator / host machine
 
 TARGET=${1:-physical}
 PORT=${API_PORT:-5500}
@@ -21,14 +24,17 @@ get_lan_ip() {
 }
 
 case "$TARGET" in
-  android-emulator|emulator|android)
+  android-emulator|android)
     API_HOST="10.0.2.2"
+    ;;
+  ios-simulator|ios-sim|ios)
+    API_HOST="localhost"
     ;;
   physical|device|lan)
     API_HOST="$(get_lan_ip)"
     ;;
   *)
-    echo "Unknown target '$TARGET'. Use 'physical' or 'android-emulator'." >&2
+    echo "Unknown target '$TARGET'. Use 'physical', 'android-emulator', or 'ios-simulator'." >&2
     exit 1
     ;;
 esac
