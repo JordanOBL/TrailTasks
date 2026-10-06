@@ -75,4 +75,29 @@ describe("sync orchestration", () => {
     expect(order).toEqual(["catalog-fetch", "catalog-apply", "account-sync"]);
     expect(synchronize).toHaveBeenCalledTimes(1);
   });
+
+  it("coalesces duplicate automatic account sync requests while one is in flight", async () => {
+    let resolveFirstSync: () => void = () => {};
+    (synchronize as jest.Mock).mockImplementationOnce(
+      () =>
+        new Promise<void>(resolve => {
+          resolveFirstSync = resolve;
+        }),
+    );
+
+    const database = { schema: { version: 1 } } as any;
+
+    const firstSync = sync(database, true, "user-1", { coalesceKey: "account:user-1" });
+    const secondSync = sync(database, true, "user-1", { coalesceKey: "account:user-1" });
+    await flushPromises();
+
+    expect(synchronize).toHaveBeenCalledTimes(1);
+
+    resolveFirstSync();
+    await Promise.all([firstSync, secondSync]);
+
+    await sync(database, true, "user-1", { coalesceKey: "account:user-1" });
+
+    expect(synchronize).toHaveBeenCalledTimes(2);
+  });
 });

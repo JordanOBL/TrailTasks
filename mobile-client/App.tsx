@@ -85,7 +85,9 @@ const App = () => {
     const runStartupSync = async () => {
       try {
         if (user?.id) {
-          await sync(watermelonDatabase, isConnected, user.id);
+          await sync(watermelonDatabase, isConnected, user.id, {
+            coalesceKey: `account:${user.id}`,
+          });
         } else {
           await pullCatalogChanges(watermelonDatabase, isConnected);
         }

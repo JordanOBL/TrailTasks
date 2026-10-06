@@ -38,6 +38,7 @@ const ACCOUNT_FORCE_PUSH_TABLES = [
 ] as const;
 
 let syncQueue: Promise<void> = Promise.resolve();
+const coalescedSyncs = new Map<string, Promise<void>>();
 
 function enqueueSync(label: string, operation: () => Promise<void>) {
   const queuedOperation = syncQueue
@@ -51,6 +52,31 @@ function enqueueSync(label: string, operation: () => Promise<void>) {
   });
 
   return queuedOperation;
+}
+
+function enqueueCoalescedSync(
+  label: string,
+  coalesceKey: string | undefined,
+  operation: () => Promise<void>,
+) {
+  if (!coalesceKey) {
+    return enqueueSync(label, operation);
+  }
+
+  const existingSync = coalescedSyncs.get(coalesceKey);
+  if (existingSync) {
+    console.debug(`[Sync] Coalescing duplicate request for ${coalesceKey}.`);
+    return existingSync;
+  }
+
+  const queuedSync = enqueueSync(label, operation).finally(() => {
+    if (coalescedSyncs.get(coalesceKey) === queuedSync) {
+      coalescedSyncs.delete(coalesceKey);
+    }
+  });
+
+  coalescedSyncs.set(coalesceKey, queuedSync);
+  return queuedSync;
 }
 
 type PullUrlParams = {
@@ -67,6 +93,7 @@ type SyncOptions = {
   pullOnly?: boolean;
   pushOnly?: boolean;
   forceAccountPush?: boolean;
+  coalesceKey?: string;
 };
 
 type RawRecord = Record<string, any>;
@@ -333,7 +360,7 @@ export async function sync(
     return;
   }
 
-  return enqueueSync("sync()", async () => {
+  return enqueueCoalescedSync("sync()", options.coalesceKey, async () => {
     let retryCount = 0;
     const maxRetries = 2;
 
