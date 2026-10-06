@@ -20,6 +20,22 @@ import getTimeDifference from "../helpers/Timer/getTimeDifference";
 import handleError from "../helpers/ErrorHandler";
 import { write } from "fs";
 
+const DAILY_STREAK_THRESHOLD_SECONDS = 300;
+const DAILY_STREAK_TOKEN_REWARD = 15;
+
+function calendarDay(date: Date | string | number | null | undefined) {
+  if (!date) return null;
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return null;
+  return parsedDate.toLocaleDateString("en-CA");
+}
+
+function previousCalendarDay(date: Date) {
+  const previousDate = new Date(date);
+  previousDate.setDate(previousDate.getDate() - 1);
+  return calendarDay(previousDate);
+}
+
 export class Park extends Model {
   static table = "parks";
   static associations = {
@@ -730,18 +746,43 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     try {
       const batchOperations = [];
 
-      const [[currentSession], [activeWild]] = await Promise.all([
+      const [[currentSession], [activeWild], userSessions] = await Promise.all([
         this.usersSessions.extend(Q.where("id", args.snapshot.sessionId)).fetch(),
         this.usersWilds.extend(Q.where("is_active", true)).fetch(),
+        this.usersSessions.fetch(),
       ]);
 
       if (!currentSession) {
         throw new Error(`Cannot finalize missing session ${args.snapshot.sessionId}`);
       }
 
+      const today = new Date();
+      const todayKey = calendarDay(today);
+      const yesterdayKey = previousCalendarDay(today);
+      const lastStreakKey = calendarDay(this.lastDailyStreakDate);
+      const todaySessionSeconds = userSessions.reduce((total, session) => {
+        if (calendarDay(session.dateAdded) !== todayKey) return total;
+        if (session.id === currentSession.id) {
+          return total + Number(args.snapshot.totalElapsedSec || 0);
+        }
+        return total + Number(session.totalSessionTime || 0);
+      }, 0);
+      const hasQualifiedToday = todaySessionSeconds >= DAILY_STREAK_THRESHOLD_SECONDS;
+      const shouldAwardDailyStreak =
+        hasQualifiedToday && (lastStreakKey !== todayKey || Number(this.dailyStreak || 0) <= 0);
+      const nextDailyStreak =
+        lastStreakKey === yesterdayKey && Number(this.dailyStreak || 0) > 0
+          ? Number(this.dailyStreak || 0) + 1
+          : 1;
+
       batchOperations.push(
         this.prepareUpdate(updatedUser => {
           updatedUser.trailTokens += args.rewards.totalTokenRewards;
+          if (shouldAwardDailyStreak) {
+            updatedUser.dailyStreak = nextDailyStreak;
+            updatedUser.lastDailyStreakDate = today.toISOString();
+            updatedUser.trailTokens += DAILY_STREAK_TOKEN_REWARD;
+          }
         }),
         currentSession.prepareUpdate((session: Session) => {
           session.totalDistanceHiked = Number(args.snapshot.totalDistanceMiles.toFixed(2));
