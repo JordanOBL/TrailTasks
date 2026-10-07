@@ -187,13 +187,24 @@ export function buildFullUserSyncStrategy(userId: string) {
   };
 }
 
+function stripNonAuthoritativeAccountFields(tableName: string, record: RawRecord) {
+  const { _status, _changed, ...raw } = record;
+
+  if (tableName === "users") {
+    const { total_miles, ...authoritativeUserFields } = raw;
+    return authoritativeUserFields;
+  }
+
+  return raw;
+}
+
 export function buildForcedAccountChanges(recordsByTable: Record<string, RawRecord[]>) {
   return ACCOUNT_FORCE_PUSH_TABLES.reduce((changes, tableName) => {
     const records = recordsByTable[tableName] || [];
     if (records.length > 0) {
       changes[tableName] = {
         created: [],
-        updated: records.map(({ _status, _changed, ...raw }) => raw),
+        updated: records.map(record => stripNonAuthoritativeAccountFields(tableName, record)),
         deleted: [],
       };
     }

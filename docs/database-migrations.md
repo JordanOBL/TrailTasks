@@ -158,7 +158,24 @@ That means:
 - Future schema changes should be added as migrations from this point forward.
 - Before `preprod` or `prod`, confirm a clean-database bootstrap strategy if a brand-new database must be created from scratch.
 
-Do not use this ticket to rename trail columns, remove `users.total_miles`, or add token ledger tables. Those are follow-up schema tickets.
+The migration-infrastructure baseline did not itself rename trail columns, remove `users.total_miles`, or add token ledger tables; those changes belong in focused follow-up tickets/PRs.
+
+## `users.total_miles` removal path
+
+`users.total_miles` is removed as an account field. Mileage-sensitive behavior should derive from completed `users_sessions.total_distance_hiked` rows.
+
+Current MVP posture:
+
+- Remove the column from mobile WatermelonDB and the API Sequelize user model.
+- Strip any stale `total_miles` from account sync writes before updating Postgres user rows.
+- Do not force-push local `users.total_miles` during full account sync.
+- Derive API leaderboard and friend mileage by summing `users_sessions.total_distance_hiked` server-side.
+
+Database steps:
+
+1. For clean MVP/tester installs, reset/recreate the local WatermelonDB and Postgres schema from the new models.
+2. For an existing development Postgres database, run the migration that drops `users.total_miles`; restarting the API server alone will not remove an old persisted column.
+3. If an existing development WatermelonDB has `users.total_miles`, reset the local app database before testing this branch.
 
 ## Mobile/WatermelonDB migrations
 

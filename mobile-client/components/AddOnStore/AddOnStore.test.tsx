@@ -37,7 +37,7 @@ const user = {
 };
 
 describe("AddOnStore", () => {
-  it("checks add-on mileage eligibility from the derived totalMiles prop instead of cached user.totalMiles", () => {
+  it("checks add-on mileage eligibility from the derived totalMiles prop instead of stale user.totalMiles", () => {
     const onPurchase = jest.fn();
     const screen = render(
       <AddOnStore

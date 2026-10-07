@@ -115,7 +115,6 @@ export const createNewUser = async ({
 						user.dailyStreak = 0;
 						user.trailStartedAt = formatDateTime(new Date());
 						user.trailTokens = 50;
-						user.totalMiles = '0.00';
 
 					})
 

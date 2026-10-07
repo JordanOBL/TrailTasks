@@ -69,7 +69,6 @@ const schema = appSchema({
         { name: "trail_started_at", type: "string" },
         { name: "trail_tokens", type: "number" },
         { name: "prestige_level", type: "number" },
-        { name: "total_miles", type: "string" },
         { name: "room_id", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },

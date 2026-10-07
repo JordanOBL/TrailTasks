@@ -18,7 +18,6 @@ export function createMockUserBase(overrides?: Partial<User>): User {
     trailProgress: "0.0",
     trailId: "1",
     trailStartedAt: new Date(),
-    totalMiles: "0.00",
     pushNotificationsEnabled: true,
     themePreference: "light",
     trailTokens: 50,
@@ -70,7 +69,6 @@ export async function createUser(database: Database, newUser: any) {
       user.trailProgress = newUser.trailProgress || "0.00";
       user.traiStartedAt = newUser.trailStartedAt;
       user.trailTokens = newUser.trailTokens || 50;
-      user.totalMiles = newUser.totalMiles || "0.00";
       user.prestigeLevel = newUser.prestigeLevel || 0;
       user.roomId = newUser.roomId || "";
     });

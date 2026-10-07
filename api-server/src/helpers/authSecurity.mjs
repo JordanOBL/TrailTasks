@@ -48,18 +48,24 @@ export function verifyPassword(candidatePassword, storedPassword) {
 
 export function prepareUserRowsForStorage(rows = []) {
   return rows.map(row => {
-    if (!row || !Object.prototype.hasOwnProperty.call(row, 'password')) {
+    if (!row) {
       return row;
     }
 
-    if (!row.password) {
-      const { password, password_hash, ...rowWithoutBlankPassword } = row;
+    const { total_miles, ...rowWithoutStaleMileage } = row;
+
+    if (!Object.prototype.hasOwnProperty.call(rowWithoutStaleMileage, 'password')) {
+      return rowWithoutStaleMileage;
+    }
+
+    if (!rowWithoutStaleMileage.password) {
+      const { password, password_hash, ...rowWithoutBlankPassword } = rowWithoutStaleMileage;
       return rowWithoutBlankPassword;
     }
 
     return {
-      ...row,
-      password: hashPassword(row.password),
+      ...rowWithoutStaleMileage,
+      password: hashPassword(rowWithoutStaleMileage.password),
     };
   });
 }

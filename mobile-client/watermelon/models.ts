@@ -115,7 +115,6 @@ export class User extends Model {
   @field("push_notifications_enabled") pushNotificationsEnabled;
   @field("theme_preference") themePreference;
   @field("trail_id") trailId;
-  @field("total_miles") totalMiles;
   @field("trail_progress") trailProgress;
   @field("trail_started_at") trailStartedAt;
   @field("trail_tokens") trailTokens;
@@ -528,7 +527,6 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       user.trailProgress = "0.00";
       user.traiStartedAt = trailStartedAt;
       user.trailTokens = 20;
-      user.totalMiles = "0.00";
       user.prestigeLevel = 0;
     });
     console.debug("Watermelon User Model", newUser[0]);
@@ -540,7 +538,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     try {
       // 1. Check if user has enough miles:
       //    They need to have *at least* addOn.requiredTotalMiles.
-      //    If user.totalMiles < requiredTotalMiles, they don't qualify.
+      // 2. Check if the user's derived session mileage meets the required total miles
       const totalMiles = await this.callReader(() => this.calculateTotalMiles());
 
       if (totalMiles < addOn.requiredTotalMiles) {

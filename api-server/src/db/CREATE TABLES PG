@@ -75,12 +75,6 @@ CREATE TABLE hiking_queue (
   created_at BIGINT
 );
 
-CREATE TABLE users_miles (
-  id TEXT PRIMARY KEY,
-  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-  total_miles NUMERIC
-);
-
 CREATE TABLE users_badges (
   id TEXT PRIMARY KEY,
   user_id TEXT REFERENCES users(id) ON DELETE CASCADE,

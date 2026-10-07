@@ -1,7 +1,7 @@
 import { achievementManagerInstance } from './AchievementManager';
 
 describe('AchievementManager total-mile achievements', () => {
-  it('uses derived session mileage instead of cached user.totalMiles', async () => {
+  it('uses derived session mileage instead of stale user.totalMiles', async () => {
     const user = {
       id: 'user-1',
       totalMiles: '0.00',
