@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import TrailCard from "./TrailCard";
+import { useAuthContext } from "../../services/AuthContext";
 
 jest.mock("../../services/AuthContext", () => ({
   useAuthContext: jest.fn(() => ({
@@ -18,6 +19,8 @@ jest.mock("../../contexts/ThemeProvider", () => {
   };
 });
 
+const mockUseAuthContext = useAuthContext as jest.MockedFunction<typeof useAuthContext>;
+
 const trail = {
   id: "trail-1",
   trail_name: "Misty Ridge",
@@ -26,7 +29,7 @@ const trail = {
   all_trails_url: null,
   hiking_project_url: null,
   is_free: true,
-  is_subscribers_only: false,
+  is_pro_only: false,
   nps_url: "",
   park_id: "park-1",
   park_image_url: null,
@@ -44,6 +47,13 @@ const trail = {
 } as any;
 
 describe("TrailCard", () => {
+  beforeEach(() => {
+    mockUseAuthContext.mockReturnValue({
+      isProMember: false,
+      user: { trailId: "current-trail" },
+    } as any);
+  });
+
   it("does not render an empty trail-of-the-week flag as raw text", () => {
     const screen = render(
       <TrailCard trail={trail} isQueued={false} handleTrailPress={jest.fn()} />,
@@ -51,5 +61,34 @@ describe("TrailCard", () => {
 
     expect(screen.getByText("Misty Ridge")).toBeTruthy();
     expect(screen.queryByText("★ This Week")).toBeNull();
+  });
+
+  it("marks Pro-only trails as Pro for free users", () => {
+    const screen = render(
+      <TrailCard
+        trail={{ ...trail, is_free: false, is_pro_only: true }}
+        isQueued={false}
+        handleTrailPress={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Pro")).toBeTruthy();
+  });
+
+  it("marks Pro-only trails as included for Pro users", () => {
+    mockUseAuthContext.mockReturnValue({
+      isProMember: true,
+      user: { trailId: "current-trail" },
+    } as any);
+
+    const screen = render(
+      <TrailCard
+        trail={{ ...trail, is_free: false, is_pro_only: true }}
+        isQueued={false}
+        handleTrailPress={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Included with Pro")).toBeTruthy();
   });
 });

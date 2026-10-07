@@ -21,7 +21,8 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
   const isCompleted = !!trail.is_completed;
   const isPurchased = !!trail.is_purchased;
   const isFree = !!trail.is_free;
-  const isProLocked = !!trail.is_subscribers_only && !isProMember;
+  const isProOnly = !!trail.is_pro_only;
+  const isProLocked = isProOnly && !isProMember;
   const isTrailOfTheWeek = Boolean(trail.trail_of_the_week);
 
   const getTrailStatus = () => {
@@ -31,7 +32,7 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
     if (isFree) return { label: "Free Trail", tone: "open" as const };
     if (isPurchased) return { label: "Purchased", tone: "open" as const };
     if (isProLocked) return { label: "Pro", tone: "locked" as const };
-    if (trail.is_subscribers_only && isProMember)
+    if (isProOnly && isProMember)
       return { label: "Included with Pro", tone: "open" as const };
     return { label: "Unlock", tone: "locked" as const };
   };

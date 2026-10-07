@@ -9,8 +9,7 @@ export async function up({ context }) {
 
 	await queryInterface.sequelize.query(`
     UPDATE trails
-    SET is_pro_only = is_subscribers_only
-    WHERE is_subscribers_only IS NOT NULL;
+    SET is_pro_only = COALESCE(is_subscribers_only, false);
   `);
 }
 

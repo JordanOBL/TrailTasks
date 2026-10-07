@@ -79,6 +79,7 @@ export class Trail extends Model {
   @field("trail_elevation") trailElevation;
   @field("is_free") isFree;
   @field("is_subscribers_only") isSubscribersOnly;
+  @field("is_pro_only") isProOnly;
   @field("trail_of_the_week") trailOfTheWeek;
 
   @relation("parks", "park_id") park;

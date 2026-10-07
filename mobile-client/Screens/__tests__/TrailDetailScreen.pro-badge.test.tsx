@@ -94,7 +94,7 @@ const fullTrail = {
   trail_elevation: 450,
   trail_image_url: "https://example.com/trail.png",
   is_free: true,
-  is_subscribers_only: false,
+  is_pro_only: false,
   trail_of_the_week: false,
 };
 
@@ -138,6 +138,21 @@ describe("TrailDetailScreen Pro gating indicators", () => {
 
     expect(screen.queryByTestId("add-to-queue-pro-badge")).toBeNull();
     expect(screen.queryByText("Pro")).toBeNull();
+  });
+
+  it("shows Pro language for Pro-only trails instead of subscription language", async () => {
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{ params: { fullTrail: { ...fullTrail, is_free: false, is_pro_only: true } } }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("View Pro")).toBeTruthy();
+    });
+
+    expect(screen.queryByText("Unlock With Subscription")).toBeNull();
   });
 
   it("updates queue state immediately after tapping Add to Queue", async () => {
