@@ -70,7 +70,9 @@ export const HomeScreen: React.FC<Props> = ({
   const trailPercent =
     trailDistance > 0 ? Math.min(100, Math.max(0, (trailProgress / trailDistance) * 100)) : 0;
   const featuredTrailDescription = featuredTrail
-    ? `${featuredTrail.park_name}${featuredTrail.state_code ? `, ${featuredTrail.state_code}` : ""} • ${featuredTrail.trail_distance} mi`
+    ? `${featuredTrail.park_name}${
+        featuredTrail.state_code ? `, ${featuredTrail.state_code}` : ""
+      } • ${featuredTrail.trail_distance} mi`
     : "Sync to load this month's featured bonus trail.";
 
   const openFeaturedTrail = React.useCallback(() => {
@@ -150,9 +152,7 @@ export const HomeScreen: React.FC<Props> = ({
         if (result) {
           sync(watermelonDatabase, isConnected, user.id, {
             coalesceKey: `account:${user.id}`,
-          }).catch(err =>
-            handleError(err, "useCallback sync HomeScreen"),
-          );
+          }).catch(err => handleError(err, "useCallback sync HomeScreen"));
         }
       });
 
@@ -447,13 +447,13 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       borderColor: theme.progressBar,
     },
     bonusValue: {
-      color: theme.button,
+      color: "gold",
       fontSize: 22,
       fontWeight: "900",
       lineHeight: 26,
     },
     bonusLabel: {
-      color: theme.secondaryText,
+      color: "gold",
       fontSize: 10,
       fontWeight: "700",
       textTransform: "uppercase",
