@@ -1,42 +1,47 @@
--- Step 1: Set all trails to pro_only = true
-UPDATE trails
-SET is_pro_only = true, updated_at = CURRENT_TIMESTAMP;
+-- Permanent Pro policy for Trail Tasks MVP:
+-- - Congaree (Scout's park) is the full starter park and stays non-Pro/free.
+-- - Four sampler parks expose only their shortest/short trail as non-Pro.
+-- - Every other trail is Pro-only by default.
 
--- Step 2: Select 3 random trails under 5 miles and set pro_only = false
-WITH random_under_5_miles AS (
-    SELECT id
-    FROM trails
-    WHERE CAST(trail_distance AS REAL) < 5
-      AND CAST(id AS INTEGER) BETWEEN 1 AND 93
-    ORDER BY RANDOM()
-    LIMIT 3
-    )
+WITH scout_park AS (
+  SELECT park_id
+  FROM wilds
+  WHERE id = 'scout'
+),
+sampler_parks AS (
+  SELECT id
+  FROM parks
+  WHERE park_name IN (
+    'Cuyahoga Valley',
+    'Saguaro',
+    'Petrified Forest',
+    'New River Gorge'
+  )
+),
+sampler_short_trails AS (
+  SELECT DISTINCT ON (park_id) id
+  FROM trails
+  WHERE park_id IN (SELECT id FROM sampler_parks)
+  ORDER BY
+    park_id,
+    CASE WHEN LOWER(trail_difficulty) = 'short' THEN 0 ELSE 1 END,
+    CAST(trail_distance AS REAL) ASC,
+    id ASC
+)
 UPDATE trails
-SET is_pro_only = false, updated_at = CURRENT_TIMESTAMP
-WHERE id IN (SELECT id FROM random_under_5_miles);
+SET
+  is_pro_only = NOT (
+    park_id IN (SELECT park_id FROM scout_park)
+    OR id IN (SELECT id FROM sampler_short_trails)
+  ),
+  is_free = park_id IN (SELECT park_id FROM scout_park),
+  updated_at = CURRENT_TIMESTAMP;
 
--- Step 3: Select 3 random trails between 5 and 10 miles and set pro_only = false
-WITH random_5_to_10_miles AS (
-    SELECT id
-    FROM trails
-    WHERE CAST(trail_distance AS REAL) >= 5 AND CAST(trail_distance AS REAL) < 10
-      AND CAST(id AS INTEGER) BETWEEN 1 AND 93
-    ORDER BY RANDOM()
-    LIMIT 3
-    )
-UPDATE trails
-SET is_pro_only = false, updated_at = CURRENT_TIMESTAMP
-WHERE id IN (SELECT id FROM random_5_to_10_miles);
-
--- Step 4: Select 2 random trails over 10 miles and set pro_only = false
-WITH random_over_10_miles AS (
-    SELECT id
-    FROM trails
-    WHERE CAST(trail_distance AS REAL) >= 10
-      AND CAST(id AS INTEGER) BETWEEN 1 AND 93
-    ORDER BY RANDOM()
-    LIMIT 2
-    )
-UPDATE trails
-SET is_pro_only = false, updated_at = CURRENT_TIMESTAMP
-WHERE id IN (SELECT id FROM random_over_10_miles);
+-- Verification: expected with the 63-park/189-trail catalog is
+-- non_pro_trails = 7, pro_only_trails = 182, permanent_free_trails = 3.
+SELECT
+  COUNT(*) AS total_trails,
+  COUNT(*) FILTER (WHERE is_pro_only = false) AS non_pro_trails,
+  COUNT(*) FILTER (WHERE is_pro_only = true) AS pro_only_trails,
+  COUNT(*) FILTER (WHERE is_free = true) AS permanent_free_trails
+FROM trails;

@@ -43,9 +43,9 @@ import bodyparser from 'body-parser';
 import cors from 'cors';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
-import {exec} from 'child_process';
 import express from 'express';
 import masterAchievementList from './assets/Achievements/masterAchievementList.js';
+import { rerollMonthlyTrailAccess } from './helpers/trailAccessPolicy.mjs';
 import res from "express/lib/response.js";
 
 // import pool from "./db/config.js";
@@ -78,36 +78,18 @@ app.use('*', cors());
 //app.use("/api/sync", router);
 console.log(`Current working directory: ${process.cwd()}`);
 
-//Cron Scheduler for Changing Free Parks each month
-cron.schedule('10 3 * * 6', () => {
-  console.log('Running Free Trail ReRoll Cron');
-  exec(process.env.REROLL_FREE_TRAILS, (err, stdout, stderr) => {
-    if (err) {
-      console.error(`Error running Free Trail ReRoll Cron : ${err.message}`);
-      return;
-    }
-    if (stderr) {
-      console.error(`Stderr from Free Trail ReRoll Cron ${stderr}`);
-      return;
-    }
-    console.log(`Output from Free Trail ReRoll Cron ${stdout}`);
-  });
-}, {timezone: "America/New_York"});
+const runMonthlyTrailAccessReroll = async (source) => {
+  try {
+    const summary = await rerollMonthlyTrailAccess();
+    console.log(`Trail access reroll complete (${source})`, summary);
+  } catch (err) {
+    console.error(`Error running trail access reroll (${source})`, err);
+  }
+};
 
-//Cron Scheduler for Changing Trail of the week
-cron.schedule('10 3 * * 6', () => {
-  console.log('Running Trail of The Week ReRoll Cron');
-  exec(process.env.REROLL_TRAIL_OF_THE_WEEK, (err, stdout, stderr) => {
-    if (err) {
-      console.error(`Error running Trail Of the Week Cron : ${err.message}`);
-      return;
-    }
-    if (stderr) {
-      console.error(`Stderr from Trail Of the Week Cron ${stderr}`);
-      return;
-    }
-    console.log(`Output from Trail Of The Week Cron ${stdout}`);
-  });
+// Rotate five monthly bonus trails and select one of them as the featured trail.
+cron.schedule('10 3 1 * *', () => {
+  runMonthlyTrailAccessReroll('monthly cron');
 }, {timezone: "America/New_York"});
 
 const findUser = async (req, res, next) => {
@@ -1115,31 +1097,7 @@ const connect = async () => {
     try {
         await SYNC({alter: true});
         //await seedDatabase()
-        //set random free trails
-        exec(process.env.REROLL_FREE_TRAILS, (err, stdout, stderr) => {
-            if (err) {
-                console.error(`Error running Free Trail ReRoll Cron : ${err.message}`);
-                return;
-            }
-            if (stderr) {
-                console.error(`Stderr from Free Trail ReRoll Cron ${stderr}`);
-                return;
-            }
-            console.log(`Output from Free Trail ReRoll Cron ${stdout}`);
-        });
-        //set random trail of the week
-        exec(process.env.REROLL_TRAIL_OF_THE_WEEK, (err, stdout, stderr) => {
-            if (err) {
-                console.error(`Error running Trail Of the Week Cron : ${err.message}`);
-                return;
-            }
-            if (stderr) {
-                console.error(`Stderr from Trail Of the Week Cron ${stderr}`);
-                return;
-            }
-            console.log(`Output from Trail Of The Week Cron ${stdout}`);
-        });
-
+        await runMonthlyTrailAccessReroll('server startup');
 
         console.log(
             'SERVER - connected to Postgres database trailtasks viia Sequelize!'

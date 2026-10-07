@@ -63,6 +63,27 @@ describe("TrailCard", () => {
     expect(screen.queryByText("★ This Week")).toBeNull();
   });
 
+  it("marks monthly free Pro-only trails as free for free users", () => {
+    const screen = render(
+      <TrailCard
+        trail={{ ...trail, is_free: true, is_pro_only: true }}
+        isQueued={false}
+        handleTrailPress={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Free This Month")).toBeTruthy();
+    expect(screen.queryByText("Pro")).toBeNull();
+  });
+
+  it("marks starter free trails as starter trails", () => {
+    const screen = render(
+      <TrailCard trail={{ ...trail, is_free: true, is_pro_only: false }} isQueued={false} handleTrailPress={jest.fn()} />,
+    );
+
+    expect(screen.getByText("Starter Trail")).toBeTruthy();
+  });
+
   it("marks Pro-only trails as Pro for free users", () => {
     const screen = render(
       <TrailCard
