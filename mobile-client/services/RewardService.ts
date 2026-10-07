@@ -3,6 +3,7 @@ import { EventBus, Registry, SessionCompletedPayload } from "../EventBus/EventBu
 
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
 import { User } from "../watermelon/models";
+import { calculateCompletedTrailRewardTokens } from "../helpers/Trails/trailEconomy";
 import handleError from "../helpers/ErrorHandler";
 
 export type Rewards = {
@@ -197,13 +198,7 @@ export default class RewardService {
 
     const baseTokens = completedTrails?.length
       ? completedTrails.reduce((acc, trail) => {
-          return (
-            acc +
-            Math.max(
-              this.rules.trailTokens.minPerTrail,
-              Math.ceil(trail.distance * this.rules.trailTokens.perMileMultiplier),
-            )
-          );
+          return acc + calculateCompletedTrailRewardTokens(trail.distance);
         }, 0)
       : 0;
 

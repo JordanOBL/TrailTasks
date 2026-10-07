@@ -96,7 +96,7 @@ describe("TrailCard", () => {
     expect(screen.getByText("Pro")).toBeTruthy();
   });
 
-  it("marks Pro-only trails as included for Pro users", () => {
+  it("marks Pro-only trails as Pro-eligible for Pro users", () => {
     mockUseAuthContext.mockReturnValue({
       isProMember: true,
       user: { trailId: "current-trail" },
@@ -110,6 +110,7 @@ describe("TrailCard", () => {
       />,
     );
 
-    expect(screen.getByText("Included with Pro")).toBeTruthy();
+    expect(screen.getByText("Pro Eligible")).toBeTruthy();
+    expect(screen.queryByText("Included with Pro")).toBeNull();
   });
 });

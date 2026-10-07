@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import FullTrailDetails from "../../types/fullTrailDetails";
+import { calculateTrailUnlockCost } from "../../helpers/Trails/trailEconomy";
 
 interface Props {
   isVisible: boolean;
@@ -12,8 +13,7 @@ interface Props {
 
 const BuyTrailModal = ({ isVisible, onClose, trail, trailTokens, onBuyTrail }: Props) => {
   const [error, setError] = useState("");
-  const trailDistance = parseInt(trail.trail_distance);
-  const unlockCost = trailDistance < 5 ? 5 : trailDistance < 10 ? 10 : trailDistance < 20 ? 25 : 50;
+  const unlockCost = calculateTrailUnlockCost(trail.trail_distance);
 
   const handleBuyTrail = () => {
     if (trailTokens >= unlockCost) {

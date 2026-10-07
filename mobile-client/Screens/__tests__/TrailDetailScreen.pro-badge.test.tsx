@@ -7,6 +7,7 @@ let mockIsProMember = false;
 let mockQueuedTrails: Array<{ trailId: string }> = [];
 let mockAddToQueuedTrails = jest.fn();
 let mockDeleteFromQueuedTrails = jest.fn();
+let mockTrailTokens = 100;
 
 jest.mock("@react-navigation/native", () => {
   const React = require("react");
@@ -41,7 +42,7 @@ jest.mock("../../services/AuthContext", () => ({
     user: {
       id: "user-1",
       trailId: "current-trail",
-      trailTokens: 100,
+      trailTokens: mockTrailTokens,
       usersQueuedTrails: mockQueuedTrails,
       usersPurchasedTrails: [],
       usersCompletedTrails: [],
@@ -104,6 +105,7 @@ describe("TrailDetailScreen Pro gating indicators", () => {
     mockQueuedTrails = [];
     mockAddToQueuedTrails = jest.fn().mockResolvedValue({ trailId: "trail-1" });
     mockDeleteFromQueuedTrails = jest.fn().mockResolvedValue(undefined);
+    mockTrailTokens = 100;
   });
 
   it("marks Add to Queue as a Pro action for free users", async () => {
@@ -138,6 +140,39 @@ describe("TrailDetailScreen Pro gating indicators", () => {
 
     expect(screen.queryByTestId("add-to-queue-pro-badge")).toBeNull();
     expect(screen.queryByText("Pro")).toBeNull();
+  });
+
+  it("lets Pro users buy Pro-only trails with distance-based tokens instead of starting for free", async () => {
+    mockIsProMember = true;
+
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{ params: { fullTrail: { ...fullTrail, is_free: false, is_pro_only: true } } }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Buy 5")).toBeTruthy();
+    });
+
+    expect(screen.queryByText("Start Now")).toBeNull();
+    expect(screen.queryByText("View Pro")).toBeNull();
+  });
+
+  it("shows missing token count when a user is eligible but short on trail tokens", async () => {
+    mockTrailTokens = 3;
+
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{ params: { fullTrail: { ...fullTrail, is_free: false, is_pro_only: false } } }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Need 2 more tokens")).toBeTruthy();
+    });
   });
 
   it("shows Pro language for Pro-only trails instead of subscription language", async () => {

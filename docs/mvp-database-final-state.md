@@ -126,8 +126,8 @@ Suggested future trail access fields:
 | Field | Purpose |
 | --- | --- |
 | `is_pro_only` | Active Pro required by default. Token purchases do not unlock this gate. Monthly free can temporarily expose selected Pro-only trails. |
-| `is_token_unlockable` | Trail may be unlocked with tokens. |
-| `unlock_cost_tokens` | Token cost to unlock the trail, if unlockable. |
+| `is_token_unlockable` | Deferred. Not needed for MVP while all trails are token-unlockable in principle. |
+| `unlock_cost_tokens` | Deferred. Not needed for MVP because unlock cost is derived from distance. |
 | `is_monthly_free` or monthly rotation table | Whether the trail is part of the current five monthly bonus trails. |
 | `trail_of_the_week` | Marketing/highlight flag selected from the current monthly free trails. |
 
@@ -145,6 +145,18 @@ monthly_free_trails
 ```
 
 For MVP, a boolean may be acceptable if the cron job only needs to mark the current five free trails and historical rotation is not needed.
+
+## Economy model
+
+The MVP trail economy is code-defined and documented in `docs/trail-economy.md`.
+
+Important MVP decisions:
+
+- Do not add per-trail unlock-cost columns for MVP.
+- Trail unlock cost is derived from `trails.trail_distance`.
+- All trails are token-unlockable in principle, but non-Pro users cannot buy `is_pro_only = true` trails unless the trail is currently free.
+- Pro users can buy Pro-only trails with tokens.
+- Completed-trail token rewards are also distance-derived.
 
 ## Add-on and trail purchases
 
@@ -195,7 +207,7 @@ Add:
 
 - `token_transactions`.
 - A monthly free trail representation, either `trails.is_monthly_free` for MVP simplicity or a `monthly_free_trails` table for history.
-- Trail token-unlockability fields if not already represented: `is_token_unlockable`, `unlock_cost_tokens`.
+- Do not add `unlock_cost_tokens` for MVP; trail unlock cost is distance-derived in code.
 
 Keep:
 
