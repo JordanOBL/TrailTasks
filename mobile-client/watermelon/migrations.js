@@ -8,7 +8,7 @@
 import { addColumns, createTable, schemaMigrations } from "@nozbe/watermelondb/Schema/migrations";
 
 export default schemaMigrations({
-  // migrations: [
+  migrations: [],
   //   {
   //     toVersion: 2,
   //     steps: [
@@ -18,5 +18,4 @@ export default schemaMigrations({
   //       }),
   //     ],
   //   },
-  // ],
 });
