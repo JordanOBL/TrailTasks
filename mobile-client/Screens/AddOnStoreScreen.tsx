@@ -1,20 +1,49 @@
-import { FlatList, SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
-import React, { useState } from 'react';
-import { sync } from '../watermelon/sync';
-import { useDatabase } from '@nozbe/watermelondb/react';
-import { useInternetConnection } from '../hooks/useInternetConnection';
-import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
-import handleError from "../helpers/ErrorHandler";
-import useAddons from '../helpers/Addons/useAddons';
-import { withObservables } from '@nozbe/watermelondb/react';
-import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
-import { useTheme } from '../contexts/ThemeProvider';
+import { Addon, User, User_Session } from '../watermelon/models';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
 
-const AddOnStoreScreen = ({ user, userAddons }) => {
+import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
+//import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
+import handleError from "../helpers/ErrorHandler";
+import { sync } from '../watermelon/sync';
+import useAddons from '../helpers/Addons/useAddons';
+import { useDatabase } from '@nozbe/watermelondb/react';
+import { useInternetConnection } from '../contexts/InternetConnectionProvider';
+import { useTheme } from '../contexts/ThemeProvider';
+import { withObservables } from '@nozbe/watermelondb/react';
+
+const AddOnStoreScreen = ({
+  user,
+  userAddons,
+  userSessions,
+}: {
+  user: User;
+  userAddons: Addon[];
+  userSessions: User_Session[];
+}) => {
   const { addons, loading, error } = useAddons();
   const watermelondb = useDatabase();
   const { isConnected } = useInternetConnection();
   const { theme } = useTheme(); // 👈 use your theme context
+  const [totalMiles, setTotalMiles] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const computeTotalMiles = async () => {
+      const calculatedTotalMiles = await user.calculateTotalMiles();
+
+      if (isMounted) {
+        setTotalMiles(calculatedTotalMiles);
+      }
+    };
+
+    computeTotalMiles();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, userSessions, watermelondb]);
 
   if (loading) {
     return <Text style={{ color: theme.text }}>Loading Add-Ons...</Text>;
@@ -23,7 +52,7 @@ const AddOnStoreScreen = ({ user, userAddons }) => {
     return <Text style={{ color: theme.text }}>Error loading Add-Ons: {error}</Text>;
   }
 
-  async function handleAddonPurchase(addon) {
+  async function handleAddonPurchase(addon: Addon) {
     try {
       let successMessage = await user.buyAddon(addon);
       if (successMessage) {
@@ -31,7 +60,7 @@ const AddOnStoreScreen = ({ user, userAddons }) => {
       }
       Alert.alert('Success', successMessage);
     } catch (err) {
-      Alert.alert('Purchase Failed', err.message);
+      Alert.alert('Purchase Failed');
     }
   }
 
@@ -39,12 +68,13 @@ const AddOnStoreScreen = ({ user, userAddons }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.topBar]}>
         <Text style={[styles.tokens, { color: theme.button }]}>{`Trail Tokens: ${user.trailTokens}`}</Text>
-        <Text style={[styles.miles, { color: theme.text }]}>{`Total Miles: ${user.totalMiles}`}</Text>
+        <Text style={[styles.miles, { color: theme.text }]}>{`Total Miles: ${totalMiles.toFixed(2)}`}</Text>
       </View>
       <EnhancedAddOnStore
         availableAddOns={addons}
         usersAddons={userAddons}
         user={user}
+        totalMiles={totalMiles}
         onPurchase={handleAddonPurchase}
       />
     </SafeAreaView>
@@ -54,6 +84,7 @@ const AddOnStoreScreen = ({ user, userAddons }) => {
 const enhance = withObservables(['user', 'userAddons'], ({ user }) => ({
   user,
   userAddons: user.usersAddons,
+  userSessions: user.usersSessions,
 }));
 
 const EnhancedAddOnStoreScreen = enhance(AddOnStoreScreen);

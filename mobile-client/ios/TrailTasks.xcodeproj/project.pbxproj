@@ -11,9 +11,10 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		17C88A17307385A700921B03 /* scout.riv in Resources */ = {isa = PBXBuildFile; fileRef = 17C88A16307385A600921B03 /* scout.riv */; };
+		17C88A1B307407A000921B03 /* TrailTasksSubscriptions.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 17C88A1A307407A000921B03 /* TrailTasksSubscriptions.storekit */; };
 		17EF69762DCF16A50024F7F0 /* StoreKitTestCertificate.cer in Resources */ = {isa = PBXBuildFile; fileRef = 17EF69752DCF16A50024F7F0 /* StoreKitTestCertificate.cer */; };
 		17EF69782DCF17C30024F7F0 /* SubscriptionKey_AE0C1931.p8 in Resources */ = {isa = PBXBuildFile; fileRef = 17EF69772DCF178A0024F7F0 /* SubscriptionKey_AE0C1931.p8 */; };
-		17EF697A2DD199620024F7F0 /* TrailTasksAuto.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 17EF69792DD199620024F7F0 /* TrailTasksAuto.storekit */; };
 		2D1DEA0BEDCE602B48177B15 /* libPods-TrailTasks-TrailTasksTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8458D091C7846C618E8193FA /* libPods-TrailTasks-TrailTasksTests.a */; };
 		81AB9BB82411601600AC10FF /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* BootSplash.storyboard */; };
 		9DB2A36F5A6641EE3ABD85F3 /* libPods-TrailTasks.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 10DBAA64F79CE3CB9B501088 /* libPods-TrailTasks.a */; };
@@ -43,9 +44,10 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = TrailTasks/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = TrailTasks/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = TrailTasks/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		17C88A16307385A600921B03 /* scout.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = scout.riv; path = ../assets/wilds/scout/rive/scout.riv; sourceTree = "<group>"; };
+		17C88A1A307407A000921B03 /* TrailTasksSubscriptions.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = TrailTasksSubscriptions.storekit; sourceTree = "<group>"; };
 		17EF69752DCF16A50024F7F0 /* StoreKitTestCertificate.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreKitTestCertificate.cer; sourceTree = "<group>"; };
 		17EF69772DCF178A0024F7F0 /* SubscriptionKey_AE0C1931.p8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = SubscriptionKey_AE0C1931.p8; sourceTree = "<group>"; };
-		17EF69792DD199620024F7F0 /* TrailTasksAuto.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = TrailTasksAuto.storekit; sourceTree = "<group>"; };
 		24DE3E24A4B5E588ACE5EFBF /* Pods-TrailTasks.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TrailTasks.debug.xcconfig"; path = "Target Support Files/Pods-TrailTasks/Pods-TrailTasks.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* BootSplash.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = BootSplash.storyboard; path = TrailTasks/BootSplash.storyboard; sourceTree = "<group>"; };
 		8458D091C7846C618E8193FA /* libPods-TrailTasks-TrailTasksTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TrailTasks-TrailTasksTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -125,7 +127,8 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				17EF69792DD199620024F7F0 /* TrailTasksAuto.storekit */,
+				17C88A1A307407A000921B03 /* TrailTasksSubscriptions.storekit */,
+				17C88A16307385A600921B03 /* scout.riv */,
 				17EF69772DCF178A0024F7F0 /* SubscriptionKey_AE0C1931.p8 */,
 				17EF69752DCF16A50024F7F0 /* StoreKitTestCertificate.cer */,
 				13B07FAE1A68108700A75B9A /* TrailTasks */,
@@ -254,11 +257,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				17C88A1B307407A000921B03 /* TrailTasksSubscriptions.storekit in Resources */,
+				17C88A17307385A700921B03 /* scout.riv in Resources */,
 				17EF69762DCF16A50024F7F0 /* StoreKitTestCertificate.cer in Resources */,
 				81AB9BB82411601600AC10FF /* BootSplash.storyboard in Resources */,
 				17EF69782DCF17C30024F7F0 /* SubscriptionKey_AE0C1931.p8 in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				17EF697A2DD199620024F7F0 /* TrailTasksAuto.storekit in Resources */,
 				BA547C3A8863DDB098E74C6D /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -291,9 +295,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks-TrailTasksTests/Pods-TrailTasks-TrailTasksTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks-TrailTasksTests/Pods-TrailTasks-TrailTasksTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -308,9 +316,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -347,9 +359,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks-TrailTasksTests/Pods-TrailTasks-TrailTasksTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks-TrailTasksTests/Pods-TrailTasks-TrailTasksTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -364,9 +380,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TrailTasks/Pods-TrailTasks-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -447,7 +467,7 @@
 					"-lc++",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.trailtasks.app;
+				PRODUCT_BUNDLE_IDENTIFIER = app.trailtasks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrailTasks.app/TrailTasks";
 			};
@@ -471,7 +491,7 @@
 					"-lc++",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.trailtasks.app;
+				PRODUCT_BUNDLE_IDENTIFIER = app.trailtasks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrailTasks.app/TrailTasks";
 			};
@@ -505,7 +525,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.trailtasks.app;
+				PRODUCT_BUNDLE_IDENTIFIER = app.trailtasks;
 				PRODUCT_NAME = TrailTasks;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -544,7 +564,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.trailtasks.app;
+				PRODUCT_BUNDLE_IDENTIFIER = app.trailtasks;
 				PRODUCT_NAME = TrailTasks;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -628,10 +648,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -701,10 +718,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

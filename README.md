@@ -1,65 +1,102 @@
 # TrailTasks Monorepo
 
-This repository contains all services for the TrailTasks application. The project is split into three packages:
+TrailTasks is a productivity game built around an offline-first React Native solo Pomodoro hiking loop. The monorepo contains three packages:
 
-- **api-server** – Node.js Express server with a PostgreSQL database.
-- **mobile-client** – React Native client application.
-- **websockets-server** – Go server providing real-time group session capabilities.
+- `mobile-client/` — React Native mobile app and the current MVP focus.
+- `api-server/` — Node.js/Express + PostgreSQL API used for account/catalog sync.
+- `websockets-server/` — Go WebSocket server for deferred group-session features.
 
-## Getting Started
+## MVP scope
 
-Clone the repo and install dependencies for each package:
+The first shippable milestone is defined in `docs/mvp-scope.md`. Use that document before expanding scope: the current MVP is the solo/offline loop; friends, group sessions, leaderboards, and WebSocket protocol work are deferred unless a ticket explicitly brings them back into scope.
 
-```bash
-# install root utilities
+## Prerequisites
+
+- Node.js 18+
+- npm
+- React Native Android/iOS tooling for device builds
+- Go 1.23+ only if working on `websockets-server/`
+- PostgreSQL only if working on API-backed sync/auth flows
+
+## Install
+
+From the repo root:
+
+```sh
 npm install
-
-# install package dependencies
 npm install --prefix api-server
 npm install --prefix mobile-client
 ```
 
-The Go server requires Go 1.23 or newer and its modules can be downloaded with:
+For the Go WebSocket server, only when needed:
 
-```bash
+```sh
 cd websockets-server
 go mod download
 ```
 
-## Running the Services
+## Daily mobile MVP workflow
 
-Scripts are defined in the root `package.json` to help start each piece individually or together:
+Most current MVP work should start in `mobile-client`:
 
-```bash
-# start only the API server
-npm run start:api:dev
-
-# start only the WebSocket server
-npm run start:ws
-
-# start the mobile app on Android
-npm run start:android:dev
-
-# start API and WebSocket servers together
-npm run start:servers:dev
+```sh
+cd mobile-client
+npm run quality
 ```
 
-## Tests
+`npm run quality` runs the focused Jest suite that currently gates day-to-day mobile work.
 
-Individual test suites can be run with:
+For release readiness:
 
-```bash
-npm run test:api        # Express server tests
-npm run test:mobile     # React Native tests
-npm run test:ws         # Go tests
+```sh
+cd mobile-client
+npm run quality:release
 ```
 
-Note that some tests rely on native tooling or database configuration and may fail without the proper environment.
+`quality:release` runs the scoped release typecheck plus the focused Jest suite. The full strict typecheck backlog is documented in `docs/typecheck-triage.md`.
 
-## Repository Layout
+## Useful commands
 
-- `api-server/` – Express server source code.
-- `mobile-client/` – React Native application.
-- `websockets-server/` – Go WebSocket server.
+From the repo root:
 
-Each package contains its own README with more details.
+```sh
+npm run test:api      # API node:test suite
+npm run test:mobile   # Full mobile Jest command
+npm run test:ws       # Go WebSocket tests, requires Go
+```
+
+From `mobile-client`:
+
+```sh
+npm run quality             # Daily mobile quality gate
+npm run typecheck:release   # Scoped solo-MVP TypeScript check
+npm run quality:release     # Release gate: scoped typecheck + tests
+npm run android:emulator:dev
+npm run android:device:dev
+```
+
+From `api-server`:
+
+```sh
+npm test
+npm run start:dev
+```
+
+## Environment notes
+
+- Mobile scripts use `ENVFILE=.env.test`, `.env.development`, or `.env.production` depending on the command.
+- API config is loaded through dotenv and local environment variables. Use test/development database credentials only for local work.
+- The MVP should work without starting the API server or Go WebSocket server unless the ticket is specifically about sync/auth/server behavior.
+
+## Repository layout
+
+- `docs/` — MVP scope, typecheck triage, product/engineering notes.
+- `mobile-client/` — React Native app, tests, WatermelonDB models/sync, session engine.
+- `api-server/` — Express API and Node test suite.
+- `websockets-server/` — deferred group-session WebSocket service.
+
+## Current quality expectations
+
+- Do not hide new errors with broad `// @ts-ignore` comments.
+- Keep deferred social/group/WebSocket work out of MVP tickets unless explicitly scoped.
+- When a deferred feature becomes active scope, remove its release-typecheck exclusion in the same PR that makes it type-clean and tested.

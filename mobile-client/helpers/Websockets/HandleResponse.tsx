@@ -1,4 +1,17 @@
-export const handleResponse = async (
+import { User, User_Session } from "../../watermelon/models";
+
+interface HandleResponseProps {
+  message: { header: { protocol: string; roomId: string }; response: string };
+  setHikers: React.Dispatch<React.SetStateAction<[]>>;
+  setRoomId: React.Dispatch<React.SetStateAction<string>>;
+  setView: React.Dispatch<React.SetStateAction<string>>;
+  user: User;
+  setMessageQueue: React.Dispatch<React.SetStateAction<[]>>;
+  setError: React.Dispatch<React.SetStateAction<string>>;
+  setTimer: React.Dispatch<React.SetStateAction<any>>;
+  setSession: React.Dispatch<React.SetStateAction<User_Session>>;
+}
+export const handleResponse = async ({
   message,
   setHikers,
   setRoomId,
@@ -7,8 +20,8 @@ export const handleResponse = async (
   setMessageQueue,
   setError,
   setTimer,
-  setSession
-) => {
+  setSession,
+}: HandleResponseProps) => {
   let { header, response } = message;
 
   function reset() {
@@ -24,10 +37,10 @@ export const handleResponse = async (
       shortBreakTime: 300,
       longBreakTime: 2700,
       sets: 3,
-      autoContinue: false
+      autoContinue: false,
     });
     setSession({
-      name: '',
+      name: "",
       distance: 0.0,
       level: 1,
       highestCompletedLevel: 0,
@@ -37,7 +50,7 @@ export const handleResponse = async (
     });
   }
 
-  console.log("new message for user: ",user.username, message.response);
+  console.log("new message for user: ", user.username, message.response);
 
   switch (header.protocol) {
     case "create":
@@ -51,7 +64,7 @@ export const handleResponse = async (
         ...prev,
         ...response.hikers,
       }));
-      if (response.type === 'direct') {
+      if (response.type === "direct") {
         setView("lobby");
         setTimer(response.timer);
         setSession(response.session);
@@ -63,14 +76,14 @@ export const handleResponse = async (
       break;
 
     case "updateConfig":
-      setTimer( prev => ({ ...prev, ...response.timerConfig }) ); //setTimer(response.timerConfig);
+      setTimer(prev => ({ ...prev, ...response.timerConfig })); //setTimer(response.timerConfig);
       setSession(prev => ({ ...prev, ...response.sessionConfig })); //setSession(response.sessionConfig);
       break;
 
     case "ready":
       console.log("ready resonse hikers: ", response.hikers);
-        setHikers((prev) =>(  {...prev, ...response.hikers} ));
-        break;
+      setHikers(prev => ({ ...prev, ...response.hikers }));
+      break;
     case "start":
       setTimer(prev => ({ ...prev, ...response.timer }));
       setSession(prev => ({ ...prev, ...response.session }));
@@ -85,23 +98,23 @@ export const handleResponse = async (
 
     case "pause":
       if (response.type === "broadcast") {
-        if(response.session.isBreak) {
+        if (response.session.isBreak) {
           setHikers(prev => ({
             ...prev,
             [response.pausedHikerId]: {
               ...prev[response.pausedHikerId],
-              isPaused: false
-            }
+              isPaused: false,
+            },
           }));
         } else {
-        setHikers(prev => ({
-          ...prev,
-          [response.pausedHikerId]: {
-            ...prev[response.pausedHikerId],
-            isPaused: true,
-            strikes: prev[response.pausedHikerId].strikes + 1,
-          }
-        }));
+          setHikers(prev => ({
+            ...prev,
+            [response.pausedHikerId]: {
+              ...prev[response.pausedHikerId],
+              isPaused: true,
+              strikes: prev[response.pausedHikerId].strikes + 1,
+            },
+          }));
         }
       }
       setSession(prev => ({ ...prev, ...response.session }));
@@ -113,8 +126,8 @@ export const handleResponse = async (
           ...prev,
           [response.resumeHikerId]: {
             ...prev[response.resumeHikerId],
-            isPaused: false
-          }
+            isPaused: false,
+          },
         }));
       } else {
         setTimer(prev => ({ ...prev, duration: response.remainingTime }));
@@ -122,32 +135,38 @@ export const handleResponse = async (
       break;
 
     case "shortBreak":
-        setTimer(prev => ({ ...prev, ...response.timer }));
-        setSession(prev => ({ ...prev, ...response.session }));
-        setView("timer");
-        break;
+      setTimer(prev => ({ ...prev, ...response.timer }));
+      setSession(prev => ({ ...prev, ...response.session }));
+      setView("timer");
+      break;
     //emdModal sets view to show EndSessionmodal
     case "endModal":
       setView("endModal");
       break;
 
     case "extraSet":
-        setTimer(prev => ({ ...prev, ...response.timer }));
-        setSession(prev => ({ ...prev, ...response.session }));
-        setView("timer");
-        break;
+      setTimer(prev => ({ ...prev, ...response.timer }));
+      setSession(prev => ({ ...prev, ...response.session }));
+      setView("timer");
+      break;
     case "extraSession":
-        setTimer(prev => ({ ...prev, ...response.timer }));
-        setSession(prev => ({ ...prev, ...response.session }));
-        setView("timer");
-        break;
+      setTimer(prev => ({ ...prev, ...response.timer }));
+      setSession(prev => ({ ...prev, ...response.session }));
+      setView("timer");
+      break;
     case "end":
-      setHikers(prev => ({ ...prev, [user.id]: { ...prev[user.id], isPaused: false, isReady: false}}));
-      setTimer(prev => ({ ...prev, isRunning: false, isCompleted: true , distance: prev.focusTime}));
+      setHikers(prev => ({
+        ...prev,
+        [user.id]: { ...prev[user.id], isPaused: false, isReady: false },
+      }));
+      setTimer(prev => ({
+        ...prev,
+        isRunning: false,
+        isCompleted: true,
+        distance: prev.focusTime,
+      }));
       setView("results");
       break;
-
-    
 
     default:
       console.log("Unknown protocol:", header.protocol);
@@ -161,4 +180,3 @@ export const handleResponse = async (
     setError(response.message);
   }
 };
-

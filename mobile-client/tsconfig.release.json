@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "dist",
+    "App.tsx",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "components/Navigation/**/*",
+    "Screens/FriendsScreen.tsx",
+    "Screens/GroupSessionScreen.tsx",
+    "Screens/GroupResultsScreen.tsx",
+    "Screens/TrailQueueScreen.tsx",
+    "components/Friends/**/*",
+    "components/TrailQueue/**/*",
+    "helpers/Websockets/**/*"
+  ]
+}

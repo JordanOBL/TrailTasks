@@ -1,53 +1,80 @@
-import React, { useState,useRef, useEffect } from 'react';
-import { AppState, Dimensions, View, Text, FlatList, Pressable, Platform,  StyleSheet, SafeAreaView, TextInput, Switch, Modal, ScrollView } from 'react-native';
-import GroupResultsScreen from './GroupResultsScreen';
-import useWebSocket from 'react-use-websocket';
-import { Dropdown } from 'react-native-element-dropdown';
-import timeOptions from '../helpers/Session/timeOptions';
-import {handleResponse} from '../helpers/Websockets/HandleResponse';
-import * as Progress from 'react-native-progress';
-import formatCountdown from '../helpers/Timer/formatCountdown';
-import {useDatabase} from '@nozbe/watermelondb/react';
-import Icon from 'react-native-vector-icons/Ionicons'; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import ContinueSessionModal from '../components/Session/ContinueSessionModal';
-import {useInternetConnection} from '../hooks/useInternetConnection';
-import {sync} from '../watermelon/sync';
-const StatBox = ({ label, value }) => (
+import * as Progress from "react-native-progress";
+
+import {
+  AppState,
+  Dimensions,
+  FlatList,
+  Modal,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+
+import ContinueSessionModal from "../components/Session/ContinueSessionModal";
+import { Dropdown } from "react-native-element-dropdown";
+import GroupResultsScreen from "./GroupResultsScreen";
+import Icon from "react-native-vector-icons/Ionicons"; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
+import { User } from "../watermelon/models";
+import formatCountdown from "../helpers/Timer/formatCountdown";
+import { handleResponse } from "../helpers/Websockets/HandleResponse";
+import { sync } from "../watermelon/sync";
+import timeOptions from "../helpers/Session/timeOptions";
+import { useDatabase } from "@nozbe/watermelondb/react";
+import { useInternetConnection } from "../contexts/InternetConnectionProvider";
+import useWebSocket from "react-use-websocket";
+import ComingSoon from "../components/ComingSoon";
+
+const StatBox = ({ label, value }: { label: string; value: number }) => (
   <View style={styles.infoBox}>
     <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={[ styles.infoValue, { color: label == 'Strikes' && value > 0 ? 'red' : 'white'}  ]}>{value}</Text>
+    <Text style={[styles.infoValue, { color: label == "Strikes" && value > 0 ? "red" : "white" }]}>
+      {value}
+    </Text>
   </View>
 );
 
-const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route }) => {
+interface Props {
+  user: User;
+  debugRef: any;
+  joinRoomId: string;
+  route: any;
+}
+const GroupSessionImplementation = ({ user, debugRef = null, joinRoomId = "", route }: Props) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const { isConnected, ipAddress } = useInternetConnection();
   const database = useDatabase();
 
   //this will check is emulater or device
   ////!TODO:Remove fo or production
-  const [serverUrl, setServerUrl] = useState(null);
-  const { sendJsonMessage, lastJsonMessage, isReady } = useWebSocket(serverUrl, {
+  const [serverUrl, setServerUrl] = useState<string | null>(null);
+  const { sendJsonMessage, lastJsonMessage } = useWebSocket(serverUrl, {
     onClose: async () => {
-      console.log('close');
-      if(user && user.roomId){
-        await user.removeRoomId()
+      console.log("close");
+      if (user && user.roomId) {
+        await user.removeRoomId();
       }
     },
   });
-  const width = Dimensions.get('window').width;
-  const [view, setView] = useState('session'); // "session" for initial, "lobby" for room
-  const [roomId, setRoomId] = useState('');
+  const width = Dimensions.get("window").width;
+  const [view, setView] = useState("session"); // "session" for initial, "lobby" for room
+  const [roomId, setRoomId] = useState("");
   useEffect(() => {
-    if(route?.params?.joinRoomId){
-      setRoomId(route.params.joinRoomId)
+    if (route?.params?.joinRoomId) {
+      setRoomId(route.params.joinRoomId);
     }
-}, []);
+  }, []);
   //Hiers is and object [string] userInfo
   const [hikers, setHikers] = useState({});
   const [session, setSession] = useState({
-    name: '',
+    name: "",
     distance: 0.0,
     level: 1,
     strikes: 0,
@@ -55,10 +82,9 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
     bonusTokens: 0,
   });
   const [messageQueue, setMessageQueue] = useState([]);
-  const [error, setError] = useState('');
-  const [usersAddons, setUsersAddons] = useState([]);
+  const [error, setError] = useState("");
   const [timer, setTimer] = useState({
-    startTime: '',
+    startTime: "",
     isCompleted: false,
     duration: 1500,
     isRunning: false,
@@ -75,22 +101,20 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
   let targetDistance = 0.5 * session.level;
   useEffect(() => {
     const setupConnection = async () => {
-
       if (isConnected) {
         // Check if we're on the emulator or a physical device
-        const isEmulator = ipAddress && ipAddress[1] == 0;  // Emulator IP
+        const isEmulator = ipAddress && ipAddress.charAt(1) == "0"; // Emulator IP
         if (isEmulator) {
-          setServerUrl('ws://10.0.2.2:8080/groupsession'); // Use emulator IP
-        } else if (Platform.OS === 'android') {
+          setServerUrl("ws://10.0.2.2:8080/groupsession"); // Use emulator IP
+        } else if (Platform.OS === "android") {
           // Use the actual IP for the physical device
-          setServerUrl('ws://192.168.1.42:8080/groupsession');
+          setServerUrl("ws://192.168.1.42:8080/groupsession");
         } else {
           // Use the actual IP for the physical device
-          setServerUrl('ws://127.0.0.1:8080/groupsession');
+          setServerUrl("ws://127.0.0.1:8080/groupsession");
         }
-
       } else {
-        setError('No internet connection');
+        setError("No internet connection");
       }
     };
 
@@ -98,26 +122,23 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
   }, []);
 
   useEffect(() => {
-    async function setUserRoomId(){
+    async function setUserRoomId() {
       await user.addRoomId(roomId);
       await sync(database, isConnected, user.id);
     }
     if (user && roomId) {
       setUserRoomId();
     }
-
   }, [user, roomId]);
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
 
   function reset() {
-
-    const resetHikers = {...hikers};
+    const resetHikers = { ...hikers };
 
     for (const [key, value] of Object.entries(resetHikers)) {
       resetHikers[key].isReady = false;
       resetHikers[key].isPaused = false;
       resetHikers[key].distance = 0.0;
-
     }
 
     setHikers(resetHikers);
@@ -138,7 +159,7 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
     }));
     setSession(prev => ({
       ...prev,
-      name: '',
+      name: "",
       distance: 0.0,
       level: 1,
       highestCompletedLevel: 0,
@@ -148,26 +169,35 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
     }));
   }
 
-
   // Handle WebSocket responses
   useEffect(() => {
     if (lastJsonMessage) {
-      handleResponse(lastJsonMessage, setHikers, setRoomId, setView, user, setMessageQueue, setError, setTimer, setSession);
+      handleResponse({
+        lastJsonMessage,
+        setHikers,
+        setRoomId,
+        setView,
+        user,
+        setMessageQueue,
+        setError,
+        setTimer,
+        setSession,
+      });
     }
   }, [lastJsonMessage]);
 
   // Create or Join Room
-  function handleCreateRoom(){
+  function handleCreateRoom() {
     sendJsonMessage({
-      header: { protocol: 'create', userId: user.id },
+      header: { protocol: "create", userId: user.id },
       message: { username: user.username },
     });
   }
 
   // Join Room
-  function handleJoinRoom(){
+  function handleJoinRoom() {
     sendJsonMessage({
-      header: { protocol: 'join', roomId, userId: user.id },
+      header: { protocol: "join", roomId, userId: user.id },
       message: { username: user.username },
     });
   }
@@ -181,83 +211,80 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
         strikes: prev[user.id].strikes + 1,
       },
     }));
-    setSession(prev => ({...prev, strikes: prev.strikes + 1 }));
+    setSession(prev => ({ ...prev, strikes: prev.strikes + 1 }));
     sendJsonMessage({
-      header: { protocol: 'pause', roomId, userId: user.id },
+      header: { protocol: "pause", roomId, userId: user.id },
       message: {},
     });
   }
 
-
-  function handleLeaveActiveSession(){
+  function handleLeaveActiveSession() {
     sendJsonMessage({
-      header: { protocol: 'leave', roomId, userId: user.id },
-      message: { },
-    });
-
-  }
-
-  function handleEnd(){
-    sendJsonMessage({
-      header: { protocol: 'end', roomId, userId: user.id },
-      message: { 'end': true},
+      header: { protocol: "leave", roomId, userId: user.id },
+      message: {},
     });
   }
 
-  function handleResume(){
-    setHikers(prev => ({...prev, [user.id]: {...prev[user.id], isPaused: false}}));
+  function handleEnd() {
     sendJsonMessage({
-      header: { protocol: 'resume', roomId, userId: user.id },
-      message: {IsPaused: false },
+      header: { protocol: "end", roomId, userId: user.id },
+      message: { end: true },
+    });
+  }
+
+  function handleResume() {
+    setHikers(prev => ({ ...prev, [user.id]: { ...prev[user.id], isPaused: false } }));
+    sendJsonMessage({
+      header: { protocol: "resume", roomId, userId: user.id },
+      message: { IsPaused: false },
     });
   }
 
   // Toggle ready state for the current user
-  function toggleReadyState(){
+  function toggleReadyState() {
     sendJsonMessage({
-      header: { protocol: 'ready', userId: user.id, roomId },
-      message: { },
+      header: { protocol: "ready", userId: user.id, roomId },
+      message: {},
     });
   }
 
   // Send initial timer config updates to the server
-  function sendUpdatedConfig(){
+  function sendUpdatedConfig() {
     //close Modal
     setSettingsModalVisible(false);
-    if(hikers[user.id].isHost){
+    if (hikers[user.id].isHost) {
       //send new timer and session details to server
       sendJsonMessage({
-        header: { protocol: 'updateConfig', userId: user.id, roomId },
-        message: { timerConfig: {...timer}, sessionConfig: {...session} },
+        header: { protocol: "updateConfig", userId: user.id, roomId },
+        message: { timerConfig: { ...timer }, sessionConfig: { ...session } },
       });
-
     }
   }
 
-  function handleExtraSet(){
+  function handleExtraSet() {
     sendJsonMessage({
-      header: { protocol: 'extraSet', userId: user.id, roomId },
-      message: { extraSet: true},
+      header: { protocol: "extraSet", userId: user.id, roomId },
+      message: { extraSet: true },
     });
   }
 
-  function handleExtraSession(){
+  function handleExtraSession() {
     sendJsonMessage({
-      header: { protocol: 'extraSession', userId: user.id, roomId },
-      message: { extraSession: true},
+      header: { protocol: "extraSession", userId: user.id, roomId },
+      message: { extraSession: true },
     });
   }
-  function handleStart(){
-    console.warn('clicked start');
+  function handleStart() {
+    console.warn("clicked start");
     sendJsonMessage({
-      header: { protocol: 'start', userId: user.id, roomId },
-      message: { start: true},
+      header: { protocol: "start", userId: user.id, roomId },
+      message: { start: true },
     });
   }
 
-  function handleReturnToLobby(){
+  function handleReturnToLobby() {
     reset();
-    setView('lobby');
+    setView("lobby");
   }
   const intervalRef = useRef(null);
 
@@ -273,9 +300,7 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
           duration: prev.duration > 0 ? prev.duration - 1 : 0,
         }));
       }, 1000);
-
     }
-
 
     return () => clearInterval(intervalRef.current);
   }, [timer]);
@@ -283,34 +308,33 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
   //auto end if moda
   const timeoutRef = useRef(null); //this is a timeout to make the modal visible and then not visible again after 5 seconds if the endModal appears
   useEffect(() => {
-    if(view === 'endModal'){
+    if (view === "endModal") {
       timeoutRef.current = setTimeout(() => {
         handleEnd();
       }, 15000);
     }
-    if(timeoutRef.current){
+    if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
     return () => clearTimeout(timeoutRef.current);
   }, [view]);
 
-
   useEffect(() => {
-    const handleAppStateChange = (nextAppState) => {
-      if(timer.isRunning){
+    const handleAppStateChange = nextAppState => {
+      if (timer.isRunning) {
         if (appState.match(/active/) && nextAppState.match(/inactive|background/)) {
-          console.log('App is in the background or inactive.');
+          console.log("App is in the background or inactive.");
           handlePause();
-        } else if (nextAppState === 'active' && appState.match(/inactive|background/)) {
-          console.log('App is back in the foreground.');
+        } else if (nextAppState === "active" && appState.match(/inactive|background/)) {
+          console.log("App is back in the foreground.");
           handleResume();
         }
         setAppState(nextAppState);
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
     return () => subscription.remove();
   }, [appState, timer]);
 
@@ -318,20 +342,20 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
     React.useCallback(() => {
       // Screen is focused
 
-      if(timer.isRunning){
+      if (timer.isRunning) {
         handleResume();
       }
       return () => {
         // Screen is unfocused
-        if(timer.isRunning){
+        if (timer.isRunning) {
           handlePause();
         }
       };
-    }, [timer.isRunning])
+    }, [timer.isRunning]),
   );
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production' && debugRef) {
+    if (process.env.NODE_ENV !== "production" && debugRef) {
       debugRef.current = {
         messageQueue,
         error,
@@ -342,23 +366,28 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
         view,
         isConnected,
         serverUrl,
-
       };
     }
   }, [hikers, session, roomId, timer, view, isConnected, messageQueue, error, serverUrl]);
 
-  if(!isConnected){
-    return <View><Text>No Internet Connection</Text></View>;
+  if (!isConnected) {
+    return (
+      <View>
+        <Text>No Internet Connection</Text>
+      </View>
+    );
   }
-
 
   return (
     <SafeAreaView testID="group-session-screen" style={styles.container}>
-      {view === 'session' && (
+      {view === "session" && (
         <View style={styles.initialContainer}>
           <Text style={styles.title}>Group Session</Text>
 
-          <Pressable testID="create-room-button" style={styles.createRoomButton} onPress={handleCreateRoom}>
+          <Pressable
+            testID="create-room-button"
+            style={styles.createRoomButton}
+            onPress={handleCreateRoom}>
             <Text style={styles.buttonText}>Create Room</Text>
           </Pressable>
 
@@ -370,16 +399,24 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
             style={styles.input}
             testID="join-room-input"
           />
-          <Pressable testID="join-room-button" style={styles.joinRoomButton} onPress={handleJoinRoom}>
+          <Pressable
+            testID="join-room-button"
+            style={styles.joinRoomButton}
+            onPress={handleJoinRoom}>
             <Text style={styles.buttonText}>Join Room</Text>
           </Pressable>
         </View>
       )}
 
-      <ContinueSessionModal isVisible={view === 'endModal'} focusTime={timer.focusTime} onShowResultsScreen={() => setView('results')} onAddSession={handleExtraSession} onAddSet={handleExtraSet}  />
+      <ContinueSessionModal
+        isVisible={view === "endModal"}
+        focusTime={timer.focusTime}
+        onShowResultsScreen={() => setView("results")}
+        onAddSession={handleExtraSession}
+        onAddSet={handleExtraSet}
+      />
 
-
-      {view === 'lobby' && (
+      {view === "lobby" && (
         <>
           {/* Settings Modal Drawer */}
           <Modal
@@ -387,23 +424,26 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
             transparent={true}
             visible={isSettingsModalVisible}
             onRequestClose={() => setSettingsModalVisible(false)}
-            testID="settings-modal"
-          >
+            testID="group-settings-modal">
             <View style={styles.modalOverlay}>
               <ScrollView style={styles.modalContent}>
                 <Text style={styles.sectionTitle}>Session Configuration</Text>
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Session Title:</Text>
-                  {hikers[user.id].isHost ? <TextInput
-                    testID="session-name-input"
-                    value={session.name}
-                    style={styles.input}
-                    onChangeText={(value) => setSession((prev) => ({ ...prev, name: value }))}
-                    placeholder="New Session Name"
-                    placeholderTextColor={'rgba(211,211,211, .3)'}
-                    disabled={!hikers[user.id].isHost}
-                  /> : <Text>{session.name}</Text>}
+                  {hikers[user.id].isHost ? (
+                    <TextInput
+                      testID="session-name-input"
+                      value={session.name}
+                      style={styles.input}
+                      onChangeText={value => setSession(prev => ({ ...prev, name: value }))}
+                      placeholder="New Session Name"
+                      placeholderTextColor={"rgba(211,211,211, .3)"}
+                      disabled={!hikers[user.id].isHost}
+                    />
+                  ) : (
+                    <Text>{session.name}</Text>
+                  )}
                 </View>
 
                 <View style={styles.fieldContainer}>
@@ -420,7 +460,9 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
                     valueField="value"
                     placeholder="Select item"
                     value={timer.focusTime}
-                    onChange={(selectedItem) => setTimer(prev => ({...prev, focusTime: selectedItem.value }))}
+                    onChange={selectedItem =>
+                      setTimer(prev => ({ ...prev, focusTime: selectedItem.value }))
+                    }
                   />
                 </View>
 
@@ -438,7 +480,9 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
                     valueField="value"
                     placeholder="Select item"
                     value={timer.shortBreakTime}
-                    onChange={(selectedItem) => setTimer(prev => ({...prev, shortBreakTime: selectedItem.value }))}
+                    onChange={selectedItem =>
+                      setTimer(prev => ({ ...prev, shortBreakTime: selectedItem.value }))
+                    }
                   />
                 </View>
 
@@ -456,30 +500,39 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
                     valueField="value"
                     placeholder="Select item"
                     value={timer.longBreakTime}
-                    onChange={(selectedItem) => setTimer(prev => ({...prev, longBreakTime: selectedItem.value }))}
+                    onChange={selectedItem =>
+                      setTimer(prev => ({ ...prev, longBreakTime: selectedItem.value }))
+                    }
                   />
-
                 </View>
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Sets:</Text>
-                  {hikers[user.id].isHost ? <TextInput
-                    testID="sets-input"
-                    value={String(timer.sets)}
-                    onChangeText={(value) => setTimer((prev) => ({ ...prev, sets: parseInt(value, 10) || 1 }))}
-                    keyboardType="numeric"
-                    style={styles.input}
-                    disabled={!hikers[user.id].isHost}
-                  /> : <Text>{timer.sets}</Text> }
+                  {hikers[user.id].isHost ? (
+                    <TextInput
+                      testID="sets-input"
+                      value={String(timer.sets)}
+                      onChangeText={value =>
+                        setTimer(prev => ({ ...prev, sets: parseInt(value, 10) || 1 }))
+                      }
+                      keyboardType="numeric"
+                      style={styles.input}
+                      disabled={!hikers[user.id].isHost}
+                    />
+                  ) : (
+                    <Text>{timer.sets}</Text>
+                  )}
                 </View>
 
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Auto Continue:</Text>
                   <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={timer.autoContinue ? '#f5dd4b' : '#f4f3f4'}
+                    trackColor={{ false: "#767577", true: "#81b0ff" }}
+                    thumbColor={timer.autoContinue ? "#f5dd4b" : "#f4f3f4"}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={() => setTimer((prev) => ({ ...prev, autoContinue: !timer.autoContinue }))}
+                    onValueChange={() =>
+                      setTimer(prev => ({ ...prev, autoContinue: !timer.autoContinue }))
+                    }
                     value={timer.autoContinue}
                     disabled={!hikers[user.id].isHost}
                   />
@@ -488,9 +541,10 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
                 <Pressable
                   style={styles.closeButton}
                   onPress={() => sendUpdatedConfig()}
-                  testID="save-close-settings-button"
-                >
-                  <Text style={styles.buttonText}>{hikers[user.id].isHost ? 'Save & Close' : 'Close'}</Text>
+                  testID="save-close-settings-button">
+                  <Text style={styles.buttonText}>
+                    {hikers[user.id].isHost ? "Save & Close" : "Close"}
+                  </Text>
                 </Pressable>
               </ScrollView>
             </View>
@@ -501,17 +555,24 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
             <Pressable
               testID="configure-session-button"
               style={styles.settingsButton}
-              onPress={() => setSettingsModalVisible(true)}
-            >
+              onPress={() => setSettingsModalVisible(true)}>
               <Text style={styles.buttonText}>Configure Session</Text>
             </Pressable>
 
-            <Pressable testID="toggle-ready-button" onPress={toggleReadyState} style={styles.toggleReadyButton}>
-              <Text style={styles.buttonText}>{hikers[user.id]?.isReady ? 'Unready' : 'Ready Up'}</Text>
+            <Pressable
+              testID="toggle-ready-button"
+              onPress={toggleReadyState}
+              style={styles.toggleReadyButton}>
+              <Text style={styles.buttonText}>
+                {hikers[user.id]?.isReady ? "Unready" : "Ready Up"}
+              </Text>
             </Pressable>
 
             {hikers[user.id]?.isHost && Object.values(hikers).every(hiker => hiker.isReady) && (
-              <Pressable testID="start-group-session-button" onPress={handleStart} style={styles.startButton}>
+              <Pressable
+                testID="start-group-session-button"
+                onPress={handleStart}
+                style={styles.startButton}>
                 <Text style={styles.buttonText}>Start Session</Text>
               </Pressable>
             )}
@@ -527,8 +588,12 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
                 const [userId, hiker] = item;
                 return (
                   <View style={styles.hikerCard}>
-                    <Text testID={`hiker-${userId}-name`} style={styles.hikerName}>{hiker.username}</Text>
-                    <Text testID={`hiker-${userId}-status`} style={styles.hikerStatus}>{hiker.isReady ? 'Ready' : 'Not Ready'}</Text>
+                    <Text testID={`hiker-${userId}-name`} style={styles.hikerName}>
+                      {hiker.username}
+                    </Text>
+                    <Text testID={`hiker-${userId}-status`} style={styles.hikerStatus}>
+                      {hiker.isReady ? "Ready" : "Not Ready"}
+                    </Text>
                   </View>
                 );
               }}
@@ -536,11 +601,13 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
           </View>
         </>
       )}
-      {view === 'timer' && (
+      {view === "timer" && (
         <>
-          <Text testID="group-session-timer" style={{fontSize:32, color: timer.isBreak ? 'grey' : 'cyan', textAlign: 'center'}}>{
-            timer ? formatCountdown(Number(timer.duration).toFixed(0)) : formatCountdown(0)
-          }</Text>
+          <Text
+            testID="group-session-timer"
+            style={{ fontSize: 32, color: timer.isBreak ? "grey" : "cyan", textAlign: "center" }}>
+            {timer ? formatCountdown(Number(timer.duration).toFixed(0)) : formatCountdown(0)}
+          </Text>
           <View style={styles.buttonsContainer}>
             {/* Stop Button */}
             <Pressable onPress={handleEnd} style={[styles.button, styles.endSessionButton]}>
@@ -548,39 +615,42 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
             </Pressable>
             {/* Pause/Resume Button (conditionally rendered icon) */}
             <Pressable
-              onPress={() =>
-              {  hikers[user.id].isPaused
-                  ? handleResume()
-                  : handlePause(); }
-              }
-              style={[styles.button, styles.pauseResumeButton]}
-            >
+              onPress={() => {
+                hikers[user.id].isPaused ? handleResume() : handlePause();
+              }}
+              style={[styles.button, styles.pauseResumeButton]}>
               <Icon
-                name={hikers[user.id].isPaused ? 'play' : 'pause'}
+                name={hikers[user.id].isPaused ? "play" : "pause"}
                 size={28}
-                color={hikers[user.id].isPaused ? 'cyan' : 'grey'}
+                color={hikers[user.id].isPaused ? "cyan" : "grey"}
               />
             </Pressable>
             {/* Skip Break Button (conditionally rendered) */}
-            {timer.isBreak && timer.isCompleted && hikers[user.id].isHost(
-              <Pressable onPress={() => handleSkipBreak()} style={[styles.button, styles.skipBreakButton]}>
-                <Icon name="play-skip-forward" size={28} color="white" />
-              </Pressable>
-            )}
+            {timer.isBreak &&
+              timer.isCompleted &&
+              hikers[user.id].isHost(
+                <Pressable
+                  onPress={() => handleSkipBreak()}
+                  style={[styles.button, styles.skipBreakButton]}>
+                  <Icon name="play-skip-forward" size={28} color="white" />
+                </Pressable>,
+              )}
           </View>
 
-          <Text style={{fontSize:26, color: 'purple', textAlign: 'center'}}>Level: {session ? session.level : 0}</Text>
+          <Text style={{ fontSize: 26, color: "purple", textAlign: "center" }}>
+            Level: {session ? session.level : 0}
+          </Text>
 
           <Progress.Bar
             width={width - 50}
             height={40}
             borderWidth={0}
             borderRadius={10}
-            unfilledColor={'rgba(41,184,169, .2)'}
+            unfilledColor={"rgba(41,184,169, .2)"}
             progress={session ? session.distance / targetDistance : 0}
             animationType="timing"
             useNativeDriver={true}
-            color={timer.isBreak ? 'rgb(255,0,0)' : 'rgb(7,254,213)'}
+            color={timer.isBreak ? "rgb(255,0,0)" : "rgb(7,254,213)"}
           />
           <View style={styles.statsContainer}>
             <View style={styles.statsGrid}>
@@ -592,7 +662,13 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
           </View>
 
           <FlatList
-            style={{display: 'flex', position:'absolute', bottom: 0, width: '100%', backgroundColor: 'red'}}
+            style={{
+              display: "flex",
+              position: "absolute",
+              bottom: 0,
+              width: "100%",
+              backgroundColor: "red",
+            }}
             data={Object.entries(hikers)}
             keyExtractor={([userId]) => userId}
             renderItem={({ item }) => {
@@ -601,16 +677,15 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
                 <View style={styles.testHikerCard}>
                   <Text style={styles.hikerName}>{hiker.username}</Text>
                   <Text style={styles.hikerDistance}>{Number(hiker.distance || 0).toFixed(2)}</Text>
-                  <Text style={styles.hikerStatus}>{hiker.isPaused ? 'Paused' : 'Hiking'}</Text>
+                  <Text style={styles.hikerStatus}>{hiker.isPaused ? "Paused" : "Hiking"}</Text>
                 </View>
               );
             }}
           />
-
         </>
       )}
 
-      {view === 'results' && (
+      {view === "results" && (
         <GroupResultsScreen
           session={session}
           hikers={hikers}
@@ -623,20 +698,30 @@ const GroupSessionComponent =  ({ user, debugRef=null, joinRoomId = '', route })
   );
 };
 
-export default GroupSessionComponent;
+export { GroupSessionImplementation };
+
+const GroupSessionScreen = (_props: any) => (
+  <ComingSoon
+    title="Group sessions are coming soon"
+    message="Group sessions need the new session model, message bus work, and WebSocket/server validation before they belong in MVP."
+    detail="Solo sessions are still the supported path for focus, trail progress, rewards, and release testing."
+  />
+);
+
+export default GroupSessionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: "black",
     paddingHorizontal: 20,
   },
   dropdown: {
     margin: 8,
     height: 40,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
@@ -648,58 +733,58 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginVertical: 20,
-    color: '#333',
+    color: "#333",
   },
   initialContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   createRoomButton: {
-    backgroundColor: '#6A0DAD',
+    backgroundColor: "#6A0DAD",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 10,
-    width: '80%',
+    width: "80%",
   },
   joinRoomButton: {
-    backgroundColor: '#008080',
+    backgroundColor: "#008080",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 10,
-    width: '80%',
+    width: "80%",
   },
   input: {
-    backgroundColor: '#e6e6e6',
+    backgroundColor: "#e6e6e6",
     padding: 10,
     borderRadius: 8,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginVertical: 10,
-    width: '80%',
-    textAlign: 'center',
+    width: "80%",
+    textAlign: "center",
   },
   section: {
     marginVertical: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 10,
   },
   fieldContainer: {
@@ -707,11 +792,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     marginBottom: 5,
   },
   dropdownButtonStyle: {
-    backgroundColor: '#e6e6e6',
+    backgroundColor: "#e6e6e6",
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 10,
@@ -719,137 +804,135 @@ const styles = StyleSheet.create({
   },
   dropdownButtonText: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
   },
   hikerCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 10,
     paddingHorizontal: 15,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     borderRadius: 8,
     marginVertical: 5,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderWidth: 1,
   },
   hikerName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   hikerDistance: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
   },
   hikerStatus: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
   },
   buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'space-around',
+    flexDirection: "column",
+    justifyContent: "space-around",
     marginVertical: 15,
   },
   settingsButton: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginVertical: 10,
   },
   toggleReadyButton: {
-    backgroundColor: '#008080',
+    backgroundColor: "#008080",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginVertical: 10,
   },
   startButton: {
-    backgroundColor: '#6A0DAD',
+    backgroundColor: "#6A0DAD",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginVertical: 10,
   },
   statsContainer: {
-    backgroundColor: 'rgba(255,255,255,.1)',
+    backgroundColor: "rgba(255,255,255,.1)",
     padding: 15,
     borderRadius: 15,
     marginBottom: 20,
   },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   infoBox: {
-    width: '30%',
+    width: "30%",
     marginBottom: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   infoLabel: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#aaa',
+    fontWeight: "500",
+    color: "#aaa",
     marginBottom: 5,
   },
   infoValue: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
   },
 
   buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
   closeButton: {
-    backgroundColor: '#6A0DAD',
+    backgroundColor: "#6A0DAD",
     paddingVertical: 12,
     marginTop: 10,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   testHikerCard: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
     padding: 5,
   },
   buttonsContainer: {
-    display: 'flex',
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    display: "flex",
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   button: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
   },
-
 });
-

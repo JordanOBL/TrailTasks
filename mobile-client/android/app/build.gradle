@@ -91,14 +91,14 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.trailtasks.app"
+    namespace "app.trailtasks"
     defaultConfig {
-        applicationId "com.trailtasks.app"
+        applicationId "app.trailtasks"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode computeVersionCode()
         versionName "1.0.${computeVersionCode()}"
-        resValue "string", "build_config_package", "com.trailtasks.app"
+        resValue "string", "build_config_package", "app.trailtasks"
     }
     signingConfigs {
         debug {
@@ -120,7 +120,7 @@ android {
         debug {
             signingConfig signingConfigs.debug
         buildConfigField "String", "ENVFILE", '"development"'
-        resValue "string", "build_config_package", "com.trailtasks.app"
+        resValue "string", "build_config_package", "app.trailtasks"
         ext.envFile = ".env.development" // 👈 Add this
         }
         release {
@@ -130,7 +130,7 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             buildConfigField "String", "ENVFILE", '"production"'
-        resValue "string", "build_config_package", "com.trailtasks.app"
+        resValue "string", "build_config_package", "app.trailtasks"
             ext.envFile = ".env.production" // 👈 THIS IS THE KEY
         }
     }

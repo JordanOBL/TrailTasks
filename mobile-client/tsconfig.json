@@ -11,11 +11,13 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "allowJs": true,
+    "noEmit": true,
+    "allowJs": false,
     "typeRoots": [
       "./node_modules/@types",
       "./types"
     ],
+    "types": ["jest", "node"],
     "paths": {
       "*": [
         "./node_modules/*"

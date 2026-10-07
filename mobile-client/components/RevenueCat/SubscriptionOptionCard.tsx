@@ -1,11 +1,34 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeProvider';
+import { darkTheme, lightTheme } from '../../theme';
 
-const SubscriptionOptionCard = ({ product, isPopular, onPress, selected }) => {
+interface SubscriptionOptionCardProps {
+  product: any;
+  isPopular: boolean;
+  onPress: () => void;
+  selected: boolean;
+}
+
+const getBillingInterval = (subscriptionPeriod?: string) => {
+  if (subscriptionPeriod === 'P1M') return 'month';
+  if (subscriptionPeriod === 'P1Y') return 'year';
+  return 'period';
+};
+
+const getBillingCopy = (subscriptionPeriod?: string) => {
+  if (subscriptionPeriod === 'P1M') return 'Billed monthly';
+  if (subscriptionPeriod === 'P1Y') return 'Billed annually';
+  return 'Billing period shown by store';
+};
+
+const getProductTitle = (product: any) =>
+  product?.title?.split(/[-–—]/)[0]?.trim() || product?.identifier || 'Trail Tasks Pro';
+
+const SubscriptionOptionCard = ({ product, isPopular, onPress, selected }: SubscriptionOptionCardProps) => {
   const { theme } = useTheme();
   const styles = getStyles(theme, selected);
-
+  const interval = getBillingInterval(product?.subscriptionPeriod);
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.card}>
@@ -14,18 +37,16 @@ const SubscriptionOptionCard = ({ product, isPopular, onPress, selected }) => {
           <Text style={styles.popularText}>Most Popular</Text>
         </View>
       )}
-      <Text style={styles.title}>{product.title.split('–, --, ')[0].trim()}</Text>
+      <Text style={styles.title}>{getProductTitle(product)}</Text>
       <Text style={styles.price}>
-        {product.priceString} / {product.subscriptionPeriod === 'P1M' ? 'month' : 'year'}
+        {product?.priceString || 'Price unavailable'} / {interval}
       </Text>
-      <Text style={styles.subText}>
-        Billed {product.subscriptionPeriod === 'P1Y' ? 'annually' : 'monthly'}
-      </Text>
+      <Text style={styles.subText}>{getBillingCopy(product?.subscriptionPeriod)}</Text>
     </TouchableOpacity>
   );
 };
 
-const getStyles = (theme, selected) =>
+const getStyles = (theme: typeof darkTheme | typeof lightTheme, selected: boolean) =>
   StyleSheet.create({
     card: {
       backgroundColor: selected ? theme.button : theme.card,

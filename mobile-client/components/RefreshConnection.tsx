@@ -1,7 +1,8 @@
 /* Render offline message if not connected */
 import {Pressable, SafeAreaView, StyleSheet, Text} from "react-native";
 import React, {SetStateAction} from "react";
-import {useInternetConnection} from "../hooks/useInternetConnection";
+
+import {useInternetConnection} from "../contexts/InternetConnectionProvider";
 
 //@ts-ignore
 const RefreshConection = ({ children}:{children: string}) => {

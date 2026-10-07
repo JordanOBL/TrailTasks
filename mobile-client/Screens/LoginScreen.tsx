@@ -8,7 +8,7 @@ import {useAuthContext} from '../services/AuthContext';
 
 
 interface Props {
-  onChangeForm: () => void;
+  handleFormChange: () => void;
 }
 
 const LoginScreen = ({ handleFormChange }: Props) => {

@@ -1,7 +1,15 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const ContinueSessionModal = ({ isVisible, showResultsScreen, onAddSession, onAddSet, focusTime }) => {
+interface ContinueSessionModalProps {
+  isVisible: boolean;
+  showResultsScreen: () => void;
+  onAddSession: () => void;
+  onAddSet: () => void;
+  focusTime: number;
+}
+
+const ContinueSessionModal = ({ isVisible, showResultsScreen, onAddSession, onAddSet, focusTime }: ContinueSessionModalProps) => {
   const extraSetReward = Math.ceil( (focusTime/60) * .25 )
   const extraSessionReward = Math.ceil( ( ( focusTime/60 ) * 1.5  ) + (focusTime/60))
   return (

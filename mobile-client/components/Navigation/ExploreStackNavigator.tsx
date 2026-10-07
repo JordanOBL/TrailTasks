@@ -1,7 +1,7 @@
-import { createStackNavigator } from '@react-navigation/stack';
 import EnhancedExploreScreen from '../../Screens/ExploreScreen';
 import React from 'react';
-import EnhancedTrailDetailScreen from '../../Screens/TrailDetailScreen';
+import TrailDetailScreen from '../../Screens/TrailDetailScreen';
+import { createStackNavigator } from '@react-navigation/stack';
 import {useAuthContext} from '../../services/AuthContext';
 
 const ExploreStack = createStackNavigator();
@@ -12,7 +12,7 @@ const ExploreStackNavigator = () => {
         <ExploreStack.Navigator>
             <ExploreStack.Screen
                 name="ExploreMain"
-                options={{ headerShown: false, unmountOnBlur: false }}
+                options={{ headerShown: false }}
             >
                 {(props) => <EnhancedExploreScreen user={user} {...props}  />}
             </ExploreStack.Screen>
@@ -20,7 +20,7 @@ const ExploreStackNavigator = () => {
                 name="TrailDetails"
                 options={{ headerShown: false, presentation: 'modal' }}
             >
-                {(props) => <EnhancedTrailDetailScreen user={user} {...props}  />}
+                {(props) => <TrailDetailScreen {...props}  />}
             </ExploreStack.Screen>
         </ExploreStack.Navigator>
     );

@@ -1,27 +1,27 @@
 import {
   Achievement,
-  User_Completed_Trail,
-  User_Queued_Trail,
   Trail,
   User,
-  User_Session,
+  User_Completed_Trail,
   User_Purchased_Trail,
+  User_Queued_Trail,
+  User_Session,
 } from '../../watermelon/models';
 //creating a new session
-import {Database} from '@nozbe/watermelondb';
-import handleError from "../ErrorHandler";
-import { achievementManagerInstance } from '../Achievements/AchievementManager';
+import {Database, Model} from '@nozbe/watermelondb';
+
 import { AchievementsWithCompletion } from '../../types/achievements';
+import React from "react";
+import Rewards from '../Session/Rewards';
 import {SessionDetails} from '../../types/session';
+import Timer from "../../types/timer";
 import {Vibration} from 'react-native';
+import { achievementManagerInstance } from '../Achievements/AchievementManager';
+import checkDailyStreak from '../Session/checkDailyStreak';
 import formatDateTime from '../formatDateTime';
 import {getBetterTime} from './getBetterTime';
 import getTimeDifference from './getTimeDifference';
-import checkDailyStreak from '../Session/checkDailyStreak';
-import Rewards from '../Session/Rewards';
-import React from "react";
-import Timer from "../../types/timer";
-
+import handleError from "../ErrorHandler";
 
 //increase distance hiked
 export async function increaseDistanceHiked({
@@ -34,7 +34,7 @@ export async function increaseDistanceHiked({
   onAchievementEarned
 }: {
     user: User;
-    timer: Timer;
+    timer?: Timer;
     currentTrail: Trail;
     userSession: User_Session;
     setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
@@ -52,7 +52,6 @@ export async function increaseDistanceHiked({
     await user.increaseDistanceHikedWriter({
       user,
       userSession,
-      timer,
       sessionDetails
     });
     setSessionDetails(prev => ( {...prev, totalDistanceHiked: prev.totalDistanceHiked + .01} ));
@@ -163,7 +162,8 @@ export async function updateUsersTrailAndQueue({
 const allAvailableTrails = [...freeTrails, ...userPurchasedTrails];
 const randomIndex = Math.floor(Math.random() * allAvailableTrails.length);
 const randomTrail = allAvailableTrails[randomIndex];
-const randomTrailId = randomTrail?.trail_id ? randomTrail.trail_id.toString() : randomTrail.id.toString();
+console.log("randomTrail", randomTrail);
+const randomTrailId = randomTrail?.trailId ? randomTrail.trailId.toString() : randomTrail.id.toString();
     //if user has set their own trails to be up next
     if (isProMember && queuedTrails.length > 0)
   {
@@ -250,7 +250,7 @@ function resetSessionState(
 
 //resume paused session
 export function resumeSession(
-  setTimer: React.Dispatch<React.SetStateAction<SetTimer>>
+  setTimer: React.Dispatch<React.SetStateAction<Timer>>
 ) {
   setTimer((prev) => {
     return {...prev, isPaused: false};
@@ -292,9 +292,9 @@ export async function endSession({
 
 }:
   {
-    user: User;
-    setTimer: React.Dispatch<React.SetStateAction<SetTimer>>;
-    sessionDetails: SessionDetails;
+    user?: User;
+    setTimer: React.Dispatch<React.SetStateAction<Timer>>;
+    sessionDetails?: SessionDetails;
     setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>;
   }) {
   try {
@@ -314,7 +314,7 @@ export async function endSession({
 
 export async function checkPaceIncrease({timer, setTimer, paceIncreaseInterval, paceIncreaseValue, maximumPace, minimumPace}:
   {  timer: Timer,
-    setTimer: React.Dispatch<React.SetStateAction<SetTimer>>,
+    setTimer: React.Dispatch<React.SetStateAction<Timer>>,
     paceIncreaseInterval: number,
     paceIncreaseValue: number,
     maximumPace: number,
@@ -355,7 +355,7 @@ export async function checkPaceIncrease({timer, setTimer, paceIncreaseInterval, 
 //skip break
 export function skipBreak({timer, setTimer}:
   { timer: Timer,
-    setTimer: React.Dispatch<React.SetStateAction<SetTimer>>
+    setTimer: React.Dispatch<React.SetStateAction<Timer>>
   }
 ) {
   try {
@@ -404,7 +404,7 @@ export async function isTrailCompleted({
     queuedTrails: User_Queued_Trail[];
     achievementsWithCompletion: AchievementsWithCompletion[];
     onAchievementEarned: (achievements: Achievement[]) => void;
-    onCompletedTrail: (trail: Trail) => void;
+    onCompletedTrail: ({setSessionDetails, trail, reward}:{setSessionDetails: React.Dispatch<React.SetStateAction<SessionDetails>>, trail: Trail, reward: number}) => void;
     isProMember: boolean;
     freeTrails: Trail[];
     userPurchasedTrails: User_Purchased_Trail[]
@@ -420,7 +420,7 @@ export async function isTrailCompleted({
       onCompletedTrail({setSessionDetails, trail: currentTrail, reward });
 
       //check if trail has been completed by user before
-      const existingCompletedTrail:User_Completed_Trail = await user.hasTrailBeenCompleted(user.id, currentTrail.id);
+      const existingCompletedTrail = await user.hasTrailBeenCompleted(user.id, currentTrail.id);
 
 
       //set current date to now (YY-MM-DD H/H:mm:ss)
@@ -472,6 +472,13 @@ export async function isTrailCompleted({
           firstCompletedAt: firstCompletedTime,
           lastCompletedAt: currentDateTime,
         });
+        console.debug('checking for park wild unlock...')
+        const isNewWildUnlocked = await user.redeemParkWildCheck(currentTrail.parkId);
+        if(isNewWildUnlocked){
+          console.debug('new wild unlocked!')
+          await user.redeemParkPass(currentTrail.parkId);
+          console.debug('redeemed park pass for wild unlock')
+        }
         if (addedHike) {
           console.debug('completed trail added...')
           await updateUsersTrailAndQueue({

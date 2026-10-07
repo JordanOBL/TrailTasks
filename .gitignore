@@ -48,7 +48,9 @@ yarn-error.log
 # For more information about the recommended setup visit:
 # https://docs.fastlane.tools/best-practices/source-control/
 .env
+.env.bak    
 .env.development
+.env.development.bak
 .env.test
 .env.production
 TrailTasks.db

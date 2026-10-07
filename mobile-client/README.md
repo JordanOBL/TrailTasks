@@ -1,107 +1,126 @@
-Trail Tasks: Revolutionizing Productivity for the Outdoor Enthusiast
-Trail Tasks is an innovative mobile application designed to bridge the gap between productivity and the great outdoors. Leveraging the proven Pomodoro technique, Trail Tasks transforms work sessions into virtual hiking experiences, allowing users to hike through some of the most iconic national park trails in the United States—all while staying productive. Whether you’re working on a project, studying, or simply trying to stay focused, Trail Tasks makes every session an adventure.
+# Trail Tasks mobile client
 
-Key Features
-1. Pomodoro Timer with a Twist
-Trail Tasks incorporates a traditional Pomodoro timer, but with a unique twist: as users work, they virtually hike a trail corresponding to real-world distances. The timer starts users at a pace of 2 mph, with their speed increasing every 10 minutes as a reward for sustained focus. This gamified approach to productivity encourages users to stay on task while enjoying the mental escape of a virtual hike.
+This is the React Native app for Trail Tasks. The current MVP focus is the offline-first solo Pomodoro hiking loop: start a solo session, progress along a trail, persist completed-session data, and show the result on Home/Logbook/Stats.
 
-2. Virtual Hiking Experience
-Users can select from a variety of national park trails, each with different lengths and difficulties. As they work, they progress along the chosen trail, gaining distance every 0.01 miles. The realistic simulation keeps users engaged and motivated, turning everyday tasks into rewarding journeys.
+Friends, group sessions, leaderboards, WebSocket group runtime, and broad social sync are deferred unless a ticket explicitly brings them into scope. See `../docs/mvp-scope.md` and `../docs/typecheck-triage.md` before expanding work into those areas.
 
-3. Trail Tokens & Achievements
-Completion of trails earns users trail tokens, which can be used to unlock new trails and other features. Achievements in areas such as session time, miles hiked, and trails completed across various parks and states add a layer of gamification, enhancing user engagement and satisfaction.
+## Prerequisites
 
-4. Offline & Online Support
-Trail Tasks is designed to work seamlessly both offline and online. This ensures that users can continue their productivity journey without interruption, even in areas with limited connectivity. Online functionality enables users to view global leaderboards and compare their miles hiked with others, fostering a sense of community and competition.
+- Node.js 18+
+- npm
+- React Native Android and/or iOS local setup
+- Android emulator/device or iOS simulator/device for manual app checks
 
-5. Detailed Productivity Stats
-Users can track their productivity over various time periods and session categories, giving them insight into their work habits and progress. This feature not only helps users stay motivated but also allows them to optimize their workflow for better results.
+## Install
 
-Park Progression, Prestige, and Levels
-Park Levels
-Each park tracks a lifetime level, increasing every time a user completes all trails in that park.
-Park levels do not reset upon prestige, allowing users to track their lifetime mastery of individual parks.
-Example:
-Completing all trails in Yosemite three times = Yosemite Level 3.
-Park Rewards
-Completing all trails in a park earns a park reward (e.g., tokens, badges, achievements).
-Rewards can only be redeemed once per prestige.
-Upon prestige, park reward redemption resets, allowing users to redeem rewards immediately without rehiking if park completion criteria were already met.
-Park Prestige
-Reflects a user’s global progress across all parks.
-Prestige is earned by completing all parks to the required level.
-Upon prestiging:
-Park reward redemption resets for all parks.
-Prestige level increases, unlocking higher rewards and multipliers.
-Trail Rewards
-Trails can be hiked repeatedly for individual rewards, no matter if the park has been redeemed.
-Workflow Example
-Complete all trails in Yosemite → Yosemite Level 1 → Redeem reward.
-Complete all trails in Yellowstone → Yellowstone Level 1 → Redeem reward.
-Complete all parks → Prestige Level 1.
-Prestige resets park rewards; Yosemite Level 2 reward can now be redeemed without rehiking.
-Future Features
-Friends & Friendly Leaderboards
-Connect with friends and compete across categories such as:
+From this directory:
 
-Most Miles in a Week
-Longest Continuous Session
-Most Trails Completed
-Group Hikes
-Join group hikes with friends or other users to complete trails together for shared experiences.
+```sh
+npm install
+```
 
-Hiking Playlists
-Curated playlists matching trail ambiance enhance the immersive experience of virtual hiking.
+Or from the repo root:
 
-Events & Challenges
-Participate in special events, such as through hikes, to earn limited edition badges.
+```sh
+npm install --prefix mobile-client
+```
 
-Leaderboards
-Prestige Leaderboard: Showcase users with the highest prestige levels globally.
-Park-Level Leaderboard: Highlight users with the highest lifetime park levels.
-Add-Ons
-Trail Tasks will introduce a store for purchasing session add-ons with trail tokens. These include:
+## Environment files
 
-Hiking Poles:
+The scripts select an environment file with `ENVFILE`:
 
-Enhanced Break Reward
-Extended Pace Bonus Duration
-Penalty Reduction
-Energy Bars:
+- `.env.test` for Jest/tests and test builds
+- `.env.development` for local development builds
+- `.env.production` for production builds
 
-Temporary Pace Boost
-Double Break Reward
-Trail Shoes:
+Do not start the API server or Go WebSocket server for normal solo-MVP work unless the current ticket requires API sync/auth or group-session server behavior.
 
-Pace Reset Buffer
-Steady Pace
-Bike:
+## Quality gates
 
-High-Speed Mode
-Extended Use
-Water Bottle:
+Daily MVP gate:
 
-Mid-Session Refill
-Cooldown Reduction
-Target Audience
-Remote Workers
-Stay productive while enjoying a virtual escape to the great outdoors.
+```sh
+npm run quality
+```
 
-Outdoor Enthusiasts
-Satisfy your need for adventure during busy workdays.
+This runs the focused unit suite through `npm run test:unit`.
 
-Productivity Seekers
-Enhance your workflow with Trail Tasks’ gamified approach.
+Release gate:
 
-Gamification Fans
-Turn everyday tasks into a rewarding game.
+```sh
+npm run quality:release
+```
 
-Health & Wellness Advocates
-Achieve balance by integrating movement and mindfulness into your workday.
+This runs:
 
-Monetization & Subscription Model
-Trail Tasks offers:
+1. `npm run typecheck:release`
+2. `npm run test:unit`
 
-Free Tier: Access select trails, track basic stats, and participate in community events.
-Premium Subscription: Access all trails, advanced stats, exclusive events, and special add-ons.
-Trail Tasks isn’t just an app—it’s a revolution in how we approach productivity and wellness. By combining the best of nature with cutting-edge technology, Trail Tasks is set to redefine the way we work, play, and stay connected to the world around us.
+`typecheck:release` uses `tsconfig.release.json`, which intentionally excludes documented deferred surfaces. Full strict TypeScript still exists as a backlog check:
+
+```sh
+npm run typecheck
+```
+
+If a ticket makes a deferred surface part of MVP, remove the matching exclusion from `tsconfig.release.json` in the same PR that makes that surface type-clean and tested.
+
+## Running tests directly
+
+```sh
+npm test                         # Jest run-in-band with ENVFILE=.env.test
+npm run test:unit                # Current focused mobile suite
+npm run test:coverage            # Coverage run
+npm run typecheck:release        # Scoped release TypeScript check
+npm run typecheck                # Full strict backlog check
+```
+
+## Running the app
+
+Android emulator:
+
+```sh
+npm run android:emulator:dev
+```
+
+Android physical device:
+
+```sh
+npm run android:device:dev
+```
+
+All Android targets:
+
+```sh
+npm run android:all:dev
+```
+
+iOS development build:
+
+```sh
+npm run ios:dev
+```
+
+## Production Android build
+
+```sh
+npm run build-android-prod
+```
+
+## MVP manual smoke check
+
+Before calling a mobile MVP PR release-ready, at minimum:
+
+1. Run `npm run quality:release`.
+2. Open the app without relying on the API/WebSocket servers.
+3. Confirm Home loads.
+4. Start a solo session.
+5. Confirm active session timer/progress UI renders.
+6. Complete or quit the session.
+7. Confirm results, Home, Logbook, and Stats reflect the intended persisted behavior.
+8. Open visible deferred screens such as Friends/Group/Leaderboards once and confirm they show safe Coming Soon/placeholder behavior instead of crashing.
+
+## Important references
+
+- `../docs/mvp-scope.md` — shippable MVP boundary.
+- `../docs/typecheck-triage.md` — release typecheck exclusions and follow-up rule.
+- `watermelon/README.md` — sync architecture and merge rules.

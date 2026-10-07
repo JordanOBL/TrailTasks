@@ -11,7 +11,7 @@ const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
   const { theme } = useTheme(); // Get theme from context
-  Ionicons.loadFont().catch(err => console.log('err', err));
+  Ionicons.loadFont().catch((err: unknown) => console.log('err', err));
 
   return (
     <Tab.Navigator

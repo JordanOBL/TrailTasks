@@ -1,20 +1,22 @@
-import React, {useCallback, useState} from 'react';
-import {SafeAreaView, StyleSheet, Text} from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from "react-native";
+import React, { useCallback, useState } from "react";
 import {
+  Trail,
   User,
   User_Completed_Trail,
   User_Purchased_Trail,
   User_Queued_Trail,
-} from '../watermelon/models';
+} from "../watermelon/models";
+import { darkTheme, lightTheme } from "../theme";
 
-import EnhancedTrailsList from '../components/TrailsList';
 import FullTrailDetails from "../types/fullTrailDetails";
-import {Q} from '@nozbe/watermelondb';
+import { Q } from "@nozbe/watermelondb";
+import TrailsList from "../components/TrailsList";
 import handleError from "../helpers/ErrorHandler";
-import {useDatabase} from '@nozbe/watermelondb/react';
-import {useFocusEffect} from '@react-navigation/native';
-import {useTheme} from '../contexts/ThemeProvider';
-import {withObservables} from '@nozbe/watermelondb/react';
+import { useDatabase } from "@nozbe/watermelondb/react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from "../contexts/ThemeProvider";
+import { withObservables } from "@nozbe/watermelondb/react";
 
 interface Props {
   user: User;
@@ -23,79 +25,78 @@ interface Props {
   userPurchasedTrails: User_Purchased_Trail[];
 }
 
-const ExploreScreen = ({
-  user,
-  completedTrails,
-  queuedTrails,
-  userPurchasedTrails,
-}: Props) => {
+const ExploreScreen = ({ user, completedTrails, queuedTrails, userPurchasedTrails }: Props) => {
   const watermelonDatabase = useDatabase();
-  const {theme} = useTheme();
+  const { theme } = useTheme();
   const styles = getStyles(theme);
-  const queuedTrailMap = React.useMemo(() => queuedTrails.reduce((map, queuedTrail) => {
-    map[queuedTrail.trailId] = true
-    return map;
-  }, {}), [queuedTrails]);
+  const queuedTrailMap = React.useMemo(
+    () =>
+      queuedTrails.reduce((map: Record<string, boolean>, queuedTrail) => {
+        map[queuedTrail.trailId] = true;
+        return map;
+      }, {}),
+    [queuedTrails],
+  );
 
   const [trailsCollection, setTrailsCollection] = useState<FullTrailDetails[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string>("")
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const getTrails =  useCallback(async () => {
-        try {
-          const fullTrailRecords = await watermelonDatabase.get('trails').query(
-              Q.experimentalJoinTables(['parks']),
-              Q.experimentalNestedJoin('parks', 'parks_states'),
-              Q.unsafeSqlQuery(
-                  'SELECT trails.*, ' +
-                  'parks.id AS park_id, parks.park_name, parks.park_type, parks.park_image_url, ' +
-                  'park_states.id AS park_state_id, park_states.state_code, park_states.state, ' +
-                  'COUNT(DISTINCT users_completed_trails.trail_id) AS completed_trails, ' +
-                  'users_parks.park_level ' +
-                  'FROM trails ' +
-                  'LEFT JOIN parks ON trails.park_id = parks.id ' +
-                  'LEFT JOIN park_states ON parks.id = park_states.park_id ' +
-                  'LEFT JOIN users_completed_trails ON users_completed_trails.trail_id = trails.id AND users_completed_trails.user_id = ? ' +
-                  'LEFT JOIN users_parks ON users_parks.park_id = parks.id AND users_parks.user_id = ? ' +
-                  'GROUP BY trails.id',
-                  [user.id, user.id]
-              ),
-          ).unsafeFetchRaw();
+  const getTrails = useCallback(async () => {
+    try {
+      if (!user) {
+        throw new Error("User not found");
+      }
 
-          if (fullTrailRecords.length === 0) {
-            setErrorMessage("Error Getting trails, try again later!");
-          } else {
-            setTrailsCollection(fullTrailRecords);
-          }
-        } catch (err) {
-          handleError(err, "getFullTrailInfo");
-        }
-      }, [userPurchasedTrails, user, queuedTrails, completedTrails]);
+      const fullTrailRecords = (await watermelonDatabase
+        .get<Trail>("trails")
+        .query(
+          Q.experimentalJoinTables(["parks"]),
+          Q.experimentalNestedJoin("parks", "parks_states"),
+          Q.unsafeSqlQuery(
+            "SELECT trails.*, " +
+              "parks.id AS park_id, parks.park_name, parks.park_type, parks.park_image_url, " +
+              "park_states.id AS park_state_id, park_states.state_code, park_states.state, " +
+              "COUNT(DISTINCT users_completed_trails.trail_id) AS is_completed, " +
+              "COUNT(DISTINCT users_purchased_trails.trail_id) AS is_purchased, " +
+              "users_parks.park_level " +
+              "FROM trails " +
+              "LEFT JOIN parks ON trails.park_id = parks.id " +
+              "LEFT JOIN park_states ON parks.id = park_states.park_id " +
+              "LEFT JOIN users_completed_trails ON users_completed_trails.trail_id = trails.id AND users_completed_trails.user_id = ? " +
+              "LEFT JOIN users_purchased_trails ON users_purchased_trails.trail_id = trails.id AND users_purchased_trails.user_id = ? " +
+              "LEFT JOIN users_parks ON users_parks.park_id = parks.id AND users_parks.user_id = ? " +
+              "GROUP BY trails.id",
+            [user.id, user.id, user.id],
+          ),
+        )
+        .unsafeFetchRaw()) as FullTrailDetails[];
 
+      if (fullTrailRecords.length === 0) {
+        setErrorMessage("Error Getting trails, try again later!");
+      } else {
+        setTrailsCollection(fullTrailRecords);
+      }
+    } catch (err) {
+      handleError(err, "getFullTrailInfo");
+    }
+  }, [userPurchasedTrails, user, queuedTrails, completedTrails]);
 
-
-useFocusEffect(
-  useCallback(() => {
-    getTrails();
-  }, [user])
-);
+  useFocusEffect(
+    useCallback(() => {
+      getTrails();
+    }, [getTrails]),
+  );
 
   if (!trailsCollection) {
-    return (
-        
-          <ActivityIndicator size="large" color={theme.button} />
-      
-    );
+    return <ActivityIndicator size="large" color={theme.button} />;
   }
   if (errorMessage) {
-    return (
-        <Text style={{color: 'red'}}>{errorMessage}</Text>
-    )
+    return <Text style={{ color: "red" }}>{errorMessage}</Text>;
   }
-
 
   return (
     <SafeAreaView style={styles.container}>
-      <EnhancedTrailsList
+      <TrailsList
         user={user}
         trailsCollection={trailsCollection}
         queuedTrails={queuedTrails}
@@ -107,7 +108,7 @@ useFocusEffect(
   );
 };
 
-const enhance = withObservables(['user', 'completedTrails', 'userPurchasedTrails'], ({user}) => ({
+const enhance = withObservables(["user", "completedTrails", "userPurchasedTrails"], ({ user }) => ({
   user,
   completedTrails: user.usersCompletedTrails.observe(),
   queuedTrails: user.usersQueuedTrails.observe(),

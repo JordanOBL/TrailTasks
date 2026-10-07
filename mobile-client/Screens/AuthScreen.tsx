@@ -7,10 +7,11 @@ interface Props {
   handleFormChange?: () => void;
 }
 const AuthScreen = ({ form, handleFormChange }: Props ) => {
+ const onFormChange = handleFormChange ?? (() => {});
  if (form === 'login') {
-   return <LoginScreen handleFormChange={handleFormChange} />;
+   return <LoginScreen handleFormChange={onFormChange} />;
  } else {
-   return <RegisterScreen handleFormChange={handleFormChange} />;
+   return <RegisterScreen handleFormChange={onFormChange} />;
  } 
 };
 

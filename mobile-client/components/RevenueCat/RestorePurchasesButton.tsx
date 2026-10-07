@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTheme } from '../../contexts/ThemeProvider';
-import Purchases from 'react-native-purchases';
+import { useAuthContext } from '../../services/AuthContext';
+import { darkTheme, lightTheme } from '../../theme';
 
 const RestorePurchasesButton = () => {
   const { theme } = useTheme();
+  const { restorePurchases, revenueCatConfigured, revenueCatLoading } = useAuthContext();
   const styles = getStyles(theme);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const restoreUnavailable = revenueCatLoading || !revenueCatConfigured;
+  const disabled = loading || restoreUnavailable;
 
   const handleRestore = async () => {
     try {
       setLoading(true);
-      const customerInfo = await Purchases.restorePurchases();
+      const customerInfo = await restorePurchases();
 
-      const hasActive = Object.keys(customerInfo.entitlements.active || {}).length > 0;
+      const hasActive = !!customerInfo?.entitlements?.active?.pro;
 
       if (hasActive) {
         Alert.alert('✅ Restored', 'Your purchases have been restored!');
@@ -21,25 +25,28 @@ const RestorePurchasesButton = () => {
         Alert.alert('ℹ️ No Subscriptions', 'No active subscriptions were found.');
       }
     } catch (error) {
-      console.error('Restore Error:', error);
-      Alert.alert('⚠️ Error', 'Something went wrong while restoring purchases.');
+      Alert.alert('⚠️ Error', error instanceof Error ? error.message : 'Something went wrong while restoring purchases.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <TouchableOpacity onPress={handleRestore} style={styles.button} disabled={loading}>
+    <TouchableOpacity
+      onPress={handleRestore}
+      style={[styles.button, disabled && styles.disabledButton]}
+      disabled={disabled}
+      testID="restore-purchases-button">
       {loading ? (
         <ActivityIndicator color={theme.background} />
       ) : (
-        <Text style={styles.text}>Restore Purchases</Text>
+        <Text style={styles.text}>{restoreUnavailable ? 'Restore unavailable' : 'Restore Purchases'}</Text>
       )}
     </TouchableOpacity>
   );
 };
 
-const getStyles = (theme) =>
+const getStyles = (theme: typeof darkTheme | typeof lightTheme) =>
   StyleSheet.create({
     button: {
       marginTop: 20,
@@ -59,7 +66,9 @@ const getStyles = (theme) =>
       fontWeight: '600',
       fontSize: 16,
     },
+    disabledButton: {
+      opacity: 0.55,
+    },
   });
 
 export default RestorePurchasesButton;
-

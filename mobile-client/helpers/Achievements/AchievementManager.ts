@@ -51,12 +51,13 @@ class AchievementManager {
 
     try {
       const unlockAchievements = [];
+      const totalMiles = await user.calculateTotalMiles();
 
       for (let [index, achievement] of achievementsWithCompletion.entries()) {
         if (
             !achievement.completed &&
             achievement.achievement_type === 'Total Miles' &&
-            user.totalMiles >= parseFloat(achievement.achievement_condition)
+            totalMiles >= parseFloat(achievement.achievement_condition)
         ) {
           unlockAchievements.push({
             achievementName: achievement.achievement_name,

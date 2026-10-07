@@ -1,11 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Database } from '@nozbe/watermelondb';
-import { checkForLoggedInUser, checkLocalUserExists, checkGlobalUserExists,  setLocalStorageUser, createNewUser , registerValidation, saveUserToLocalDB} from '../services/auth';
-import {useInternetConnection} from './useInternetConnection';
-import handleError from '../helpers/ErrorHandler';
-import { User } from '../watermelon/models';
-import {sync} from '../watermelon/sync';
-import useRevenueCat from '../helpers/RevenueCat/useRevenueCat';
+import { GlobalExistingUserResponseFail, GlobalExistingUserResponseSuccess } from "../types/api";
+import {
+  checkForLoggedInUser,
+  checkGlobalUserExists,
+  checkLocalUserExists,
+  createNewUser,
+  registerValidation,
+  setLocalStorageUser,
+} from "../services/auth";
+import { useCallback, useEffect, useState } from "react";
+
+import { Database } from "@nozbe/watermelondb";
+import { User } from "../watermelon/models";
+import handleError from "../helpers/ErrorHandler";
+import { sync } from "../watermelon/sync";
+import { useInternetConnection } from "../contexts/InternetConnectionProvider";
+import useRevenueCat from "../helpers/RevenueCat/useRevenueCat";
 
 type UseAuthParams = {
   watermelonDatabase: Database;
@@ -13,39 +22,46 @@ type UseAuthParams = {
 };
 
 export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParams) {
-  const {isConnected} = useInternetConnection();
+  const { isConnected }: any = useInternetConnection();
   const [user, setUser] = useState<any>(initialUser);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const {currentOffering, customerInfo, isProMember } = useRevenueCat({userId: user?.id});
-
+  const [error, setError] = useState<string>("");
+  const {
+    currentOffering,
+    customerInfo,
+    isProMember,
+    isConfigured: revenueCatConfigured,
+    loading: revenueCatLoading,
+    error: revenueCatError,
+    purchasePackage,
+    restorePurchases,
+    refreshCustomerInfo,
+  } = useRevenueCat({ userId: user?.id });
 
   // Observe user changes (only if user is a Watermelon model)
-//  useEffect(() => {
-//    let subscription: any;
-//    if (user && typeof user.observe === 'function') {
-//      subscription = user.observe().subscribe((updatedUser: any) => {
-//        setUser(updatedUser);
-//      });
-//    }
-//    return () => subscription?.unsubscribe();
-//  }, [user]);
+  //  useEffect(() => {
+  //    let subscription: any;
+  //    if (user && typeof user.observe === 'function') {
+  //      subscription = user.observe().subscribe((updatedUser: any) => {
+  //        setUser(updatedUser);
+  //      });
+  //    }
+  //    return () => subscription?.unsubscribe();
+  //  }, [user]);
 
   // Check if there's a user in local DB
   const initUser = useCallback(async () => {
     try {
-      
-      if(watermelonDatabase) {
-         await checkForLoggedInUser(setUser, watermelonDatabase);
-
+      if (watermelonDatabase) {
+        await checkForLoggedInUser(setUser, watermelonDatabase);
       }
-         } catch (err) {
-      handleError(err, 'initUser in useAuth');
+    } catch (err) {
+      handleError(err, "initUser in useAuth");
     }
   }, [watermelonDatabase]);
 
   useEffect(() => {
-    if(!user){
+    if (!user) {
       initUser();
     }
   }, []);
@@ -54,89 +70,129 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
   const login = useCallback(
     async (email: string, password: string) => {
       try {
-        setError('');
+        setError("");
         setLoading(true);
         if (!email.trim() || !password.trim()) {
-          setError('All fields are required');
+          setError("All fields are required");
           setLoading(false);
           return;
         }
 
-        let localUser = await checkLocalUserExists(email.toLowerCase(), password, watermelonDatabase);
+        let localUser = await checkLocalUserExists(
+          email.toLowerCase(),
+          password,
+          watermelonDatabase,
+        );
+        const hadLocalUser = !!localUser;
+
         if (!localUser && isConnected) {
-          // Attempt remote login
-          const remoteUser = await checkGlobalUserExists(email.toLowerCase(), password);
-          if (remoteUser) {
-            // Write remote data to local DB (this is your large block that creates user, sessions, etc.)
-            await saveUserToLocalDB(remoteUser, watermelonDatabase);
-            localUser = await checkLocalUserExists(email.toLowerCase(), password, watermelonDatabase);
+          // Verify remote credentials, then let the Watermelon sync path pull account data.
+          const remoteUser = (await checkGlobalUserExists(email.toLowerCase(), password)) as User &
+            GlobalExistingUserResponseSuccess;
+          if (remoteUser?.user?.id) {
+            await sync(watermelonDatabase, isConnected, remoteUser.user.id, {
+              fullUserSync: true,
+              pullOnly: true,
+            });
+            localUser = await watermelonDatabase.collections.get('users').find(remoteUser.user.id);
           }
         }
         if (!localUser) {
-          setError('Incorrect Email or Password');
+          setError("Incorrect Email or Password");
           setLoading(false);
           return;
         }
 
         //await setSubscriptionStatus(localUser, watermelonDatabase);
         await setLocalStorageUser(localUser, watermelonDatabase);
+        if (hadLocalUser) {
+          await sync(watermelonDatabase, isConnected, localUser.id, {
+            fullUserSync: true,
+            pullOnly: true,
+          });
+        }
         setUser(localUser);
         setLoading(false);
       } catch (err) {
         setLoading(false);
-        handleError(err, 'login in useAuth');
+        handleError(err, "login in useAuth");
       }
     },
-    [watermelonDatabase]
+    [isConnected, watermelonDatabase],
   );
 
   // Wrap your existing “handleRegister” logic
   const register = useCallback(
-    async ({ email, password, confirmPassword, username}:{
-      email: string,
-      password: string,
-      confirmPassword: string,
-      username: string
+    async ({
+      email,
+      password,
+      confirmPassword,
+      username,
+    }: {
+      email: string;
+      password: string;
+      confirmPassword: string;
+      username: string;
     }) => {
-
+      let pendingRegistrationUser: any = null;
       try {
-        setError('');
+        setError("");
         setLoading(true);
 
         // Basic validation
         if (!email || !password || !confirmPassword || !username) {
-          setError('All fields are required');
+          setError("All fields are required");
           setLoading(false);
           return;
         }
         if (password !== confirmPassword) {
-          setError('Passwords do not match');
+          setError("Passwords do not match");
           setLoading(false);
           return;
         }
-        const result = await registerValidation(email.toLowerCase(), username.toLowerCase());
-        if (result?.duplicateAttribute != '') {
-            setError(result.message);
-            setLoading(false);
-            return;
+        if (!isConnected) {
+          setError("Internet connection is required to create an account");
+          setLoading(false);
+          return;
         }
 
-        // Otherwise create user in local DB
-        const newUser = await createNewUser(
-          {  email: email.toLowerCase(), password, username: username.toLowerCase(), watermelonDatabase}
-        );
-        if (newUser) {
-          // Possibly set user in state after register
-          setUser(newUser);
-          await sync(watermelonDatabase, isConnected, newUser.id);
+        const result = await registerValidation(email.toLowerCase(), username.toLowerCase());
+        if (result?.duplicateAttribute != "") {
+          setError(result.message);
+          setLoading(false);
+          return;
+        }
+
+        // Create a local Watermelon row so sync can push the account, but do not
+        // mark the app logged in until the server confirms that push succeeds.
+        pendingRegistrationUser = await createNewUser({
+          email: email.toLowerCase(),
+          password,
+          username: username.toLowerCase(),
+          watermelonDatabase,
+        });
+        if (pendingRegistrationUser) {
+          await sync(watermelonDatabase, isConnected, pendingRegistrationUser.id);
+          await setLocalStorageUser(pendingRegistrationUser, watermelonDatabase);
+          setUser(pendingRegistrationUser);
         }
         setLoading(false);
       } catch (err) {
+        if (pendingRegistrationUser?.markAsDeleted) {
+          try {
+            await watermelonDatabase.write(async () => {
+              await pendingRegistrationUser.markAsDeleted();
+            });
+          } catch (cleanupErr) {
+            handleError(cleanupErr, "register cleanup in useAuth");
+          }
+        }
+        setError("Account creation could not be confirmed. Please try again while online.");
         setLoading(false);
-        handleError(err, 'register in useAuth');
+        handleError(err, "register in useAuth");
       }
     },
-    [watermelonDatabase]
+    [isConnected, watermelonDatabase],
   );
 
   // Optional: logout or remove user from local storage
@@ -144,13 +200,13 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
     try {
       setLoading(true);
       // Clear local storage items, e.g. user_id, subscription
-      await watermelonDatabase.localStorage.remove('user_id');
-      await watermelonDatabase.localStorage.remove('username');
+      await watermelonDatabase.localStorage.remove("user_id");
+      await watermelonDatabase.localStorage.remove("username");
       setUser(null);
       setLoading(false);
     } catch (err) {
       setLoading(false);
-      handleError(err, 'logout in useAuth');
+      handleError(err, "logout in useAuth");
     }
   }, [watermelonDatabase]);
 
@@ -163,10 +219,15 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
     loading,
     register,
     logout,
-    setError,// if your UI needs to manually clear or set an error
+    setError, // if your UI needs to manually clear or set an error
     currentOffering,
     customerInfo,
-    isProMember
+    isProMember,
+    revenueCatConfigured,
+    revenueCatLoading,
+    revenueCatError,
+    purchasePackage,
+    restorePurchases,
+    refreshCustomerInfo,
   };
 }
-
