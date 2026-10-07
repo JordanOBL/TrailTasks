@@ -227,7 +227,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       backgroundColor: theme.exploreBackground,
     },
     trailsContainer: {
-      paddingBottom: 28,
+      paddingBottom: 24,
     },
     headerContainer: {
       paddingHorizontal: 18,
