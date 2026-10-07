@@ -22,7 +22,7 @@ This document defines the intended Trail Tasks database shape before MVP release
 | Domain | MVP source of truth | Notes |
 | --- | --- | --- |
 | Mileage | `users_sessions.total_distance_hiked` | `users.total_miles` should not exist as an account truth/cache for MVP. |
-| Token balance | Future `token_transactions` ledger | `users.trail_tokens` is currently authoritative but should become a cache or be removed after ledger migration. |
+| Token balance | `token_transactions` ledger | `users.trail_tokens` should not exist in the final MVP schema; derive balance from signed immutable token facts. |
 | Pro membership | RevenueCat entitlement state | Pro is a real-money entitlement, not the same thing as trail tokens. |
 | Free starter and monthly trails | `trails.is_free` plus policy scripts | Congaree/Scout stays free; five additional Pro-only trails rotate monthly. |
 | Featured trail | `trail_of_the_week` | Marketing/highlight flag; the reroll picks one of the current monthly free trails. |
@@ -48,11 +48,12 @@ MVP direction:
 
 ## Token accounting
 
-Current state:
+Current state after the ledger migration:
 
-- `users.trail_tokens` is still the source of truth.
-- Tokens can be earned from sessions/streaks and spent on add-ons or trail unlocks.
-- Without a transaction ledger, historical balance cannot be audited or safely recomputed.
+- `token_transactions` is the source of truth.
+- `users.trail_tokens` should be absent from local and server schemas.
+- Tokens can be earned from sessions/streaks and spent on add-ons or trail unlocks through signed transaction rows.
+- Historical balance can be audited by summing transaction facts rather than trusting a mutable summary column.
 
 Problem:
 
@@ -67,10 +68,11 @@ Example risks:
 
 MVP direction:
 
-- Add a `token_transactions` table before treating token balance as production-safe.
-- Keep `users.trail_tokens` only as a temporary cache during migration, or remove it after all read/write paths use the ledger.
+- Use `token_transactions` as the canonical balance ledger.
+- Remove `users.trail_tokens` from local/server schemas and payloads.
 - Every earn/spend operation should write an immutable transaction row.
-- Purchases should be atomic: create ownership row, create token transaction, and update any cached balance together.
+- Purchases should be atomic: create ownership row and token transaction together.
+- See `docs/token-transaction-ledger.md` for transaction types, idempotency keys, offline sync rules, and migration policy.
 
 Suggested `token_transactions` fields:
 
@@ -82,7 +84,9 @@ Suggested `token_transactions` fields:
 | `type` | `session_reward`, `daily_streak_reward`, `addon_purchase`, `trail_unlock`, `manual_adjustment`, `refund`. |
 | `source_type` | Domain object type such as `users_session`, `addon`, `trail`, or `admin_adjustment`. |
 | `source_id` | Id of the source object, when available. |
+| `idempotency_key` | Stable business key used to prevent duplicate rewards or duplicate one-time purchases. |
 | `balance_after` | Optional cache/audit value after applying transaction. |
+| `rule_version` | Economy rule version used to calculate the amount. |
 | `metadata` | JSON/text for rule version, price, reward details, or debugging context. |
 | `created_at` / `updated_at` | Sync and audit timestamps. |
 
@@ -162,19 +166,17 @@ Important MVP decisions:
 
 Add-on purchase should eventually be one durable operation:
 
-1. Check the user's token balance.
+1. Check the user's token balance from `sum(token_transactions.amount)`.
 2. Create a negative `token_transactions` row for the add-on cost.
 3. Create or increment the `users_addons` row.
-4. Update cached token balance if a balance cache still exists.
 
 Trail unlock should follow the same pattern:
 
 1. Check access rules.
 2. Confirm the trail is token-unlockable for the user's current entitlement.
-3. Check the user's token balance.
+3. Check the user's token balance from `sum(token_transactions.amount)`.
 4. Create a negative `token_transactions` row for the unlock cost.
 5. Create the `users_purchased_trails` row.
-6. Update cached token balance if a balance cache still exists.
 
 ## Event bus and services
 
@@ -198,6 +200,7 @@ When the server becomes authoritative for token spending, the same rules should 
 Remove or deprecate:
 
 - `users.total_miles` as an authoritative field.
+- `users.trail_tokens` as an authoritative/cache field; balance is derived from `token_transactions`.
 
 Rename:
 
@@ -220,13 +223,12 @@ Keep:
 
 1. Document final state and create follow-up tickets.
 2. Rename subscription-only trail fields to `is_pro_only` across mobile, API, sync, tests, and seed data.
-3. Add token-access fields and monthly-free trail representation.
-4. Add token transaction ledger schema and tests.
-5. Move add-on and trail purchase writes to the token ledger.
-6. Move session/streak token earnings to the token ledger.
-7. Treat `users.trail_tokens` as a cache or remove it after reads/writes are migrated.
-8. Remove `users.total_miles` from local/server schemas and update leaderboard/friend queries to derive from session facts.
-9. Add backup/restore runbook once the intended MVP schema is clear.
+3. Add token transaction ledger schema and tests; remove `users.trail_tokens` from local/server schemas.
+4. Move add-on and trail purchase writes to the token ledger.
+5. Move session/streak token earnings to the token ledger.
+6. Add token balance readers/UI plumbing that derive from transaction rows.
+7. Add token-access fields and monthly-free trail representation if needed for release.
+8. Add backup/restore runbook once the intended MVP schema is clear.
 
 ## Open questions
 
