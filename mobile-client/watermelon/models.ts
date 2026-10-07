@@ -22,6 +22,11 @@ import { write } from "fs";
 
 const DAILY_STREAK_THRESHOLD_SECONDS = 300;
 const DAILY_STREAK_TOKEN_REWARD = 15;
+const TOKEN_RULE_VERSION = "mvp-v1";
+
+function tokenMetadata(metadata: Record<string, unknown> = {}) {
+  return JSON.stringify(metadata);
+}
 
 function calendarDay(date: Date | string | number | null | undefined) {
   if (!date) return null;
@@ -104,6 +109,7 @@ export class User extends Model {
     users_friends: { type: "has_many", foreignKey: "user_id" },
     cached_friends: { type: "has_many", foreignKey: "user_id" },
     users_wilds: { type: "has_many", foreignKey: "user_id" },
+    token_transactions: { type: "has_many", foreignKey: "user_id" },
   };
 
   @field("username") username;
@@ -116,7 +122,6 @@ export class User extends Model {
   @field("trail_id") trailId;
   @field("trail_progress") trailProgress;
   @field("trail_started_at") trailStartedAt;
-  @field("trail_tokens") trailTokens;
   @field("prestige_level") prestigeLevel;
   @field("room_id") roomId;
   @date("created_at") createdAt;
@@ -132,6 +137,7 @@ export class User extends Model {
   @children("users_addons") usersAddons;
   @children("users_parks") usersParks;
   @children("users_wilds") usersWilds; // Added to track user progress in parks
+  @children("token_transactions") tokenTransactions;
   @children("users_friends") friends;
   @children("cached_friends") cachedFriends;
 
@@ -143,6 +149,40 @@ export class User extends Model {
     }, 0);
 
     return Number(totalMiles.toFixed(2)) || 0;
+  }
+
+  @reader
+  async calculateTrailTokenBalance(): Promise<number> {
+    const transactions = await this.tokenTransactions.fetch();
+    return transactions.reduce((sum, transaction) => sum + Number(transaction.amount || 0), 0);
+  }
+
+  prepareTokenTransaction({
+    amount,
+    type,
+    sourceType,
+    sourceId,
+    idempotencyKey,
+    metadata = {},
+  }: {
+    amount: number;
+    type: string;
+    sourceType?: string;
+    sourceId?: string;
+    idempotencyKey: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    return this.collections.get("token_transactions").prepareCreate((transaction: Token_Transaction) => {
+      transaction.userId = this.id;
+      transaction.amount = amount;
+      transaction.type = type;
+      transaction.sourceType = sourceType || "";
+      transaction.sourceId = sourceId || "";
+      transaction.idempotencyKey = idempotencyKey;
+      transaction.ruleVersion = TOKEN_RULE_VERSION;
+      transaction.metadata = tokenMetadata(metadata);
+      transaction.balanceAfter = null;
+    });
   }
 
   @writer
@@ -213,20 +253,35 @@ export class User extends Model {
 
   @writer
   async purchaseTrail(trail, cost) {
-    const results = await this.collections.get("users_purchased_trails").create(purchased_trail => {
-      purchased_trail.userId = this.id;
-      purchased_trail.trailId = trail.id;
-      purchased_trail.purchasedAt = new Date().toISOString();
-    });
-    if (results) {
-      await this.update(() => {
-        this.trailTokens -= cost;
-      });
+    const tokenBalance = await this.callReader(() => this.calculateTrailTokenBalance());
+    if (tokenBalance < cost) {
+      throw new Error(`You must have at least ${cost} tokens to unlock ${trail.trailName || trail.id}`);
+    }
 
+    const existingTransactions = await this.tokenTransactions
+      .extend(Q.where("idempotency_key", `trail_unlock:${this.id}:${trail.id}`))
+      .fetch();
+    if (existingTransactions.length > 0) {
       return true;
     }
 
-    return null;
+    await this.database.batch(
+      this.collections.get("users_purchased_trails").prepareCreate(purchased_trail => {
+        purchased_trail.userId = this.id;
+        purchased_trail.trailId = trail.id;
+        purchased_trail.purchasedAt = new Date().toISOString();
+      }),
+      this.prepareTokenTransaction({
+        amount: -cost,
+        type: "trail_unlock",
+        sourceType: "trail",
+        sourceId: trail.id,
+        idempotencyKey: `trail_unlock:${this.id}:${trail.id}`,
+        metadata: { cost, trailDistance: trail.trailDistance },
+      }),
+    );
+
+    return true;
   }
 
   prepareConsumeUserAddons(record) {
@@ -309,19 +364,21 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
 
   @writer
   async increaseDailyStreak() {
-    //const subscription = await this.userSubscription;
-    //only subscribers get daily streak reward
-    // if (subscription.isActive) {
-    return await this.update(() => {
-      this.dailyStreak += 1;
-      this.lastDailyStreakDate = new Date().toISOString();
-      this.trailTokens += 15;
-    });
-    // } else {
-    //   return await this.update(() => {
-    //     this.dailyStreak += 1;
-    //     this.lastDailyStreakDate = new Date();
-    //   });
+    const today = new Date();
+    await this.database.batch(
+      this.prepareUpdate(user => {
+        user.dailyStreak += 1;
+        user.lastDailyStreakDate = today.toISOString();
+      }),
+      this.prepareTokenTransaction({
+        amount: DAILY_STREAK_TOKEN_REWARD,
+        type: "daily_streak_reward",
+        sourceType: "user",
+        sourceId: this.id,
+        idempotencyKey: `daily_streak_reward:${this.id}:${calendarDay(today)}`,
+        metadata: { dailyStreak: Number(this.dailyStreak || 0) + 1 },
+      }),
+    );
   }
 
   @writer
@@ -525,11 +582,21 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       user.lastDailyStreakDate = new Date().toISOString();
       user.trailProgress = "0.00";
       user.traiStartedAt = trailStartedAt;
-      user.trailTokens = 20;
       user.prestigeLevel = 0;
     });
-    console.debug("Watermelon User Model", newUser[0]);
-    return newUser[0];
+    await this.collections.get("token_transactions").create((transaction: Token_Transaction) => {
+      transaction.userId = newUser.id;
+      transaction.amount = 20;
+      transaction.type = "registration_bonus";
+      transaction.sourceType = "user";
+      transaction.sourceId = newUser.id;
+      transaction.idempotencyKey = `registration_bonus:${newUser.id}`;
+      transaction.ruleVersion = TOKEN_RULE_VERSION;
+      transaction.metadata = tokenMetadata({ reason: "legacy addUser registration bonus" });
+      transaction.balanceAfter = null;
+    });
+    console.debug("Watermelon User Model", newUser);
+    return newUser;
   }
 
   @writer
@@ -546,10 +613,8 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         );
       }
 
-      // 2. Check if user has enough tokens:
-      //    Similarly, they need at least addOn.price tokens.
-      //    If user.trailTokens < price, they cannot buy.
-      if (this.trailTokens < addOn.price) {
+      const tokenBalance = await this.callReader(() => this.calculateTrailTokenBalance());
+      if (tokenBalance < addOn.price) {
         throw new Error(`You must have at least ${addOn.price} tokens to purchase ${addOn.name}`);
       }
 
@@ -572,13 +637,15 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         });
       }
 
-      // 4. Execute the DB updates in a single batch:
-      //    a) Create/Update the user's_addons entry
-      //    b) Deduct the tokens from the user
       await this.database.batch(
         transaction,
-        this.prepareUpdate(user => {
-          user.trailTokens = this.trailTokens - addOn.price;
+        this.prepareTokenTransaction({
+          amount: -addOn.price,
+          type: "addon_purchase",
+          sourceType: "addon",
+          sourceId: addOn.id,
+          idempotencyKey: `addon_purchase:${this.id}:${addOn.id}:${Date.now()}`,
+          metadata: { price: addOn.price, addonName: addOn.name },
         }),
       );
 
@@ -707,8 +774,13 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       });
     }
     await this.database.batch([
-      this.prepareUpdate(user => {
-        user.trailTokens += reward;
+      this.prepareTokenTransaction({
+        amount: reward,
+        type: "park_reward",
+        sourceType: "park",
+        sourceId: parkId,
+        idempotencyKey: `park_reward:${this.id}:${parkId}:${existingParkPass?.parkLevel || 1}`,
+        metadata: { reward },
       }),
       newUserPark,
       createUserWild,
@@ -724,10 +796,19 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   @writer
   async prestigeParkPasses() {
     const reward = (this.prestigeLevel + 1) * 1000;
-    await this.update(user => {
-      user.prestigeLevel += 1;
-      user.trailTokens += reward;
-    });
+    await this.database.batch(
+      this.prepareUpdate(user => {
+        user.prestigeLevel += 1;
+      }),
+      this.prepareTokenTransaction({
+        amount: reward,
+        type: "prestige_reward",
+        sourceType: "user",
+        sourceId: this.id,
+        idempotencyKey: `prestige_reward:${this.id}:${Number(this.prestigeLevel || 0) + 1}`,
+        metadata: { reward },
+      }),
+    );
   }
 
   @writer
@@ -773,20 +854,46 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           ? Number(this.dailyStreak || 0) + 1
           : 1;
 
+      const userUpdate = this.prepareUpdate(updatedUser => {
+        if (shouldAwardDailyStreak) {
+          updatedUser.dailyStreak = nextDailyStreak;
+          updatedUser.lastDailyStreakDate = today.toISOString();
+        }
+      });
+
       batchOperations.push(
-        this.prepareUpdate(updatedUser => {
-          updatedUser.trailTokens += args.rewards.totalTokenRewards;
-          if (shouldAwardDailyStreak) {
-            updatedUser.dailyStreak = nextDailyStreak;
-            updatedUser.lastDailyStreakDate = today.toISOString();
-            updatedUser.trailTokens += DAILY_STREAK_TOKEN_REWARD;
-          }
-        }),
+        userUpdate,
         currentSession.prepareUpdate((session: Session) => {
           session.totalDistanceHiked = Number(args.snapshot.totalDistanceMiles.toFixed(2));
           session.totalSessionTime = args.snapshot.totalElapsedSec;
         }),
       );
+
+      if (args.rewards.totalTokenRewards > 0) {
+        batchOperations.push(
+          this.prepareTokenTransaction({
+            amount: args.rewards.totalTokenRewards,
+            type: "session_reward",
+            sourceType: "users_session",
+            sourceId: currentSession.id,
+            idempotencyKey: `session_reward:${this.id}:${currentSession.id}`,
+            metadata: args.rewards,
+          }),
+        );
+      }
+
+      if (shouldAwardDailyStreak) {
+        batchOperations.push(
+          this.prepareTokenTransaction({
+            amount: DAILY_STREAK_TOKEN_REWARD,
+            type: "daily_streak_reward",
+            sourceType: "users_session",
+            sourceId: currentSession.id,
+            idempotencyKey: `daily_streak_reward:${this.id}:${currentSession.id}:${todayKey}`,
+            metadata: { dailyStreak: nextDailyStreak },
+          }),
+        );
+      }
 
       if (activeWild) {
         batchOperations.push(
@@ -1154,6 +1261,27 @@ export class Session_Addon extends Model {
 
   @relation("users_sessions", "session_id") userSession;
   @relation("addons", "addon_id") addon; //relation('addons', 'addon_id') addon;
+}
+
+export class Token_Transaction extends Model {
+  static table = "token_transactions";
+  static associations = {
+    users: { type: "belongs_to", key: "user_id" },
+  };
+
+  @field("user_id") userId;
+  @field("amount") amount;
+  @field("type") type;
+  @field("source_type") sourceType;
+  @field("source_id") sourceId;
+  @field("idempotency_key") idempotencyKey;
+  @field("balance_after") balanceAfter;
+  @field("rule_version") ruleVersion;
+  @field("metadata") metadata;
+  @date("created_at") createdAt;
+  @date("updated_at") updatedAt;
+
+  @relation("users", "user_id") user;
 }
 
 export class User_Park extends Model {

@@ -38,12 +38,10 @@ function sessionSnapshot(session: User_Session, totalElapsedSec = 300) {
 async function createUserAndSession({
   dailyStreak = 0,
   lastDailyStreakDate = fixedToday,
-  trailTokens = 50,
   existingTodaySessionSeconds = [],
 }: {
   dailyStreak?: number;
   lastDailyStreakDate?: Date;
-  trailTokens?: number;
   existingTodaySessionSeconds?: number[];
 } = {}) {
   return await testDb.write(async () => {
@@ -60,7 +58,6 @@ async function createUserAndSession({
       record.lastDailyStreakDate = lastDailyStreakDate.toISOString();
       record.trailProgress = '0.00';
       record.trailStartedAt = fixedToday.toISOString();
-      record.trailTokens = trailTokens;
       record.prestigeLevel = 0;
       record.roomId = '';
     });
@@ -118,13 +115,12 @@ describe('User daily streak accounting', () => {
     const {user, session} = await createUserAndSession({
       dailyStreak: 0,
       lastDailyStreakDate: fixedToday,
-      trailTokens: 50,
     });
 
     await finalize(user, session, 300);
 
     expect(user.dailyStreak).toBe(1);
-    expect(user.trailTokens).toBe(70);
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(20);
     expect(user.lastDailyStreakDate.toISOString()).toBe(fixedToday.toISOString());
   });
 
@@ -132,52 +128,48 @@ describe('User daily streak accounting', () => {
     const {user, session} = await createUserAndSession({
       dailyStreak: 1,
       lastDailyStreakDate: fixedToday,
-      trailTokens: 70,
     });
 
     await finalize(user, session, 300);
 
     expect(user.dailyStreak).toBe(1);
-    expect(user.trailTokens).toBe(75);
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(5);
   });
 
   it('increments a continued streak after a qualifying session on the next day', async () => {
     const {user, session} = await createUserAndSession({
       dailyStreak: 2,
       lastDailyStreakDate: yesterday,
-      trailTokens: 80,
     });
 
     await finalize(user, session, 300);
 
     expect(user.dailyStreak).toBe(3);
-    expect(user.trailTokens).toBe(100);
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(20);
   });
 
   it('resets a missed streak to one after a new qualifying completed session', async () => {
     const {user, session} = await createUserAndSession({
       dailyStreak: 4,
       lastDailyStreakDate: twoDaysAgo,
-      trailTokens: 100,
     });
 
     await finalize(user, session, 300);
 
     expect(user.dailyStreak).toBe(1);
-    expect(user.trailTokens).toBe(120);
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(20);
   });
 
   it('uses today session facts before awarding daily streak credit', async () => {
     const {user, session} = await createUserAndSession({
       dailyStreak: 0,
       lastDailyStreakDate: fixedToday,
-      trailTokens: 50,
       existingTodaySessionSeconds: [200],
     });
 
     await finalize(user, session, 99);
 
     expect(user.dailyStreak).toBe(0);
-    expect(user.trailTokens).toBe(55);
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(5);
   });
 });

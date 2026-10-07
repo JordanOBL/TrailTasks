@@ -26,6 +26,7 @@ const CATALOG_TABLES = new Set([
 const ACCOUNT_FORCE_PUSH_TABLES = [
   "users",
   "users_addons",
+  "token_transactions",
   "users_completed_trails",
   "users_queued_trails",
   "users_parks",
@@ -99,7 +100,10 @@ type SyncOptions = {
 type RawRecord = Record<string, any>;
 
 const ACCOUNT_REPLACEMENT_TABLES = ACCOUNT_FORCE_PUSH_TABLES.filter(
-  tableName => tableName !== "sessions_addons" && tableName !== "users_sessions",
+  tableName =>
+    tableName !== "sessions_addons" &&
+    tableName !== "users_sessions" &&
+    tableName !== "token_transactions",
 );
 const ACCOUNT_REPLACEMENT_TABLE_SET = new Set<string>(ACCOUNT_REPLACEMENT_TABLES);
 
@@ -191,7 +195,7 @@ function stripNonAuthoritativeAccountFields(tableName: string, record: RawRecord
   const { _status, _changed, ...raw } = record;
 
   if (tableName === "users") {
-    const { total_miles, ...authoritativeUserFields } = raw;
+    const { total_miles, trail_tokens, ...authoritativeUserFields } = raw;
     return authoritativeUserFields;
   }
 
@@ -280,7 +284,6 @@ function normalizeRemoteRow(tableName: string, row: RawRecord) {
       password: row.password || "",
       daily_streak: normalizeOptionalNumber(row.daily_streak),
       last_daily_streak_date: normalizeOptionalDate(row.last_daily_streak_date),
-      trail_tokens: normalizeOptionalNumber(row.trail_tokens),
       prestige_level: normalizeOptionalNumber(row.prestige_level),
     };
   }
