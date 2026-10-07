@@ -2,6 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 
 import { HomeScreen } from "../HomeScreen";
+import checkDailyStreak from "../../helpers/Session/checkDailyStreak";
 
 jest.mock("../../components/DistanceProgressBar", () => {
   const React = require("react");
@@ -96,6 +97,10 @@ jest.mock("../../services/AuthContext", () => ({
 }));
 
 describe("HomeScreen progress fields", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   const baseUser = {
     id: "user-1",
     totalMiles: "12.34",
@@ -138,5 +143,6 @@ describe("HomeScreen progress fields", () => {
     expect(screen.getByTestId("wild-avatar")).toHaveTextContent("ember");
     expect(screen.getByTestId("current-trail")).toHaveTextContent("MVP Trail");
     expect(screen.getByTestId("distance-progress-props")).toHaveTextContent("1.25:MVP Trail:3.50");
+    expect(checkDailyStreak).not.toHaveBeenCalled();
   });
 });

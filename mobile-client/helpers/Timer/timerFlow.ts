@@ -17,7 +17,6 @@ import {SessionDetails} from '../../types/session';
 import Timer from "../../types/timer";
 import {Vibration} from 'react-native';
 import { achievementManagerInstance } from '../Achievements/AchievementManager';
-import checkDailyStreak from '../Session/checkDailyStreak';
 import formatDateTime from '../formatDateTime';
 import {getBetterTime} from './getBetterTime';
 import getTimeDifference from './getTimeDifference';
