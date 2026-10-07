@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 const schema = appSchema({
-  version: 2,
+  version: 1,
   tables: [
     tableSchema({
       name: "parks",
