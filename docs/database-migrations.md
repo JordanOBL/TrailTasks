@@ -141,8 +141,7 @@ Example backfill pattern:
 ```js
 await queryInterface.sequelize.query(`
   UPDATE trails
-  SET is_pro_only = is_subscribers_only
-  WHERE is_pro_only IS DISTINCT FROM is_subscribers_only;
+  SET is_pro_only = COALESCE(is_subscribers_only, false);
 `);
 ```
 

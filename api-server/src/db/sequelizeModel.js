@@ -86,6 +86,11 @@ export const Trail = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    is_pro_only: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     trail_of_the_week: {
       name: 'trail_of_the_week',
       type: 'boolean',

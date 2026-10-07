@@ -267,7 +267,7 @@ const ParkDetails = () => {
                         <Meta theme={theme} label={trail.trailDifficulty} />
                       ) : null}
                       {trail.isFree ? <Meta theme={theme} label="Free" /> : null}
-                      {trail.isSubscribersOnly ? <Meta theme={theme} label="Subscribers" /> : null}
+                      {trail.isProOnly ? <Meta theme={theme} label="Pro" /> : null}
                     </View>
                   </View>
                   <View style={styles.badgeCol}>

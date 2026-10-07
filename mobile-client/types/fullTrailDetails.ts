@@ -6,7 +6,7 @@ interface FullTrailDetails {
     hiking_project_url?: string | null
     id: string
     is_free: boolean
-    is_subscribers_only: boolean
+    is_pro_only: boolean
     is_purchased?: boolean,
     is_completed?: boolean,
     nps_url?: string

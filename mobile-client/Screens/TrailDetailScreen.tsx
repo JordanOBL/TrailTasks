@@ -47,7 +47,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
   const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
 
   const isFreeTrail = !!trail?.is_free;
-  const isSubscribersOnly = !!trail?.is_subscribers_only;
+  const isProOnly = !!trail?.is_pro_only;
   const isQueued = useMemo(
     () => !!trail && queuedTrails.some(t => t.trailId === trail.id),
     [queuedTrails, trail],
@@ -60,7 +60,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     () => !!trail && completedTrails.some(t => t.trailId === trail.id),
     [completedTrails, trail],
   );
-  const canUseTrail = isFreeTrail || isPurchased || (isSubscribersOnly && isProMember);
+  const canUseTrail = isFreeTrail || isPurchased || (isProOnly && isProMember);
   const hasExternalLinks = Boolean(
     trail?.nps_url || trail?.all_trails_url || trail?.hiking_project_url,
   );
@@ -77,8 +77,8 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     if (isQueued) return { label: "In Queue", tone: "queued" as const };
     if (isFreeTrail) return { label: "Free Trail", tone: "open" as const };
     if (isPurchased) return { label: "Purchased", tone: "open" as const };
-    if (isSubscribersOnly && !isProMember) return { label: "Pro", tone: "locked" as const };
-    if (isSubscribersOnly && isProMember)
+    if (isProOnly && !isProMember) return { label: "Pro", tone: "locked" as const };
+    if (isProOnly && isProMember)
       return { label: "Included with Pro", tone: "open" as const };
     return { label: "Unlock", tone: "locked" as const };
   }, [
@@ -87,7 +87,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     isProMember,
     isPurchased,
     isQueued,
-    isSubscribersOnly,
+    isProOnly,
     trail?.id,
     user?.trailId,
   ]);
@@ -189,7 +189,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
   const getPurchaseButtonText = () => {
     if (user?.trailId === trail?.id) return "In Progress";
     if (canUseTrail) return "Start Now";
-    if (isSubscribersOnly && !isProMember) return "Unlock With Subscription";
+    if (isProOnly && !isProMember) return "View Pro";
     return `Buy ${reward}`;
   };
 
@@ -391,7 +391,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
                 if (canUseTrail) {
                   setShowReplaceTrailModal(true);
                   return;
-                } else if (isSubscribersOnly && !isProMember) {
+                } else if (isProOnly && !isProMember) {
                   navigation.navigate("Basecamp", {
                     screen: "Subscribe",
                   });
