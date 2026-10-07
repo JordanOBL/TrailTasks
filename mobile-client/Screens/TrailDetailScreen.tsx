@@ -75,7 +75,8 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     if (user?.trailId === trail?.id) return { label: "Currently Hiking", tone: "active" as const };
     if (isCompleted) return { label: "Completed", tone: "success" as const };
     if (isQueued) return { label: "In Queue", tone: "queued" as const };
-    if (isFreeTrail) return { label: "Free Trail", tone: "open" as const };
+    if (isFreeTrail && isProOnly) return { label: "Free This Month", tone: "open" as const };
+    if (isFreeTrail) return { label: "Starter Trail", tone: "open" as const };
     if (isPurchased) return { label: "Purchased", tone: "open" as const };
     if (isProOnly && !isProMember) return { label: "Pro", tone: "locked" as const };
     if (isProOnly && isProMember)

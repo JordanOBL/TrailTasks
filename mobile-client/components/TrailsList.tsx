@@ -11,6 +11,7 @@ import { darkTheme, lightTheme } from "../theme";
 import FullTrailDetails from "../types/fullTrailDetails";
 import TrailCard from "./Trails/TrailCard";
 import { useNavigation } from "@react-navigation/native";
+import { useAuthContext } from "../services/AuthContext";
 import { useTheme } from "../contexts/ThemeProvider";
 
 interface Props {
@@ -22,7 +23,15 @@ interface Props {
   queuedTrailMap: Record<string, boolean>;
 }
 
-const filterParams = ["All", "Free", "Trail Of The Week", "User Purchased", "Completed"];
+const filterParams = [
+  "All",
+  "Available to Me",
+  "Free This Month",
+  "Sampler Trails",
+  "Featured",
+  "User Purchased",
+  "Completed",
+];
 
 const TrailsList = ({
   trailsCollection,
@@ -35,6 +44,7 @@ const TrailsList = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const { theme } = useTheme();
+  const { isProMember } = useAuthContext();
   const navigation = useNavigation();
   const styles = getStyles(theme);
 
@@ -58,19 +68,29 @@ const TrailsList = ({
 
   const filteredTrails = useMemo(() => {
     let filtered = trailsCollection;
+    const purchasedTrailIds = new Set(userPurchasedTrails.map(purchasedTrail => purchasedTrail.trailId));
+    const completedTrailIds = new Set(completedTrails.map(completedTrail => completedTrail.trailId));
 
-    if (filter === "User Purchased") {
-      filtered = trailsCollection.filter(trail =>
-        userPurchasedTrails.some(purchasedTrail => trail.id === purchasedTrail.trailId),
-      );
-    } else if (filter === "Free") {
-      filtered = trailsCollection.filter(trail => trail.is_free == true);
-    } else if (filter === "Trail Of The Week") {
+    if (filter === "Available to Me") {
+      filtered = isProMember
+        ? trailsCollection
+        : trailsCollection.filter(
+            trail =>
+              trail.is_free == true ||
+              purchasedTrailIds.has(trail.id) ||
+              completedTrailIds.has(trail.id) ||
+              user?.trailId === trail.id,
+          );
+    } else if (filter === "User Purchased") {
+      filtered = trailsCollection.filter(trail => purchasedTrailIds.has(trail.id));
+    } else if (filter === "Free This Month") {
+      filtered = trailsCollection.filter(trail => trail.is_free == true && trail.is_pro_only == true);
+    } else if (filter === "Sampler Trails") {
+      filtered = trailsCollection.filter(trail => trail.is_pro_only == false && trail.is_free != true);
+    } else if (filter === "Featured") {
       filtered = trailsCollection.filter(trail => trail.trail_of_the_week == true);
     } else if (filter === "Completed") {
-      filtered = trailsCollection.filter(trail =>
-        completedTrails.some(completedTrail => trail.id === completedTrail.trailId),
-      );
+      filtered = trailsCollection.filter(trail => completedTrailIds.has(trail.id));
     }
 
     if (debouncedSearchQuery) {
@@ -84,7 +104,15 @@ const TrailsList = ({
     }
 
     return filtered;
-  }, [completedTrails, debouncedSearchQuery, filter, trailsCollection, userPurchasedTrails]);
+  }, [
+    completedTrails,
+    debouncedSearchQuery,
+    filter,
+    isProMember,
+    trailsCollection,
+    user?.trailId,
+    userPurchasedTrails,
+  ]);
 
   const renderTrailItem = useCallback(
     ({ item }: { item: FullTrailDetails }) => (
@@ -103,7 +131,7 @@ const TrailsList = ({
       <Text style={styles.eyebrow}>Explore</Text>
       <Text style={styles.title}>Find your next trail</Text>
       <Text style={styles.subtitle}>
-        Search national parks, queue future hikes, and unlock subscriber-only adventures.
+        Start with Scout, sample monthly bonus trails, and go Pro to unlock every park.
       </Text>
 
       <View style={styles.searchCard}>
