@@ -113,4 +113,15 @@ describe("TrailCard", () => {
     expect(screen.getByText("Pro Eligible")).toBeTruthy();
     expect(screen.queryByText("Included with Pro")).toBeNull();
   });
+
+  it("keeps browse cards focused on essentials without a footer CTA", () => {
+    const screen = render(
+      <TrailCard trail={trail} isQueued={false} handleTrailPress={jest.fn()} />,
+    );
+
+    expect(screen.getByText("3.2 mi")).toBeTruthy();
+    expect(screen.getByText("Moderate")).toBeTruthy();
+    expect(screen.queryByText("View trail →")).toBeNull();
+    expect(screen.queryByText("Tap for details")).toBeNull();
+  });
 });

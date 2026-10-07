@@ -33,8 +33,7 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
     if (isFree) return { label: "Starter Trail", tone: "open" as const };
     if (isPurchased) return { label: "Purchased", tone: "open" as const };
     if (isProLocked) return { label: "Pro", tone: "locked" as const };
-    if (isProOnly && isProMember)
-      return { label: "Pro Eligible", tone: "locked" as const };
+    if (isProOnly && isProMember) return { label: "Pro Eligible", tone: "locked" as const };
     return { label: "Unlock", tone: "locked" as const };
   };
 
@@ -43,71 +42,59 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
 
   return (
     <TouchableOpacity
-      activeOpacity={0.86}
+      activeOpacity={0.88}
       style={styles.card}
       onPress={() => handleTrailPress(trail)}>
-      <View style={styles.imageShell}>
-        <Image
-          source={
-            trail.trail_image_url
-              ? { uri: trail.trail_image_url }
-              : require("../../assets/LOGO.png")
-          }
-          style={styles.image}
-        />
-        <View style={styles.imageOverlay} />
+      <Image
+        source={
+          trail.trail_image_url ? { uri: trail.trail_image_url } : require("../../assets/LOGO.png")
+        }
+        style={styles.image}
+      />
 
-        <View style={styles.topBadgeRow}>
+      <View style={styles.content}>
+        <View style={styles.titleRow}>
+          <View style={styles.titleBlock}>
+            <Text style={styles.trailName} numberOfLines={2}>
+              {trail?.trail_name}
+            </Text>
+            <Text style={styles.parkName} numberOfLines={1}>
+              {trail?.park_name}
+              {trail?.state_code ? `, ${trail.state_code}` : ""}
+            </Text>
+          </View>
+
           <View style={[styles.statusPill, styles[`${status.tone}Pill`]]}>
             <Text style={[styles.statusPillText, styles[`${status.tone}PillText`]]}>
               {status.label}
             </Text>
           </View>
-          {isTrailOfTheWeek && (
-            <View style={styles.featuredPill}>
-              <Text style={styles.featuredPillText}>★ This Week</Text>
-            </View>
-          )}
         </View>
 
-        <View style={styles.imageTitleBlock}>
-          <Text style={styles.trailName} numberOfLines={2}>
-            {trail?.trail_name}
-          </Text>
-          <Text style={styles.parkName} numberOfLines={1}>
-            {trail?.park_name}
-            {trail?.state_code ? `, ${trail.state_code}` : ""}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.infoContainer}>
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Distance</Text>
             <Text style={styles.statValue}>{trail?.trail_distance} mi</Text>
+            <Text style={styles.statLabel}>Distance</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Time</Text>
             <Text style={styles.statValue}>{estimatedTime}</Text>
+            <Text style={styles.statLabel}>Time</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Difficulty</Text>
             <Text style={styles.statValue} numberOfLines={1}>
               {trail?.trail_difficulty || "Trail"}
             </Text>
+            <Text style={styles.statLabel}>Difficulty</Text>
           </View>
         </View>
 
-        <View style={styles.footerRow}>
-          <View style={styles.metaRow}>
-            <Text style={styles.metaIcon}>⛰</Text>
-            <Text style={styles.metaText}>{trail?.state || "Tap for details"}</Text>
+        {isTrailOfTheWeek && (
+          <View style={styles.featuredRow}>
+            <Text style={styles.featuredText}>★ This week</Text>
           </View>
-          <Text style={styles.ctaText}>View trail →</Text>
-        </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -120,48 +107,64 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     card: {
       backgroundColor: theme.trailCardBackground,
       borderColor: theme.border,
-      borderRadius: 24,
+      borderRadius: 18,
       borderWidth: 1,
-      marginHorizontal: 18,
-      marginTop: 16,
+      flexDirection: "row",
+      marginHorizontal: 16,
+      marginTop: 12,
+      minHeight: 132,
       overflow: "hidden",
       shadowColor: theme.shadow,
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.22,
-      shadowRadius: 18,
-      elevation: 6,
-    },
-    imageShell: {
-      height: 220,
-      justifyContent: "space-between",
-      overflow: "hidden",
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.12,
+      shadowRadius: 10,
+      elevation: 3,
     },
     image: {
-      ...StyleSheet.absoluteFillObject,
+      backgroundColor: theme.card,
       height: "100%",
-      width: "100%",
+      minHeight: 132,
+      width: 112,
     },
-    imageOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0, 0, 0, 0.32)",
+    content: {
+      flex: 1,
+      justifyContent: "space-between",
+      minWidth: 0,
+      paddingHorizontal: 13,
+      paddingVertical: 12,
     },
-    topBadgeRow: {
+    titleRow: {
       alignItems: "flex-start",
       flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
-      justifyContent: "space-between",
-      padding: 14,
+      gap: 9,
+    },
+    titleBlock: {
+      flex: 1,
+      minWidth: 0,
+    },
+    trailName: {
+      color: theme.trailCardText,
+      fontSize: 17,
+      fontWeight: "900",
+      letterSpacing: -0.2,
+      lineHeight: 21,
+    },
+    parkName: {
+      color: theme.trailCardSecondaryText,
+      fontSize: 12,
+      fontWeight: "700",
+      marginTop: 4,
     },
     statusPill: {
       borderRadius: 999,
-      paddingHorizontal: 11,
-      paddingVertical: 7,
+      maxWidth: 104,
+      paddingHorizontal: 9,
+      paddingVertical: 5,
     },
     statusPillText: {
-      fontSize: 11,
+      fontSize: 9,
       fontWeight: "900",
-      letterSpacing: 0.4,
+      letterSpacing: 0.35,
       textTransform: "uppercase",
     },
     activePill: {
@@ -183,113 +186,65 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       color: "#111111",
     },
     openPill: {
-      backgroundColor: "rgba(19, 179, 172, 0.9)",
+      backgroundColor: "rgba(19, 179, 172, 0.18)",
+      borderColor: "rgba(19, 179, 172, 0.46)",
+      borderWidth: 1,
     },
     openPillText: {
-      color: "#ffffff",
+      color: theme.button,
     },
     lockedPill: {
-      backgroundColor: "rgba(18, 18, 18, 0.78)",
-      borderColor: "rgba(255, 255, 255, 0.26)",
+      backgroundColor: "transparent",
+      borderColor: theme.border,
       borderWidth: 1,
     },
     lockedPillText: {
-      color: "#ffffff",
-    },
-    featuredPill: {
-      backgroundColor: "rgba(255, 204, 0, 0.92)",
-      borderRadius: 999,
-      paddingHorizontal: 11,
-      paddingVertical: 7,
-    },
-    featuredPillText: {
-      color: "#121212",
-      fontSize: 11,
-      fontWeight: "900",
-      letterSpacing: 0.3,
-      textTransform: "uppercase",
-    },
-    imageTitleBlock: {
-      padding: 16,
-      paddingTop: 34,
-    },
-    trailName: {
-      color: "#ffffff",
-      fontSize: 24,
-      fontWeight: "900",
-      letterSpacing: -0.3,
-      lineHeight: 28,
-      textShadowColor: "rgba(0, 0, 0, 0.45)",
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 8,
-    },
-    parkName: {
-      color: "rgba(255, 255, 255, 0.86)",
-      fontSize: 14,
-      fontWeight: "700",
-      marginTop: 5,
-    },
-    infoContainer: {
-      backgroundColor: theme.trailCardOverlay,
-      paddingHorizontal: 15,
-      paddingVertical: 14,
+      color: theme.secondaryText,
     },
     statsContainer: {
       alignItems: "center",
       flexDirection: "row",
       justifyContent: "space-between",
+      marginTop: 13,
     },
     statItem: {
       flex: 1,
       minWidth: 0,
     },
-    statLabel: {
-      color: theme.secondaryText,
-      fontSize: 11,
-      fontWeight: "800",
-      marginBottom: 4,
-      textTransform: "uppercase",
-    },
     statValue: {
       color: theme.trailCardText,
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: "900",
+    },
+    statLabel: {
+      color: theme.secondaryText,
+      fontSize: 9,
+      fontWeight: "800",
+      letterSpacing: 0.35,
+      marginTop: 3,
+      textTransform: "uppercase",
     },
     statDivider: {
       backgroundColor: theme.border,
-      height: 32,
-      marginHorizontal: 10,
+      height: 26,
+      marginHorizontal: 8,
       width: 1,
     },
-    footerRow: {
-      alignItems: "center",
-      borderTopColor: theme.border,
-      borderTopWidth: 1,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 14,
-      paddingTop: 12,
+    featuredRow: {
+      alignSelf: "flex-start",
+      backgroundColor: "rgba(255, 204, 0, 0.16)",
+      borderColor: "rgba(255, 204, 0, 0.34)",
+      borderRadius: 999,
+      borderWidth: 1,
+      marginTop: 10,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
     },
-    metaRow: {
-      alignItems: "center",
-      flex: 1,
-      flexDirection: "row",
-      minWidth: 0,
-    },
-    metaIcon: {
-      fontSize: 15,
-      marginRight: 6,
-    },
-    metaText: {
-      color: theme.trailCardSecondaryText,
-      flex: 1,
-      fontSize: 13,
-      fontWeight: "700",
-    },
-    ctaText: {
-      color: theme.button,
-      fontSize: 13,
+    featuredText: {
+      color: theme.trailCardText,
+      fontSize: 10,
       fontWeight: "900",
-      marginLeft: 12,
+      letterSpacing: 0.25,
+      textTransform: "uppercase",
     },
   });
