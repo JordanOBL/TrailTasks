@@ -24,9 +24,9 @@ This document defines the intended Trail Tasks database shape before MVP release
 | Mileage | `users_sessions.total_distance_hiked` | `users.total_miles` should not be authoritative. |
 | Token balance | Future `token_transactions` ledger | `users.trail_tokens` is currently authoritative but should become a cache or be removed after ledger migration. |
 | Pro membership | RevenueCat entitlement state | Pro is a real-money entitlement, not the same thing as trail tokens. |
-| Free monthly trails | Trail access policy / selected monthly free trails | Five trails should be free each month and rotate by scheduled job. |
-| Trail of the week | `trail_of_the_week` / selected weekly trail | Free users can access it only if that trail is also currently free. |
-| Pro-only trails | `trails.is_pro_only` | Rename subscription-only naming to Pro naming. |
+| Free starter and monthly trails | `trails.is_free` plus policy scripts | Congaree/Scout stays free; five additional Pro-only trails rotate monthly. |
+| Featured trail | `trail_of_the_week` | Marketing/highlight flag; the reroll picks one of the current monthly free trails. |
+| Pro-only trails | `trails.is_pro_only` | Pro-by-default trail gate; monthly free can temporarily override access. |
 | Token-unlocked trails | `users_purchased_trails` | Non-Pro users can unlock a selected subset with tokens; Pro users can unlock any non-Pro-only trail with tokens unless the product rule changes. |
 | Add-ons owned | `users_addons` | Purchases should eventually be paired with token ledger entries. |
 
@@ -105,15 +105,16 @@ MVP direction:
 
 MVP product rules:
 
-1. Each month, five trails are free.
-2. The five free trails rotate on a scheduled job.
-3. Non-Pro users can access the current free monthly trails.
-4. Non-Pro users can unlock only a selected subset of token-unlockable trails with trail tokens.
-5. Non-Pro users cannot unlock or access `is_pro_only = true` trails with tokens.
-6. Pro members get the same five free monthly trails.
-7. Pro members can unlock any non-Pro-only trail with trail tokens.
-8. Free users can access the trail of the week only when the trail of the week is also one of the currently free trails.
-9. If a trail is both trail of the week and not currently free, it can still be highlighted, but free users should not gain access from the weekly flag alone.
+1. Congaree, Scout's park, is the full free starter park so non-Pro users can complete one park and unlock Scout.
+2. Four sampler parks expose one short/non-Pro trail each: Cuyahoga Valley, Saguaro, Petrified Forest, and New River Gorge.
+3. All other trails are Pro-only by default.
+4. Each month, five additional Pro-only trails are temporarily free.
+5. The five monthly free trails rotate on a scheduled job at 3:10 AM America/New_York on the first day of each month.
+6. Non-Pro users can access the permanent free Scout trails and the current monthly free trails.
+7. Non-Pro users can unlock only non-Pro sampler trails with trail tokens.
+8. Non-Pro users cannot unlock `is_pro_only = true` trails with tokens unless the trail is temporarily free for the monthly rotation.
+9. Pro members can access every trail.
+10. `trail_of_the_week` is a featured/highlight flag chosen from the current five monthly free trails, not a separate access rule.
 
 Important product decision:
 
@@ -124,11 +125,11 @@ Suggested future trail access fields:
 
 | Field | Purpose |
 | --- | --- |
-| `is_pro_only` | Active Pro required. Not unlockable by non-Pro tokens. |
+| `is_pro_only` | Active Pro required by default. Token purchases do not unlock this gate. Monthly free can temporarily expose selected Pro-only trails. |
 | `is_token_unlockable` | Trail may be unlocked with tokens. |
 | `unlock_cost_tokens` | Token cost to unlock the trail, if unlockable. |
-| `is_monthly_free` or monthly rotation table | Whether the trail is part of the current five free trails. |
-| `trail_of_the_week` | Marketing/highlight flag; not automatically free by itself. |
+| `is_monthly_free` or monthly rotation table | Whether the trail is part of the current five monthly bonus trails. |
+| `trail_of_the_week` | Marketing/highlight flag selected from the current monthly free trails. |
 
 A separate monthly rotation table may be better than a single boolean once history matters:
 
@@ -201,7 +202,7 @@ Keep:
 - `users_sessions` as mileage/session fact table.
 - `users_purchased_trails` as token-unlocked trail ownership.
 - `users_addons` as add-on ownership.
-- `trail_of_the_week` as a highlight/marketing flag, not a standalone free-access rule.
+- `trail_of_the_week` as a highlight/marketing flag selected from the current monthly free trails, not a separate access rule.
 
 ## Suggested migration order
 
