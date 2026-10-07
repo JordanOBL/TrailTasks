@@ -7,10 +7,11 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { User, User_Wild } from "../watermelon/models";
+import { Trail, User, User_Wild } from "../watermelon/models";
 import { darkTheme, lightTheme } from "../theme";
 
 import DistanceProgressBar from "../components/DistanceProgressBar";
+import FullTrailDetails from "../types/fullTrailDetails";
 import HomeScreenLinks from "../components/HomeScreen/HomeScreenLinks";
 import { Q } from "@nozbe/watermelondb";
 import { Rank } from "../helpers/Ranks/ranksData";
@@ -58,6 +59,7 @@ export const HomeScreen: React.FC<Props> = ({
   });
   const { isConnected } = useInternetConnection();
   const [showTutorial, setShowTutorial] = React.useState(false);
+  const [featuredTrail, setFeaturedTrail] = React.useState<FullTrailDetails | null>(null);
   const styles = getStyles(theme); // dynamically generate styles based on theme
   userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
   const [activeWild] = activeWilds;
@@ -67,6 +69,14 @@ export const HomeScreen: React.FC<Props> = ({
   const trailDistance = Number(currentTrail?.trailDistance ?? 0);
   const trailPercent =
     trailDistance > 0 ? Math.min(100, Math.max(0, (trailProgress / trailDistance) * 100)) : 0;
+  const featuredTrailDescription = featuredTrail
+    ? `${featuredTrail.park_name}${featuredTrail.state_code ? `, ${featuredTrail.state_code}` : ""} • ${featuredTrail.trail_distance} mi`
+    : "Sync to load this month's featured bonus trail.";
+
+  const openFeaturedTrail = React.useCallback(() => {
+    if (!featuredTrail) return;
+    navigation.navigate("TrailDetails", { fullTrail: featuredTrail, trailId: null });
+  }, [featuredTrail, navigation]);
 
   const handleTutorialClose = () => {
     setShowTutorial(false); // Close the tutorial modal
@@ -84,6 +94,46 @@ export const HomeScreen: React.FC<Props> = ({
     }
   }, [user, userWilds]);
   //this useEffect gets the correct Rank based on  the users miles
+  useFocusEffect(
+    React.useCallback(() => {
+      async function loadFeaturedTrail() {
+        try {
+          if (!user) return;
+          const rows = (await watermelonDatabase
+            .get<Trail>("trails")
+            .query(
+              Q.experimentalJoinTables(["parks"]),
+              Q.experimentalNestedJoin("parks", "parks_states"),
+              Q.unsafeSqlQuery(
+                "SELECT trails.*, " +
+                  "parks.id AS park_id, parks.park_name, parks.park_type, parks.park_image_url, " +
+                  "park_states.id AS park_state_id, park_states.state_code, park_states.state, " +
+                  "COUNT(DISTINCT users_completed_trails.trail_id) AS is_completed, " +
+                  "COUNT(DISTINCT users_purchased_trails.trail_id) AS is_purchased, " +
+                  "users_parks.park_level " +
+                  "FROM trails " +
+                  "LEFT JOIN parks ON trails.park_id = parks.id " +
+                  "LEFT JOIN park_states ON parks.id = park_states.park_id " +
+                  "LEFT JOIN users_completed_trails ON users_completed_trails.trail_id = trails.id AND users_completed_trails.user_id = ? " +
+                  "LEFT JOIN users_purchased_trails ON users_purchased_trails.trail_id = trails.id AND users_purchased_trails.user_id = ? " +
+                  "LEFT JOIN users_parks ON users_parks.park_id = parks.id AND users_parks.user_id = ? " +
+                  "WHERE trails.trail_of_the_week = true " +
+                  "GROUP BY trails.id " +
+                  "LIMIT 1",
+                [user.id, user.id, user.id],
+              ),
+            )
+            .unsafeFetchRaw()) as FullTrailDetails[];
+          setFeaturedTrail(rows[0] ?? null);
+        } catch (err) {
+          handleError(err, "loadFeaturedTrail HomeScreen");
+        }
+      }
+
+      loadFeaturedTrail();
+    }, [user, watermelonDatabase]),
+  );
+
   useFocusEffect(
     React.useCallback(() => {
       async function checkUnsyncedChanges() {
@@ -195,19 +245,25 @@ export const HomeScreen: React.FC<Props> = ({
 
         <HomeScreenLinks user={user} navigation={navigation} />
 
-        <View style={styles.weeklyTrailCard}>
+        <TouchableOpacity
+          activeOpacity={0.88}
+          disabled={!featuredTrail}
+          onPress={openFeaturedTrail}
+          style={[styles.weeklyTrailCard, !featuredTrail && styles.disabledWeeklyTrailCard]}
+          testID="featured-trail-card">
           <View style={styles.weeklyCopy}>
-            <Text style={styles.sectionEyebrow}>Trail of the Week</Text>
-            <Text style={styles.weeklyTitle}>Smoky Mountain Challenge</Text>
-            <Text style={styles.weeklyDescription}>
-              Earn bonus Wild XP on featured hikes this week. Global trail events coming soon.
+            <Text style={styles.sectionEyebrow}>Featured Trail</Text>
+            <Text style={styles.weeklyTitle} numberOfLines={2}>
+              {featuredTrail?.trail_name ?? "Featured trail loading"}
             </Text>
+            <Text style={styles.weeklyDescription}>{featuredTrailDescription}</Text>
+            {featuredTrail && <Text style={styles.weeklyCta}>Tap to queue, buy, or start →</Text>}
           </View>
           <View style={styles.bonusBadge}>
-            <Text style={styles.bonusValue}>2x</Text>
-            <Text style={styles.bonusLabel}>Wild XP</Text>
+            <Text style={styles.bonusValue}>★</Text>
+            <Text style={styles.bonusLabel}>Bonus</Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -356,6 +412,9 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       shadowRadius: 6,
       elevation: 3,
     },
+    disabledWeeklyTrailCard: {
+      opacity: 0.72,
+    },
     weeklyCopy: {
       flex: 1,
     },
@@ -370,6 +429,12 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       fontSize: 13,
       fontWeight: "500",
       lineHeight: 18,
+    },
+    weeklyCta: {
+      color: theme.button,
+      fontSize: 12,
+      fontWeight: "800",
+      marginTop: 8,
     },
     bonusBadge: {
       width: 74,

@@ -10,6 +10,7 @@ import EnhancedSubscribeScreen from '../../Screens/SubscribeScreen';
 import EnhancedTrailQueueScreen from '../../Screens/TrailQueueScreen';
 import SettingsScreen from '../../Screens/SettingsScreen';
 import SubscriptionSettingsScreen from '../../Screens/SubscriptionSettingsScreen';
+import TrailDetailScreen from '../../Screens/TrailDetailScreen';
 import {User} from '../../watermelon/models';
 import {createStackNavigator} from '@react-navigation/stack';
 import {useAuthContext} from '../../services/AuthContext';
@@ -79,6 +80,9 @@ export function HomeStackNavigator() {
 
       <HomeStack.Screen name="Shop" options={{headerBackButtonDisplayMode: "minimal", headerTitleAlign: "center"}} >
         {(props: any) => <AddOnStoreScreen {...props} user={user} />}
+      </HomeStack.Screen>
+      <HomeStack.Screen name="TrailDetails" options={{ headerShown: false, presentation: 'modal' }}>
+        {(props: any) => <TrailDetailScreen {...props} />}
       </HomeStack.Screen>
     </HomeStack.Navigator>
   );
