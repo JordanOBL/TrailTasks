@@ -1,5 +1,6 @@
 import { jest, describe, test, afterAll, afterEach, expect, beforeEach } from "@jest/globals";
 import { render, screen, userEvent, act, fireEvent } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import { createMockUserBase } from "../../__mocks__/UserModel";
 import EnhancedActiveSession from "./ActiveSession";
 import formatCountdown from "../../helpers/Timer/formatCountdown";
@@ -169,6 +170,20 @@ describe("active Session UI screen", () => {
     expect(await screen.findByText("Focus Trek")).toBeDefined();
     expect((await screen.findByTestId("active-wild-avatar")).props.children).toBe("ember");
   });
+
+  test("keeps the phase badge visible when the session title is long", async () => {
+    mockSnapshot.sessionName = "A very long trail focus title that should wrap instead of pushing the state badge away";
+
+    render(<EnhancedActiveSession />);
+
+    const title = await screen.findByText(mockSnapshot.sessionName);
+    const phasePill = await screen.findByTestId("session-phase-pill");
+
+    expect(title.props.numberOfLines).toBe(2);
+    expect(StyleSheet.flatten(phasePill.props.style)).toMatchObject({ flexShrink: 0 });
+    expect(await screen.findByText("Focus Trek")).toBeDefined();
+  });
+
   test("The pause button emits the pause event", async () => {
     const user = userEvent.setup();
 
