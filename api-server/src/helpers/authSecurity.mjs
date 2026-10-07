@@ -52,20 +52,20 @@ export function prepareUserRowsForStorage(rows = []) {
       return row;
     }
 
-    const { total_miles, ...rowWithoutStaleMileage } = row;
+    const { total_miles, trail_tokens, ...rowWithoutStaleFields } = row;
 
-    if (!Object.prototype.hasOwnProperty.call(rowWithoutStaleMileage, 'password')) {
-      return rowWithoutStaleMileage;
+    if (!Object.prototype.hasOwnProperty.call(rowWithoutStaleFields, 'password')) {
+      return rowWithoutStaleFields;
     }
 
-    if (!rowWithoutStaleMileage.password) {
-      const { password, password_hash, ...rowWithoutBlankPassword } = rowWithoutStaleMileage;
+    if (!rowWithoutStaleFields.password) {
+      const { password, password_hash, ...rowWithoutBlankPassword } = rowWithoutStaleFields;
       return rowWithoutBlankPassword;
     }
 
     return {
-      ...rowWithoutStaleMileage,
-      password: hashPassword(rowWithoutStaleMileage.password),
+      ...rowWithoutStaleFields,
+      password: hashPassword(rowWithoutStaleFields.password),
     };
   });
 }

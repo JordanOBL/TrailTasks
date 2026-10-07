@@ -20,7 +20,7 @@ export function createMockUserBase(overrides?: Partial<User>): User {
     trailStartedAt: new Date(),
     pushNotificationsEnabled: true,
     themePreference: "light",
-    trailTokens: 50,
+    calculateTrailTokenBalance: jest.fn(async () => 50),
     lastDailyStreakDate: new Date().toISOString(),
     prestigeLevel: 0,
     roomId: "",
@@ -68,7 +68,6 @@ export async function createUser(database: Database, newUser: any) {
       user.lastDailyStreakDate = newUser.lastDailyStreakDate || new Date().toISOString();
       user.trailProgress = newUser.trailProgress || "0.00";
       user.traiStartedAt = newUser.trailStartedAt;
-      user.trailTokens = newUser.trailTokens || 50;
       user.prestigeLevel = newUser.prestigeLevel || 0;
       user.roomId = newUser.roomId || "";
     });

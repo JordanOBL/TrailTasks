@@ -1,4 +1,4 @@
-import {Addon, User, User_Session} from '../models';
+import {Addon, Token_Transaction, Trail, User, User_Purchased_Trail, User_Session} from '../models';
 import {testDb} from '../testDB';
 
 async function createUserWithSessions(sessionDistances: number[]) {
@@ -16,7 +16,6 @@ async function createUserWithSessions(sessionDistances: number[]) {
       record.lastDailyStreakDate = new Date().toISOString();
       record.trailProgress = '0.00';
       record.trailStartedAt = new Date().toISOString();
-      record.trailTokens = 50;
       record.prestigeLevel = 0;
       record.roomId = '';
     });
@@ -110,7 +109,6 @@ describe('User derived totals', () => {
         record.lastDailyStreakDate = new Date().toISOString();
         record.trailProgress = '0.00';
         record.trailStartedAt = new Date().toISOString();
-        record.trailTokens = 50;
         record.prestigeLevel = 0;
         record.roomId = '';
       });
@@ -130,5 +128,110 @@ describe('User derived totals', () => {
 
     const allSessions = await testDb.get('users_sessions').query().fetch();
     expect(allSessions).toHaveLength(2);
+  });
+
+  it('derives token balance from immutable token transaction rows', async () => {
+    const user = await createUserWithSessions([]);
+
+    await testDb.write(async () => {
+      await testDb.get<Token_Transaction>('token_transactions').create(transaction => {
+        transaction.userId = user.id;
+        transaction.amount = 50;
+        transaction.type = 'registration_bonus';
+        transaction.sourceType = 'user';
+        transaction.sourceId = user.id;
+        transaction.idempotencyKey = `registration_bonus:${user.id}`;
+        transaction.ruleVersion = 'mvp-v1';
+        transaction.metadata = '{}';
+      });
+      await testDb.get<Token_Transaction>('token_transactions').create(transaction => {
+        transaction.userId = user.id;
+        transaction.amount = -10;
+        transaction.type = 'addon_purchase';
+        transaction.sourceType = 'addon';
+        transaction.sourceId = 'addon-1';
+        transaction.idempotencyKey = `addon_purchase:${user.id}:addon-1:test`;
+        transaction.ruleVersion = 'mvp-v1';
+        transaction.metadata = '{}';
+      });
+    });
+
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(40);
+  });
+
+  it('writes add-on purchases as negative token transactions instead of mutating user balance', async () => {
+    const user = await createUserWithSessions([10]);
+
+    const addon = await testDb.write(async () => {
+      await testDb.get<Token_Transaction>('token_transactions').create(transaction => {
+        transaction.userId = user.id;
+        transaction.amount = 50;
+        transaction.type = 'registration_bonus';
+        transaction.sourceType = 'user';
+        transaction.sourceId = user.id;
+        transaction.idempotencyKey = `registration_bonus:${user.id}`;
+        transaction.ruleVersion = 'mvp-v1';
+        transaction.metadata = '{}';
+      });
+
+      return await testDb.get<Addon>('addons').create(record => {
+        record.name = 'Trail Mix I';
+        record.description = 'Adds a token ledger purchase.';
+        record.level = 1;
+        record.effectType = 'token_bonus_flat';
+        record.effectValue = 5;
+        record.requiredTotalMiles = 1;
+        record.price = 10;
+        record.imageUrl = '';
+      });
+    });
+
+    await expect(user.buyAddon(addon)).resolves.toBe(`You purchased ${addon.name}`);
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(40);
+
+    const transactions = await testDb.get<Token_Transaction>('token_transactions').query().fetch();
+    expect(transactions.map(t => ({ amount: t.amount, type: t.type, sourceId: t.sourceId }))).toEqual(
+      expect.arrayContaining([{ amount: -10, type: 'addon_purchase', sourceId: addon.id }]),
+    );
+  });
+
+  it('writes trail unlocks as negative token transactions', async () => {
+    const user = await createUserWithSessions([]);
+
+    const trail = await testDb.write(async () => {
+      await testDb.get<Token_Transaction>('token_transactions').create(transaction => {
+        transaction.userId = user.id;
+        transaction.amount = 50;
+        transaction.type = 'registration_bonus';
+        transaction.sourceType = 'user';
+        transaction.sourceId = user.id;
+        transaction.idempotencyKey = `registration_bonus:${user.id}`;
+        transaction.ruleVersion = 'mvp-v1';
+        transaction.metadata = '{}';
+      });
+
+      return await testDb.get<Trail>('trails').create(record => {
+        record.trailName = 'Ledger Trail';
+        record.trailDistance = '4';
+        record.trailLat = '0';
+        record.trailLong = '0';
+        record.trailDifficulty = 'Easy';
+        record.parkId = 'park-1';
+        record.trailImageUrl = '';
+        record.isFree = false;
+        record.isProOnly = false;
+        record.trailOfTheWeek = false;
+      });
+    });
+
+    await expect(user.purchaseTrail(trail, 5)).resolves.toBe(true);
+    await expect(user.calculateTrailTokenBalance()).resolves.toBe(45);
+
+    const purchased = await testDb.get<User_Purchased_Trail>('users_purchased_trails').query().fetch();
+    expect(purchased).toHaveLength(1);
+    const transactions = await testDb.get<Token_Transaction>('token_transactions').query().fetch();
+    expect(transactions.map(t => ({ amount: t.amount, type: t.type, sourceId: t.sourceId }))).toEqual(
+      expect.arrayContaining([{ amount: -5, type: 'trail_unlock', sourceId: trail.id }]),
+    );
   });
 });

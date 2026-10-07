@@ -140,7 +140,6 @@ export const User = sequelize.define(
 			defaultValue: '0.00',
 		},
 		trail_started_at: { type: DataTypes.STRING, allowNull: false },
-		trail_tokens: { type: DataTypes.INTEGER, allowNull: false },
 		prestige_level: {
 			type: DataTypes.INTEGER,
 			allowNull: false,
@@ -160,6 +159,31 @@ export const User = sequelize.define(
 		],
 	},
 );
+export const Token_Transaction = sequelize.define(
+	'Token_Transaction',
+	{
+		id: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
+		user_id: { type: DataTypes.STRING, allowNull: false },
+		amount: { type: DataTypes.INTEGER, allowNull: false },
+		type: { type: DataTypes.STRING, allowNull: false },
+		source_type: { type: DataTypes.STRING, allowNull: true },
+		source_id: { type: DataTypes.STRING, allowNull: true },
+		idempotency_key: { type: DataTypes.STRING, allowNull: false },
+		balance_after: { type: DataTypes.INTEGER, allowNull: true },
+		rule_version: { type: DataTypes.STRING, allowNull: true },
+		metadata: { type: DataTypes.JSONB, allowNull: true },
+	},
+	{
+		tableName: 'token_transactions',
+		underscored: true,
+		indexes: [
+			{ fields: ['user_id'] },
+			{ fields: ['type'] },
+			{ unique: true, fields: ['user_id', 'idempotency_key'] },
+		],
+	},
+);
+
 export const Park_State = sequelize.define(
 	'Park_State',
 	{

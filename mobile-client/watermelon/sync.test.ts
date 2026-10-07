@@ -83,7 +83,7 @@ describe("sync helpers", () => {
     });
   });
 
-  it("builds force-push changes without reintroducing stale user total_miles", () => {
+  it("builds force-push changes without reintroducing stale user summary totals", () => {
     const changes = buildForcedAccountChanges({
       users: [
         {
@@ -107,7 +107,7 @@ describe("sync helpers", () => {
       trails: [{ id: "trail-1" }],
     });
 
-    expect(changes.users.updated).toEqual([{ id: "user-1", trail_tokens: 12 }]);
+    expect(changes.users.updated).toEqual([{ id: "user-1" }]);
     expect(changes.users_wilds.updated).toEqual([
       { id: "user-wild-1", user_id: "user-1", wild_id: "wild-1", level: 3 },
     ]);
@@ -194,7 +194,6 @@ describe("sync helpers", () => {
     expect(changes.users.updated[0]).toMatchObject({
       daily_streak: 1,
       last_daily_streak_date: new Date("2026-10-06").getTime(),
-      trail_tokens: 70,
       prestige_level: 0,
     });
   });
@@ -204,6 +203,7 @@ describe("sync helpers", () => {
 
     expect(strategy.default).toBe("incremental");
     expect(strategy.override.users_sessions).toBeUndefined();
+    expect(strategy.override.token_transactions).toBeUndefined();
     expect(strategy.override.users_wilds).toBe("replacement");
     expect(strategy.override.users_parks).toBe("replacement");
     expect(strategy.override.trails).toBeUndefined();
@@ -288,19 +288,26 @@ describe("sync helpers", () => {
     expect(resolved.total_session_time).toBe(30);
   });
 
+  it("leaves token transactions incremental during full account pull strategy", () => {
+    const strategy = buildFullUserSyncStrategy("user-1");
+
+    expect(strategy.override.token_transactions).toBeUndefined();
+    expect(strategy.experimentalQueryRecordsForReplacement.token_transactions).toBeUndefined();
+  });
+
   it("leaves non-session normal sync conflicts to Watermelon's resolved value", () => {
     const resolved = {
-      id: "user-1",
-      trail_tokens: 50,
+      id: "transaction-1",
+      amount: 50,
       _status: "updated",
-      _changed: "trail_tokens",
+      _changed: "amount",
     };
 
     expect(
       resolveSyncConflict(
-        "users",
-        { id: "user-1", trail_tokens: 25 },
-        { id: "user-1", trail_tokens: 50 },
+        "token_transactions",
+        { id: "transaction-1", amount: 25 },
+        { id: "transaction-1", amount: 50 },
         resolved,
       ),
     ).toBe(resolved);

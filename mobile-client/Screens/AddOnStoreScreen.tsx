@@ -26,6 +26,7 @@ const AddOnStoreScreen = ({
   const { isConnected } = useInternetConnection();
   const { theme } = useTheme(); // 👈 use your theme context
   const [totalMiles, setTotalMiles] = useState(0);
+  const [tokenBalance, setTokenBalance] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -44,6 +45,24 @@ const AddOnStoreScreen = ({
       isMounted = false;
     };
   }, [user, userSessions, watermelondb]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const computeTokenBalance = async () => {
+      const calculatedTokenBalance = await user.calculateTrailTokenBalance();
+
+      if (isMounted) {
+        setTokenBalance(calculatedTokenBalance);
+      }
+    };
+
+    computeTokenBalance();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, userAddons, watermelondb]);
 
   if (loading) {
     return <Text style={{ color: theme.text }}>Loading Add-Ons...</Text>;
@@ -67,7 +86,7 @@ const AddOnStoreScreen = ({
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.topBar]}>
-        <Text style={[styles.tokens, { color: theme.button }]}>{`Trail Tokens: ${user.trailTokens}`}</Text>
+        <Text style={[styles.tokens, { color: theme.button }]}>{`Trail Tokens: ${tokenBalance}`}</Text>
         <Text style={[styles.miles, { color: theme.text }]}>{`Total Miles: ${totalMiles.toFixed(2)}`}</Text>
       </View>
       <EnhancedAddOnStore
@@ -75,6 +94,7 @@ const AddOnStoreScreen = ({
         usersAddons={userAddons}
         user={user}
         totalMiles={totalMiles}
+        tokenBalance={tokenBalance}
         onPurchase={handleAddonPurchase}
       />
     </SafeAreaView>

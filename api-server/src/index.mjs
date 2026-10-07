@@ -11,6 +11,7 @@ import {
     Session_Addon,
     Session_Category,
     Trail,
+    Token_Transaction,
     User,
     User_Achievement,
     User_Addon,
@@ -450,6 +451,7 @@ app.get('/pull', async (req, res) => {
                     users_sessions: await User_Session.findAll({ where: fullUserWhere }),
                     users_friends: await User_Friend.findAll({ where: fullUserWhere }),
                     users_wilds: await User_Wild.findAll({ where: fullUserWhere }),
+                    token_transactions: await Token_Transaction.findAll({ where: fullUserWhere }),
                 }
                 : null;
             if (catalogOnly) {
@@ -667,6 +669,15 @@ app.get('/pull', async (req, res) => {
                 },
             })
 
+            const updatedTokenTransactions = await Token_Transaction.findAll({
+                where: {
+                    updatedAt: {
+                        [Sequelize.Op.gt]: lastPulledAt,
+                    },
+                    user_id: userId,
+                },
+            });
+
             const updatedParksWilds = await Park_Wild.findAll({
                 where: {
                     updatedAt: {
@@ -697,6 +708,11 @@ app.get('/pull', async (req, res) => {
                     updated: fullUserData ? fullUserData.users_addons : [...updatedUserAddons],
                     deleted: [],
                 },
+                    token_transactions: {
+                        created: [],
+                        updated: fullUserData ? fullUserData.token_transactions : updatedTokenTransactions,
+                        deleted: [],
+                    },
                     users_completed_trails: {
                         created: [],
                         updated: fullUserData ? fullUserData.users_completed_trails : updatedUserCompletedTrails.length ? updatedUserCompletedTrails : [],
@@ -843,6 +859,7 @@ app.post('/push', async (req, res) => {
             await upsertRows(User, userUpdatedRows);
             await upsertRows(User_Achievement, changes?.users_achievements?.updated);
             await upsertRows(User_Addon, changes?.users_addons?.updated);
+            await upsertRows(Token_Transaction, changes?.token_transactions?.updated);
             await upsertRows(User_Completed_Trail, changes?.users_completed_trails?.updated);
             await upsertRows(Users_Queued_Trail, changes?.users_queued_trails?.updated);
             await upsertRows(User_Park, changes?.users_parks?.updated);
@@ -864,6 +881,9 @@ app.post('/push', async (req, res) => {
                 const users_addons = await User_Addon.bulkCreate(
                     changes.users_addons.created, {updateOnDuplicate: ['id']}
                 );
+            }
+            if (changes?.token_transactions?.created[0] !== undefined) {
+                await upsertRows(Token_Transaction, changes.token_transactions.created);
             }
             if (changes?.users_parks?.created[0] !== undefined) {
                 const users_parks = await User_Park.bulkCreate(

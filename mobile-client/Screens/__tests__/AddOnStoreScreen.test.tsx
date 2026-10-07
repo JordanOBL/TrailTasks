@@ -6,6 +6,7 @@ import AddOnStoreScreen from "../AddOnStoreScreen";
 
 const mockRead = jest.fn(async callback => callback());
 const mockCalculateTotalMiles = jest.fn(async () => 42.5);
+const mockCalculateTokenBalance = jest.fn(async () => 100);
 const mockUseAddons = jest.fn(() => ({
   addons: [
     {
@@ -65,15 +66,16 @@ jest.mock("../../watermelon/sync", () => ({
 
 const user = {
   id: "user-1",
-  trailTokens: 100,
   totalMiles: "0.00",
   calculateTotalMiles: mockCalculateTotalMiles,
+  calculateTrailTokenBalance: mockCalculateTokenBalance,
 };
 
 describe("AddOnStoreScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCalculateTotalMiles.mockResolvedValue(42.5);
+    mockCalculateTokenBalance.mockResolvedValue(100);
     mockRead.mockImplementation(async callback => callback());
   });
 

@@ -11,6 +11,7 @@ import {
   Session_Addon,
   Session_Category,
   Trail,
+  Token_Transaction,
   User,
   User_Achievement,
   User_Addon,
@@ -50,6 +51,7 @@ export const watermelonDatabase = new Database({
   modelClasses: [
     Park,
     Trail,
+    Token_Transaction,
     User,
     Park_State,
     Achievement,

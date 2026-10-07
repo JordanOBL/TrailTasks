@@ -52,7 +52,7 @@ test('prepareUserRowsForStorage omits redacted blank passwords so sync cannot cl
   });
 });
 
-test('prepareUserRowsForStorage omits stale total_miles from account writes', () => {
+test('prepareUserRowsForStorage omits stale account summary fields from account writes', () => {
   const [existingUserUpdate] = prepareUserRowsForStorage([
     {
       id: 'existing-user',
@@ -67,7 +67,6 @@ test('prepareUserRowsForStorage omits stale total_miles from account writes', ()
     id: 'existing-user',
     email: 'existing@example.com',
     username: 'existing',
-    trail_tokens: 12,
   });
 });
 

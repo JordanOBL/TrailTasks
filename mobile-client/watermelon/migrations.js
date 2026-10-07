@@ -18,5 +18,26 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 3,
+      steps: [
+        createTable({
+          name: "token_transactions",
+          columns: [
+            { name: "user_id", type: "string", isIndexed: true },
+            { name: "amount", type: "number" },
+            { name: "type", type: "string", isIndexed: true },
+            { name: "source_type", type: "string", isOptional: true },
+            { name: "source_id", type: "string", isOptional: true },
+            { name: "idempotency_key", type: "string", isIndexed: true },
+            { name: "balance_after", type: "number", isOptional: true },
+            { name: "rule_version", type: "string", isOptional: true },
+            { name: "metadata", type: "string", isOptional: true },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
   ],
 });

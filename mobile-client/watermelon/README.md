@@ -153,7 +153,7 @@ Recommended MVP direction:
 | `users_wilds` | Union/upsert by `user_id + wild_id`; keep safest/highest progression values | Missing wild rows usually mean a device is behind, not that the wild should be removed. |
 | `users_parks` | Union/upsert by `user_id + park_id`; keep max `park_level`, latest `last_completed`, and true if either side redeemed | Park progress is an unlock/progression record and should not disappear because another device is behind. |
 | `users_addons.quantity` | Conflict-risk until modeled as transactions | Quantity can go up and down; “more is true” can restore consumed addons by mistake. |
-| `users.trail_tokens` | Conflict-risk until modeled as transactions | Tokens can be earned and spent; balances should eventually come from a token ledger. |
+| `token_transactions` | Incremental union/upsert by `id`/`idempotency_key`; do not replace during full account pulls | Tokens are currency-like facts; balance is derived from signed immutable rows. |
 | `users.trail_progress` / active trail | Needs explicit rule or derived progress from trail-progress events | Two devices can progress different active trail states offline. |
 | active wild | Needs explicit one-active-wild conflict rule, likely latest action wins | Different devices can select different active wilds offline. |
 | daily streak | Best derived from activity/session dates long-term | Date-based state can conflict across offline devices. |
@@ -190,7 +190,7 @@ Before release, the highest-value hardening is:
 2. Keep `users.total_miles` out of the MVP account schema.
 3. Compute total miles from merged `users_sessions` rows locally and/or on the server.
 4. Make park/wild/achievement/purchase rows union/idempotent.
-5. Treat tokens, addon quantities, active trail, active wild, and daily streak as known conflict-risk areas until they get explicit transaction/event models.
+5. Treat addon quantities, active trail, active wild, and daily streak as known conflict-risk areas until they get explicit transaction/event models.
 6. Keep destructive replacement behavior limited to clearly labeled recovery tools after Postgres has been verified as the merged account state.
 
 This keeps the MVP practical while moving the app toward senior-level offline-first architecture: protect user-created facts first, derive summaries second, and only replace local state when the server is intentionally trusted.
@@ -311,7 +311,8 @@ Expected MVP behavior:
 
 - Trail Tasks should avoid advertising this as fully conflict-safe.
 - Normal sync can merge rows that are naturally additive, such as different completed session rows with different ids.
-- For single account summary fields such as `users.trail_progress`, `users.trail_tokens`, active trail, or active wild, the current server code does not yet implement a robust conflict resolver.
+- For single account summary fields such as `users.trail_progress`, active trail, or active wild, the current server code does not yet implement a robust conflict resolver.
+- Trail Token balance is not a summary field after the ledger migration; it derives from incremental `token_transactions` rows.
 - The last device to push may overwrite some summary fields.
 
 Product/architecture decision:
