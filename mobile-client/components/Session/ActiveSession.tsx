@@ -194,11 +194,15 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.heroCard}>
           <View style={styles.heroHeader}>
-            <View>
+            <View style={styles.heroTitleBlock}>
               <Text style={styles.eyebrow}>Active Session</Text>
-              <Text style={styles.heroTitle}>{snapshot.sessionName || "Trail Focus"}</Text>
+              <Text style={styles.heroTitle} numberOfLines={2}>
+                {snapshot.sessionName || "Trail Focus"}
+              </Text>
             </View>
-            <View style={[styles.phasePill, snapshot.isPaused && styles.pausedPill]}>
+            <View
+              testID="session-phase-pill"
+              style={[styles.phasePill, snapshot.isPaused && styles.pausedPill]}>
               <Text style={styles.phasePillText}>{phaseLabel}</Text>
             </View>
           </View>
@@ -365,6 +369,10 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       justifyContent: "space-between",
       marginBottom: 12,
     },
+    heroTitleBlock: {
+      flex: 1,
+      minWidth: 0,
+    },
     eyebrow: {
       color: theme.button,
       fontSize: 11,
@@ -384,6 +392,7 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       borderColor: theme.button,
       borderRadius: 999,
       borderWidth: 1,
+      flexShrink: 0,
       paddingHorizontal: 10,
       paddingVertical: 7,
     },
