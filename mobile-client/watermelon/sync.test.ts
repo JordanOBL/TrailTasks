@@ -83,14 +83,15 @@ describe("sync helpers", () => {
     });
   });
 
-  it("builds force-push changes from synced account records", () => {
+  it("builds force-push changes without reintroducing stale user total_miles", () => {
     const changes = buildForcedAccountChanges({
       users: [
         {
           id: "user-1",
           _status: "synced",
           _changed: "",
-          total_miles: "10.5",
+          total_miles: "999.00",
+          trail_tokens: 12,
         },
       ],
       users_wilds: [
@@ -106,7 +107,7 @@ describe("sync helpers", () => {
       trails: [{ id: "trail-1" }],
     });
 
-    expect(changes.users.updated).toEqual([{ id: "user-1", total_miles: "10.5" }]);
+    expect(changes.users.updated).toEqual([{ id: "user-1", trail_tokens: 12 }]);
     expect(changes.users_wilds.updated).toEqual([
       { id: "user-wild-1", user_id: "user-1", wild_id: "wild-1", level: 3 },
     ]);

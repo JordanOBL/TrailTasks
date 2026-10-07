@@ -90,26 +90,25 @@ each device pulls the merged account state
 
 This is different from Force Account Pull. Force Account Pull is a recovery tool for the case where Postgres has already been verified as the best merged state and the current device should be rebuilt from it. It should not be the normal answer to two devices having different valid offline work.
 
-### Facts vs summaries
+### Facts vs account summaries
 
-Trail Tasks should treat activity/progression rows as durable facts and user summary fields as cached answers.
+Trail Tasks should treat activity/progression rows as durable facts. For MVP, mileage should not live on the account row as either truth or cache.
 
 Example:
 
 ```text
 users_sessions rows = facts about hikes that happened
-users.total_miles = cached/derived answer from those session rows
+derived mileage = sum of users_sessions.total_distance_hiked
 ```
 
-That means `users.total_miles` should not be the primary truth for mileage. It should be recalculated from merged `users_sessions.total_distance_hiked` rows whenever possible. If two devices both hiked offline, the safest merge is to preserve both devices' session rows, then recompute total miles from the union.
+That means `users.total_miles` should not exist on the MVP account schema. Mileage should be recalculated from merged `users_sessions.total_distance_hiked` rows whenever needed. If two devices both hiked offline, the safest merge is to preserve both devices' session rows, then recompute total miles from the union.
 
 Good mental model:
 
 ```text
 rows/events are facts
-summary fields are caches
 normal sync merges facts
-server recomputes caches
+server/UI computes read models from facts
 ```
 
 ### Trail completion is not one session -> one trail
@@ -147,7 +146,7 @@ Recommended MVP direction:
 | Table / data | Normal sync behavior | Why |
 | --- | --- | --- |
 | `users_sessions` | Union/upsert by `id`; do not delete during normal sync | A session row is a fact that a hike happened somewhere. |
-| `users.total_miles` | Derived from merged `users_sessions.total_distance_hiked` | Prevents one device's stale summary from overwriting another device's hike. |
+| Mileage | Derived from merged `users_sessions.total_distance_hiked`; do not store on `users.total_miles` | Prevents one device's stale summary from overwriting another device's hike. |
 | `users_completed_trails` | Merge by logical key such as `user_id + trail_id`, or move to completion event rows | Trails can be completed multiple times and across sessions, so completion history needs explicit facts. |
 | `users_achievements` | Union/upsert by `user_id + achievement_id`; keep earliest `completed_at` | If earned anywhere, the achievement should remain earned. |
 | `users_purchased_trails` | Union/upsert by `user_id + trail_id`; keep earliest purchase time | If purchased anywhere, the purchase should remain. |
@@ -188,8 +187,8 @@ The MVP does not need a full CRDT/event-sourcing system, but it should avoid los
 Before release, the highest-value hardening is:
 
 1. Make session history append/merge-safe.
-2. Stop treating `users.total_miles` as authoritative.
-3. Recompute total miles from merged `users_sessions` rows locally and/or on the server.
+2. Keep `users.total_miles` out of the MVP account schema.
+3. Compute total miles from merged `users_sessions` rows locally and/or on the server.
 4. Make park/wild/achievement/purchase rows union/idempotent.
 5. Treat tokens, addon quantities, active trail, active wild, and daily streak as known conflict-risk areas until they get explicit transaction/event models.
 6. Keep destructive replacement behavior limited to clearly labeled recovery tools after Postgres has been verified as the merged account state.
@@ -312,7 +311,7 @@ Expected MVP behavior:
 
 - Trail Tasks should avoid advertising this as fully conflict-safe.
 - Normal sync can merge rows that are naturally additive, such as different completed session rows with different ids.
-- For single account summary fields such as `users.total_miles`, `users.trail_progress`, `users.trail_tokens`, active trail, or active wild, the current server code does not yet implement a robust conflict resolver.
+- For single account summary fields such as `users.trail_progress`, `users.trail_tokens`, active trail, or active wild, the current server code does not yet implement a robust conflict resolver.
 - The last device to push may overwrite some summary fields.
 
 Product/architecture decision:

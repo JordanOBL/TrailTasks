@@ -17,7 +17,6 @@ async function createUserWithSessions(sessionDistances: number[]) {
       record.trailProgress = '0.00';
       record.trailStartedAt = new Date().toISOString();
       record.trailTokens = 50;
-      record.totalMiles = '999.00';
       record.prestigeLevel = 0;
       record.roomId = '';
     });
@@ -39,7 +38,7 @@ async function createUserWithSessions(sessionDistances: number[]) {
 }
 
 describe('User derived totals', () => {
-  it('calculates total miles from this user sessions instead of the cached user field', async () => {
+  it('calculates total miles from this user sessions without a user mileage field', async () => {
     const user = await createUserWithSessions([1.235, 2.345]);
 
     await expect(user.calculateTotalMiles()).resolves.toBe(3.58);
@@ -51,7 +50,7 @@ describe('User derived totals', () => {
     await expect(user.calculateTotalMiles()).resolves.toBe(0);
   });
 
-  it('updates session distance without incrementing cached total miles', async () => {
+  it('updates session distance by changing the session fact only', async () => {
     const user = await createUserWithSessions([0]);
     const [session] = await user.usersSessions.fetch();
 
@@ -66,7 +65,6 @@ describe('User derived totals', () => {
       consoleLog.mockRestore();
     }
 
-    expect(user.totalMiles).toBe('999.00');
     expect(session.totalDistanceHiked).toBe(0.01);
     await expect(user.calculateTotalMiles()).resolves.toBe(0.01);
   });
@@ -113,7 +111,6 @@ describe('User derived totals', () => {
         record.trailProgress = '0.00';
         record.trailStartedAt = new Date().toISOString();
         record.trailTokens = 50;
-        record.totalMiles = '0.00';
         record.prestigeLevel = 0;
         record.roomId = '';
       });

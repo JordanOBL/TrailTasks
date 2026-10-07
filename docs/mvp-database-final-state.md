@@ -21,7 +21,7 @@ This document defines the intended Trail Tasks database shape before MVP release
 
 | Domain | MVP source of truth | Notes |
 | --- | --- | --- |
-| Mileage | `users_sessions.total_distance_hiked` | `users.total_miles` should not be authoritative. |
+| Mileage | `users_sessions.total_distance_hiked` | `users.total_miles` should not exist as an account truth/cache for MVP. |
 | Token balance | Future `token_transactions` ledger | `users.trail_tokens` is currently authoritative but should become a cache or be removed after ledger migration. |
 | Pro membership | RevenueCat entitlement state | Pro is a real-money entitlement, not the same thing as trail tokens. |
 | Free starter and monthly trails | `trails.is_free` plus policy scripts | Congaree/Scout stays free; five additional Pro-only trails rotate monthly. |
@@ -35,8 +35,8 @@ This document defines the intended Trail Tasks database shape before MVP release
 Current state:
 
 - The app now derives user mileage from completed `users_sessions` facts in important local paths.
-- `users.total_miles` still exists in WatermelonDB, PostgreSQL/Sequelize, sync normalization, leaderboards/friends queries, and cached display paths.
-- The original reason for `users.total_miles` was to make internet-backed leaderboards easier.
+- `users.total_miles` used to exist in WatermelonDB, PostgreSQL/Sequelize, sync normalization, leaderboards/friends queries, and cached display paths.
+- The original reason for `users.total_miles` was to make internet-backed leaderboards easier, but there are no user rows worth preserving yet and keeping it creates source-of-truth confusion.
 
 MVP direction:
 
@@ -225,7 +225,7 @@ Keep:
 5. Move add-on and trail purchase writes to the token ledger.
 6. Move session/streak token earnings to the token ledger.
 7. Treat `users.trail_tokens` as a cache or remove it after reads/writes are migrated.
-8. Remove `users.total_miles` from local/server authoritative paths and update leaderboard/friend queries to derive from session facts.
+8. Remove `users.total_miles` from local/server schemas and update leaderboard/friend queries to derive from session facts.
 9. Add backup/restore runbook once the intended MVP schema is clear.
 
 ## Open questions

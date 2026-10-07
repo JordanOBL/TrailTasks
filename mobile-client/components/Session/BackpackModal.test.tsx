@@ -28,7 +28,7 @@ describe('BackpackModal mileage unlocks', () => {
     mockIsProMember = true;
   });
 
-  it('uses derived totalMiles for slot unlocks instead of cached user.totalMiles', () => {
+  it('uses derived totalMiles for slot unlocks instead of stale user.totalMiles', () => {
     const screen = render(
       <BackpackModal
         isVisible={true}

@@ -20,14 +20,17 @@ interface NewSessionBackpackProps {
   usersAddons: any[];
 }
 
+export function resolveBackpackTotalMiles(totalMiles?: number) {
+  return totalMiles ?? 0;
+}
+
 export const NewSessionBackpack = ({
                               sessionDetails,
                               setSessionDetails,
-                              user,
                               totalMiles,
                               usersAddons,
                             }: NewSessionBackpackProps) => {
-  const derivedTotalMiles = totalMiles ?? Number(user?.totalMiles || 0);
+  const derivedTotalMiles = resolveBackpackTotalMiles(totalMiles);
   const [isDrawerVisible, setDrawerVisible] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [drawerAnimation] = useState(new Animated.Value(0));

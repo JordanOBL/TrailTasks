@@ -52,6 +52,25 @@ test('prepareUserRowsForStorage omits redacted blank passwords so sync cannot cl
   });
 });
 
+test('prepareUserRowsForStorage omits stale total_miles from account writes', () => {
+  const [existingUserUpdate] = prepareUserRowsForStorage([
+    {
+      id: 'existing-user',
+      email: 'existing@example.com',
+      username: 'existing',
+      total_miles: '999.00',
+      trail_tokens: 12,
+    },
+  ]);
+
+  assert.deepEqual(existingUserUpdate, {
+    id: 'existing-user',
+    email: 'existing@example.com',
+    username: 'existing',
+    trail_tokens: 12,
+  });
+});
+
 test('redactUserForClient removes password fields from Sequelize-like user payloads', () => {
   const safeUser = redactUserForClient({
     toJSON: () => ({

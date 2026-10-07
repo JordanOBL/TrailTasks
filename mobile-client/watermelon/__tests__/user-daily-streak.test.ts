@@ -61,7 +61,6 @@ async function createUserAndSession({
       record.trailProgress = '0.00';
       record.trailStartedAt = fixedToday.toISOString();
       record.trailTokens = trailTokens;
-      record.totalMiles = '0.00';
       record.prestigeLevel = 0;
       record.roomId = '';
     });

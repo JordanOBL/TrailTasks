@@ -125,7 +125,6 @@ export const User = sequelize.define(
       allowNull: false,
       defaultValue: 'light',
     },
-    total_miles:{type: DataTypes.STRING, defaultValue: '0.00'},
     trail_id: {type: DataTypes.STRING, allowNull: false},
     trail_progress: {
       type: DataTypes.STRING,
@@ -144,7 +143,7 @@ export const User = sequelize.define(
       // Create a unique index on field
       {
         unique: true,
-        fields: ['username', 'email', 'id', 'total_miles']
+        fields: ['username', 'email', 'id']
       },
     ],
   }

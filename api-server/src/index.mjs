@@ -46,6 +46,12 @@ import dotenv from 'dotenv';
 import express from 'express';
 import masterAchievementList from './assets/Achievements/masterAchievementList.js';
 import { rerollMonthlyTrailAccess } from './helpers/trailAccessPolicy.mjs';
+import {
+    cachedFriendsQuery,
+    friendSearchQuery,
+    globalLeaderboardQuery,
+    userRankQuery,
+} from './helpers/derivedMileageQueries.mjs';
 import res from "express/lib/response.js";
 
 // import pool from "./db/config.js";
@@ -180,13 +186,8 @@ const registerValidation = async (req, res, next) => {
 };
 
 const getGlobalLeaderboards = async (req, res, next) => {
-    const query = 'SELECT users.username, CAST(COALESCE(NULLIF(users.total_miles, \'\'), \'0.00\') AS DOUBLE PRECISION) AS total_miles  FROM users ' +
-        'WHERE users.total_miles IS NOT NULL ' +
-        'ORDER BY CAST(users.total_miles AS DOUBLE PRECISION) DESC ' +
-        'LIMIT 100;'
-
     try {
-        const [results, metadata] = await sequelize.query(query);
+        const [results, metadata] = await sequelize.query(globalLeaderboardQuery);
 
         if (results && results.length > 0) {
             res.locals.top100Rankings = results;
@@ -209,19 +210,7 @@ const getUserRank = async (req, res, next) => {
         return next(new Error('No User'));
     }
     try {
-        const results = await sequelize.query(`
-WITH RankedUsers AS (
-SELECT
-users.id AS user_id,
-users.username,
-CAST(COALESCE(NULLIF(users.total_miles, ''), '0.00') AS DOUBLE PRECISION) AS total_miles,
-RANK() OVER (ORDER BY CAST(COALESCE(NULLIF(users.total_miles, ''), '0.00') AS DOUBLE PRECISION) DESC) AS rank
-FROM users
-)
-SELECT *
-FROM RankedUsers
-WHERE user_id = $1
-`,
+        const results = await sequelize.query(userRankQuery,
             {
                 bind: [userId],
                 type: QueryTypes.SELECT,
@@ -252,8 +241,7 @@ const friendSearch = async (req, res, next) => {
         
        // const friend = await User.findOne({ where: { username } });
         //const {password, ...safeFriend} = friend;
-            const query = `SELECT users.id as friend_id, users.username, users.total_miles, trails.trail_name as current_trail, users.trail_progress, users.room_id FROM users JOIN trails ON trails.id = users.trail_id WHERE users.username = $1;`
-        const results = await sequelize.query(query, {
+        const results = await sequelize.query(friendSearchQuery, {
             bind: [username],
             type: QueryTypes.SELECT,
         })
@@ -286,12 +274,11 @@ app.get('/api/searchFriends', friendSearch, async (req, res, next) => {
 const getCachedFriends = async (req, res, next) => {
     const userId  = req.query.userId;
     console.log('getCachedFriends UserId param', userId);
-    const query = `SELECT users.id as friend_id, users.username, users.total_miles, trails.trail_name as current_trail, users.room_id FROM users JOIN trails ON trails.id = users.trail_id WHERE users.id IN (SELECT friend_id FROM users_friends WHERE user_id = $1);`
     //const query = `SELECT * FROM users_friends WHERE user_id = $1;`
 
 
     try {
-        const results = await sequelize.query(query, {
+        const results = await sequelize.query(cachedFriendsQuery, {
             bind: [userId],
             type: QueryTypes.SELECT,
         });
