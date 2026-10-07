@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { render, waitFor } from "@testing-library/react-native";
 
 import { HomeScreen } from "../HomeScreen";
 
@@ -61,7 +61,6 @@ jest.mock("../../components/HomeScreen/XpRing", () => {
   };
 });
 
-jest.mock("../../helpers/Ranks/getUserRank", () => jest.fn(() => undefined));
 jest.mock("../../helpers/ErrorHandler", () => jest.fn());
 jest.mock("../../watermelon/sync", () => ({ sync: jest.fn() }));
 jest.mock("@nozbe/watermelondb/sync", () => ({ hasUnsyncedChanges: jest.fn(() => Promise.resolve(false)) }));
@@ -101,7 +100,8 @@ describe("HomeScreen progress fields", () => {
 
   const baseUser = {
     id: "user-1",
-    totalMiles: "12.34",
+    totalMiles: "999.00",
+    calculateTotalMiles: jest.fn(() => Promise.resolve(12.34)),
     trailProgress: "1.25",
     trailTokens: 77,
     dailyStreak: 3,
@@ -115,7 +115,7 @@ describe("HomeScreen progress fields", () => {
 
   const navigation = { navigate: jest.fn() };
 
-  it("renders Home progress from the observed WatermelonDB props", () => {
+  it("renders Home progress from the observed WatermelonDB props", async () => {
     const activeWilds = [
       {
         wildId: "ember",
@@ -136,8 +136,12 @@ describe("HomeScreen progress fields", () => {
     );
 
     expect(screen.getByTestId("trail-tokens")).toHaveTextContent("77");
-    expect(screen.getByTestId("current-wild")).toHaveTextContent("Current Wild: ember");
-    expect(screen.getByTestId("wild-xp")).toHaveTextContent("Wild XP: 42 / 100");
+    await waitFor(() => {
+      expect(baseUser.calculateTotalMiles).toHaveBeenCalled();
+      expect(screen.getByTestId("total-miles")).toHaveTextContent("12.3");
+    });
+    expect(screen.getByTestId("current-wild")).toHaveTextContent("ember");
+    expect(screen.getByTestId("wild-xp")).toHaveTextContent("42 / 100 XP");
     expect(screen.getByTestId("wild-avatar")).toHaveTextContent("ember");
     expect(screen.getByTestId("current-trail")).toHaveTextContent("MVP Trail");
     expect(screen.getByTestId("distance-progress-props")).toHaveTextContent("1.25:MVP Trail:3.50");

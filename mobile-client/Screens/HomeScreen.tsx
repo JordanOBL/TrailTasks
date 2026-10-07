@@ -14,14 +14,12 @@ import DistanceProgressBar from "../components/DistanceProgressBar";
 import FullTrailDetails from "../types/fullTrailDetails";
 import HomeScreenLinks from "../components/HomeScreen/HomeScreenLinks";
 import { Q } from "@nozbe/watermelondb";
-import { Rank } from "../helpers/Ranks/ranksData";
 /* eslint-disable react-native/no-inline-styles */
 import React from "react";
 import SyncButton from "../components/syncButton";
 import TutorialModal from "../components/HomeScreen/tutorialModal";
 import WildAvatar from "../components/Wilds/WildAvatar";
 import XpRing from "../components/HomeScreen/XpRing";
-import getUserRank from "../helpers/Ranks/getUserRank";
 import handleError from "../helpers/ErrorHandler";
 import { hasUnsyncedChanges } from "@nozbe/watermelondb/sync";
 import { sync } from "../watermelon/sync";
@@ -36,6 +34,7 @@ interface Props {
   currentTrail?: any;
   navigation: any;
   setUser: any;
+  userSessions?: any[];
   userWilds: any;
   activeWilds: User_Wild[];
 }
@@ -44,27 +43,22 @@ export const HomeScreen: React.FC<Props> = ({
   user,
   navigation,
   currentTrail,
+  userSessions,
   userWilds,
   activeWilds,
 }) => {
   const watermelonDatabase = useDatabase();
   const { theme } = useTheme();
 
-  const userRankRef = React.useRef<Rank | undefined>({
-    level: "loading",
-    group: "loading",
-    image: null,
-    range: [],
-    title: "loading",
-  });
   const { isConnected } = useInternetConnection();
   const [showTutorial, setShowTutorial] = React.useState(false);
   const [featuredTrail, setFeaturedTrail] = React.useState<FullTrailDetails | null>(null);
+  const [totalMiles, setTotalMiles] = React.useState<number | null>(null);
   const styles = getStyles(theme); // dynamically generate styles based on theme
-  userRankRef.current = React.useMemo(() => getUserRank(user?.totalMiles), [user?.totalMiles]);
   const [activeWild] = activeWilds;
   const { width: windowWidth } = useWindowDimensions();
   const progressBarWidth = Math.max(220, windowWidth - 56);
+  const totalMilesLabel = totalMiles === null ? "0.0" : totalMiles.toFixed(1);
   const trailProgress = Number(user?.trailProgress ?? 0);
   const trailDistance = Number(currentTrail?.trailDistance ?? 0);
   const trailPercent =
@@ -83,19 +77,41 @@ export const HomeScreen: React.FC<Props> = ({
   const handleTutorialClose = () => {
     setShowTutorial(false); // Close the tutorial modal
   };
-  // Show the tutorial modal for new users with no recorded miles.
   React.useEffect(() => {
-    //Check to see if user is new to the app by checking if theyve hiked any miles
-    //if not, show the tutorial Modal
-    // Check if the user has any miles hiked
+    let isMounted = true;
 
-    if (user?.totalMiles <= 0.0) {
-      setShowTutorial(true); // Show the tutorial if the user has no miles hiked
-    } else {
-      setShowTutorial(false);
+    async function loadDerivedTotalMiles() {
+      try {
+        if (!user?.calculateTotalMiles) {
+          setTotalMiles(null);
+          return;
+        }
+
+        const calculatedTotalMiles = await user.calculateTotalMiles();
+        if (isMounted) {
+          setTotalMiles(Number(calculatedTotalMiles) || 0);
+        }
+      } catch (err) {
+        handleError(err, "loadDerivedTotalMiles HomeScreen");
+      }
     }
-  }, [user, userWilds]);
-  //this useEffect gets the correct Rank based on  the users miles
+
+    loadDerivedTotalMiles();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, userSessions]);
+
+  // Show the tutorial modal for new users with no derived completed-session miles.
+  React.useEffect(() => {
+    if (totalMiles === null) {
+      return;
+    }
+
+    setShowTutorial(totalMiles <= 0.0);
+  }, [totalMiles]);
+
   useFocusEffect(
     React.useCallback(() => {
       async function loadFeaturedTrail() {
@@ -170,80 +186,95 @@ export const HomeScreen: React.FC<Props> = ({
       {/* <SyncIndicator delay={3000} /> */}
       {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.statusRow}>
-          <View style={styles.statPill}>
-            <Text testID="trail-tokens" style={styles.statValue}>
-              {user?.trailTokens}
-            </Text>
-            <Text style={styles.statLabel}>Tokens</Text>
+        <View style={styles.heroCard}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.heroCopy}>
+              <Text style={styles.sectionEyebrow}>Today</Text>
+              <Text style={styles.heroTitle}>Ready for a focused hike?</Text>
+            </View>
+            <View style={styles.syncStatus}>
+              <Text style={[styles.onlineStatus, { color: isConnected ? "#2ecc71" : "#ff6b6b" }]}>
+                {isConnected ? "Online" : "Offline"}
+              </Text>
+              {/* <SyncButton /> */}
+            </View>
           </View>
-          <View style={styles.statPill}>
-            <Text style={styles.statValue} testID="daily-streak">
-              {user?.dailyStreak}
-            </Text>
-            <Text style={styles.statLabel}>Day Streak</Text>
-          </View>
-          <View style={styles.syncStatus}>
-            <Text style={[styles.onlineStatus, { color: isConnected ? "#2ecc71" : "#ff6b6b" }]}>
-              {isConnected ? "Online" : "Offline"}
-            </Text>
-            {/* <SyncButton /> */}
+
+          <View style={styles.statusRow}>
+            <View style={styles.statPill}>
+              <Text testID="trail-tokens" style={styles.statValue}>
+                {user?.trailTokens}
+              </Text>
+              <Text style={styles.statLabel}>Tokens</Text>
+            </View>
+            <View style={styles.statPill}>
+              <Text style={styles.statValue} testID="daily-streak">
+                {user?.dailyStreak}
+              </Text>
+              <Text style={styles.statLabel}>Day streak</Text>
+            </View>
+            <View style={styles.statPill}>
+              <Text testID="total-miles" style={styles.statValue}>
+                {totalMilesLabel}
+              </Text>
+              <Text style={styles.statLabel}>Miles</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.dashboardRow}>
-          <View style={styles.wildCard}>
-            <View style={styles.cardHeaderRow}>
-              <Text style={styles.sectionEyebrow}>Active Wild</Text>
-            </View>
+        <View style={styles.trailCard}>
+          <Text style={styles.sectionEyebrow}>Current Trail</Text>
+          <Text testID="current-trail" style={styles.trailName} numberOfLines={2}>
+            {currentTrail.trailName}
+          </Text>
+          <View style={styles.progressHeaderRow}>
+            <Text style={styles.trailPercent}>{trailPercent.toFixed(0)}% complete</Text>
+            <Text style={styles.trailDistanceMeta}>
+              {trailProgress.toFixed(2)} / {trailDistance.toFixed(2)} mi
+            </Text>
+          </View>
+          <DistanceProgressBar
+            user={user}
+            currentTrail={currentTrail}
+            height={10}
+            borderRadius={999}
+            barColor={"#00998aff"}
+            width={progressBarWidth}
+          />
+
+          <View style={styles.sessionRow}>
             {activeWild ? (
-              <>
-                <XpRing
-                  size={112}
-                  xp={activeWild.xp}
-                  xpToLevel={activeWild.xpToNext}
-                  ringColor={"#00998aff"}>
-                  <WildAvatar id={activeWild.wildId} pose={"wave"} size={92} animated={true} />
+              <View style={styles.wildInlineCard}>
+                <XpRing size={60} xp={activeWild.xp} xpToLevel={activeWild.xpToNext} ringColor={"#00998aff"}>
+                  <WildAvatar id={activeWild.wildId} pose={"wave"} size={46} animated={true} />
                 </XpRing>
-                <Text testID="current-wild" style={styles.wildInfo} numberOfLines={1}>
-                  Current Wild: {activeWild.wildId}
-                </Text>
-                <Text testID="wild-xp" style={styles.wildMeta}>
-                  Wild XP: {activeWild.xp} / {activeWild.xpToNext}
-                </Text>
-              </>
+                <View style={styles.wildInlineCopy}>
+                  <Text testID="current-wild" style={styles.wildInfo} numberOfLines={1}>
+                    {activeWild.wildId}
+                  </Text>
+                  <Text testID="wild-xp" style={styles.wildMeta}>
+                    {activeWild.xp} / {activeWild.xpToNext} XP
+                  </Text>
+                </View>
+              </View>
             ) : (
-              <View style={styles.emptyWildState}>
-                <Text style={styles.wildInfo}>No Active Wild</Text>
-                <Text style={styles.wildMeta}>Choose a companion to earn XP.</Text>
+              <View style={styles.wildInlineCard}>
+                <View style={styles.emptyWildAvatar} />
+                <View style={styles.wildInlineCopy}>
+                  <Text style={styles.wildInfo}>No Active Wild</Text>
+                  <Text style={styles.wildMeta}>Choose a companion.</Text>
+                </View>
               </View>
             )}
-          </View>
 
-          <View style={styles.trailCard}>
-            <Text style={styles.sectionEyebrow}>Current Trail</Text>
-            <Text testID="current-trail" style={styles.trailName} numberOfLines={2}>
-              {currentTrail.trailName}
-            </Text>
-            <Text style={styles.trailPercent}>{trailPercent.toFixed(0)}% complete</Text>
-            <DistanceProgressBar
-              user={user}
-              currentTrail={currentTrail}
-              height={12}
-              borderRadius={999}
-              barColor={"#00998aff"}
-              width={progressBarWidth}
-            />
             <TouchableOpacity
               activeOpacity={0.85}
               style={styles.ctaButton}
               onPress={() => navigation.navigate("Timer")}>
-              <Text style={styles.ctaText}>Start a Session</Text>
+              <Text style={styles.ctaText}>Start</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        <HomeScreenLinks user={user} navigation={navigation} />
 
         <TouchableOpacity
           activeOpacity={0.88}
@@ -253,17 +284,17 @@ export const HomeScreen: React.FC<Props> = ({
           testID="featured-trail-card">
           <View style={styles.weeklyCopy}>
             <Text style={styles.sectionEyebrow}>Featured Trail</Text>
-            <Text style={styles.weeklyTitle} numberOfLines={2}>
+            <Text style={styles.weeklyTitle} numberOfLines={1}>
               {featuredTrail?.trail_name ?? "Featured trail loading"}
             </Text>
-            <Text style={styles.weeklyDescription}>{featuredTrailDescription}</Text>
-            {featuredTrail && <Text style={styles.weeklyCta}>Tap to queue, buy, or start →</Text>}
+            <Text style={styles.weeklyDescription} numberOfLines={1}>
+              {featuredTrailDescription}
+            </Text>
           </View>
-          <View style={styles.bonusBadge}>
-            <Text style={styles.bonusValue}>★</Text>
-            <Text style={styles.bonusLabel}>Bonus</Text>
-          </View>
+          <Text style={styles.weeklyCta}>{featuredTrail ? "View →" : "Sync"}</Text>
         </TouchableOpacity>
+
+        <HomeScreenLinks user={user} navigation={navigation} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -287,9 +318,39 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       backgroundColor: theme.background,
     },
     scrollContent: {
-      padding: 12,
-      paddingBottom: 36,
+      padding: 14,
+      paddingBottom: 32,
       gap: 12,
+    },
+    heroCard: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 20,
+      borderWidth: 1,
+      padding: 16,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 2,
+    },
+    heroTopRow: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: 12,
+      justifyContent: "space-between",
+      marginBottom: 14,
+    },
+    heroCopy: {
+      flex: 1,
+      minWidth: 0,
+    },
+    heroTitle: {
+      color: theme.text,
+      fontSize: 24,
+      fontWeight: "900",
+      letterSpacing: -0.3,
+      lineHeight: 29,
     },
     statusRow: {
       flexDirection: "row",
@@ -298,166 +359,161 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     },
     statPill: {
       flex: 1,
-      backgroundColor: theme.card,
+      backgroundColor: theme.background,
+      borderColor: theme.border,
       borderRadius: 14,
-      paddingVertical: 10,
-      paddingHorizontal: 12,
+      borderWidth: 1,
+      paddingHorizontal: 11,
+      paddingVertical: 9,
       justifyContent: "center",
     },
     statValue: {
       color: theme.button,
-      fontSize: 20,
-      fontWeight: "800",
-      lineHeight: 24,
+      fontSize: 18,
+      fontWeight: "900",
+      lineHeight: 22,
     },
     statLabel: {
       color: theme.secondaryText,
-      fontSize: 11,
-      fontWeight: "600",
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 0.4,
       marginTop: 2,
       textTransform: "uppercase",
-      letterSpacing: 0.4,
     },
     syncStatus: {
-      minWidth: 82,
-      backgroundColor: theme.card,
-      borderRadius: 14,
-      paddingVertical: 8,
-      paddingHorizontal: 8,
       alignItems: "center",
+      backgroundColor: theme.background,
+      borderColor: theme.border,
+      borderRadius: 999,
+      borderWidth: 1,
       justifyContent: "center",
-    },
-    dashboardRow: {
-      gap: 12,
-    },
-    wildCard: {
-      minHeight: 176,
-      padding: 16,
-      borderRadius: 18,
-      backgroundColor: theme.card,
-      alignItems: "center",
-      justifyContent: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
-      shadowRadius: 6,
-      elevation: 3,
+      minWidth: 74,
+      paddingHorizontal: 10,
+      paddingVertical: 7,
     },
     trailCard: {
       padding: 16,
-      borderRadius: 18,
+      borderRadius: 20,
+      borderColor: theme.border,
+      borderWidth: 1,
       backgroundColor: theme.card,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
-      shadowRadius: 6,
-      elevation: 3,
-    },
-    cardHeaderRow: {
-      alignSelf: "stretch",
-      alignItems: "flex-start",
-      marginBottom: 6,
-    },
-    emptyWildState: {
-      minHeight: 112,
-      alignItems: "center",
-      justifyContent: "center",
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 2,
     },
     sectionEyebrow: {
-      fontSize: 12,
+      fontSize: 11,
       color: theme.secondaryText,
-      fontWeight: "700",
+      fontWeight: "900",
       textAlign: "left",
-      marginBottom: 4,
+      marginBottom: 5,
       textTransform: "uppercase",
-      letterSpacing: 0.5,
+      letterSpacing: 0.65,
+    },
+    progressHeaderRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 8,
+      marginTop: 8,
     },
     trailPercent: {
       color: theme.secondaryText,
       fontSize: 13,
-      fontWeight: "600",
-      marginBottom: 8,
+      fontWeight: "800",
+    },
+    trailDistanceMeta: {
+      color: theme.secondaryText,
+      fontSize: 12,
+      fontWeight: "700",
+    },
+    sessionRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 14,
+    },
+    wildInlineCard: {
+      alignItems: "center",
+      backgroundColor: theme.background,
+      borderColor: theme.border,
+      borderRadius: 16,
+      borderWidth: 1,
+      flex: 1,
+      flexDirection: "row",
+      gap: 10,
+      minHeight: 72,
+      padding: 8,
+    },
+    wildInlineCopy: {
+      flex: 1,
+      minWidth: 0,
+    },
+    emptyWildAvatar: {
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 999,
+      borderWidth: 1,
+      height: 48,
+      width: 48,
     },
     ctaButton: {
       backgroundColor: theme.progressBar,
-      paddingVertical: 12,
-      paddingHorizontal: 18,
-      borderRadius: 12,
+      paddingVertical: 16,
+      paddingHorizontal: 22,
+      borderRadius: 16,
       alignItems: "center",
       justifyContent: "center",
-      alignSelf: "stretch",
-      marginTop: 8,
+      minWidth: 94,
       shadowColor: theme.progressBar,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.28,
+      shadowOpacity: 0.2,
       shadowRadius: 10,
-      elevation: 4,
+      elevation: 3,
     },
     ctaText: {
       color: "#000",
       fontSize: 16,
-      fontWeight: "700",
-      letterSpacing: 0.5,
+      fontWeight: "900",
+      letterSpacing: 0.3,
     },
     weeklyTrailCard: {
       flexDirection: "row",
-      gap: 14,
-      padding: 16,
+      gap: 12,
+      padding: 14,
       borderRadius: 18,
+      borderColor: theme.border,
+      borderWidth: 1,
       backgroundColor: theme.card,
       alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.12,
-      shadowRadius: 6,
-      elevation: 3,
     },
     disabledWeeklyTrailCard: {
       opacity: 0.72,
     },
     weeklyCopy: {
       flex: 1,
+      minWidth: 0,
     },
     weeklyTitle: {
-      color: theme.button,
-      fontSize: 19,
-      fontWeight: "800",
-      marginBottom: 6,
+      color: theme.text,
+      fontSize: 16,
+      fontWeight: "900",
+      marginBottom: 3,
     },
     weeklyDescription: {
       color: theme.secondaryText,
-      fontSize: 13,
-      fontWeight: "500",
-      lineHeight: 18,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 17,
     },
     weeklyCta: {
       color: theme.button,
-      fontSize: 12,
-      fontWeight: "800",
-      marginTop: 8,
-    },
-    bonusBadge: {
-      width: 74,
-      height: 74,
-      borderRadius: 37,
-      backgroundColor: theme.background,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      borderColor: theme.progressBar,
-    },
-    bonusValue: {
-      color: "gold",
-      fontSize: 22,
+      fontSize: 13,
       fontWeight: "900",
-      lineHeight: 26,
-    },
-    bonusLabel: {
-      color: "gold",
-      fontSize: 10,
-      fontWeight: "700",
-      textTransform: "uppercase",
-      letterSpacing: 0.3,
+      marginLeft: 6,
     },
     loadingContainer: {
       flex: 1,
