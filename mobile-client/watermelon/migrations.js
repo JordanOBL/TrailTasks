@@ -8,15 +8,15 @@
 import { addColumns, createTable, schemaMigrations } from "@nozbe/watermelondb/Schema/migrations";
 
 export default schemaMigrations({
-  migrations: [
-    {
-      toVersion: 2,
-      steps: [
-        addColumns({
-          table: "trails",
-          columns: [{ name: "is_pro_only", type: "boolean", isIndexed: true }],
-        }),
-      ],
-    },
-  ],
+  // migrations: [
+  //   {
+  //     toVersion: 2,
+  //     steps: [
+  //       addColumns({
+  //         table: "trails",
+  //         columns: [{ name: "is_pro_only", type: "boolean", isIndexed: true }],
+  //       }),
+  //     ],
+  //   },
+  // ],
 });

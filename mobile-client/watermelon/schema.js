@@ -34,12 +34,6 @@ const schema = appSchema({
           defaultValue: false,
         },
         {
-          name: "is_subscribers_only",
-          type: "boolean",
-          isIndexed: true,
-          defaultValue: false,
-        },
-        {
           name: "is_pro_only",
           type: "boolean",
           isIndexed: true,
