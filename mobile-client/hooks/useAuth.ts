@@ -134,6 +134,7 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
       confirmPassword: string;
       username: string;
     }) => {
+      let pendingRegistrationUser: any = null;
       try {
         setError("");
         setLoading(true);
@@ -162,20 +163,31 @@ export function useAuth({ watermelonDatabase, initialUser = null }: UseAuthParam
           return;
         }
 
-        // Otherwise create user in local DB
-        const newUser = await createNewUser({
+        // Create a local Watermelon row so sync can push the account, but do not
+        // mark the app logged in until the server confirms that push succeeds.
+        pendingRegistrationUser = await createNewUser({
           email: email.toLowerCase(),
           password,
           username: username.toLowerCase(),
           watermelonDatabase,
         });
-        if (newUser) {
-          // Possibly set user in state after register
-          setUser(newUser);
-          await sync(watermelonDatabase, isConnected, newUser.id);
+        if (pendingRegistrationUser) {
+          await sync(watermelonDatabase, isConnected, pendingRegistrationUser.id);
+          await setLocalStorageUser(pendingRegistrationUser, watermelonDatabase);
+          setUser(pendingRegistrationUser);
         }
         setLoading(false);
       } catch (err) {
+        if (pendingRegistrationUser?.markAsDeleted) {
+          try {
+            await watermelonDatabase.write(async () => {
+              await pendingRegistrationUser.markAsDeleted();
+            });
+          } catch (cleanupErr) {
+            handleError(cleanupErr, "register cleanup in useAuth");
+          }
+        }
+        setError("Account creation could not be confirmed. Please try again while online.");
         setLoading(false);
         handleError(err, "register in useAuth");
       }
