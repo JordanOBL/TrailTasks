@@ -124,9 +124,6 @@ export const createNewUser = async ({
 
 
 		if (newUser && newUser.id.length > 0) {
-			await watermelonDatabase.localStorage.set('user_id', newUser.id);
-			await watermelonDatabase.localStorage.set('username', newUser.username);
-
 			return newUser;
 		}
 	} catch (err) {
