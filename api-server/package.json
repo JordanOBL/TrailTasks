@@ -16,7 +16,9 @@
     "db:migrate": "node src/db/migrator.mjs up",
     "db:migrate:status": "node src/db/migrator.mjs pending",
     "db:migrate:executed": "node src/db/migrator.mjs executed",
-    "db:migrate:undo": "node src/db/migrator.mjs down"
+    "db:migrate:undo": "node src/db/migrator.mjs down",
+    "trails:apply-access-policy": "node src/scripts/applyTrailAccessPolicy.mjs",
+    "trails:reroll-monthly": "node src/scripts/rerollMonthlyTrailAccess.mjs"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
