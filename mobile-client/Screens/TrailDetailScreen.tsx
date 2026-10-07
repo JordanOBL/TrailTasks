@@ -19,6 +19,10 @@ import FullTrailDetails from "../types/fullTrailDetails";
 import { Q } from "@nozbe/watermelondb";
 import { Trail } from "../watermelon/models";
 import calculateEstimatedTime from "../helpers/calculateEstimatedTime";
+import {
+  calculateCompletedTrailRewardTokens,
+  calculateTrailUnlockCost,
+} from "../helpers/Trails/trailEconomy";
 import formatDateTime from "../helpers/formatDateTime";
 import handleError from "../helpers/ErrorHandler";
 import { useAuthContext } from "../services/AuthContext";
@@ -60,16 +64,21 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     () => !!trail && completedTrails.some(t => t.trailId === trail.id),
     [completedTrails, trail],
   );
-  const canUseTrail = isFreeTrail || isPurchased || (isProOnly && isProMember);
+  const isAlreadyAccessible = isFreeTrail || isPurchased || isCompleted;
+  const canUseTrail = user?.trailId === trail?.id || isAlreadyAccessible;
+  const unlockCost = calculateTrailUnlockCost(trail?.trail_distance ?? 0);
+  const canBuyWithTokens =
+    !!trail &&
+    !canUseTrail &&
+    (isProMember || !isProOnly) &&
+    Number(user?.trailTokens ?? 0) >= unlockCost;
+  const missingTrailTokens = Math.max(0, unlockCost - Number(user?.trailTokens ?? 0));
   const hasExternalLinks = Boolean(
     trail?.nps_url || trail?.all_trails_url || trail?.hiking_project_url,
   );
   const isTrailOfTheWeek = Boolean(trail?.trail_of_the_week);
   const reward = useMemo(() => {
-    const trailDistance = Number(trail?.trail_distance ?? 0);
-    return trail?.trail_of_the_week
-      ? Math.ceil(trailDistance) * 10
-      : Math.max(5, Math.ceil(trailDistance * 3));
+    return calculateCompletedTrailRewardTokens(trail?.trail_distance ?? 0);
   }, [trail]);
   const status = useMemo(() => {
     if (user?.trailId === trail?.id) return { label: "Currently Hiking", tone: "active" as const };
@@ -79,9 +88,8 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     if (isFreeTrail) return { label: "Starter Trail", tone: "open" as const };
     if (isPurchased) return { label: "Purchased", tone: "open" as const };
     if (isProOnly && !isProMember) return { label: "Pro", tone: "locked" as const };
-    if (isProOnly && isProMember)
-      return { label: "Included with Pro", tone: "open" as const };
-    return { label: "Unlock", tone: "locked" as const };
+    if (canBuyWithTokens) return { label: "Unlock", tone: "locked" as const };
+    return { label: "Locked", tone: "locked" as const };
   }, [
     isCompleted,
     isFreeTrail,
@@ -89,6 +97,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     isPurchased,
     isQueued,
     isProOnly,
+    canBuyWithTokens,
     trail?.id,
     user?.trailId,
   ]);
@@ -191,7 +200,8 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     if (user?.trailId === trail?.id) return "In Progress";
     if (canUseTrail) return "Start Now";
     if (isProOnly && !isProMember) return "View Pro";
-    return `Buy ${reward}`;
+    if (missingTrailTokens > 0) return `Need ${missingTrailTokens} more tokens`;
+    return `Buy ${unlockCost}`;
   };
 
   const handleReplaceTrail = async () => {
@@ -251,7 +261,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
         trail={trail}
         trailTokens={user?.trailTokens}
         onBuyTrail={async () => {
-          await user?.purchaseTrail(trail, reward);
+          await user?.purchaseTrail(trail, unlockCost);
         }}
       />
 
@@ -398,7 +408,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
                   });
 
                   return;
-                } else {
+                } else if (canBuyWithTokens) {
                   handleBuyTrail();
                 }
               }}

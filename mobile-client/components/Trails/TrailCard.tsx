@@ -34,7 +34,7 @@ const TrailCard = React.memo(({ trail, isQueued, handleTrailPress }: Props) => {
     if (isPurchased) return { label: "Purchased", tone: "open" as const };
     if (isProLocked) return { label: "Pro", tone: "locked" as const };
     if (isProOnly && isProMember)
-      return { label: "Included with Pro", tone: "open" as const };
+      return { label: "Pro Eligible", tone: "locked" as const };
     return { label: "Unlock", tone: "locked" as const };
   };
 
