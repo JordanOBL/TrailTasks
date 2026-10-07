@@ -20,7 +20,6 @@ import SyncButton from "../components/syncButton";
 import TutorialModal from "../components/HomeScreen/tutorialModal";
 import WildAvatar from "../components/Wilds/WildAvatar";
 import XpRing from "../components/HomeScreen/XpRing";
-import checkDailyStreak from "../helpers/Session/checkDailyStreak";
 import getUserRank from "../helpers/Ranks/getUserRank";
 import handleError from "../helpers/ErrorHandler";
 import { hasUnsyncedChanges } from "@nozbe/watermelondb/sync";
@@ -72,11 +71,8 @@ export const HomeScreen: React.FC<Props> = ({
   const handleTutorialClose = () => {
     setShowTutorial(false); // Close the tutorial modal
   };
-  //this useEffect checks daily streak and resets if needed
+  // Show the tutorial modal for new users with no recorded miles.
   React.useEffect(() => {
-    if (user) {
-      checkDailyStreak(user);
-    }
     //Check to see if user is new to the app by checking if theyve hiked any miles
     //if not, show the tutorial Modal
     // Check if the user has any miles hiked
