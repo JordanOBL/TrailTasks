@@ -120,6 +120,43 @@ Examples:
 
 For pre-release development data, do not preserve `users.trail_tokens` as authoritative history. Create future token balances from transaction rows going forward. If a dev account needs a starting balance, create an explicit `manual_adjustment` or `registration_bonus` row instead of copying an unexplained summary field.
 
+## Admin adjustment example
+
+Example PostgreSQL query to grant a user 100 Trail Tokens as a support/admin repair:
+
+```sql
+INSERT INTO token_transactions (
+  id,
+  user_id,
+  amount,
+  type,
+  source_type,
+  source_id,
+  idempotency_key,
+  balance_after,
+  rule_version,
+  metadata
+)
+VALUES (
+  'admin-adjustment-2026-10-07-user-123',
+  'user-123',
+  100,
+  'manual_adjustment',
+  'admin_adjustment',
+  NULL,
+  'manual_adjustment:user-123:support-ticket-123',
+  (
+    SELECT COALESCE(SUM(amount), 0) + 100
+    FROM token_transactions
+    WHERE user_id = 'user-123'
+  ),
+  'manual-v1',
+  '{"reason":"Support repair","ticket":"support-ticket-123"}'::jsonb
+);
+```
+
+Use real unique ids and a stable `idempotency_key` for the specific support case so the same adjustment cannot be inserted twice for that user.
+
 ## Future features enabled
 
 The ledger enables:
