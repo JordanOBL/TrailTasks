@@ -26,3 +26,30 @@ export function calculateCompletedTrailRewardTokens(distance: string | number): 
     Math.ceil(miles * COMPLETED_TRAIL_TOKEN_MULTIPLIER),
   );
 }
+
+
+export const WILD_XP_PER_MILE = 10;
+export const TIME_TOKEN_INTERVAL_MINUTES = 15;
+export const TIME_TOKEN_INTERVAL_REWARD = 5;
+export const TIME_TOKEN_BONUS_INTERVAL_MINUTES = 45;
+export const TIME_TOKEN_BONUS_MULTIPLIER = 0.25;
+
+export function calculateActiveWildXpReward(distance: string | number): number {
+  return Math.floor(parseTrailDistanceMiles(distance)) * WILD_XP_PER_MILE;
+}
+
+export function calculateTimeRewardTokens(totalMinutes: string | number): number {
+  const minutes = typeof totalMinutes === "number" ? totalMinutes : Number.parseFloat(totalMinutes);
+  const safeMinutes = Number.isFinite(minutes) && minutes > 0 ? Math.floor(minutes) : 0;
+
+  if (safeMinutes < TIME_TOKEN_INTERVAL_MINUTES) {
+    return 0;
+  }
+
+  const baseTokens =
+    Math.floor(safeMinutes / TIME_TOKEN_INTERVAL_MINUTES) * TIME_TOKEN_INTERVAL_REWARD;
+  const bonusMultiplier =
+    Math.floor(safeMinutes / TIME_TOKEN_BONUS_INTERVAL_MINUTES) * TIME_TOKEN_BONUS_MULTIPLIER;
+
+  return baseTokens + Math.floor(baseTokens * bonusMultiplier);
+}
