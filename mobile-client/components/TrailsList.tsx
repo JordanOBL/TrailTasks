@@ -1,5 +1,5 @@
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   User,
   User_Completed_Trail,
@@ -43,6 +43,8 @@ const TrailsList = ({
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const listRef = useRef<FlatList<FullTrailDetails>>(null);
   const { theme } = useTheme();
   const { isProMember } = useAuthContext();
   const navigation = useNavigation();
@@ -55,6 +57,10 @@ const TrailsList = ({
     },
     [navigation],
   );
+
+  const scrollToTop = useCallback(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -176,6 +182,7 @@ const TrailsList = ({
   return (
     <View style={styles.container}>
       <FlatList
+        ref={listRef}
         data={filteredTrails}
         renderItem={renderTrailItem}
         keyExtractor={(item, index) => `${item.id}-${index}`}
@@ -191,7 +198,22 @@ const TrailsList = ({
         maxToRenderPerBatch={5}
         windowSize={10}
         removeClippedSubviews={true}
+        onScroll={event => {
+          const offsetY = event.nativeEvent.contentOffset.y;
+          setShowScrollTop(offsetY > 700);
+        }}
+        scrollEventThrottle={16}
       />
+      {showScrollTop && (
+        <TouchableOpacity
+          accessibilityLabel="Scroll to top"
+          accessibilityRole="button"
+          activeOpacity={0.86}
+          onPress={scrollToTop}
+          style={styles.scrollTopButton}>
+          <Text style={styles.scrollTopText}>↑ Top</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -324,5 +346,25 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       fontSize: 14,
       fontWeight: "600",
       textAlign: "center",
+    },
+    scrollTopButton: {
+      alignItems: "center",
+      backgroundColor: theme.button,
+      borderRadius: 999,
+      bottom: 22,
+      elevation: 5,
+      paddingHorizontal: 18,
+      paddingVertical: 12,
+      position: "absolute",
+      right: 18,
+      shadowColor: theme.shadow,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.22,
+      shadowRadius: 14,
+    },
+    scrollTopText: {
+      color: theme.buttonText,
+      fontSize: 14,
+      fontWeight: "900",
     },
   });
