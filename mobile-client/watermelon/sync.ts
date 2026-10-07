@@ -107,6 +107,17 @@ export function roundToHundredths(value: unknown) {
   return Number((Number(value) || 0).toFixed(2));
 }
 
+function normalizeOptionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") return value;
+  return Number(value) || 0;
+}
+
+function normalizeOptionalDate(value: unknown) {
+  if (value === null || value === undefined || value === "") return value;
+  const dateValue = new Date(value as any).getTime();
+  return Number.isNaN(dateValue) ? value : dateValue;
+}
+
 export function resolveFullUserSyncConflict(
   table: string,
   local: RawRecord,
@@ -256,6 +267,10 @@ function normalizeRemoteRow(tableName: string, row: RawRecord) {
     return {
       ...row,
       password: row.password || "",
+      daily_streak: normalizeOptionalNumber(row.daily_streak),
+      last_daily_streak_date: normalizeOptionalDate(row.last_daily_streak_date),
+      trail_tokens: normalizeOptionalNumber(row.trail_tokens),
+      prestige_level: normalizeOptionalNumber(row.prestige_level),
     };
   }
 

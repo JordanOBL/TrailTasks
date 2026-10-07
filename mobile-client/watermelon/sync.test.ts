@@ -171,6 +171,33 @@ describe("sync helpers", () => {
     });
   });
 
+  it("normalizes pulled user streak fields before Watermelon applies account changes", () => {
+    const changes = normalizeRemoteChanges({
+      users: {
+        created: [],
+        updated: [
+          {
+            id: "user-1",
+            email: "user@example.com",
+            username: "user",
+            daily_streak: "1",
+            last_daily_streak_date: "2026-10-06",
+            trail_tokens: "70",
+            prestige_level: "0",
+          },
+        ],
+        deleted: [],
+      },
+    });
+
+    expect(changes.users.updated[0]).toMatchObject({
+      daily_streak: 1,
+      last_daily_streak_date: new Date("2026-10-06").getTime(),
+      trail_tokens: 70,
+      prestige_level: 0,
+    });
+  });
+
   it("uses scoped replacement only for account tables during full account pulls", () => {
     const strategy = buildFullUserSyncStrategy("user-1");
 
