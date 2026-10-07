@@ -122,7 +122,7 @@ For pre-release development data, do not preserve `users.trail_tokens` as author
 
 ## Admin adjustment example
 
-Example PostgreSQL query to grant a user 100 Trail Tokens as a support/admin repair:
+Example PostgreSQL query to add 100 Trail Tokens to a user's current balance as a support/admin repair:
 
 ```sql
 INSERT INTO token_transactions (
@@ -135,7 +135,9 @@ INSERT INTO token_transactions (
   idempotency_key,
   balance_after,
   rule_version,
-  metadata
+  metadata,
+  created_at,
+  updated_at
 )
 VALUES (
   'admin-adjustment-2026-10-07-user-123',
@@ -151,11 +153,13 @@ VALUES (
     WHERE user_id = 'user-123'
   ),
   'manual-v1',
-  '{"reason":"Support repair","ticket":"support-ticket-123"}'::jsonb
+  '{"reason":"Support repair","ticket":"support-ticket-123"}'::jsonb,
+  NOW(),
+  NOW()
 );
 ```
 
-Use real unique ids and a stable `idempotency_key` for the specific support case so the same adjustment cannot be inserted twice for that user.
+`COALESCE(SUM(amount), 0) + 100` calculates the `balance_after` snapshot: current derived balance plus this adjustment. Use real unique ids and a stable `idempotency_key` for the specific support case so the same adjustment cannot be inserted twice for that user. Include `created_at` and `updated_at` explicitly when running manual SQL against databases that do not apply timestamp defaults.
 
 ## Future features enabled
 
