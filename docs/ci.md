@@ -1,8 +1,10 @@
 # CI quality gates
 
-Trail Tasks uses GitHub Actions to run the practical MVP release checks on pull requests and pushes to the integration branch.
+Trail Tasks uses GitHub Actions to run the practical MVP release checks on pull requests targeting `dev` and on pushes to `dev`.
 
 ## Workflow
+
+The workflow is triggered for pull requests whose base branch is `dev`, and for direct pushes to `dev`.
 
 `.github/workflows/quality.yml` runs two jobs:
 
