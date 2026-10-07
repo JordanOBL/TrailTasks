@@ -54,46 +54,6 @@ const SessionScreen = () => {
     setFinalSnapshot(null);
   }, [sessionEngineMgr]);
 
-  // })
-  // const handleEndSession = React.useCallback(async () => {
-  //   try {
-  //     setSessionDetails({ ...sessionDetails, isLoading: true });
-  //     await endSession({ user, setTimer, setSessionDetails, sessionDetails });
-  //     await sync(watermelonDatabase, isConnected, user.id);
-  //     setShowResultsScreen(false);
-  //   } catch (err) {
-  //     handleError(err, 'onEndSession');
-  //   }
-  // }, [sessionDetails, user, isConnected, watermelonDatabase]);
-
-  // const handleShowResultsScreen = React.useCallback(async () => {
-  //   const sessionTokensReward = Rewards.calculateSessionTokens({ setSessionDetails, sessionDetails, timer });
-  //   await Rewards.rewardFinalTokens({ sessionDetails, sessionTokensReward, user });
-  //   setShowResultsScreen(true);
-  // }, [sessionDetails, timer, user]);
-
-  // async function getAchievementsWithCompletion() {
-  //   const query = `SELECT achievements.*,
-  //              CASE WHEN users_achievements.achievement_id IS NOT NULL THEN 1 ELSE 0 END AS completed
-  //              FROM achievements
-  //              LEFT JOIN users_achievements ON achievements.id = users_achievements.achievement_id
-  //              AND users_achievements.user_id = ?`;
-
-  //   try {
-  //     const results = (await watermelonDatabase
-  //       .get('achievements')
-  //       .query(Q.unsafeSqlQuery(query, [user.id]))
-  //       .unsafeFetchRaw()) as AchievementsWithCompletion[];
-  //     if (results.length > 0) {
-  //       setAchievementsWithCompletion(results);
-  //     }
-  //     return;
-  //   } catch (err) {
-  //     handleError( err, 'getAchievementsWithCompletion',);
-  //     return null;
-  //   }
-  // }
-
   if (view == "LOADING") {
     return (
       <View>
