@@ -175,6 +175,22 @@ describe("TrailDetailScreen Pro gating indicators", () => {
     });
   });
 
+  it("previews the unlock cost and completion rewards without crowding the CTA", async () => {
+    const screen = render(
+      <TrailDetailScreen
+        navigation={{ goBack: jest.fn(), navigate: jest.fn() }}
+        route={{ params: { fullTrail: { ...fullTrail, is_free: false, is_pro_only: false } } }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Trail economy")).toBeTruthy();
+    });
+
+    expect(screen.getByText("Unlock 5 · earn 10+ tokens after completion")).toBeTruthy();
+    expect(screen.getByText("+30 Wild XP · time tokens accrue during the session")).toBeTruthy();
+  });
+
   it("shows Pro language for Pro-only trails instead of subscription language", async () => {
     const screen = render(
       <TrailDetailScreen

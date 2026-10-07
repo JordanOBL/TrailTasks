@@ -20,6 +20,7 @@ import { Q } from "@nozbe/watermelondb";
 import { Trail } from "../watermelon/models";
 import calculateEstimatedTime from "../helpers/calculateEstimatedTime";
 import {
+  calculateActiveWildXpReward,
   calculateCompletedTrailRewardTokens,
   calculateTrailUnlockCost,
 } from "../helpers/Trails/trailEconomy";
@@ -80,6 +81,12 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
   const reward = useMemo(() => {
     return calculateCompletedTrailRewardTokens(trail?.trail_distance ?? 0);
   }, [trail]);
+  const wildXpReward = useMemo(() => {
+    return calculateActiveWildXpReward(trail?.trail_distance ?? 0);
+  }, [trail]);
+  const economySubtitle = canUseTrail
+    ? `Complete to earn ${reward} tokens + time rewards`
+    : `Unlock ${unlockCost} · earn ${reward}+ tokens after completion`;
   const status = useMemo(() => {
     if (user?.trailId === trail?.id) return { label: "Currently Hiking", tone: "active" as const };
     if (isCompleted) return { label: "Completed", tone: "success" as const };
@@ -315,20 +322,34 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
               <Text style={styles.statLabel}>Distance</Text>
               <Text style={styles.statValue}>{trail.trail_distance} mi</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statBox}>
               <Text style={styles.statLabel}>Time</Text>
               <Text style={styles.statValue}>
                 {calculateEstimatedTime(Number(trail.trail_distance))}
               </Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statBox}>
               <Text style={styles.statLabel}>Elevation</Text>
               <Text style={styles.statValue}>{trail.trail_elevation} ft</Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Reward</Text>
-              <Text style={styles.statValue}>{reward}</Text>
+          </View>
+
+          <View style={styles.economyPanel}>
+            <View style={styles.economyCopy}>
+              <Text style={styles.economyEyebrow}>Trail economy</Text>
+              <Text style={styles.economyTitle}>{economySubtitle}</Text>
+              <Text style={styles.economyDetail}>
+                +{wildXpReward} Wild XP · time tokens accrue during the session
+              </Text>
             </View>
+            {!canUseTrail && (
+              <View style={styles.costPill}>
+                <Text style={styles.costPillLabel}>Cost</Text>
+                <Text style={styles.costPillValue}>{unlockCost}</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.actionPanel}>
@@ -478,18 +499,20 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     detailCard: {
       backgroundColor: theme.trailCardBackground ?? theme.card,
       borderColor: theme.border,
-      borderRadius: 28,
+      borderRadius: 22,
       borderWidth: 1,
-      margin: 18,
+      marginHorizontal: 16,
+      marginTop: 14,
+      marginBottom: 28,
       overflow: "hidden",
       shadowColor: theme.shadow,
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.24,
-      shadowRadius: 20,
-      elevation: 7,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.16,
+      shadowRadius: 14,
+      elevation: 4,
     },
     heroShell: {
-      height: 300,
+      height: 230,
       justifyContent: "space-between",
       overflow: "hidden",
     },
@@ -591,15 +614,15 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       textTransform: "uppercase",
     },
     heroTitleBlock: {
-      padding: 18,
-      paddingTop: 44,
+      padding: 16,
+      paddingTop: 32,
     },
     trailName: {
       color: "#ffffff",
-      fontSize: 30,
+      fontSize: 25,
       fontWeight: "900",
-      letterSpacing: -0.4,
-      lineHeight: 34,
+      letterSpacing: -0.35,
+      lineHeight: 30,
       textShadowColor: "rgba(0, 0, 0, 0.5)",
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 9,
@@ -612,34 +635,94 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     },
     infoContainer: {
       backgroundColor: theme.trailCardOverlay ?? theme.card,
-      padding: 16,
+      padding: 14,
     },
     statsGrid: {
+      alignItems: "center",
       flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 10,
+      justifyContent: "space-between",
+      paddingHorizontal: 2,
+      paddingVertical: 4,
     },
     statBox: {
-      backgroundColor: theme.card,
-      borderColor: theme.border,
-      borderRadius: 18,
-      borderWidth: 1,
-      flexGrow: 1,
-      minWidth: "46%",
-      paddingHorizontal: 14,
-      paddingVertical: 13,
+      flex: 1,
+      minWidth: 0,
+    },
+    statDivider: {
+      backgroundColor: theme.border,
+      height: 30,
+      marginHorizontal: 10,
+      width: 1,
     },
     statLabel: {
       color: theme.secondaryText,
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: "800",
-      marginBottom: 5,
+      letterSpacing: 0.45,
+      marginBottom: 4,
       textTransform: "uppercase",
     },
     statValue: {
       color: theme.trailCardText ?? theme.text,
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: "900",
+    },
+    economyPanel: {
+      alignItems: "center",
+      backgroundColor: theme.card,
+      borderColor: theme.border,
+      borderRadius: 16,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: 12,
+      marginTop: 14,
+      padding: 14,
+    },
+    economyCopy: {
+      flex: 1,
+      minWidth: 0,
+    },
+    economyEyebrow: {
+      color: theme.secondaryText,
+      fontSize: 10,
+      fontWeight: "900",
+      letterSpacing: 0.6,
+      marginBottom: 5,
+      textTransform: "uppercase",
+    },
+    economyTitle: {
+      color: theme.text,
+      fontSize: 15,
+      fontWeight: "900",
+      lineHeight: 20,
+    },
+    economyDetail: {
+      color: theme.secondaryText,
+      fontSize: 12,
+      fontWeight: "700",
+      lineHeight: 17,
+      marginTop: 4,
+    },
+    costPill: {
+      alignItems: "center",
+      backgroundColor: theme.button,
+      borderRadius: 14,
+      minWidth: 58,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+    },
+    costPillLabel: {
+      color: theme.buttonText,
+      fontSize: 9,
+      fontWeight: "900",
+      letterSpacing: 0.7,
+      textTransform: "uppercase",
+    },
+    costPillValue: {
+      color: theme.buttonText,
+      fontSize: 19,
+      fontWeight: "900",
+      marginTop: 1,
     },
     buttonGroup: { marginTop: 20, gap: 10 },
     actionPanel: {
