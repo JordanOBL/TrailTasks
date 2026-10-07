@@ -16,15 +16,36 @@ Trail Tasks is moving from a laptop-only development setup toward real tester an
 - Laptop-hosted PostgreSQL does not provide production-style durability, automated backups, restore testing, or access controls.
 - The current setup does not prove that migrations, deploys, backups, or rollbacks are safe for real user data.
 
-## Near-term tester environment
+## Environment ladder
 
-The next backend milestone should be a hosted tester environment, separate from production.
+Trail Tasks should use the same environment vocabulary as the developer's work context:
+
+1. `dev` - local developer workflow, currently laptop-hosted API and PostgreSQL.
+2. `sandbox` - disposable cloud learning/playground environment for AWS, Terraform, deployment experiments, and safe breakage.
+3. `preprod` - hosted tester environment for real devices and invited testers before production.
+4. `prod` - production environment for real users and durable customer data.
+
+## Sandbox environment
+
+`sandbox` is where AWS learning and infrastructure experiments should happen before they affect testers.
+
+Goals:
+
+- Practice AWS concepts for certification and real Trail Tasks infrastructure.
+- Try RDS, Terraform, Lambda, App Runner, ECS/Fargate, EC2, or other hosting options without treating the result as stable.
+- Keep data disposable.
+- Make it safe to destroy and recreate infrastructure while learning.
+
+## Preprod tester environment
+
+The next backend milestone should be a hosted `preprod` environment, separate from `dev`, `sandbox`, and future `prod`.
 
 Goals:
 
 - Provide a stable API URL that physical devices can reach without being on the same Wi-Fi network as the developer laptop.
-- Use a database that is separate from local development and separate from future production.
-- Keep tester data disposable enough for MVP iteration, while still practicing safe migration and backup habits.
+- Use a database that is separate from local development, sandbox experiments, and future production.
+- Support real tester flows before production launch.
+- Keep tester data recoverable enough to practice safe migration and backup habits, but do not treat it as production customer data.
 - Avoid introducing production secrets, production payment assumptions, or irreversible data operations too early.
 
 Open decisions:
@@ -35,7 +56,7 @@ Open decisions:
 
 ## Future production direction
 
-A production environment should be designed only after the tester environment proves the basic deployment and data workflow.
+A production environment should be designed only after `preprod` proves the basic deployment and data workflow.
 
 Likely direction:
 
@@ -52,7 +73,7 @@ Important distinction:
 
 ## Database safety rules
 
-- Keep local, tester, and production databases clearly separated.
+- Keep `dev`, `sandbox`, `preprod`, and `prod` databases clearly separated.
 - Do not point development builds at production data.
 - Do not run destructive schema changes without a backup and a rollback plan.
 - Treat user progress, sessions, purchases, and account data as data that must be preserved.
@@ -78,7 +99,7 @@ Future CI/CD should add automated migration checks before deployment.
 
 Backups are only useful if restore has been tested.
 
-Minimum future policy for hosted tester or production databases:
+Minimum future policy for `preprod` or `prod` databases:
 
 - Automated database backups are enabled.
 - A manual backup can be created before risky migrations.
@@ -101,7 +122,7 @@ Future gates to consider:
 - API build check.
 - Database migration dry-run or validation check.
 - Seed data check for tester environments.
-- Deployment workflow for a hosted tester API.
+- Deployment workflow for a hosted `preprod` API.
 - Backup/restore verification workflow for production readiness.
 
 ## Not in scope yet
