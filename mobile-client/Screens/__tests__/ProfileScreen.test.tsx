@@ -51,6 +51,7 @@ describe("ProfileScreen", () => {
     expect(screen.getByText("Free account")).toBeTruthy();
     expect(screen.getByText("Trail Hub")).toBeTruthy();
     expect(screen.getByText("See miles, focus time, and completed session trends.")).toBeTruthy();
+    expect(screen.getByText("Compare progress with other hikers when rankings are enabled.")).toBeTruthy();
     expect(screen.getByText("Plan and manage the trail queue for future hikes.")).toBeTruthy();
   });
 
@@ -60,8 +61,10 @@ describe("ProfileScreen", () => {
     );
 
     fireEvent.press(screen.getByText("Stats"));
-
     expect(mockNavigate).toHaveBeenCalledWith("Stats");
+
+    fireEvent.press(screen.getByText("Leaderboards"));
+    expect(mockNavigate).toHaveBeenCalledWith("Leaderboards");
   });
 
   it("routes locked pro-only profile actions to subscribe for free users", () => {

@@ -31,6 +31,13 @@ const profileLinks: ProfileLink[] = [
     needsActiveSubscription: false,
   },
   {
+    label: "Leaderboards",
+    description: "Compare progress with other hikers when rankings are enabled.",
+    route: "Leaderboards",
+    iconName: "trophy-outline",
+    needsActiveSubscription: false,
+  },
+  {
     label: "Upcoming Trails",
     description: "Plan and manage the trail queue for future hikes.",
     route: "Trail Queue",
