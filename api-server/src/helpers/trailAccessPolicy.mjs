@@ -109,6 +109,10 @@ export async function applyPermanentTrailAccessPolicy(sequelize = Trail.sequeliz
 }
 
 export async function rerollMonthlyTrailAccess(sequelize = Trail.sequelize) {
+  // The monthly pool depends on the permanent policy first marking most trails
+  // as Pro-only. This keeps a fresh/default database from rerolling against an
+  // all-non-Pro catalog and selecting zero monthly bonus trails.
+  await sequelize.query(permanentTrailAccessPolicySql);
   await sequelize.query(monthlyTrailAccessRerollSql);
   const [rows] = await sequelize.query(trailAccessSummarySql);
   return rows[0];

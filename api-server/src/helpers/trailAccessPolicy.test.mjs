@@ -5,6 +5,8 @@ import {
   SAMPLER_PARK_NAMES,
   monthlyTrailAccessRerollSql,
   permanentTrailAccessPolicySql,
+  rerollMonthlyTrailAccess,
+  trailAccessSummarySql,
 } from './trailAccessPolicy.mjs';
 
 describe('trail access policy SQL', () => {
@@ -14,9 +16,19 @@ describe('trail access policy SQL', () => {
     assert.match(permanentTrailAccessPolicySql, /is_free = park_id IN/);
   });
 
-  it('monthly reroll preserves Scout free trails and chooses five bonus trails', () => {
-    assert.match(monthlyTrailAccessRerollSql, /park_id NOT IN \(SELECT park_id FROM scout_park\)/);
-    assert.match(monthlyTrailAccessRerollSql, /WHERE is_pro_only = true/);
-    assert.match(monthlyTrailAccessRerollSql, /LIMIT 5/);
+  it('monthly reroll applies the permanent Pro policy before choosing bonus trails', async () => {
+    const queries = [];
+    const sequelize = {
+      query: async (sql) => {
+        queries.push(sql);
+        return sql === trailAccessSummarySql ? [[{ total_trails: 189 }]] : [];
+      },
+    };
+
+    await rerollMonthlyTrailAccess(sequelize);
+
+    assert.equal(queries[0], permanentTrailAccessPolicySql);
+    assert.equal(queries[1], monthlyTrailAccessRerollSql);
+    assert.equal(queries[2], trailAccessSummarySql);
   });
 });
