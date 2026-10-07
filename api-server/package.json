@@ -5,15 +5,18 @@
   "main": "dist/index.mjs",
   "author": "Jordan",
   "license": "MIT",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "start:dev": "cross-env NODE_ENV=development nodemon src/index.mjs",
     "build": "npm run build-js",
     "start:prod": "cross-env NODE_ENV=production node dist/index.mjs",
     "build-js": "babel src --out-dir dist --copy-files --ignore '**/*.spec.js' && mv dist/index.js dist/index.mjs",
     "test": "node --test $(find src -name '*.test.mjs')",
-    "start:test": "cross-env NODE_ENV=test nodemon src/index.mjs"
-
+    "start:test": "cross-env NODE_ENV=test nodemon src/index.mjs",
+    "db:migrate": "node src/db/migrator.mjs up",
+    "db:migrate:status": "node src/db/migrator.mjs pending",
+    "db:migrate:executed": "node src/db/migrator.mjs executed",
+    "db:migrate:undo": "node src/db/migrator.mjs down"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -24,7 +27,8 @@
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
-    "sequelize-cli": "^6.6.0"
+    "sequelize-cli": "^6.6.0",
+    "umzug": "^3.8.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.8",
