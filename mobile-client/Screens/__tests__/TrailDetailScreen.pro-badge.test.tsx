@@ -42,7 +42,7 @@ jest.mock("../../services/AuthContext", () => ({
     user: {
       id: "user-1",
       trailId: "current-trail",
-      trailTokens: mockTrailTokens,
+      calculateTrailTokenBalance: jest.fn(async () => mockTrailTokens),
       usersQueuedTrails: mockQueuedTrails,
       usersPurchasedTrails: [],
       usersCompletedTrails: [],

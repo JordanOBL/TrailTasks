@@ -33,7 +33,6 @@ const addon = {
 const user = {
   id: "user-1",
   totalMiles: "0.00",
-  trailTokens: 20,
 };
 
 describe("AddOnStore", () => {
@@ -44,6 +43,7 @@ describe("AddOnStore", () => {
         availableAddOns={[addon as any]}
         user={user as any}
         totalMiles={12.25}
+        tokenBalance={20}
         onPurchase={onPurchase}
         usersAddons={[]}
       />,

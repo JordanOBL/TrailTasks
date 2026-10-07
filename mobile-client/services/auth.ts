@@ -1,6 +1,6 @@
 //@ts-nocheck
 import {Database, Q} from '@nozbe/watermelondb';
-import {User} from '../watermelon/models';
+import {Token_Transaction, User} from '../watermelon/models';
 
 import Config from "react-native-config";
 import React from "react";
@@ -114,9 +114,19 @@ export const createNewUser = async ({
 						user.trailProgress = '0.0';
 						user.dailyStreak = 0;
 						user.trailStartedAt = formatDateTime(new Date());
-						user.trailTokens = 50;
 
 					})
+
+			await watermelonDatabase.get<Token_Transaction>('token_transactions').create(transaction => {
+				transaction.userId = newUser.id;
+				transaction.amount = 50;
+				transaction.type = 'registration_bonus';
+				transaction.sourceType = 'user';
+				transaction.sourceId = newUser.id;
+				transaction.idempotencyKey = `registration_bonus:${newUser.id}`;
+				transaction.ruleVersion = 'mvp-v1';
+				transaction.metadata = JSON.stringify({ reason: 'new account registration bonus' });
+			});
 
 			return newUser
 		});

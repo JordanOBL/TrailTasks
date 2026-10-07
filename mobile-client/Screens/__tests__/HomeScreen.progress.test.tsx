@@ -102,8 +102,8 @@ describe("HomeScreen progress fields", () => {
     id: "user-1",
     totalMiles: "999.00",
     calculateTotalMiles: jest.fn(() => Promise.resolve(12.34)),
+    calculateTrailTokenBalance: jest.fn(() => Promise.resolve(77)),
     trailProgress: "1.25",
-    trailTokens: 77,
     dailyStreak: 3,
   };
 
@@ -135,7 +135,10 @@ describe("HomeScreen progress fields", () => {
       />,
     );
 
-    expect(screen.getByTestId("trail-tokens")).toHaveTextContent("77");
+    await waitFor(() => {
+      expect(baseUser.calculateTrailTokenBalance).toHaveBeenCalled();
+      expect(screen.getByTestId("trail-tokens")).toHaveTextContent("77");
+    });
     await waitFor(() => {
       expect(baseUser.calculateTotalMiles).toHaveBeenCalled();
       expect(screen.getByTestId("total-miles")).toHaveTextContent("12.3");

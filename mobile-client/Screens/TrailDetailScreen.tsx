@@ -50,6 +50,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
   const [completedTrails, setCompletedTrails] = useState<any[]>([]);
   const [showReplaceTrailModal, setShowReplaceTrailModal] = useState(false);
   const [showBuyTrailModal, setShowBuyTrailModal] = useState(false);
+  const [tokenBalance, setTokenBalance] = useState(0);
 
   const isFreeTrail = !!trail?.is_free;
   const isProOnly = !!trail?.is_pro_only;
@@ -72,8 +73,8 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     !!trail &&
     !canUseTrail &&
     (isProMember || !isProOnly) &&
-    Number(user?.trailTokens ?? 0) >= unlockCost;
-  const missingTrailTokens = Math.max(0, unlockCost - Number(user?.trailTokens ?? 0));
+    Number(tokenBalance ?? 0) >= unlockCost;
+  const missingTrailTokens = Math.max(0, unlockCost - Number(tokenBalance ?? 0));
   const hasExternalLinks = Boolean(
     trail?.nps_url || trail?.all_trails_url || trail?.hiking_project_url,
   );
@@ -132,6 +133,28 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
     const subscription = relation.observe().subscribe(setCompletedTrails);
     return () => subscription.unsubscribe();
   }, [user]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadTokenBalance() {
+      if (!user?.calculateTrailTokenBalance) {
+        setTokenBalance(0);
+        return;
+      }
+
+      const balance = await user.calculateTrailTokenBalance();
+      if (isMounted) {
+        setTokenBalance(Number(balance) || 0);
+      }
+    }
+
+    loadTokenBalance().catch(err => handleError(err, "loadTokenBalance TrailDetailScreen"));
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, purchasedTrails]);
 
   const load = useCallback(async () => {
     try {
@@ -266,7 +289,7 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
           navigation.goBack();
         }}
         trail={trail}
-        trailTokens={user?.trailTokens}
+        trailTokens={tokenBalance}
         onBuyTrail={async () => {
           await user?.purchaseTrail(trail, unlockCost);
         }}

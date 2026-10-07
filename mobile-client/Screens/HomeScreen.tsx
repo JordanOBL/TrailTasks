@@ -35,6 +35,7 @@ interface Props {
   navigation: any;
   setUser: any;
   userSessions?: any[];
+  tokenTransactions?: any[];
   userWilds: any;
   activeWilds: User_Wild[];
 }
@@ -44,6 +45,7 @@ export const HomeScreen: React.FC<Props> = ({
   navigation,
   currentTrail,
   userSessions,
+  tokenTransactions,
   userWilds,
   activeWilds,
 }) => {
@@ -54,6 +56,7 @@ export const HomeScreen: React.FC<Props> = ({
   const [showTutorial, setShowTutorial] = React.useState(false);
   const [featuredTrail, setFeaturedTrail] = React.useState<FullTrailDetails | null>(null);
   const [totalMiles, setTotalMiles] = React.useState<number | null>(null);
+  const [tokenBalance, setTokenBalance] = React.useState<number>(0);
   const styles = getStyles(theme); // dynamically generate styles based on theme
   const [activeWild] = activeWilds;
   const { width: windowWidth } = useWindowDimensions();
@@ -102,6 +105,32 @@ export const HomeScreen: React.FC<Props> = ({
       isMounted = false;
     };
   }, [user, userSessions]);
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    async function loadTokenBalance() {
+      try {
+        if (!user?.calculateTrailTokenBalance) {
+          setTokenBalance(0);
+          return;
+        }
+
+        const calculatedTokenBalance = await user.calculateTrailTokenBalance();
+        if (isMounted) {
+          setTokenBalance(Number(calculatedTokenBalance) || 0);
+        }
+      } catch (err) {
+        handleError(err, "loadTokenBalance HomeScreen");
+      }
+    }
+
+    loadTokenBalance();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, tokenTransactions]);
 
   // Show the tutorial modal for new users with no derived completed-session miles.
   React.useEffect(() => {
@@ -203,7 +232,7 @@ export const HomeScreen: React.FC<Props> = ({
           <View style={styles.statusRow}>
             <View style={styles.statPill}>
               <Text testID="trail-tokens" style={styles.statValue}>
-                {user?.trailTokens}
+                {tokenBalance}
               </Text>
               <Text style={styles.statLabel}>Tokens</Text>
             </View>
@@ -304,6 +333,7 @@ const enhance = withObservables(["user"], ({ user }) => ({
   user: user.observe(),
   currentTrail: user.trail.observe(),
   userSessions: user.usersSessions.observe(),
+  tokenTransactions: user.tokenTransactions.observe(),
   userWilds: user.usersWilds.observe(),
   activeWilds: user.usersWilds.extend(Q.where("is_active", true), Q.take(1)).observe(),
 }));

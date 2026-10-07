@@ -18,10 +18,11 @@ interface AddonStoreProps {
   availableAddOns: Addon[];
   user: User;
   totalMiles: number;
+  tokenBalance: number;
   onPurchase: (item: Addon) => void;
   usersAddons: User_Addon[];
 }
-export const AddOnStore = ({ availableAddOns, user, totalMiles, onPurchase, usersAddons }: AddonStoreProps) => {
+export const AddOnStore = ({ availableAddOns, user, totalMiles, tokenBalance, onPurchase, usersAddons }: AddonStoreProps) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
@@ -48,19 +49,19 @@ export const AddOnStore = ({ availableAddOns, user, totalMiles, onPurchase, user
                 styles.buyButton,
                 {
                   backgroundColor:
-                    totalMiles >= item.requiredTotalMiles && user.trailTokens >= item.price
+                    totalMiles >= item.requiredTotalMiles && tokenBalance >= item.price
                       ? theme.button
                       : theme.border,
                 },
               ]}
-              disabled={totalMiles < item.requiredTotalMiles || user.trailTokens < item.price}
+              disabled={totalMiles < item.requiredTotalMiles || tokenBalance < item.price}
               onPress={() => onPurchase(item)}>
               <Text style={styles.buyButtonText}>
-                {totalMiles >= item.requiredTotalMiles && user.trailTokens >= item.price
+                {totalMiles >= item.requiredTotalMiles && tokenBalance >= item.price
                   ? "Buy Now"
                   : totalMiles < item.requiredTotalMiles
                   ? `You need ${(item.requiredTotalMiles - totalMiles).toFixed(2)} more miles`
-                  : `You need ${item.price - user.trailTokens} more tokens`}
+                  : `You need ${item.price - tokenBalance} more tokens`}
               </Text>
             </TouchableOpacity>
           </View>
