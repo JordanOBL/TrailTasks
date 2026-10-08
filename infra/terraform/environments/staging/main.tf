@@ -22,6 +22,10 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+data "aws_prefix_list" "s3" {
+  name = "com.amazonaws.${var.aws_region}.s3"
+}
+
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
@@ -69,7 +73,48 @@ locals {
       availability_zone = local.azs[1]
     }
   }
+
+  interface_vpc_endpoints = [
+    "ecr.api",
+    "ecr.dkr",
+    "logs",
+    "secretsmanager",
+  ]
 }
+
+resource "aws_vpc_endpoint" "interface" {
+  for_each = toset(local.interface_vpc_endpoints)
+
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.aws_region}.${each.value}"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = values(aws_subnet.private_app)[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-${each.value}-endpoint"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.${var.aws_region}.s3"
+  vpc_endpoint_type = "Gateway"
+
+  route_table_ids = [
+    aws_route_table.private_app.id
+  ]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-s3-endpoint"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
 
 resource "aws_subnet" "public" {
   for_each = local.public_subnets
@@ -139,6 +184,28 @@ resource "aws_route_table" "public" {
   }
 }
 
+resource "aws_route_table" "private_app" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-private-app-rt"
+    Project     = var.project_name
+    Environment = var.environment
+    Tier        = "private-app"
+  }
+}
+
+resource "aws_route_table" "private_db" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-private-db-rt"
+    Project     = var.project_name
+    Environment = var.environment
+    Tier        = "private-db"
+  }
+}
+
 resource "aws_route" "public_internet" {
   route_table_id         = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
@@ -150,6 +217,20 @@ resource "aws_route_table_association" "public" {
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private_app" {
+  for_each = aws_subnet.private_app
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private_app.id
+}
+
+resource "aws_route_table_association" "private_db" {
+  for_each = aws_subnet.private_db
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private_db.id
 }
 
 resource "aws_security_group" "alb" {
@@ -183,6 +264,18 @@ resource "aws_security_group" "db" {
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-db-sg"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_security_group" "vpc_endpoints" {
+  name        = "${var.project_name}-${var.environment}-vpc-endpoints-sg"
+  description = "Allow ECS tasks to reach AWS VPC endpoints"
+  vpc_id      = aws_vpc.main.id
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-vpc-endpoints-sg"
     Project     = var.project_name
     Environment = var.environment
   }
@@ -246,6 +339,44 @@ resource "aws_vpc_security_group_ingress_rule" "db_from_app" {
   from_port                    = 5432
   to_port                      = 5432
   referenced_security_group_id = aws_security_group.app.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "vpc_endpoints_from_app" {
+  security_group_id = aws_security_group.vpc_endpoints.id
+
+  description                  = "Allow HTTPS from ECS tasks"
+  ip_protocol                  = "tcp"
+  from_port                    = 443
+  to_port                      = 443
+  referenced_security_group_id = aws_security_group.app.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "app_to_vpc_endpoints" {
+  security_group_id = aws_security_group.app.id
+
+  description                  = "Allow API tasks to reach AWS VPC endpoints"
+  ip_protocol                  = "tcp"
+  from_port                    = 443
+  to_port                      = 443
+  referenced_security_group_id = aws_security_group.vpc_endpoints.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "app_to_s3" {
+  security_group_id = aws_security_group.app.id
+
+  description    = "Allow API tasks to reach S3 gateway endpoint for ECR image layers"
+  ip_protocol    = "tcp"
+  from_port      = 443
+  to_port        = 443
+  prefix_list_id = data.aws_prefix_list.s3.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "vpc_endpoints_all" {
+  security_group_id = aws_security_group.vpc_endpoints.id
+
+  description = "Allow endpoint responses"
+  ip_protocol = "-1"
+  cidr_ipv4   = "0.0.0.0/0"
 }
 
 resource "aws_db_subnet_group" "staging" {
@@ -413,7 +544,7 @@ resource "aws_ecs_task_definition" "api" {
   container_definitions = jsonencode([
     {
       name      = "api"
-      image     = "${aws_ecr_repository.api.repository_url}:latest"
+      image = "${aws_ecr_repository.api.repository_url}:${var.api_image_tag}"
       essential = true
 
       portMappings = [
@@ -425,6 +556,10 @@ resource "aws_ecs_task_definition" "api" {
       ]
 
       environment = [
+        {
+  name  = "APP_ENV"
+  value = var.environment
+},
         {
           name  = "NODE_ENV"
           value = "production"
@@ -530,7 +665,7 @@ resource "aws_ecs_service" "api" {
   name            = "${var.project_name}-${var.environment}-api"
   cluster         = aws_ecs_cluster.staging.id
   task_definition = aws_ecs_task_definition.api.arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -546,7 +681,12 @@ resource "aws_ecs_service" "api" {
   }
 
   depends_on = [
-    aws_lb_listener.http
+    aws_lb_listener.http,
+    aws_vpc_endpoint.interface,
+    aws_vpc_endpoint.s3,
+    aws_vpc_security_group_ingress_rule.vpc_endpoints_from_app,
+    aws_vpc_security_group_egress_rule.app_to_vpc_endpoints,
+    aws_vpc_security_group_egress_rule.app_to_s3,
   ]
 
   tags = {

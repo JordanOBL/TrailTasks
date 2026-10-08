@@ -34,10 +34,7 @@
 		"//": "-- INTEGRATION TEST MOBILE APP WITH API AND WEBSOCKET SERVERS -- ",
 		"//test:app:integration": " tests the mobile client with the api and websocket servers started",
 		"test:app:integration": "concurrently \"npm run start:servers:test\" \"npm run test:mobile\"",
-		"docker:ecs:login": "aws ecr get-login-password --region us-east-1 |   docker login --username AWS --password-stdin 890129487844.dkr.ecr.us-east-1.amazonaws.com",
-		"docker:build:api": "docker build -t trailtasks-api ./api-server",
-		"docker:tag:latest": "docker tag trailtasks-api:latest 890129487844.dkr.ecr.us-east-1.amazonaws.com/trailtasks-api:latest",
-		"docker:push:latest": "docker push 890129487844.dkr.ecr.us-east-1.amazonaws.com/trailtasks-api:latest"
+		"docker:ecs:login": "aws ecr get-login-password --region us-east-1 |   docker login --username AWS --password-stdin 890129487844.dkr.ecr.us-east-1.amazonaws.com"
 	},
 	"devDependencies": {
 		"//concurrently": "runs multiple commands concurrently",

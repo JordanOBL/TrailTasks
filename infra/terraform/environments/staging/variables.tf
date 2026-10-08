@@ -28,6 +28,7 @@ variable "db_username" {
   default = "trailtasks_app"
 }
 
-output "api_ecr_repository_url" {
-  value = aws_ecr_repository.api.repository_url
+variable "api_image_tag" {
+  description = "Git SHA image tag for the API Docker image in ECR"
+  type        = string
 }
