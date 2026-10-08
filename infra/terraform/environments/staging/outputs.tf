@@ -53,3 +53,15 @@ output "db_endpoint" {
 output "db_secret_arn" {
   value = aws_secretsmanager_secret.db_credentials.arn
 }
+
+output "ecs_cluster_name" {
+  value = aws_ecs_cluster.staging.name
+}
+
+output "ecs_task_execution_role_arn" {
+  value = aws_iam_role.ecs_task_execution.arn
+}
+
+output "api_log_group_name" {
+  value = aws_cloudwatch_log_group.api.name
+}
