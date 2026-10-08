@@ -1,4 +1,4 @@
-import { applyPermanentTrailAccessPolicy } from '../helpers/trailAccessPolicy.mjs';
+import { applyPermanentTrailAccessPolicy } from '../helpers/trailAccessPolicy.js';
 
 try {
   const summary = await applyPermanentTrailAccessPolicy();

@@ -23,6 +23,16 @@ dotenv.config({
 				: '.env.test',
 });
 
+const sequelizeDialectOptions =
+	process.env.PGSSLMODE === 'require'
+		? {
+				ssl: {
+					require: true,
+					rejectUnauthorized: false,
+				},
+			}
+		: {};
+
 const sequelize = new Sequelize(
 	process.env.PGDBNAME,
 	process.env.PGUSER,
@@ -30,14 +40,8 @@ const sequelize = new Sequelize(
 	{
 		host: process.env.PGHOST,
 		port: process.env.PGPORT,
-		password: process.env.PGPASSWORD,
 		dialect: 'postgres',
-		// dialectOptions: {
-		//   ssl: {
-		//     require: true,
-		//     rejectUnauthorized: false,
-		//   },
-		// },
+		dialectOptions: sequelizeDialectOptions,
 	},
 );
 

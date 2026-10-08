@@ -1,4 +1,4 @@
-import { rerollMonthlyTrailAccess } from '../helpers/trailAccessPolicy.mjs';
+import { rerollMonthlyTrailAccess } from '../helpers/trailAccessPolicy.js';
 
 try {
   const summary = await rerollMonthlyTrailAccess();

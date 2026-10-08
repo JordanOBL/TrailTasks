@@ -6,7 +6,7 @@ import {
   friendSearchQuery,
   globalLeaderboardQuery,
   userRankQuery,
-} from './derivedMileageQueries.mjs';
+} from './derivedMileageQueries.js';
 
 const queries = [
   ['global leaderboard', globalLeaderboardQuery],

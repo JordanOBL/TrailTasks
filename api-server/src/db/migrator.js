@@ -42,7 +42,7 @@ const sequelize = new Sequelize(
 
 const umzug = new Umzug({
   migrations: {
-    glob: path.join(apiRoot, 'migrations', '*.mjs'),
+    glob: path.join(apiRoot, 'migrations', '*.js'),
   },
   context: {
     queryInterface: sequelize.getQueryInterface(),
