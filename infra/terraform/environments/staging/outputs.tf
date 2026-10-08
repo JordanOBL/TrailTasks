@@ -69,3 +69,15 @@ output "api_log_group_name" {
 output "api_task_definition_arn" {
   value = aws_ecs_task_definition.api.arn
 }
+
+output "api_alb_dns_name" {
+  value = aws_lb.api.dns_name
+}
+
+output "api_alb_arn" {
+  value = aws_lb.api.arn
+}
+
+output "api_target_group_arn" {
+  value = aws_lb_target_group.api.arn
+}
