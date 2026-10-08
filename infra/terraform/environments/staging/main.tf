@@ -544,7 +544,7 @@ resource "aws_ecs_task_definition" "api" {
   container_definitions = jsonencode([
     {
       name      = "api"
-      image = "${aws_ecr_repository.api.repository_url}:${var.api_image_tag}"
+      image     = "${aws_ecr_repository.api.repository_url}:${var.api_image_tag}"
       essential = true
 
       portMappings = [
@@ -557,9 +557,9 @@ resource "aws_ecs_task_definition" "api" {
 
       environment = [
         {
-  name  = "APP_ENV"
-  value = var.environment
-},
+          name  = "APP_ENV"
+          value = var.environment
+        },
         {
           name  = "NODE_ENV"
           value = "production"
