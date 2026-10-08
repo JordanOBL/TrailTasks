@@ -90,3 +90,9 @@ build/
 *.db
 images/
 */images/
+
+# Infra
+**/.terraform/
+**/terraform.tfstate
+*/terraform.tfstate.
+**/*.tfvars
