@@ -69,6 +69,16 @@ dotenv.config({
 
 const newAchievements = achievementsWithIds(masterAchievementList);
 
+const sequelizeDialectOptions =
+	process.env.PGSSLMODE === 'require'
+		? {
+				ssl: {
+					require: true,
+					rejectUnauthorized: false,
+				},
+			}
+		: {};
+
 export const sequelize = new Sequelize(
 	process.env.PGDBNAME,
 	process.env.PGUSER,
@@ -77,12 +87,7 @@ export const sequelize = new Sequelize(
 		host: process.env.PGHOST,
 		port: process.env.PGPORT,
 		dialect: 'postgres',
-		// dialectOptions: {
-		//   ssl: {
-		//     require: true,
-		//     rejectUnauthorized: false,
-		//   },
-		// },
+		dialectOptions: sequelizeDialectOptions,
 	},
 );
 

@@ -198,5 +198,33 @@ Redis/ElastiCache is a later ticket, not required for the first MVP deployment.
 5. Create RDS Postgres and secret.
 6. Create ECS cluster/task definition/service.
 7. Create ALB listener/target group.
-8. Verify `GET /health` and a database smoke check.
+8. Verify `GET /api/health` and a database smoke check.
 9. Automate deploy from GitHub Actions.
+
+## Staging deployment verification
+
+The staging API was verified through the public ALB after the ECS/Fargate deployment came up healthy:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+{"status":"ok"}
+```
+
+Verification path:
+
+```text
+Internet client
+  -> public ALB listener on port 80
+  -> target group health path GET /api/health
+  -> ECS Fargate task in private app subnet on port 5500
+  -> RDS Postgres in private DB subnet over SSL
+```
+
+Important deployment lessons captured from the first successful staging run:
+
+- ECS tasks in private subnets can run without NAT when the required VPC endpoints exist for ECR, CloudWatch Logs, Secrets Manager, and S3 image layers.
+- The API image should be deployed by an immutable Git SHA tag instead of relying on `latest`.
+- RDS Postgres requires encrypted connections from the API. Staging sets `PGSSLMODE=require`; Sequelize enables SSL for Postgres when that env var is present.
+- The ECS service uses a health check grace period so ALB health checks do not kill new tasks during normal startup.

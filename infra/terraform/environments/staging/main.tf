@@ -567,6 +567,10 @@ resource "aws_ecs_task_definition" "api" {
         {
           name  = "PORT"
           value = "5500"
+        },
+        {
+          name  = "PGSSLMODE"
+          value = "require"
         }
       ]
 
@@ -667,6 +671,8 @@ resource "aws_ecs_service" "api" {
   task_definition = aws_ecs_task_definition.api.arn
   desired_count   = 1
   launch_type     = "FARGATE"
+
+  health_check_grace_period_seconds = 120
 
   network_configuration {
     subnets          = values(aws_subnet.private_app)[*].id
