@@ -27,3 +27,7 @@ variable "db_username" {
   type    = string
   default = "trailtasks_app"
 }
+
+output "api_ecr_repository_url" {
+  value = aws_ecr_repository.api.repository_url
+}
