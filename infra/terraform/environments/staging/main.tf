@@ -383,3 +383,95 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   role       = aws_iam_role.ecs_task_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
+data "aws_iam_policy_document" "ecs_task_execution_secrets" {
+  statement {
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+
+    resources = [
+      aws_secretsmanager_secret.db_credentials.arn
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
+  name   = "${var.project_name}-${var.environment}-ecs-task-execution-secrets"
+  role   = aws_iam_role.ecs_task_execution.id
+  policy = data.aws_iam_policy_document.ecs_task_execution_secrets.json
+}
+
+resource "aws_ecs_task_definition" "api" {
+  family                   = "${var.project_name}-${var.environment}-api"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "api"
+      image     = "${aws_ecr_repository.api.repository_url}:latest"
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 5500
+          hostPort      = 5500
+          protocol      = "tcp"
+        }
+      ]
+
+      environment = [
+        {
+          name  = "NODE_ENV"
+          value = "production"
+        },
+        {
+          name  = "PORT"
+          value = "5500"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "PGDBNAME"
+          valueFrom = "${aws_secretsmanager_secret.db_credentials.arn}:PGDBNAME::"
+        },
+        {
+          name      = "PGUSER"
+          valueFrom = "${aws_secretsmanager_secret.db_credentials.arn}:PGUSER::"
+        },
+        {
+          name      = "PGPASSWORD"
+          valueFrom = "${aws_secretsmanager_secret.db_credentials.arn}:PGPASSWORD::"
+        },
+        {
+          name      = "PGHOST"
+          valueFrom = "${aws_secretsmanager_secret.db_credentials.arn}:PGHOST::"
+        },
+        {
+          name      = "PGPORT"
+          valueFrom = "${aws_secretsmanager_secret.db_credentials.arn}:PGPORT::"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.api.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "api"
+        }
+      }
+    }
+  ])
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-api-task"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
