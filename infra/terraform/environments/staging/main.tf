@@ -525,3 +525,33 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.api.arn
   }
 }
+
+resource "aws_ecs_service" "api" {
+  name            = "${var.project_name}-${var.environment}-api"
+  cluster         = aws_ecs_cluster.staging.id
+  task_definition = aws_ecs_task_definition.api.arn
+  desired_count   = 0
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = values(aws_subnet.private_app)[*].id
+    security_groups  = [aws_security_group.app.id]
+    assign_public_ip = false
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.api.arn
+    container_name   = "api"
+    container_port   = 5500
+  }
+
+  depends_on = [
+    aws_lb_listener.http
+  ]
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-api"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}

@@ -81,3 +81,7 @@ output "api_alb_arn" {
 output "api_target_group_arn" {
   value = aws_lb_target_group.api.arn
 }
+
+output "api_ecs_service_name" {
+  value = aws_ecs_service.api.name
+}
