@@ -39,20 +39,20 @@ import {
     redactUserForClient,
     redactUsersForClient,
     verifyPassword,
-} from './helpers/authSecurity.mjs';
+} from './helpers/authSecurity.js';
 import bodyparser from 'body-parser';
 import cors from 'cors';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import express from 'express';
 import masterAchievementList from './assets/Achievements/masterAchievementList.js';
-import { rerollMonthlyTrailAccess } from './helpers/trailAccessPolicy.mjs';
+import { rerollMonthlyTrailAccess } from './helpers/trailAccessPolicy.js';
 import {
     cachedFriendsQuery,
     friendSearchQuery,
     globalLeaderboardQuery,
     userRankQuery,
-} from './helpers/derivedMileageQueries.mjs';
+} from './helpers/derivedMileageQueries.js';
 import res from "express/lib/response.js";
 
 // import pool from "./db/config.js";

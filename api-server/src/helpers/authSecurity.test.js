@@ -7,7 +7,7 @@ import {
   prepareUserRowsForStorage,
   redactUserForClient,
   verifyPassword,
-} from './authSecurity.mjs';
+} from './authSecurity.js';
 
 test('hashPassword stores a non-plaintext verifiable password hash', () => {
   const hash = hashPassword('correct horse battery staple');

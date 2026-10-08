@@ -7,7 +7,7 @@ import {
   permanentTrailAccessPolicySql,
   rerollMonthlyTrailAccess,
   trailAccessSummarySql,
-} from './trailAccessPolicy.mjs';
+} from './trailAccessPolicy.js';
 
 describe('trail access policy SQL', () => {
   it('keeps the Scout park free and uses exactly four sampler parks', () => {
