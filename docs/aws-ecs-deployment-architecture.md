@@ -15,6 +15,70 @@ Deploy the API in a way that teaches professional AWS infrastructure while keepi
 - CloudWatch logs
 - GitHub Actions deploy path
 
+## Environment boundaries
+
+Staging is the first AWS deployment. Preprod and prod are planned environment boundaries, not environments provisioned by the current staging Terraform configuration.
+
+### Staging
+
+- Used for developer integration testing and early internal app testing.
+- API endpoint: `https://api-staging.trailtasks.app`.
+- Uses its own database and Secrets Manager secrets, separate from future preprod and prod resources.
+- Data is non-production, but migrations and restores should still be deliberate so useful test data is not lost.
+
+### Preprod (planned)
+
+- Used for release-candidate testing on real devices before production promotion.
+- Uses a separate database and secrets from staging and prod; it must not connect to production customer data.
+- Follows the intended production deployment pattern, with any size, availability, or configuration differences documented.
+- Validates the candidate API image and mobile build together, including migrations, backup/restore readiness, and core user-flow smoke checks.
+
+### Prod (planned)
+
+- Serves real users and holds durable customer data.
+- Uses production-specific database resources and secrets, isolated from staging and preprod.
+- Receives changes only after preprod verification and an explicit promotion decision.
+- Requires backups, a verified recovery path, monitoring, and a rollback/redeploy procedure before cutover.
+
+### Website and API domains
+
+- The apex website at `trailtasks.app` stays hosted on Railway.
+- AWS API environments use separate subdomains, starting with `api-staging.trailtasks.app`.
+- Preprod and prod API hostnames will be selected and configured when those environments are provisioned.
+- Environment selection in mobile builds must point to the intended API; it must not silently fall back to production.
+
+## Cost risks and safe learning shutdown
+
+These are cost drivers, not a priced monthly quote. Before provisioning another environment, estimate its cost in AWS Pricing Calculator using the selected region, resource sizes, running hours, and expected traffic. Set an AWS Budget alert as a warning; it does not automatically stop resources or cap spending.
+
+### Main ongoing costs
+
+- **Interface VPC endpoints:** the current staging pattern places four endpoint services in two AZs, creating eight billable endpoint ENIs. Hourly and data-processing charges continue even when ECS has no running tasks. Private connectivity avoids NAT, but is not free.
+- **ALB:** hourly and capacity-unit charges continue while the load balancer exists, even when staging is idle. Public IPv4 addresses can add charges.
+- **Fargate:** running tasks incur CPU and memory charges. Scaling the service to zero stops task compute charges, but not ALB, endpoint, database, or storage costs.
+- **RDS:** instance compute, allocated storage, backups beyond applicable allowances, and retained snapshots can incur charges. Storage autoscaling can increase allocated storage; do not assume it will shrink after test data is removed.
+- **ECR and CloudWatch:** stored image layers and log ingestion/storage accumulate. The staging log group currently retains logs for seven days; remove unused images deliberately and consider an ECR lifecycle policy later.
+- **Additional environments:** duplicating staging for preprod and prod multiplies baseline networking, database, and compute costs before application traffic grows. Cross-AZ and internet data transfer may add costs.
+
+### Pause versus delete
+
+- For a short application-testing pause, set the Terraform-managed ECS service desired count to zero, review the plan, and apply intentionally. Restore it to one when testing resumes. This leaves the rest of the infrastructure billable.
+- RDS can be stopped temporarily where supported, but storage and retained backups remain billable. RDS automatically restarts a stopped instance after seven days, so this is not a permanent shutdown strategy. Treat a console stop as a temporary operational action, not a durable Terraform configuration.
+- ALBs and interface endpoints do not have a pause switch. Eliminating their ongoing charges requires deleting them and later recreating them, which interrupts staging access and private task startup. Prefer a reviewed Terraform change over ad hoc console deletion.
+- Terminate temporary restore jumpboxes after use and remove their temporary database ingress rules. Check for leftover EBS volumes, snapshots, and allocated public IPs. Keep only backups that have a documented retention purpose.
+
+### Before any destructive teardown
+
+1. Confirm the AWS account, region, and staging Terraform directory/state. Never run teardown against prod or a state file shared with another environment.
+2. Take and verify a deliberate database backup or snapshot, and record the restore procedure. Current staging RDS settings disable deletion protection and skip the automatic final snapshot; teardown is not a backup mechanism.
+3. Preserve Terraform state securely outside Git. State and saved plans can contain database credentials, even when Terraform output labels them sensitive.
+4. Review the complete plan, including database, secret, ECR, and networking deletions. Do not use a blanket `terraform destroy` as a routine pause button.
+5. After cleanup, check AWS billing/resource inventory for retained snapshots, storage, images, logs, and other billable leftovers. Removing a resource from Terraform state alone does not delete it or stop charges.
+
+Credential rotation after the committed state-backup exposure remains a separate pending security action. Removing the tracked backup or adding ignore rules does not invalidate the exposed password.
+
+References: [AWS PrivateLink pricing](https://aws.amazon.com/privatelink/pricing/), [temporarily stopping RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_StopInstance.html), and [AWS Pricing Calculator](https://calculator.aws/).
+
 ## Chosen compute model
 
 Use ECS Fargate for the first AWS deployment.
