@@ -1,4 +1,4 @@
-Backend environments and database safety
+# Backend environments and database safety
 
 Trail Tasks uses local development and a hosted AWS staging environment.
 Production is planned but is not yet provisioned.
@@ -21,7 +21,7 @@ Production is planned but is not yet provisioned.
 A reachable API does not by itself prove tester readiness. Core app flows,
 safe migrations, and backup/recovery procedures still require verification
 
-## Current limitations
+## Local development limitations
 
 - Local IP addresses can change, which can break physical-device testing until the app or environment config is updated.
 - Testers outside the local Wi-Fi network cannot reliably reach the laptop-hosted API.
@@ -32,8 +32,9 @@ safe migrations, and backup/recovery procedures still require verification
 
 Trail Tasks should use the same environment vocabulary as the developer's work context:
 
-1. `dev` — local API and PostgreSQL for development. 2.`staging` — the existing AWS environment for integration testing, invited testers, and release-candidate verification.
-2. `prod` — the planned environment for real users and durable customer data.
+1. `dev` — local API and PostgreSQL for development.
+2. `staging` — the existing AWS environment for integration testing, invited testers, and release-candidate verification.
+3. `prod` — the planned environment for real users and durable customer data.
 
 Staging is provisioned at https://api-staging.trailtasks.app.
 Production is not yet provisioned. Each environment uses separate database credentials and data.

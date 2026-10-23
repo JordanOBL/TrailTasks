@@ -6,47 +6,45 @@ This document defines the first enterprise-style AWS deployment target for Trail
 
 Deploy the API in a way that teaches professional AWS infrastructure while keeping the MVP maintainable:
 
-✅ VPC with public and private subnets
-✅ Internet-facing Application Load Balancer
-✅ ECS Fargate API tasks in private subnets
-✅ RDS Postgres in private subnets
-✅ Security groups that allow traffic only along the intended path
-✅ Secrets outside git
-✅ CloudWatch logs
+- ✅ VPC with public and private subnets
+- ✅ Internet-facing Application Load Balancer
+- ✅ ECS Fargate API tasks in private subnets
+- ✅ RDS Postgres in private subnets
+- ✅ Security groups that allow traffic only along the intended path
+- ✅ Secrets outside git
+- ✅ CloudWatch logs
 
 - GitHub Actions deploy path
 
 ## Environment boundaries
 
-Staging is the first AWS deployment. Preprod and prod are planned environment boundaries, not environments provisioned by the current staging Terraform configuration.
+The MVP uses local dev, AWS staging, and planned AWS prod. Separate preprod is optional and deferred.”
 
 ### Staging
 
-✅ Used for developer integration testing and early internal app testing.
-✅ API endpoint: `https://api-staging.trailtasks.app`.
-✅ Uses its own database and Secrets Manager secrets, separate from future preprod and prod resources.
-✅ Data is non-production, but migrations and restores should still be deliberate so useful test data is not lost.
-
-### Preprod (planned)
-
+- ✅ Used for developer integration testing and early internal app testing.
+- ✅ API endpoint: `https://api-staging.trailtasks.app`.
+- ✅ Uses its own database and Secrets Manager secrets, separate from future preprod and prod resources.
+- ✅ Data is non-production, but migrations and restores should still be deliberate so useful test data is not lost.
 - Used for release-candidate testing on real devices before production promotion.
-- Uses a separate database and secrets from staging and prod; it must not connect to production customer data.
+- Uses a separate database and secrets from prod; it must not connect to production customer data.
 - Follows the intended production deployment pattern, with any size, availability, or configuration differences documented.
 - Validates the candidate API image and mobile build together, including migrations, backup/restore readiness, and core user-flow smoke checks.
+
+### Preprod (optional, deferred)
 
 ### Prod (planned)
 
 - Serves real users and holds durable customer data.
 - Uses production-specific database resources and secrets, isolated from staging and preprod.
-- Receives changes only after preprod verification and an explicit promotion decision.
+- Receives changes after staging verification and an explicit production deployment decision.
 - Requires backups, a verified recovery path, monitoring, and a rollback/redeploy procedure before cutover.
 
 ### Website and API domains
 
-✅ The apex website at `trailtasks.app` stays hosted on Railway.
-✅ AWS API environments use separate subdomains, starting with `api-staging.trailtasks.app`.
-
-- Preprod and prod API hostnames will be selected and configured when those environments are provisioned.
+- ✅ The apex website at `trailtasks.app` stays hosted on Railway.
+- ✅ AWS API environments use separate subdomains, starting with `api-staging.trailtasks.app`.
+- Prod API hostnames will be selected and configured when environment is provisioned.
 - Environment selection in mobile builds must point to the intended API; it must not silently fall back to production.
 
 ## Cost risks and safe learning shutdown
@@ -60,7 +58,7 @@ These are cost drivers, not a priced monthly quote. Before provisioning another 
 - **Fargate:** running tasks incur CPU and memory charges. Scaling the service to zero stops task compute charges, but not ALB, endpoint, database, or storage costs.
 - **RDS:** instance compute, allocated storage, backups beyond applicable allowances, and retained snapshots can incur charges. Storage autoscaling can increase allocated storage; do not assume it will shrink after test data is removed.
 - **ECR and CloudWatch:** stored image layers and log ingestion/storage accumulate. The staging log group currently retains logs for seven days; remove unused images deliberately and consider an ECR lifecycle policy later.
-- **Additional environments:** duplicating staging for preprod and prod multiplies baseline networking, database, and compute costs before application traffic grows. Cross-AZ and internet data transfer may add costs.
+- **Additional environments:** duplicating staging for prod multiplies baseline networking, database, and compute costs before application traffic grows. Cross-AZ and internet data transfer may add costs.
 
 ### Pause versus delete
 
@@ -192,7 +190,7 @@ Why:
 - ALB supports path and host routing.
 - ALB integrates cleanly with ECS target groups.
 - ALB can terminate TLS certificates from AWS Certificate Manager.
-- The staging ALB health check calls GET /api/health..
+- The staging ALB health check calls `GET /api/health`.
 
 Do not use Network Load Balancer for this API phase; it is lower-level TCP/UDP traffic routing. Do not use Gateway Load Balancer; it is for routing through firewall/security appliances.
 
