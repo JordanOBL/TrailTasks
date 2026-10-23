@@ -265,6 +265,14 @@ Redis/ElastiCache is a later ticket, not required for the first MVP deployment.
 8. Verify `GET /api/health` and a database smoke check.
 9. Automate deploy from GitHub Actions.
 
+## Staging CI deployment
+
+The release workflow, permissions, bootstrap procedure, safety boundaries, and
+recovery steps are documented in [Staging CI deployment](staging-ci-deployment.md).
+Deployment is disabled by default until the permissions are bootstrapped and the
+repository enable variable is set. A merged workflow is not proof of a successful
+end-to-end deployment; verify its actual run before closing TT-51.
+
 ## Staging deployment verification
 
 The staging API was verified through the public ALB after the ECS/Fargate deployment came up healthy:

@@ -32,3 +32,14 @@ variable "api_image_tag" {
   description = "Git SHA image tag for the API Docker image in ECR"
   type        = string
 }
+
+variable "api_image_digest" {
+  description = "Optional verified ECR digest; CI sets this to pin the exact published artifact"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.api_image_digest == null ? true : can(regex("^sha256:[0-9a-f]{64}$", var.api_image_digest))
+    error_message = "api_image_digest must be null or a sha256 digest with 64 lowercase hexadecimal characters."
+  }
+}

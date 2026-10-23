@@ -1,0 +1,584 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.16.4",
+  "applyable": true,
+  "complete": true,
+  "errored": false,
+  "resource_changes": [
+    {
+      "address": "aws_ecs_service.api",
+      "mode": "managed",
+      "type": "aws_ecs_service",
+      "name": "api",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "before": {
+          "alarms": [],
+          "availability_zone_rebalancing": "DISABLED",
+          "capacity_provider_strategy": [],
+          "cluster": "arn:aws:ecs:us-east-1:890129487844:cluster/trailtasks-staging",
+          "deployment_circuit_breaker": [],
+          "deployment_controller": [],
+          "deployment_maximum_percent": 200,
+          "deployment_minimum_healthy_percent": 100,
+          "desired_count": 1,
+          "enable_ecs_managed_tags": false,
+          "enable_execute_command": false,
+          "force_delete": null,
+          "force_new_deployment": null,
+          "health_check_grace_period_seconds": null,
+          "iam_role": "arn:aws:iam::890129487844:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+          "id": "arn:aws:ecs:us-east-1:890129487844:service/trailtasks-staging/trailtasks-staging-api",
+          "launch_type": "FARGATE",
+          "load_balancer": [],
+          "name": "trailtasks-staging-api",
+          "network_configuration": [
+            {
+              "assign_public_ip": false,
+              "security_groups": [
+                "sg-0123456789abcdef0"
+              ],
+              "subnets": [
+                "subnet-0123456789abcdef0"
+              ]
+            }
+          ],
+          "ordered_placement_strategy": [],
+          "placement_constraints": [],
+          "platform_version": "LATEST",
+          "propagate_tags": null,
+          "scheduling_strategy": "REPLICA",
+          "service_connect_configuration": [],
+          "service_registries": [],
+          "tags": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "tags_all": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "task_definition": "arn:aws:ecs:us-east-1:890129487844:task-definition/trailtasks-staging-api:7",
+          "timeouts": null,
+          "triggers": {},
+          "volume_configuration": [],
+          "vpc_lattice_configurations": [],
+          "wait_for_steady_state": false
+        },
+        "after": {
+          "alarms": [],
+          "availability_zone_rebalancing": "DISABLED",
+          "capacity_provider_strategy": [],
+          "cluster": "arn:aws:ecs:us-east-1:890129487844:cluster/trailtasks-staging",
+          "deployment_circuit_breaker": [],
+          "deployment_controller": [],
+          "deployment_maximum_percent": 200,
+          "deployment_minimum_healthy_percent": 100,
+          "desired_count": 1,
+          "enable_ecs_managed_tags": false,
+          "enable_execute_command": false,
+          "force_delete": null,
+          "force_new_deployment": null,
+          "health_check_grace_period_seconds": null,
+          "iam_role": "arn:aws:iam::890129487844:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+          "id": "arn:aws:ecs:us-east-1:890129487844:service/trailtasks-staging/trailtasks-staging-api",
+          "launch_type": "FARGATE",
+          "load_balancer": [],
+          "name": "trailtasks-staging-api",
+          "network_configuration": [
+            {
+              "assign_public_ip": false,
+              "security_groups": [
+                "sg-0123456789abcdef0"
+              ],
+              "subnets": [
+                "subnet-0123456789abcdef0"
+              ]
+            }
+          ],
+          "ordered_placement_strategy": [],
+          "placement_constraints": [],
+          "platform_version": "LATEST",
+          "propagate_tags": null,
+          "scheduling_strategy": "REPLICA",
+          "service_connect_configuration": [],
+          "service_registries": [],
+          "tags": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "tags_all": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "timeouts": null,
+          "triggers": {},
+          "volume_configuration": [],
+          "vpc_lattice_configurations": [],
+          "wait_for_steady_state": false
+        },
+        "after_unknown": {
+          "alarms": [],
+          "capacity_provider_strategy": [],
+          "deployment_circuit_breaker": [],
+          "deployment_controller": [],
+          "load_balancer": [],
+          "network_configuration": [
+            {
+              "security_groups": [
+                false
+              ],
+              "subnets": [
+                false
+              ]
+            }
+          ],
+          "ordered_placement_strategy": [],
+          "placement_constraints": [],
+          "service_connect_configuration": [],
+          "service_registries": [],
+          "tags": {},
+          "tags_all": {},
+          "task_definition": true,
+          "triggers": {},
+          "volume_configuration": [],
+          "vpc_lattice_configurations": []
+        },
+        "before_sensitive": {
+          "alarms": [],
+          "capacity_provider_strategy": [],
+          "deployment_circuit_breaker": [],
+          "deployment_controller": [],
+          "load_balancer": [],
+          "network_configuration": [
+            {
+              "security_groups": [
+                false
+              ],
+              "subnets": [
+                false
+              ]
+            }
+          ],
+          "ordered_placement_strategy": [],
+          "placement_constraints": [],
+          "service_connect_configuration": [],
+          "service_registries": [],
+          "tags": {},
+          "tags_all": {},
+          "triggers": {},
+          "volume_configuration": [],
+          "vpc_lattice_configurations": []
+        },
+        "after_sensitive": {
+          "alarms": [],
+          "capacity_provider_strategy": [],
+          "deployment_circuit_breaker": [],
+          "deployment_controller": [],
+          "load_balancer": [],
+          "network_configuration": [
+            {
+              "security_groups": [
+                false
+              ],
+              "subnets": [
+                false
+              ]
+            }
+          ],
+          "ordered_placement_strategy": [],
+          "placement_constraints": [],
+          "service_connect_configuration": [],
+          "service_registries": [],
+          "tags": {},
+          "tags_all": {},
+          "triggers": {},
+          "volume_configuration": [],
+          "vpc_lattice_configurations": []
+        }
+      }
+    },
+    {
+      "address": "aws_ecs_task_definition.api",
+      "mode": "managed",
+      "type": "aws_ecs_task_definition",
+      "name": "api",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "before": {
+          "arn": "arn:aws:ecs:us-east-1:890129487844:task-definition/trailtasks-staging-api:7",
+          "arn_without_revision": "arn:aws:ecs:us-east-1:890129487844:task-definition/trailtasks-staging-api",
+          "container_definitions": "[{\"environment\":[{\"name\":\"APP_ENV\",\"value\":\"staging\"}],\"essential\":true,\"image\":\"890129487844.dkr.ecr.us-east-1.amazonaws.com/trailtasks-api:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"name\":\"api\",\"portMappings\":[{\"containerPort\":5500,\"hostPort\":5500,\"protocol\":\"tcp\"}]}]",
+          "cpu": "256",
+          "enable_fault_injection": false,
+          "ephemeral_storage": [],
+          "execution_role_arn": "arn:aws:iam::890129487844:role/trailtasks-staging-ecs-task-execution-role",
+          "family": "trailtasks-staging-api",
+          "id": "arn:aws:ecs:us-east-1:890129487844:task-definition/trailtasks-staging-api:7",
+          "inference_accelerator": [],
+          "ipc_mode": null,
+          "memory": "512",
+          "network_mode": "awsvpc",
+          "pid_mode": null,
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "requires_compatibilities": [
+            "FARGATE"
+          ],
+          "revision": 7,
+          "runtime_platform": [],
+          "skip_destroy": true,
+          "tags": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "tags_all": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "task_role_arn": null,
+          "track_latest": false,
+          "volume": []
+        },
+        "after": {
+          "container_definitions": "[{\"environment\":[{\"name\":\"APP_ENV\",\"value\":\"staging\"}],\"essential\":true,\"image\":\"890129487844.dkr.ecr.us-east-1.amazonaws.com/trailtasks-api@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"name\":\"api\",\"portMappings\":[{\"containerPort\":5500,\"hostPort\":5500,\"protocol\":\"tcp\"}]}]",
+          "cpu": "256",
+          "enable_fault_injection": false,
+          "ephemeral_storage": [],
+          "execution_role_arn": "arn:aws:iam::890129487844:role/trailtasks-staging-ecs-task-execution-role",
+          "family": "trailtasks-staging-api",
+          "inference_accelerator": [],
+          "ipc_mode": null,
+          "memory": "512",
+          "network_mode": "awsvpc",
+          "pid_mode": null,
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "requires_compatibilities": [
+            "FARGATE"
+          ],
+          "runtime_platform": [],
+          "skip_destroy": true,
+          "tags": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "tags_all": {
+            "Environment": "staging",
+            "Project": "trailtasks"
+          },
+          "task_role_arn": null,
+          "track_latest": false,
+          "volume": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "arn_without_revision": true,
+          "ephemeral_storage": [],
+          "id": true,
+          "inference_accelerator": [],
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "requires_compatibilities": [
+            false
+          ],
+          "revision": true,
+          "runtime_platform": [],
+          "tags": {},
+          "tags_all": {},
+          "volume": []
+        },
+        "before_sensitive": {
+          "ephemeral_storage": [],
+          "inference_accelerator": [],
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "requires_compatibilities": [
+            false
+          ],
+          "runtime_platform": [],
+          "tags": {},
+          "tags_all": {},
+          "volume": []
+        },
+        "after_sensitive": {
+          "ephemeral_storage": [],
+          "inference_accelerator": [],
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "requires_compatibilities": [
+            false
+          ],
+          "runtime_platform": [],
+          "tags": {},
+          "tags_all": {},
+          "volume": []
+        },
+        "replace_paths": [
+          [
+            "container_definitions"
+          ]
+        ]
+      },
+      "action_reason": "replace_because_cannot_update"
+    }
+  ],
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ecs_service.api",
+          "mode": "managed",
+          "type": "aws_ecs_service",
+          "name": "api",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "alarms": [],
+            "availability_zone_rebalancing": "DISABLED",
+            "capacity_provider_strategy": [],
+            "cluster": "arn:aws:ecs:us-east-1:890129487844:cluster/trailtasks-staging",
+            "deployment_circuit_breaker": [],
+            "deployment_controller": [],
+            "deployment_maximum_percent": 200,
+            "deployment_minimum_healthy_percent": 100,
+            "desired_count": 1,
+            "enable_ecs_managed_tags": false,
+            "enable_execute_command": false,
+            "force_delete": null,
+            "force_new_deployment": null,
+            "health_check_grace_period_seconds": null,
+            "iam_role": "arn:aws:iam::890129487844:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "id": "arn:aws:ecs:us-east-1:890129487844:service/trailtasks-staging/trailtasks-staging-api",
+            "launch_type": "FARGATE",
+            "load_balancer": [],
+            "name": "trailtasks-staging-api",
+            "network_configuration": [
+              {
+                "assign_public_ip": false,
+                "security_groups": [
+                  "sg-0123456789abcdef0"
+                ],
+                "subnets": [
+                  "subnet-0123456789abcdef0"
+                ]
+              }
+            ],
+            "ordered_placement_strategy": [],
+            "placement_constraints": [],
+            "platform_version": "LATEST",
+            "propagate_tags": null,
+            "scheduling_strategy": "REPLICA",
+            "service_connect_configuration": [],
+            "service_registries": [],
+            "tags": {
+              "Environment": "staging",
+              "Project": "trailtasks"
+            },
+            "tags_all": {
+              "Environment": "staging",
+              "Project": "trailtasks"
+            },
+            "timeouts": null,
+            "triggers": {},
+            "volume_configuration": [],
+            "vpc_lattice_configurations": [],
+            "wait_for_steady_state": false
+          },
+          "sensitive_values": {
+            "alarms": [],
+            "capacity_provider_strategy": [],
+            "deployment_circuit_breaker": [],
+            "deployment_controller": [],
+            "load_balancer": [],
+            "network_configuration": [
+              {
+                "security_groups": [
+                  false
+                ],
+                "subnets": [
+                  false
+                ]
+              }
+            ],
+            "ordered_placement_strategy": [],
+            "placement_constraints": [],
+            "service_connect_configuration": [],
+            "service_registries": [],
+            "tags": {},
+            "tags_all": {},
+            "triggers": {},
+            "volume_configuration": [],
+            "vpc_lattice_configurations": []
+          }
+        },
+        {
+          "address": "aws_ecs_task_definition.api",
+          "mode": "managed",
+          "type": "aws_ecs_task_definition",
+          "name": "api",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "container_definitions": "[{\"environment\":[{\"name\":\"APP_ENV\",\"value\":\"staging\"}],\"essential\":true,\"image\":\"890129487844.dkr.ecr.us-east-1.amazonaws.com/trailtasks-api@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"name\":\"api\",\"portMappings\":[{\"containerPort\":5500,\"hostPort\":5500,\"protocol\":\"tcp\"}]}]",
+            "cpu": "256",
+            "enable_fault_injection": false,
+            "ephemeral_storage": [],
+            "execution_role_arn": "arn:aws:iam::890129487844:role/trailtasks-staging-ecs-task-execution-role",
+            "family": "trailtasks-staging-api",
+            "inference_accelerator": [],
+            "ipc_mode": null,
+            "memory": "512",
+            "network_mode": "awsvpc",
+            "pid_mode": null,
+            "placement_constraints": [],
+            "proxy_configuration": [],
+            "requires_compatibilities": [
+              "FARGATE"
+            ],
+            "runtime_platform": [],
+            "skip_destroy": true,
+            "tags": {
+              "Environment": "staging",
+              "Project": "trailtasks"
+            },
+            "tags_all": {
+              "Environment": "staging",
+              "Project": "trailtasks"
+            },
+            "task_role_arn": null,
+            "track_latest": false,
+            "volume": []
+          },
+          "sensitive_values": {
+            "ephemeral_storage": [],
+            "inference_accelerator": [],
+            "placement_constraints": [],
+            "proxy_configuration": [],
+            "requires_compatibilities": [
+              false
+            ],
+            "runtime_platform": [],
+            "tags": {},
+            "tags_all": {},
+            "volume": []
+          }
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ecs_service.api",
+          "mode": "managed",
+          "type": "aws_ecs_service",
+          "name": "api",
+          "provider_config_key": "aws",
+          "expressions": {
+            "cluster": {
+              "constant_value": "arn:aws:ecs:us-east-1:890129487844:cluster/trailtasks-staging"
+            },
+            "desired_count": {
+              "constant_value": 1
+            },
+            "launch_type": {
+              "constant_value": "FARGATE"
+            },
+            "name": {
+              "constant_value": "trailtasks-staging-api"
+            },
+            "network_configuration": [
+              {
+                "assign_public_ip": {
+                  "constant_value": false
+                },
+                "security_groups": {
+                  "constant_value": [
+                    "sg-0123456789abcdef0"
+                  ]
+                },
+                "subnets": {
+                  "constant_value": [
+                    "subnet-0123456789abcdef0"
+                  ]
+                }
+              }
+            ],
+            "tags": {
+              "constant_value": {
+                "Environment": "staging",
+                "Project": "trailtasks"
+              }
+            },
+            "task_definition": {
+              "references": [
+                "aws_ecs_task_definition.api.arn",
+                "aws_ecs_task_definition.api"
+              ]
+            }
+          },
+          "schema_version": 1
+        },
+        {
+          "address": "aws_ecs_task_definition.api",
+          "mode": "managed",
+          "type": "aws_ecs_task_definition",
+          "name": "api",
+          "provider_config_key": "aws",
+          "expressions": {
+            "container_definitions": {
+              "references": [
+                "var.image"
+              ]
+            },
+            "cpu": {
+              "constant_value": "256"
+            },
+            "enable_fault_injection": {
+              "constant_value": false
+            },
+            "execution_role_arn": {
+              "constant_value": "arn:aws:iam::890129487844:role/trailtasks-staging-ecs-task-execution-role"
+            },
+            "family": {
+              "constant_value": "trailtasks-staging-api"
+            },
+            "memory": {
+              "constant_value": "512"
+            },
+            "network_mode": {
+              "constant_value": "awsvpc"
+            },
+            "requires_compatibilities": {
+              "constant_value": [
+                "FARGATE"
+              ]
+            },
+            "skip_destroy": {
+              "constant_value": true
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "staging",
+                "Project": "trailtasks"
+              }
+            }
+          },
+          "schema_version": 1
+        }
+      ],
+      "variables": {
+        "image": {}
+      }
+    }
+  }
+}

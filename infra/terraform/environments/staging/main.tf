@@ -698,12 +698,17 @@ resource "aws_ecs_task_definition" "api" {
   network_mode             = "awsvpc"
   cpu                      = "256"
   memory                   = "512"
-  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  enable_fault_injection   = false
+  # Retain previous revisions for recovery; CI receives no wildcard deregistration.
+  skip_destroy       = true
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
 
   container_definitions = jsonencode([
     {
-      name      = "api"
-      image     = "${aws_ecr_repository.api.repository_url}:${var.api_image_tag}"
+      name = "api"
+      image = var.api_image_digest == null ? (
+        "${aws_ecr_repository.api.repository_url}:${var.api_image_tag}"
+      ) : "${aws_ecr_repository.api.repository_url}@${var.api_image_digest}"
       essential = true
 
       portMappings = [
