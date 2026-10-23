@@ -6,6 +6,7 @@ on:
       - dev
     paths:
       - .github/workflows/staging-aws-auth.yml
+      - infra/terraform/environments/staging/.terraform.lock.hcl
 
 permissions:
   contents: read
