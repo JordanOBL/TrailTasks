@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.10.0"
 
   required_providers {
     aws = {
@@ -12,6 +12,150 @@ terraform {
       version = "~> 3.6"
     }
   }
+}
+
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com",
+  ]
+
+  tags = {
+    Name    = "${var.project_name}-github-actions"
+    Project = var.project_name
+  }
+}
+
+data "aws_iam_policy_document" "github_staging_assume_role" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sts:AssumeRoleWithWebIdentity",
+    ]
+
+    principals {
+      type = "Federated"
+
+      identifiers = [
+        aws_iam_openid_connect_provider.github.arn,
+      ]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:JordanOBL/TrailTasks:ref:refs/heads/dev"]
+    }
+  }
+}
+
+resource "aws_iam_role" "github_staging_deploy" {
+  name = "${var.project_name}-staging-github-deploy"
+
+  assume_role_policy = data.aws_iam_policy_document.github_staging_assume_role.json
+
+  tags = {
+    Name        = "${var.project_name}-staging-github-deploy"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+data "aws_iam_policy_document" "github_staging_ecr" {
+  statement {
+    sid    = "AuthenticateToECR"
+    effect = "Allow"
+
+    actions = [
+      "ecr:GetAuthorizationToken",
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "PushAPIImage"
+    effect = "Allow"
+
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:BatchGetImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+      "ecr:PutImage",
+    ]
+
+    resources = [
+      aws_ecr_repository.api.arn,
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "github_staging_ecr" {
+  name = "${var.project_name}-staging-github-ecr"
+  role = aws_iam_role.github_staging_deploy.id
+
+  policy = data.aws_iam_policy_document.github_staging_ecr.json
+}
+
+data "aws_iam_policy_document" "github_staging_state" {
+  statement {
+    sid    = "ListStateBucket"
+    effect = "Allow"
+
+    actions = [
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      "arn:aws:s3:::trailtasks-terraform-state-890129487844",
+    ]
+  }
+
+  statement {
+    sid    = "ReadWriteStagingState"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::trailtasks-terraform-state-890129487844/staging/terraform.tfstate",
+    ]
+  }
+
+  statement {
+    sid    = "ManageStagingStateLock"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::trailtasks-terraform-state-890129487844/staging/terraform.tfstate.tflock",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "github_staging_state" {
+  name = "${var.project_name}-staging-github-state"
+  role = aws_iam_role.github_staging_deploy.id
+
+  policy = data.aws_iam_policy_document.github_staging_state.json
 }
 
 provider "aws" {
