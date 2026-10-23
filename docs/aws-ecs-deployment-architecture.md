@@ -6,13 +6,14 @@ This document defines the first enterprise-style AWS deployment target for Trail
 
 Deploy the API in a way that teaches professional AWS infrastructure while keeping the MVP maintainable:
 
-- VPC with public and private subnets
-- Internet-facing Application Load Balancer
-- ECS Fargate API tasks in private subnets
-- RDS Postgres in private subnets
-- Security groups that allow traffic only along the intended path
-- Secrets outside git
-- CloudWatch logs
+✅ VPC with public and private subnets
+✅ Internet-facing Application Load Balancer
+✅ ECS Fargate API tasks in private subnets
+✅ RDS Postgres in private subnets
+✅ Security groups that allow traffic only along the intended path
+✅ Secrets outside git
+✅ CloudWatch logs
+
 - GitHub Actions deploy path
 
 ## Environment boundaries
@@ -21,10 +22,10 @@ Staging is the first AWS deployment. Preprod and prod are planned environment bo
 
 ### Staging
 
-- Used for developer integration testing and early internal app testing.
-- API endpoint: `https://api-staging.trailtasks.app`.
-- Uses its own database and Secrets Manager secrets, separate from future preprod and prod resources.
-- Data is non-production, but migrations and restores should still be deliberate so useful test data is not lost.
+✅ Used for developer integration testing and early internal app testing.
+✅ API endpoint: `https://api-staging.trailtasks.app`.
+✅ Uses its own database and Secrets Manager secrets, separate from future preprod and prod resources.
+✅ Data is non-production, but migrations and restores should still be deliberate so useful test data is not lost.
 
 ### Preprod (planned)
 
@@ -42,8 +43,9 @@ Staging is the first AWS deployment. Preprod and prod are planned environment bo
 
 ### Website and API domains
 
-- The apex website at `trailtasks.app` stays hosted on Railway.
-- AWS API environments use separate subdomains, starting with `api-staging.trailtasks.app`.
+✅ The apex website at `trailtasks.app` stays hosted on Railway.
+✅ AWS API environments use separate subdomains, starting with `api-staging.trailtasks.app`.
+
 - Preprod and prod API hostnames will be selected and configured when those environments are provisioned.
 - Environment selection in mobile builds must point to the intended API; it must not silently fall back to production.
 
@@ -75,7 +77,7 @@ These are cost drivers, not a priced monthly quote. Before provisioning another 
 4. Review the complete plan, including database, secret, ECR, and networking deletions. Do not use a blanket `terraform destroy` as a routine pause button.
 5. After cleanup, check AWS billing/resource inventory for retained snapshots, storage, images, logs, and other billable leftovers. Removing a resource from Terraform state alone does not delete it or stop charges.
 
-Credential rotation after the committed state-backup exposure remains a separate pending security action. Removing the tracked backup or adding ignore rules does not invalidate the exposed password.
+The staging database password was rotated through Terraform after the committed state-backup exposure. Replacement ECS tasks were started to load the updated Secrets Manager value, and their database startup connection was verified. Rotation does not remove the old credentials from Git history; historical state files must still be treated as sensitive.
 
 References: [AWS PrivateLink pricing](https://aws.amazon.com/privatelink/pricing/), [temporarily stopping RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_StopInstance.html), and [AWS Pricing Calculator](https://calculator.aws/).
 
@@ -94,7 +96,7 @@ Mobile app
   |
   | HTTPS / future WSS
   v
-Route 53 DNS
+Porkbun DNS
   |
   v
 Internet-facing Application Load Balancer
@@ -145,7 +147,7 @@ Inbound:
 
 ```text
 443 from 0.0.0.0/0
-80 from 0.0.0.0/0, only to redirect HTTP to HTTPS
+80 from 0.0.0.0/0,  currently forwards HTTP to the API target group
 ```
 
 Outbound:
@@ -190,7 +192,7 @@ Why:
 - ALB supports path and host routing.
 - ALB integrates cleanly with ECS target groups.
 - ALB can terminate TLS certificates from AWS Certificate Manager.
-- ALB health checks can call `GET /health`.
+- The staging ALB health check calls GET /api/health..
 
 Do not use Network Load Balancer for this API phase; it is lower-level TCP/UDP traffic routing. Do not use Gateway Load Balancer; it is for routing through firewall/security appliances.
 
