@@ -98,4 +98,4 @@ images/
 */terraform.tfstate.*
 **/*.tfvars
 **/*.tfstate
-**/.tfstate.
+**/*.tfstate.*
