@@ -13,7 +13,7 @@ permissions:
   id-token: write
 
 jobs:
-  verify-aws-access:
+  publish-image:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
