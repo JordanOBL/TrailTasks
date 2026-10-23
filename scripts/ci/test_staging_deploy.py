@@ -1,4 +1,7 @@
-"""Synthetic Terraform/AWS fixtures only; never contacts AWS."""
+"""Synthetic Terraform/AWS fixtures only; never contacts AWS. Refresh drift is rejected except for the staging DB recovery timestamp and
+the GitHub role's inline-policy snapshot when it matches unchanged managed
+policy resources. Known empty/null values are equivalent only for ipc_mode,
+pid_mode, and task_role_arn."""
 import copy
 import json
 from pathlib import Path
@@ -208,6 +211,198 @@ class GuardTests(unittest.TestCase):
         p = plan_fixture(); p['resource_changes'].append(copy.deepcopy(p['resource_changes'][0]))
         with self.assertRaises(deploy.ValidationError): self.guard(p)
 
+    def test_accept_latest_restorable_time_only_drift(self):
+        p = plan_fixture()
+        p["resource_drift"] = [
+            {
+                "address": "aws_db_instance.postgres",
+                "mode": "managed",
+                "type": "aws_db_instance",
+                "name": "postgres",
+                "change": {
+                    "actions": ["update"],
+                    "before": {
+                        "identifier": "synthetic-staging-postgres",
+                        "latest_restorable_time": "2026-10-23T12:00:00Z",
+                    },
+                    "after": {
+                        "identifier": "synthetic-staging-postgres",
+                        "latest_restorable_time": "2026-10-23T12:05:00Z",
+                    },
+                    "after_unknown": {},
+                },
+            }
+        ]
+
+        self.guard(p)
+
+    def test_reject_latest_restorable_time_with_db_configuration_drift(self):
+        p = plan_fixture()
+        p["resource_drift"] = [
+            {
+                "address": "aws_db_instance.postgres",
+                "mode": "managed",
+                "type": "aws_db_instance",
+                "name": "postgres",
+                "change": {
+                    "actions": ["update"],
+                    "before": {
+                        "identifier": "synthetic-staging-postgres",
+                        "latest_restorable_time": "2026-10-23T12:00:00Z",
+                        "backup_retention_period": 7,
+                    },
+                    "after": {
+                        "identifier": "synthetic-staging-postgres",
+                        "latest_restorable_time": "2026-10-23T12:05:00Z",
+                        "backup_retention_period": 1,
+                    },
+                    "after_unknown": {},
+                },
+            }
+        ]
+
+        with self.assertRaises(deploy.ValidationError):
+            self.guard(p)
+
+    def _plan_with_role_snapshot(self):
+        p = plan_fixture()
+
+        policy = json.dumps({
+            "Version": "2012-10-17",
+            "Statement": [{
+                "Effect": "Allow",
+                "Action": "ecr:DescribeImages",
+                "Resource": (
+                    "arn:aws:ecr:us-east-1:890129487844:"
+                    "repository/trailtasks-api"
+                ),
+            }],
+        })
+
+        role_before = {
+            "name": "trailtasks-staging-github-deploy",
+            "max_session_duration": 3600,
+            "inline_policy": [],
+        }
+        role_after = copy.deepcopy(role_before)
+        role_after["inline_policy"] = [
+            {"name": "synthetic-inspect-policy", "policy": policy},
+        ]
+
+        p["resource_drift"] = [{
+            "address": "aws_iam_role.github_staging_deploy",
+            "mode": "managed",
+            "type": "aws_iam_role",
+            "name": "github_staging_deploy",
+            "change": {
+                "actions": ["update"],
+                "before": role_before,
+                "after": role_after,
+                "after_unknown": {},
+            },
+        }]
+
+        policy_values = {
+            "name": "synthetic-inspect-policy",
+            "role": "trailtasks-staging-github-deploy",
+            "policy": policy,
+        }
+
+        for address, resource_type, name, values in (
+            (
+                "aws_iam_role.github_staging_deploy",
+                "aws_iam_role",
+                "github_staging_deploy",
+                role_after,
+            ),
+            (
+                "aws_iam_role_policy.synthetic_inspect",
+                "aws_iam_role_policy",
+                "synthetic_inspect",
+                policy_values,
+            ),
+        ):
+            p["resource_changes"].append({
+                "address": address,
+                "mode": "managed",
+                "type": resource_type,
+                "name": name,
+                "change": {
+                    "actions": ["no-op"],
+                    "before": copy.deepcopy(values),
+                    "after": copy.deepcopy(values),
+                    "after_unknown": {},
+                },
+            })
+            p["planned_values"]["root_module"]["resources"].append({
+                "address": address,
+                "values": copy.deepcopy(values),
+            })
+
+        return p
+
+    def test_reject_role_snapshot_with_policy_content_mismatch(self):
+        p = self._plan_with_role_snapshot()
+        policy_address = "aws_iam_role_policy.synthetic_inspect"
+
+        different_policy = json.dumps({
+            "Version": "2012-10-17",
+            "Statement": [],
+        })
+
+        # Keep the managed policy a no-op, but make its content disagree
+        # with the policy reported in the refreshed role snapshot.
+        for resource in p["resource_changes"]:
+            if resource["address"] == policy_address:
+                resource["change"]["before"]["policy"] = different_policy
+                resource["change"]["after"]["policy"] = different_policy
+
+        for resource in p["planned_values"]["root_module"]["resources"]:
+            if resource["address"] == policy_address:
+                resource["values"]["policy"] = different_policy
+
+        with self.assertRaises(deploy.ValidationError):
+            self.guard(p)
+
+    def test_accept_role_snapshot_matching_unchanged_managed_policy(self):
+        p = self._plan_with_role_snapshot()
+        self.guard(p)
+
+    def test_reject_role_snapshot_with_session_duration_drift(self):
+        p = self._plan_with_role_snapshot()
+        p["resource_drift"][0]["change"]["after"]["max_session_duration"] = 7200
+
+        with self.assertRaises(deploy.ValidationError):
+            self.guard(p)
+
+    def test_accept_unset_optional_task_strings(self):
+        for field in ("ipc_mode", "pid_mode", "task_role_arn"):
+            with self.subTest(field=field):
+                p = plan_fixture()
+                change = p["resource_changes"][0]["change"]
+                change["before"][field] = ""
+                change["after"][field] = None
+
+                self.guard(p)
+
+    def test_reject_nonempty_optional_task_string_changes(self):
+        changes = {
+            "ipc_mode": "host",
+            "pid_mode": "task",
+            "task_role_arn": (
+                "arn:aws:iam::890129487844:role/synthetic-other-role"
+            ),
+        }
+
+        for field, value in changes.items():
+            with self.subTest(field=field):
+                p = plan_fixture()
+                change = p["resource_changes"][0]["change"]
+                change["before"][field] = ""
+                change["after"][field] = value
+
+                with self.assertRaises(deploy.ValidationError):
+                    self.guard(p)
 
 class RolloutTests(unittest.TestCase):
     def verify(self, s, t):

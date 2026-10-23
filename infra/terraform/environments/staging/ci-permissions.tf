@@ -87,9 +87,9 @@ data "aws_iam_policy_document" "github_staging_inspect" {
     actions = ["ecs:DescribeClusters", "ecs:DescribeServices", "ecs:DescribeTasks", "ecs:ListTagsForResource"]
     resources = [
       aws_ecs_cluster.staging.arn,
-      aws_ecs_service.api.id,
+      local.api_service_arn,
       "arn:aws:ecs:${var.aws_region}:890129487844:task/${aws_ecs_cluster.staging.name}/*",
-      "arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${aws_ecs_task_definition.api.family}:*",
+      "arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${local.api_task_family}:*",
     ]
   }
 
@@ -124,7 +124,7 @@ data "aws_iam_policy_document" "github_staging_deploy" {
   statement {
     sid       = "RegisterTaggedTaskDefinition"
     actions   = ["ecs:RegisterTaskDefinition"]
-    resources = ["arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${aws_ecs_task_definition.api.family}:*"]
+    resources = ["arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${local.api_task_family}:*"]
 
     condition {
       test     = "StringEquals"
@@ -141,7 +141,7 @@ data "aws_iam_policy_document" "github_staging_deploy" {
   statement {
     sid       = "TagNewTaskDefinition"
     actions   = ["ecs:TagResource"]
-    resources = ["arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${aws_ecs_task_definition.api.family}:*"]
+    resources = ["arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${local.api_task_family}:*"]
 
     condition {
       test     = "StringEquals"
@@ -153,12 +153,12 @@ data "aws_iam_policy_document" "github_staging_deploy" {
   statement {
     sid       = "UpdateStagingAPIService"
     actions   = ["ecs:UpdateService"]
-    resources = [aws_ecs_service.api.id]
+    resources = [local.api_service_arn]
 
     condition {
       test     = "ArnLike"
       variable = "ecs:task-definition"
-      values   = ["arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${aws_ecs_task_definition.api.family}:*"]
+      values   = ["arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${local.api_task_family}:*"]
     }
   }
 

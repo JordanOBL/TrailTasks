@@ -224,6 +224,11 @@ locals {
     "logs",
     "secretsmanager",
   ]
+
+  api_task_family = "${var.project_name}-${var.environment}-api"
+
+  api_service_name = "${var.project_name}-${var.environment}-api"
+  api_service_arn  = "arn:aws:ecs:${var.aws_region}:890129487844:service/${aws_ecs_cluster.staging.name}/${local.api_service_name}"
 }
 
 resource "aws_acm_certificate" "api_staging" {
@@ -693,7 +698,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
 }
 
 resource "aws_ecs_task_definition" "api" {
-  family                   = "${var.project_name}-${var.environment}-api"
+  family                   = local.api_task_family
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = "256"
@@ -769,6 +774,10 @@ resource "aws_ecs_task_definition" "api" {
           awslogs-stream-prefix = "api"
         }
       }
+
+      mountPoints    = []
+      systemControls = []
+      volumesFrom    = []
     }
   ])
 
@@ -854,7 +863,7 @@ resource "aws_lb_listener" "https" {
 }
 
 resource "aws_ecs_service" "api" {
-  name            = "${var.project_name}-${var.environment}-api"
+  name            = local.api_service_name
   cluster         = aws_ecs_cluster.staging.id
   task_definition = aws_ecs_task_definition.api.arn
   desired_count   = 1

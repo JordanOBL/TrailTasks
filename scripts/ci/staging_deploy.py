@@ -108,6 +108,87 @@ def expected_task(values, image, role):
 def stripped(values, ignored):
     return {key: value for key, value in values.items() if key not in ignored}
 
+def check_role_policy_snapshot(plan, drift):
+    require(drift.get('mode') == 'managed')
+    require(drift.get('type') == 'aws_iam_role')
+    require(drift.get('name') == 'github_staging_deploy')
+
+    change = obj(drift.get('change'))
+    require(change.get('actions') == ['update'])
+    require(not unknown_present(obj(change.get('after_unknown', {}))))
+
+    before = obj(change.get('before'))
+    after = obj(change.get('after'))
+    require(after.get('name') == 'trailtasks-staging-github-deploy')
+
+    # No trust, session-duration, tag, or other role-field drift is allowed.
+    require(same(
+        stripped(before, {'inline_policy'}),
+        stripped(after, {'inline_policy'}),
+    ))
+
+    role_resources = [
+        resource
+        for resource in array(plan.get('resource_changes'))
+        if obj(resource).get('address')
+        == 'aws_iam_role.github_staging_deploy'
+    ]
+    require(len(role_resources) == 1)
+    role_resource = role_resources[0]
+    require(role_resource.get('mode') == 'managed')
+    require(role_resource.get('type') == 'aws_iam_role')
+
+    role_change = obj(role_resource.get('change'))
+    require(role_change.get('actions') == ['no-op'])
+    require(not unknown_present(obj(role_change.get('after_unknown', {}))))
+    require(same(role_change.get('before'), after))
+    require(same(role_change.get('after'), after))
+
+    actual = {}
+    for entry in array(after.get('inline_policy')):
+        entry = obj(entry)
+        name = entry.get('name')
+        require(isinstance(name, str) and bool(name))
+        require(name not in actual)
+        raw = entry.get('policy')
+        require(isinstance(raw, str))
+        actual[name] = obj(json.loads(raw, object_pairs_hook=unique_object))
+
+    managed = {}
+    for resource in array(plan.get('resource_changes')):
+        resource = obj(resource)
+        if resource.get('type') != 'aws_iam_role_policy':
+            continue
+
+        policy_change = obj(resource.get('change'))
+        values = obj(policy_change.get('after'))
+        if values.get('role') != after['name']:
+            continue
+
+        require(resource.get('mode') == 'managed')
+        require(policy_change.get('actions') == ['no-op'])
+        require(not unknown_present(
+            obj(policy_change.get('after_unknown', {}))
+        ))
+        require(same(policy_change.get('before'), values))
+
+        name = values.get('name')
+        require(isinstance(name, str) and bool(name))
+        require(name not in managed)
+        raw = values.get('policy')
+        require(isinstance(raw, str))
+        managed[name] = obj(json.loads(raw, object_pairs_hook=unique_object))
+
+    require(bool(actual))
+    require(same(actual, managed))
+
+def normalize_unset_task_strings(values):
+    result = dict(values)
+    for field in ('ipc_mode', 'pid_mode', 'task_role_arn'):
+        if field in result:
+            if result[field] is None or result[field] == '':
+                result[field] = None
+    return result
 
 def guard_plan(plan, image, execution_role):
     """Raise ValidationError unless the plan is a no-op or image-only deploy."""
@@ -117,7 +198,34 @@ def guard_plan(plan, image, execution_role):
     require(plan.get('complete', True) is True and plan.get('errored', False) is False)
     require(not plan.get('deferred_changes'))
     for drift in array(plan.get('resource_drift', [])):
-        require(obj(obj(drift).get('change')).get('actions') == ['no-op'])
+        drift = obj(drift)
+        change = obj(drift.get('change'))
+
+        if change.get('actions') == ['no-op']:
+            continue
+
+        if drift.get('address') == 'aws_iam_role.github_staging_deploy':
+            check_role_policy_snapshot(plan, drift)
+            continue
+
+        # Permit only recovery-timestamp metadata drift on staging Postgres.
+        require(drift.get('address') == 'aws_db_instance.postgres')
+        require(drift.get('mode') == 'managed')
+        require(drift.get('type') == 'aws_db_instance')
+        require(drift.get('name') == 'postgres')
+        require(change.get('actions') == ['update'])
+
+        before = obj(change.get('before'))
+        after = obj(change.get('after'))
+
+        require(isinstance(before.get('latest_restorable_time'), str))
+        require(isinstance(after.get('latest_restorable_time'), str))
+        require(not unknown_present(obj(change.get('after_unknown', {}))))
+
+        require(same(
+            stripped(before, {'latest_restorable_time'}),
+            stripped(after, {'latest_restorable_time'}),
+        ))
     changes = array(plan.get('resource_changes'))
     require(bool(changes))
     indexed = {}
@@ -176,7 +284,10 @@ def guard_plan(plan, image, execution_role):
     ignored = TASK_COMPUTED | {'container_definitions'}
     if 'tags_all' in unknown:
         ignored |= {'tags_all'}
-    require(same(stripped(before, ignored), stripped(after, ignored)))
+    require(same(
+        normalize_unset_task_strings(stripped(before, ignored)),
+        normalize_unset_task_strings(stripped(after, ignored)),
+    ))
     require(same(stripped(obj(service_change.get('before')), {'task_definition'}),
                  stripped(obj(service_change.get('after')), {'task_definition'})))
     # The replacement ARN is unknown at plan time. Require the precise HCL link,
