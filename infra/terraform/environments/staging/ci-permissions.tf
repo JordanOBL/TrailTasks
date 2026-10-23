@@ -19,8 +19,20 @@ data "aws_iam_policy_document" "github_staging_inspect" {
 
   statement {
     sid       = "InspectDatabase"
-    actions   = ["rds:DescribeDBInstances", "rds:DescribeDBSubnetGroups", "rds:ListTagsForResource"]
+    actions   = ["rds:DescribeDBSubnetGroups", "rds:ListTagsForResource"]
     resources = [aws_db_instance.postgres.arn, aws_db_subnet_group.staging.arn]
+  }
+
+  statement {
+    sid = "InspectRegionalDBInstances"
+
+    actions = [
+      "rds:DescribeDBInstances",
+    ]
+
+    resources = [
+      "arn:aws:rds:${var.aws_region}:890129487844:db:*",
+    ]
   }
 
   statement {
