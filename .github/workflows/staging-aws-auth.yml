@@ -8,6 +8,7 @@ on:
       - .github/workflows/staging-aws-auth.yml
 
 permissions:
+  contents: read
   id-token: write
 
 jobs:
@@ -16,6 +17,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: '1.16.4'
+          terraform_wrapper: false
+
       - name: Assume staging role through OIDC
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
@@ -32,3 +44,11 @@ jobs:
             --bucket trailtasks-terraform-state-890129487844 \
             --key staging/terraform.tfstate \
             --query '{Size:ContentLength,Encryption:ServerSideEncryption,VersionId:VersionId}'
+
+      - name: Initialize staging Terraform
+        working-directory: infra/terraform/environments/staging
+        run: terraform init -input=false -lockfile=readonly
+
+      - name: Validate staging Terraform
+        working-directory: infra/terraform/environments/staging
+        run: terraform validate -no-color
