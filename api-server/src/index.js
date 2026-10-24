@@ -55,6 +55,7 @@ import {
 } from './helpers/derivedMileageQueries.js';
 import res from 'express/lib/response.js';
 import { failStartup, verifyDatabaseConnection } from './db/databaseStartup.js';
+import { createReadinessHandler } from './helpers/readiness.js';
 
 // import pool from "./db/config.js";
 
@@ -298,6 +299,8 @@ const friendSearch = async (req, res, next) => {
 app.get('/api/health', (req, res) => {
 	res.status(200).json({ status: 'ok' });
 });
+
+app.get('/api/ready', createReadinessHandler(sequelizeModel));
 
 app.get('/api/searchFriends', friendSearch, async (req, res, next) => {
 	if (res.locals.friend) {
