@@ -53,6 +53,8 @@ yarn-error.log
 .env.development
 .env.development.bak
 .env.test
+.env.staging
+.env.*.bak
 .env.production
 TrailTasks.db
 **/fastlane/report.xml
@@ -70,6 +72,9 @@ TrailTasks.db
 
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
+
+# Python helper test caches
+__pycache__/
 
 # testing
 /coverage

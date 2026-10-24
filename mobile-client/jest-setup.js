@@ -1,8 +1,6 @@
 import 'whatwg-fetch'
-import dotenv from 'dotenv';
 import { TextEncoder, TextDecoder } from 'util';
 import {darkTheme, lightTheme} from './theme';
-dotenv.config({ path: '.env.test' });
 // Polyfill for TextEncoder and TextDecoder for pg
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;

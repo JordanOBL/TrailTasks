@@ -1,8 +1,13 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-ext {
-    envFile = ".env.production" // <-- or .env.development for debug
+// ENVFILE is mandatory: never infer the backend from Debug/Release.
+def selectedEnvFile = System.getenv("ENVFILE")
+if (!(selectedEnvFile in [".env.development", ".env.test", ".env.staging", ".env.production"])) {
+    throw new GradleException("Set ENVFILE to .env.development, .env.test, .env.staging or .env.production before building.")
+}
+if (!file("../../${selectedEnvFile}").isFile()) {
+    throw new GradleException("Selected ENVFILE ${selectedEnvFile} is missing; refusing .env fallback.")
 }
 
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
@@ -119,9 +124,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-        buildConfigField "String", "ENVFILE", '"development"'
         resValue "string", "build_config_package", "app.trailtasks"
-        ext.envFile = ".env.development" // 👈 Add this
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -129,9 +132,7 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            buildConfigField "String", "ENVFILE", '"production"'
         resValue "string", "build_config_package", "app.trailtasks"
-            ext.envFile = ".env.production" // 👈 THIS IS THE KEY
         }
     }
 

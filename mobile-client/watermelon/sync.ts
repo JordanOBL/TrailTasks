@@ -7,7 +7,7 @@ import {
   getLastPulledAt,
   markLocalChangesAsSynced,
 } from "@nozbe/watermelondb/sync/impl";
-import Config from "react-native-config";
+import {API_BASE_URL} from "../config/environment";
 import handleError from "../helpers/ErrorHandler";
 
 const CATALOG_LAST_PULLED_AT_KEY = "trailtasks_catalog_last_pulled_at";
@@ -335,21 +335,18 @@ export async function pullCatalogChanges(database: Database, isConnected: boolea
     return;
   }
 
-  if (!Config.DATABASE_PULL_URL) {
-    throw new Error("Error syncing with DB, DATABASE_PULL_URL missing in config");
-  }
 
   return enqueueSync("pullCatalogChanges()", async () => {
     try {
       const lastPulledAt = await getCatalogLastPulledAt(database);
       const url = buildPullUrl({
-        baseUrl: Config.DATABASE_PULL_URL!,
+        baseUrl: API_BASE_URL,
         lastPulledAt,
         schemaVersion: database.schema.version,
         catalogOnly: true,
       });
 
-      console.debug("[Catalog Sync] Pull URL:", Config.DATABASE_PULL_URL);
+      console.debug("[Catalog Sync] Pull URL:", API_BASE_URL);
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(await response.text());
@@ -400,7 +397,7 @@ export async function sync(
         : localChanges.changes;
 
       const response = await fetch(
-        `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
+        `${API_BASE_URL}/push?last_pulled_at=${lastPulledAt}`,
         {
           method: "POST",
           body: JSON.stringify({ changes }),
@@ -425,7 +422,7 @@ export async function sync(
         console.debug(`[Sync] Attempt ${retryCount + 1}...`);
 
         if (options.pushOnly) {
-          console.debug("[Sync] Push-only URL:", Config.DATABASE_PUSH_URL);
+          console.debug("[Sync] Push-only URL:", API_BASE_URL);
           await pushLocalChanges(await getLastPulledAt(database));
           break;
         }
@@ -434,9 +431,9 @@ export async function sync(
           database,
           pullChanges: async ({ lastPulledAt, schemaVersion }) => {
             try {
-              console.debug("[Sync] Pull URL:", Config.DATABASE_PULL_URL);
+              console.debug("[Sync] Pull URL:", API_BASE_URL);
               const url = buildPullUrl({
-                baseUrl: Config.DATABASE_PULL_URL!,
+                baseUrl: API_BASE_URL,
                 lastPulledAt: lastPulledAt ?? null,
                 schemaVersion,
                 userId,
@@ -471,9 +468,9 @@ export async function sync(
             : async ({ changes, lastPulledAt }) => {
                 try {
                   // example
-                  console.debug("[Sync] Push URL:", Config.DATABASE_PUSH_URL);
+                  console.debug("[Sync] Push URL:", API_BASE_URL);
                   const response = await fetch(
-                    `${Config.DATABASE_PUSH_URL}/push?last_pulled_at=${lastPulledAt}`,
+                    `${API_BASE_URL}/push?last_pulled_at=${lastPulledAt}`,
                     {
                       method: "POST",
                       body: JSON.stringify({ changes }),

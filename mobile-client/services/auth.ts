@@ -2,13 +2,13 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import {Token_Transaction, User} from '../watermelon/models';
 
-import Config from "react-native-config";
+import {API_BASE_URL} from "../config/environment";
 import React from "react";
 import formatDateTime from "../helpers/formatDateTime";
 import handleError from "../helpers/ErrorHandler";
 
 //checkExistingUser checks for a user in the local database
-const HTTP_HTTPS = Config.NODE_ENV === 'production' ? 'https' : 'http';
+
 export const checkLocalUserExists = async (
 	email: string,
 	password: string,
@@ -33,7 +33,7 @@ export const checkGlobalUserExists = async (
 	password: string,
 ): Promise<User | null> => {
 	try {
-		const url = `${HTTP_HTTPS}://${Config.DATABASE_URL}/api/users`;
+		const url = `${API_BASE_URL}/api/users`;
 		console.log('checkGlobalUserExists url:', url);
 		const response: Response = await fetch(url, {
 			method: 'POST',
@@ -65,7 +65,7 @@ export async function registerValidation(email: string, username: string) {
 		return 'Please enter email and username';
 	}
 	try {
-		const response = await fetch(`${HTTP_HTTPS}://${Config.DATABASE_URL}/api/registerValidation`, {
+		const response = await fetch(`${API_BASE_URL}/api/registerValidation`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

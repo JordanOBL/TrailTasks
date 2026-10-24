@@ -37,6 +37,18 @@ target 'TrailTasks' do
       # :ccache_enabled => true
     )
     installer.pods_project.targets.each do |target|
+      if target.name == 'react-native-config'
+        target.shell_script_build_phases.each do |phase|
+          next unless phase.name.include?('Config codegen')
+          # Run before the library's Ruby reader: reject missing ENVFILE and
+          # /tmp/envfile, both of which can silently select the wrong backend.
+          phase.shell_script = %q(set -e
+python3 "${PODS_ROOT}/../../scripts/check-native-env.py" "${PODS_ROOT}/../.." ios
+) + phase.shell_script
+          # Selected file/contents can change without Ruby source changing.
+          phase.always_out_of_date = '1'
+        end
+      end
       target.build_configurations.each do |config|
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
       end

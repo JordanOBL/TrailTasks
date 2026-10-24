@@ -2,7 +2,7 @@ import { Cached_Friend, User, User_Friend } from "../watermelon/models";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "react-native-paper";
-import Config from "react-native-config";
+import {API_BASE_URL} from "../config/environment";
 import EnhancedFriendCard from "../components/Friends/FriendCard";
 import React from "react";
 import RefreshConnection from "../components/RefreshConnection";
@@ -29,7 +29,7 @@ const FriendsImplementationBase = ({ user, cachedFriends, navigation, friends }:
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [refreshFriends, setRefreshFriends] = React.useState(true);
-  const HTTP_HTTPS = Config.NODE_ENV === "production" ? "https" : "http";
+
   const cachedFriendsMap = cachedFriends.reduce((acc, friend, idx) => {
     acc.set(friend.friendId, idx);
     return acc;
@@ -42,7 +42,7 @@ const FriendsImplementationBase = ({ user, cachedFriends, navigation, friends }:
     async function fetchOnlineFriends() {
       //fetch friends joined on friends user_id from server
       const latestCachedFriends = await fetch(
-        `${HTTP_HTTPS}://${Config.DATABASE_URL}/api/cachedFriends?userId=${user.id}`,
+        `${API_BASE_URL}/api/cachedFriends?userId=${user.id}`,
       );
       const { friends: recentFriendsFromServerMap } = await latestCachedFriends.json();
 
