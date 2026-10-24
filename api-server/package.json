@@ -17,6 +17,9 @@
 		"db:migrate:status": "node src/db/migrator.js pending",
 		"db:migrate:executed": "node src/db/migrator.js executed",
 		"db:migrate:undo": "node src/db/migrator.js down",
+		"db:migrate:dist": "node dist/db/migrator.js up",
+		"db:migrate:dist:status": "node dist/db/migrator.js pending",
+		"db:migrate:dist:executed": "node dist/db/migrator.js executed",
 		"trails:apply-access-policy": "node src/scripts/applyTrailAccessPolicy.js",
 		"trails:reroll-monthly": "node src/scripts/rerollMonthlyTrailAccess.js"
 	},

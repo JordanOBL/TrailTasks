@@ -15,7 +15,8 @@ Without migrations, schema changes tend to happen through manual SQL, Sequelize 
 
 Migration goals:
 
-- Make schema changes repeatable across `dev`, `sandbox`, `preprod`, and `prod`.
+- Make schema changes repeatable across local development, hosted staging,
+  and production. A separate preprod environment is optional and deferred.
 - Make each change reviewable in a PR.
 - Know which changes have already run.
 - Avoid wiping local mobile data during app upgrades.
@@ -26,7 +27,7 @@ Migration goals:
 Trail Tasks uses an ESM migration runner at:
 
 ```text
-api-server/src/db/migrator.mjs
+api-server/src/db/migrator.js
 ```
 
 Postgres migration files live in:
@@ -47,11 +48,11 @@ The runner intentionally uses ESM `import` syntax instead of CommonJS `module.ex
 
 The migration runner mirrors the API server's current environment file behavior:
 
-| `NODE_ENV` | Env file loaded |
-| --- | --- |
+| `NODE_ENV`    | Env file loaded               |
+| ------------- | ----------------------------- |
 | `development` | `api-server/.env.development` |
-| `production` | `api-server/.env.production` |
-| anything else | `api-server/.env.test` |
+| `production`  | `api-server/.env.production`  |
+| anything else | `api-server/.env.test`        |
 
 Required database variables:
 
@@ -66,7 +67,12 @@ Optional database variable:
 
 ```text
 PGPORT
+PGSSLMODE
 ```
+
+Migration tasks targeting staging must explicitly set PGSSLMODE=require.
+Do not assume the service task definition supplies it. The inspected
+revision 8 task definition did not contain that environment variable.
 
 `PGPORT` defaults to `5432` if it is not set.
 
@@ -100,6 +106,49 @@ npm --prefix ./api-server run db:migrate:undo
 
 Only use undo when the migration's `down` function is known to be safe for the target environment.
 
+## Migration commands in the deployed image
+
+The runtime image contains compiled code under /app/dist and migration
+files under /app/migrations. It does not contain /app/src.
+
+Commands inside an approved standalone migration task are:
+
+- npm run db:migrate:dist:status — list pending migrations.
+- npm run db:migrate:dist:executed — list recorded migrations that match
+  discovered migration files.
+- npm run db:migrate:dist — apply pending migrations.
+
+These commands are not instructions to connect from a laptop. Private RDS
+requires an approved execution location inside its network.
+
+Staging uses NODE_ENV=production for the Node runtime, with staging-specific
+database settings injected by ECS. This does not mean the target database
+is production. With PGSSLMODE=require, the runner uses the existing staging
+TLS configuration; production requires a separately reviewed certificate
+verification configuration.
+
+Before an operation:
+
+1. Confirm the AWS account, region, task definition, image, and target database.
+2. Inspect the existing schema and exact migration-history filenames.
+3. Review the migration SQL, compatibility requirements, and recovery plan.
+4. Before schema/data changes, create and verify an appropriate backup.
+5. Ensure no other migration operation is running.
+6. Run status using the reviewed image before considering an apply.
+
+Status is not guaranteed to be read-only: Sequelize migration storage may
+initialize its tracking table. For strictly read-only inventory, query the
+existing metadata directly inside a PostgreSQL read-only transaction.
+
+For the inspected staging baseline, the three historical .mjs migrations
+are already recorded. A corrected runner should report none pending.
+Unexpected pending historical migrations are a stop condition, not permission
+to replay them.
+
+Do not run down against shared staging without reviewing its effects and
+recovery procedure. In particular, the historical ledger rollback drops
+the ledger table; recreating an old column does not restore lost balances.
+
 ## Creating a Postgres migration
 
 Create a timestamped ESM file under:
@@ -118,19 +167,19 @@ Example shape:
 
 ```js
 export async function up({ context }) {
-  const { queryInterface, Sequelize } = context;
+	const { queryInterface, Sequelize } = context;
 
-  await queryInterface.addColumn('trails', 'is_pro_only', {
-    type: Sequelize.BOOLEAN,
-    allowNull: false,
-    defaultValue: false,
-  });
+	await queryInterface.addColumn('trails', 'is_pro_only', {
+		type: Sequelize.BOOLEAN,
+		allowNull: false,
+		defaultValue: false,
+	});
 }
 
 export async function down({ context }) {
-  const { queryInterface } = context;
+	const { queryInterface } = context;
 
-  await queryInterface.removeColumn('trails', 'is_pro_only');
+	await queryInterface.removeColumn('trails', 'is_pro_only');
 }
 ```
 
@@ -149,16 +198,46 @@ Backfills are important when adding a replacement column. The app should not swi
 
 ## Current Postgres baseline
 
-The current API schema was created before a formal migration workflow. For TT-38, the existing database is treated as the baseline.
+The existing staging database predates the connection-only API startup
+introduced by TT-48. Earlier API startup could alter its schema through
+Sequelize synchronization.
 
-That means:
+With the TT-48 changes, API startup verifies database connectivity without
+calling sequelize.sync(). Schema changes must be performed separately
+through a reviewed migration operation.
 
-- This ticket adds migration infrastructure.
-- This ticket does not recreate all existing tables.
-- Future schema changes should be added as migrations from this point forward.
-- Before `preprod` or `prod`, confirm a clean-database bootstrap strategy if a brand-new database must be created from scratch.
+### Existing staging database
 
-The migration-infrastructure baseline did not itself rename trail columns, remove `users.total_miles`, or add token ledger tables; those changes belong in focused follow-up tickets/PRs.
+A successful read-only inspection confirmed that staging records these
+migration identities in public."SequelizeMeta":
+
+- 20261007000000-add-is-pro-only-to-trails.mjs
+- 20261007001000-drop-users-total-miles.mjs
+- 20261007002000-create-token-transactions-ledger.mjs
+
+The observed columns match their principal schema outcomes: the Pro-only
+trail column and token ledger exist, while the legacy user mileage and
+token-balance columns are absent. This inspection did not verify every
+constraint, index, or historical data transformation.
+
+Preserve these exact filenames. A historical rename to .js caused the
+packaged filenames to disagree with the recorded execution history.
+
+Do not replay these migrations or rewrite migration history merely to
+make a status check appear clean. Inspect each target database independently;
+other environments must not be assumed to match staging.
+
+### Empty databases
+
+These migration files are not a complete empty-database bootstrap.
+The first migration assumes that the trails table already exists.
+
+An empty database requires an approved baseline restore or a separately
+reviewed and tested initial-schema procedure before incremental migrations.
+API startup must not be used to create or alter that baseline.
+
+Do not reset an existing database or mark migrations executed without
+verifying the schema and relevant data.
 
 ## `users.total_miles` removal path
 
@@ -173,9 +252,15 @@ Current MVP posture:
 
 Database steps:
 
-1. For clean MVP/tester installs, reset/recreate the local WatermelonDB and Postgres schema from the new models.
-2. For an existing development Postgres database, run the migration that drops `users.total_miles`; restarting the API server alone will not remove an old persisted column.
-3. If an existing development WatermelonDB has `users.total_miles`, reset the local app database before testing this branch.
+1. For an existing Postgres database, inspect its schema and migration history
+   before applying changes. Staging already records the historical mileage
+   migration; do not replay it merely because a filename changed.
+2. Do not reset or recreate a database containing data that must be preserved.
+   Mileage remains derived from users_sessions.total_distance_hiked.
+3. Do not reset an existing WatermelonDB merely to remove a stale column.
+   Use a reviewed, versioned migration and compatible application behavior.
+4. Database resets are limited to explicitly disposable local test fixtures.
+   They are not the staging, production, or installed-user upgrade procedure.
 
 ## Mobile/WatermelonDB migrations
 
@@ -195,8 +280,8 @@ The app already passes migrations into the Watermelon `SQLiteAdapter` in both ru
 
 ```js
 const adapter = new SQLiteAdapter({
-  schema,
-  migrations,
+	schema,
+	migrations,
 });
 ```
 
@@ -218,22 +303,24 @@ WatermelonDB's documented schema migration helpers support:
 Example:
 
 ```js
-import { addColumns, createTable, schemaMigrations } from '@nozbe/watermelondb/Schema/migrations';
+import {
+	addColumns,
+	createTable,
+	schemaMigrations,
+} from '@nozbe/watermelondb/Schema/migrations';
 
 export default schemaMigrations({
-  migrations: [
-    {
-      toVersion: 2,
-      steps: [
-        addColumns({
-          table: 'trails',
-          columns: [
-            { name: 'is_pro_only', type: 'boolean', isIndexed: true },
-          ],
-        }),
-      ],
-    },
-  ],
+	migrations: [
+		{
+			toVersion: 2,
+			steps: [
+				addColumns({
+					table: 'trails',
+					columns: [{ name: 'is_pro_only', type: 'boolean', isIndexed: true }],
+				}),
+			],
+		},
+	],
 });
 ```
 
