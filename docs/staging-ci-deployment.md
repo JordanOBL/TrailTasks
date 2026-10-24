@@ -38,6 +38,7 @@ Push to dev
   -> wait for ECS stability
   -> verify actual task revision AND image digest
   -> HTTPS process-health smoke check
+  -> HTTPS  db query process-ready smoke check
 ```
 
 `needs: quality` gates the release using the same source SHA. The standalone
@@ -219,11 +220,13 @@ GitHub-hosted runners for this workflow. Do not enable TF_LOG or shell tracing.
   force-unlock: establish that no owner is still operating first.
 
 The public `/api/health` check confirms process reachability, not a live DB query.
-TT-50 retains deeper database-backed smoke verification. Existing API startup
-`SYNC({ alter: true })` is not made safe by a Terraform image guard; TT-48 retains
-schema/migration safety. Existing npm audit high/critical findings also remain
-separate triage, not silently fixed or cleared by a successful build. This is
-staging-only and not a production readiness declaration.
+The public `/api/ready` check executes a lightweight database query. It does not
+verify migrations, schema completeness, or business operations. Both endpoints
+return generic responses without exposing database error details.
+
+TT-48 retains schema/migration safety. Existing npm audit high/critical findings
+also remain separate triage, not silently fixed or cleared by a successful build.
+This is staging-only and not a production readiness declaration.
 
 ## Review and verification commands
 
@@ -235,6 +238,8 @@ terraform -chdir=infra/terraform/environments/staging validate
 npm --prefix api-server test
 npm --prefix api-server run build
 npm --prefix mobile-client run quality:release
+curl --fail --show-error https://api-staging.trailtasks.app/api/health
+curl --fail --show-error https://api-staging.trailtasks.app/api/ready
 ```
 
 Unit inputs are synthetic Terraform/AWS fixtures, not observations of live AWS.

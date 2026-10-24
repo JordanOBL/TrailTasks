@@ -43,6 +43,7 @@ jobs:
       ECS_SERVICE: trailtasks-staging-api
       EXECUTION_ROLE: arn:aws:iam::890129487844:role/trailtasks-staging-ecs-task-execution-role
       SMOKE_URL: https://api-staging.trailtasks.app/api/health
+      SMOKE_DB_URL: https://api-staging.trailtasks.app/api/ready
 
     steps:
       - name: Check out exact source revision
@@ -194,6 +195,15 @@ jobs:
           python3 -c 'import json,sys; data=json.load(open(sys.argv[1])); sys.exit(0 if data == {"status":"ok"} else 1)' \
             "$DEPLOY_PRIVATE_DIR/health.json"
           printf 'HTTPS process-health smoke check passed. This does not prove a database query.\n' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test the public HTTPS DB query process-ready endpoint
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-all-errors \
+            --retry-delay 5 --connect-timeout 10 --max-time 20 \
+            "$SMOKE_DB_URL" > "$DEPLOY_PRIVATE_DIR/ready.json"
+          python3 -c 'import json,sys; data=json.load(open(sys.argv[1])); sys.exit(0 if data == {"status":"ok"} else 1)' \
+            "$DEPLOY_PRIVATE_DIR/ready.json"
+          printf 'HTTPS DB query process-ready smoke check passed.\n' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Remove private plans, state-derived data, and Docker credentials
         if: always()
