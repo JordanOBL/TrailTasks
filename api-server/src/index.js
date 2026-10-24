@@ -7,7 +7,6 @@ import {
 	Park,
 	Park_State,
 	Park_Wild,
-	SYNC,
 	Session_Addon,
 	Session_Category,
 	Trail,
@@ -23,6 +22,7 @@ import {
 	User_Wild,
 	Users_Queued_Trail,
 	Wild,
+	sequelize as sequelizeModel,
 } from './db/sequelizeModel.js';
 import { Op, QueryTypes, Sequelize } from 'sequelize';
 
@@ -54,6 +54,7 @@ import {
 	userRankQuery,
 } from './helpers/derivedMileageQueries.js';
 import res from 'express/lib/response.js';
+import { failStartup, verifyDatabaseConnection } from './db/databaseStartup.js';
 
 // import pool from "./db/config.js";
 
@@ -1267,8 +1268,9 @@ async function seedDatabase() {
 }
 const connect = async () => {
 	try {
-		await SYNC({ alter: true });
 		//await seedDatabase()
+		await verifyDatabaseConnection(sequelize);
+		await verifyDatabaseConnection(sequelizeModel);
 		await runMonthlyTrailAccessReroll('server startup');
 
 		console.log(
@@ -1279,10 +1281,10 @@ const connect = async () => {
 			console.log(`Server running on port ${PORT}`);
 		});
 	} catch (err) {
-		console.log(err.message);
+		throw err;
 	}
 };
 
 connect().catch((e) => {
-	console.error('error in connect server', e);
+	failStartup();
 });
