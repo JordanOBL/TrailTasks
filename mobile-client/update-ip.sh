@@ -1,75 +1,62 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Updates React Native env files with an API host reachable from the target.
-# Targets:
-#   physical/device/lan  -> host LAN IP for real phones on the same network
-#   android-emulator     -> 10.0.2.2 Android emulator alias for host machine
-#   ios-simulator        -> localhost for iOS Simulator on the host machine
-#
-# Examples:
-#   bash ./update-ip.sh                  # physical device / LAN IP
-#   bash ./update-ip.sh android-emulator  # Android emulator / host machine
-#   bash ./update-ip.sh ios-simulator     # iOS Simulator / host machine
-
+# Local development ONLY. Run from mobile-client (or a disposable test folder).
+# Never writes .env, test, staging or production; preserves unrelated fields.
 TARGET=${1:-physical}
 PORT=${API_PORT:-5500}
-
-get_lan_ip() {
-  if [[ "${OSTYPE:-}" == darwin* ]]; then
-    ipconfig getifaddr en0
-  else
-    hostname -I | awk '{print $1}'
-  fi
-}
-
 case "$TARGET" in
-  android-emulator|android)
-    API_HOST="10.0.2.2"
-    ;;
-  ios-simulator|ios-sim|ios)
-    API_HOST="localhost"
-    ;;
+  android-emulator|android) API_HOST=10.0.2.2 ;;
+  ios-simulator|ios-sim|ios) API_HOST=localhost ;;
   physical|device|lan)
-    API_HOST="$(get_lan_ip)"
+    API_HOST=${API_LAN_HOST:-}
+    if [[ -z "$API_HOST" ]]; then
+      if [[ "${OSTYPE:-}" == darwin* ]]; then
+        API_HOST=$(ipconfig getifaddr en0) || true
+      else
+        read -r API_HOST _ <<< "$(hostname -I)"
+      fi
+    fi
     ;;
-  *)
-    echo "Unknown target '$TARGET'. Use 'physical', 'android-emulator', or 'ios-simulator'." >&2
-    exit 1
-    ;;
+  *) printf "Unknown local target '%s'. Use physical, android-emulator or ios-simulator.\n" "$TARGET" >&2; exit 1 ;;
 esac
 
-API_BASE_URL="http://${API_HOST}:${PORT}"
-
-set_or_append() {
-  local file=$1
-  local key=$2
-  local value=$3
-
-  if grep -q "^${key}=" "$file"; then
-    sed -i.bak "s|^${key}=.*|${key}=${value}|" "$file"
-  else
-    echo "${key}=${value}" >> "$file"
-  fi
-}
-
-update_env_file() {
-  local file=$1
-
-  if [[ ! -f "$file" ]]; then
-    touch "$file"
-    echo "NODE_ENV=development" >> "$file"
-    echo "Created $file"
-  fi
-
-  set_or_append "$file" "LOCAL_IP" "$API_HOST"
-  set_or_append "$file" "DATABASE_URL" "${API_HOST}:${PORT}"
-  set_or_append "$file" "DATABASE_PULL_URL" "$API_BASE_URL"
-  set_or_append "$file" "DATABASE_PUSH_URL" "$API_BASE_URL"
-  set_or_append "$file" "DATABASE_LEADERBOARDS_URL" "${API_BASE_URL}/api/leaderboards"
-
-  echo "Updated $file → target=$TARGET API=$API_BASE_URL"
-}
-
-update_env_file ".env"
-update_env_file ".env.development"
+# Python only edits text: it does NOT source/execute the private env file.
+python3 - "$API_HOST" "$PORT" <<'PY'
+import os
+import re
+import sys
+import tempfile
+from pathlib import Path
+host, port = sys.argv[1:]
+if not re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?', host):
+    sys.exit('Cannot determine local API host; set API_LAN_HOST to your LAN IPv4/DNS host.')
+if not port.isascii() or not port.isdigit() or not 1 <= int(port) <= 65535:
+    sys.exit('API_PORT must be a TCP port between 1 and 65535.')
+path = Path('.env.development')
+if path.is_symlink():
+    sys.exit('Refusing to replace symlink .env.development.')
+values = {'APP_ENV': 'local', 'API_BASE_URL': f'http://{host}:{port}'}
+lines = path.read_text().splitlines() if path.exists() else []
+result = []
+for line in lines:
+    match = re.match(r'^\s*(?:export\s+)?(APP_ENV|API_BASE_URL)\s*=', line)
+    if match:
+        key = match[1]
+        if key in values:
+            result.append(f'{key}={values.pop(key)}')
+    else:
+        result.append(line)
+result.extend(f'{key}={value}' for key, value in values.items())
+fd, temporary = tempfile.mkstemp(prefix='.local-env-', dir='.')
+try:
+    with os.fdopen(fd, 'w') as output:
+        output.write('\n'.join(result) + '\n')
+    if path.exists():
+        os.chmod(temporary, path.stat().st_mode & 0o777)
+    os.replace(temporary, path)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
+print(f'Updated .env.development only: APP_ENV=local API_BASE_URL=http://{host}:{port}')
+PY

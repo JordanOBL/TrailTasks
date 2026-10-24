@@ -285,7 +285,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nif [ \"${CONFIGURATION}\" = \"Release\" ]; then\n  export ENVFILE=.env.production\nelse\n  export ENVFILE=.env.development\nfi\n\n\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+			shellScript = "set -e\n\n# ENVFILE is supplied explicitly by npm/xcodebuild, never by Debug/Release.\npython3 \"$SRCROOT/../scripts/check-native-env.py\" \"$SRCROOT/..\" ios\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
 		3C9933507596CB8677C310ED /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;

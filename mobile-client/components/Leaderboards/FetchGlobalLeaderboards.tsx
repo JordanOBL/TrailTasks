@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import handleError from "../../helpers/ErrorHandler";
-import Config from "react-native-config";
+import {API_BASE_URL} from "../../config/environment";
 //This code gets the top 100 rankings AND the user ranking
 export interface Top100Ranking {
   username: string;
@@ -33,9 +33,8 @@ const FetchGlobalLeaderboards = (userId: string) => {
       }
 
       try {
-        if (!Config.DATABASE_LEADERBOARDS_URL) throw new Error("No leaderboard database url found");
 
-        let response = await fetch(Config.DATABASE_LEADERBOARDS_URL, {
+        let response = await fetch(`${API_BASE_URL}/api/leaderboards`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId }),

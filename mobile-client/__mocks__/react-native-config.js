@@ -1,11 +1,7 @@
-// __mocks__/react-native-config.js
+// Deterministic public-only native boundary; no private .env or database needed.
 export default {
-  DATABASE_URL:"192.168.1.4:5555",
-  DATABASE_PULL_URL:"http://192.168.1.4:5555",
-  DATABASE_PUSH_URL:"http://192.168.1.4:5555",
-  NODE_ENV:"test",
-  DATABASE_LEADERBOARDS_URL:"http://192.168.1.4:5555/api/leaderboards",
-  DATABASE_CONNECTION_STRING:"postgresql://jordan:4046@localhost:5434/test_trailtasks"
-
-}
-
+  APP_ENV: 'local',
+  API_BASE_URL: 'http://localhost:5500',
+  REVCAT_GOOGLE: '',
+  REVCAT_APPLE: '',
+};
