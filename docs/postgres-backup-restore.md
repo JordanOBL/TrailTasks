@@ -2,6 +2,11 @@
 
 This runbook protects Trail Tasks API data before tester or production releases. It covers the server PostgreSQL database only; WatermelonDB is each device's local offline cache and has a separate migration path.
 
+For the on-demand staging-to-local developer refresh tool, see
+[Local PostgreSQL and staging refresh](local-postgres-refresh.md). That tool is
+not scheduled production backup infrastructure. The MVP environment path is
+local development → hosted staging → production; separate preprod is deferred.
+
 ## Data to protect
 
 The highest-value user data tables are:
@@ -20,10 +25,10 @@ Reference/seed tables such as `parks`, `trails`, `wilds`, `achievements`, `addon
 
 ## Backup methods
 
-Use both provider-native snapshots and logical Postgres dumps when possible:
+Use recovery mechanisms according to their purpose:
 
-1. Provider-native snapshots protect against full database loss and are usually fastest to restore inside the same host/provider.
-2. `pg_dump` creates portable logical backups that can be restored into local or staging databases for drills.
+1. RDS automated backups, snapshots, and point-in-time recovery (PITR) are the intended primary production recovery mechanism. Verify retention and understand the restore/reconnect procedure separately. RDS recovery normally creates another DB instance; it does not produce a file for `pg_restore`.
+2. `pg_dump` creates portable logical archives for developer refreshes or a justified additional recovery requirement. A scheduled production dump pipeline is not a mandatory MVP launch gate.
 
 Create a logical backup with custom format:
 
@@ -61,21 +66,25 @@ Practice restores into staging or a local disposable database, never directly in
 
    ```bash
    pg_restore \
-     --clean \
-     --if-exists \
      --no-owner \
      --no-privileges \
+     --single-transaction \
+     --exit-on-error \
      --dbname "$RESTORE_DATABASE_URL" \
      trailtasks-YYYYMMDD-HHMMSS.dump
    ```
 
-3. Run the migration status command against the restored database:
+3. Inspect the restored migration history first. For a local drill, after verifying
+   `api-server/.env.development` points only to the local restore target:
 
    ```bash
-   NODE_ENV=production npm --prefix ./api-server run db:migrate:status
+   NODE_ENV=development npm --prefix ./api-server run db:migrate:status
    ```
 
-   Use the environment file or secret set for the restore target, not production secrets.
+   Clear conflicting exported database variables first. Use a separately reviewed
+   target environment for hosted operations, never production secrets for a local
+   drill. Status may initialize Umzug's tracking table; it is not guaranteed
+   read-only. Do not automatically apply unexpected historical migrations.
 
 4. Smoke-check protected data:
 
@@ -91,18 +100,18 @@ A restore drill is successful when the database restores without errors, migrati
 
 ## Cadence and retention
 
-Recommended MVP cadence:
+Right-sized MVP policy:
 
-- Before every production migration: take an on-demand provider snapshot and a `pg_dump`.
-- Production: daily automated backup at minimum once real testers exist.
-- Preprod/staging: backup before destructive migration tests or release rehearsals.
+- Before risky production changes: take an on-demand RDS snapshot and confirm the recovery path. Add a logical dump when portability or the change's recovery plan requires it.
+- Production: verify RDS automated backups, retention, and PITR; do not equate a successful logical restore with verified PITR recovery.
+- Staging: back up before destructive migration tests or release rehearsals.
 - Local development: backup only before manual schema experiments that would be painful to recreate.
 
-Recommended retention once real testers exist:
+Retention planning:
 
-- Keep daily backups for at least 7 days.
-- Keep weekly backups for at least 4 weeks.
-- Keep migration-day backups until the release has been stable for at least one week.
+- Select and verify production RDS retention according to the recovery objective.
+- Retain pre-change snapshots until the release has been stable for the agreed recovery window.
+- On-demand staging exports have a dedicated seven-day S3 lifecycle rule; local downloads and safety backups are not deleted by that rule.
 
 Adjust retention upward if the hosting provider makes it cheap and automatic.
 
@@ -133,7 +142,7 @@ Before running a production migration or destructive database operation:
 - [ ] Confirm the target environment and database name.
 - [ ] Confirm the exact migration or SQL that will run.
 - [ ] Take a provider-native snapshot if available.
-- [ ] Create a fresh `pg_dump` logical backup.
+- [ ] Create a logical dump if the reviewed recovery plan calls for one.
 - [ ] Verify where the backup file/snapshot is stored.
 - [ ] Run the restore drill in staging/local when the change is risky.
 - [ ] Run `npm --prefix ./api-server run db:migrate:status` against the target.

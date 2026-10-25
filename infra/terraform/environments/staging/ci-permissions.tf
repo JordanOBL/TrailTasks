@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "github_staging_inspect" {
   statement {
     sid       = "InspectRegistry"
     actions   = ["ecr:DescribeRepositories", "ecr:DescribeImages", "ecr:ListTagsForResource"]
-    resources = [aws_ecr_repository.api.arn]
+    resources = [aws_ecr_repository.api.arn, aws_ecr_repository.db_export.arn]
   }
 
   statement {
@@ -53,6 +53,8 @@ data "aws_iam_policy_document" "github_staging_inspect" {
     resources = [
       aws_cloudwatch_log_group.api.arn,
       "${aws_cloudwatch_log_group.api.arn}:*",
+      aws_cloudwatch_log_group.db_export.arn,
+      "${aws_cloudwatch_log_group.db_export.arn}:*",
     ]
   }
 
@@ -62,7 +64,15 @@ data "aws_iam_policy_document" "github_staging_inspect" {
       "iam:GetRole", "iam:GetRolePolicy", "iam:ListRolePolicies",
       "iam:ListAttachedRolePolicies", "iam:ListInstanceProfilesForRole",
     ]
-    resources = [aws_iam_role.ecs_task_execution.arn, aws_iam_role.github_staging_deploy.arn]
+    resources = [aws_iam_role.ecs_task_execution.arn, aws_iam_role.github_staging_deploy.arn, aws_iam_role.db_export.arn]
+  }
+
+  # Terraform refreshes the existing prefix-scoped lifecycle configuration.
+  # This grants metadata inspection only, not export-object access or S3 writes.
+  statement {
+    sid       = "InspectExportRetention"
+    actions   = ["s3:GetLifecycleConfiguration"]
+    resources = ["arn:aws:s3:::trailtasks-s3"]
   }
 
   statement {
@@ -90,6 +100,7 @@ data "aws_iam_policy_document" "github_staging_inspect" {
       local.api_service_arn,
       "arn:aws:ecs:${var.aws_region}:890129487844:task/${aws_ecs_cluster.staging.name}/*",
       "arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${local.api_task_family}:*",
+      "arn:aws:ecs:${var.aws_region}:890129487844:task-definition/${aws_ecs_task_definition.db_export.family}:*",
     ]
   }
 

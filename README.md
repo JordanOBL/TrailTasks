@@ -86,6 +86,7 @@ npm run start:dev
 
 - Mobile scripts use `ENVFILE=.env.test`, `.env.development`, or `.env.production` depending on the command.
 - API config is loaded through dotenv and local environment variables. Use test/development database credentials only for local work.
+- For persistent Docker PostgreSQL 16 and the on-demand staging-to-local refresh CLI, see [Local PostgreSQL and staging refresh](docs/local-postgres-refresh.md). Never reset mobile WatermelonDB as part of a server refresh.
 - The MVP should work without starting the API server or Go WebSocket server unless the ticket is specifically about sync/auth/server behavior.
 
 ## Repository layout
