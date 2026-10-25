@@ -68,8 +68,15 @@ if [[ "$mode" != "dump" && -z "$database_name" ]]; then
   exit 2
 fi
 
-if [[ "$mode" != "dump" ]]; then
-  fail "Local restore modes are not implemented yet. Use dump only."
+if [[ "$mode" == "replace" ]]; then
+  fail "replace is not implemented yet."
+fi
+
+if [[ "$mode" == "restore-new" ]]; then
+  if [[ ! "$database_name" =~ ^trailtasks_[a-z0-9_]+$ ||
+        ${#database_name} -gt 63 ]]; then
+    fail "Database names must start with trailtasks_, contain only lowercase letters, digits, and underscores, and be at most 63 characters."
+  fi
 fi
 
 if [[ -e "$output_path" || -L "$output_path" ]]; then
@@ -87,6 +94,58 @@ for tool in aws python3; do
     fail "Missing required tool: $tool"
 done
 
+local_compose() {
+  docker --context desktop-linux compose \
+    --project-name postgres \
+    -f "$compose_file" \
+    exec -T postgres "$@"
+}
+
+local_psql() {
+  local_compose psql -X \
+    --host=/var/run/postgresql \
+    --username=postgres \
+    --dbname=postgres \
+    --set=ON_ERROR_STOP=1 \
+    "$@"
+}
+
+if [[ "$mode" == "restore-new" ]]; then
+  command -v docker >/dev/null 2>&1 ||
+    fail "Docker is required for local restore operations."
+
+  if [[ -n "${DOCKER_HOST:-}" || -n "${DOCKER_CONTEXT:-}" ]]; then
+    fail "Unset DOCKER_HOST and DOCKER_CONTEXT before local restore operations."
+  fi
+
+  docker_endpoint="$(docker context inspect desktop-linux \
+    --format '{{.Endpoints.docker.Host}}')"
+
+  if [[ "$docker_endpoint" != "unix://$HOME/.docker/run/docker.sock" ]]; then
+    fail "Expected the verified local Docker Desktop socket."
+  fi
+
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  compose_file="$script_dir/../infra/docker/postgres/compose.yml"
+
+  [[ -f "$compose_file" ]] ||
+    fail "Local PostgreSQL Compose configuration was not found."
+
+  server_version="$(local_psql \
+    --tuples-only --no-align \
+    --command 'SHOW server_version_num')"
+
+  [[ "$server_version" =~ ^16[0-9]{4}$ ]] ||
+    fail "Expected a PostgreSQL 16 destination."
+
+  database_exists="$(local_psql \
+    --tuples-only --no-align \
+    --command "SELECT 1 FROM pg_database WHERE datname = '$database_name'")"
+
+  [[ -z "$database_exists" ]] ||
+    fail "Database already exists. restore-new will not overwrite it."
+fi
+
 readonly AWS_PROFILE_NAME="trailtasks-terraform"
 readonly AWS_REGION_NAME="us-east-1"
 readonly EXPECTED_ACCOUNT="890129487844"
@@ -101,14 +160,6 @@ fi
 
 if [[ "$account" != "$EXPECTED_ACCOUNT" ]]; then
   fail "Refusing to use an unexpected AWS account."
-fi
-
-if [[ "$mode" != "dump" ]]; then
-  command -v docker >/dev/null 2>&1 ||
-    fail "Docker is required for local restore operations."
-
-  docker info >/dev/null 2>&1 ||
-    fail "Docker is not available. Start Docker Desktop and retry."
 fi
 
 printf 'Preflight passed. No backup task or restore has started.\n'
@@ -381,6 +432,29 @@ except FileExistsError:
 )
 
 printf 'Download verified and saved: %s\n' "$output_path"
+
+if [[ "$mode" == "restore-new" ]]; then
+  printf 'Creating new local database: %s\n' "$database_name"
+
+  local_compose createdb \
+    --host=/var/run/postgresql \
+    --username=postgres \
+    --maintenance-db=postgres \
+    --template=template0 \
+    "$database_name"
+
+  local_compose pg_restore \
+    --host=/var/run/postgresql \
+    --username=postgres \
+    --dbname="$database_name" \
+    --no-owner \
+    --no-privileges \
+    --single-transaction \
+    --exit-on-error \
+    < "$output_path"
+
+  printf 'Restore completed into new local database: %s\n' "$database_name"
+fi
 
 printf 'Command: %s\n' "$mode"
 printf 'Output: %s\n' "$output_path"
