@@ -109,6 +109,28 @@ class GuardTests(unittest.TestCase):
                                   {'address': 'data.aws_iam_policy_document.execution', 'mode': 'data', 'change': {'actions': ['read']}}]
         self.guard(p)
 
+    def test_accept_noop_export_infrastructure(self):
+        p = plan_fixture()
+        for address in ('aws_iam_role.db_export', 'aws_iam_role_policy.db_export_upload',
+                        'aws_ecr_repository.db_export', 'aws_cloudwatch_log_group.db_export',
+                        'aws_ecs_task_definition.db_export',
+                        'aws_s3_bucket_lifecycle_configuration.db_exports'):
+            p['resource_changes'].append({'address': address, 'mode': 'managed',
+                                          'change': {'actions': ['no-op']}})
+        self.guard(p)
+
+    def test_export_changes_still_require_operator_apply(self):
+        for address in ('aws_ecs_task_definition.db_export',
+                        'aws_iam_role_policy.github_staging_inspect',
+                        'aws_s3_bucket_lifecycle_configuration.db_exports'):
+            for actions in (['create'], ['update'], ['delete', 'create']):
+                with self.subTest(address=address, actions=actions):
+                    p = plan_fixture()
+                    p['resource_changes'].append({'address': address, 'mode': 'managed',
+                                                  'change': {'actions': actions}})
+                    with self.assertRaises(deploy.ValidationError):
+                        self.guard(p)
+
     def test_reject_task_settings_changes(self):
         for key, value in [('cpu', '512'), ('memory', '1024'), ('network_mode', 'host'),
                            ('execution_role_arn', ROLE + '-other'), ('tags', {}), ('task_role_arn', ROLE),

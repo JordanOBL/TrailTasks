@@ -29,6 +29,7 @@ database_name=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --output)
+			[[ -z "$output_path" ]] || fail 'Duplicate --output option.'
 			if [[ $# -lt 2 || -z "$2" || "$2" == -* ]]; then
         printf '%s\n' '--output requires a path.' >&2
         exit 2
@@ -38,6 +39,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --database)
+			[[ -z "$database_name" ]] || fail 'Duplicate --database option.'
 			if [[ $# -lt 2 || -z "$2" || "$2" == -* ]]; then
         printf '%s\n' '--database requires a name.' >&2
         exit 2
@@ -68,11 +70,7 @@ if [[ "$mode" != "dump" && -z "$database_name" ]]; then
   exit 2
 fi
 
-if [[ "$mode" == "replace" ]]; then
-  fail "replace is not implemented yet."
-fi
-
-if [[ "$mode" == "restore-new" ]]; then
+if [[ "$mode" != "dump" ]]; then
   if [[ ! "$database_name" =~ ^trailtasks_[a-z0-9_]+$ ||
         ${#database_name} -gt 63 ]]; then
     fail "Database names must start with trailtasks_, contain only lowercase letters, digits, and underscores, and be at most 63 characters."
@@ -94,56 +92,13 @@ for tool in aws python3; do
     fail "Missing required tool: $tool"
 done
 
-local_compose() {
-  docker --context desktop-linux compose \
-    --project-name postgres \
-    -f "$compose_file" \
-    exec -T postgres "$@"
-}
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Only load a fixed repository-relative helper, never user-selected code.
+# shellcheck source=scripts/lib/refresh-local.sh
+source "$script_dir/lib/refresh-local.sh"
 
-local_psql() {
-  local_compose psql -X \
-    --host=/var/run/postgresql \
-    --username=postgres \
-    --dbname=postgres \
-    --set=ON_ERROR_STOP=1 \
-    "$@"
-}
-
-if [[ "$mode" == "restore-new" ]]; then
-  command -v docker >/dev/null 2>&1 ||
-    fail "Docker is required for local restore operations."
-
-  if [[ -n "${DOCKER_HOST:-}" || -n "${DOCKER_CONTEXT:-}" ]]; then
-    fail "Unset DOCKER_HOST and DOCKER_CONTEXT before local restore operations."
-  fi
-
-  docker_endpoint="$(docker context inspect desktop-linux \
-    --format '{{.Endpoints.docker.Host}}')"
-
-  if [[ "$docker_endpoint" != "unix://$HOME/.docker/run/docker.sock" ]]; then
-    fail "Expected the verified local Docker Desktop socket."
-  fi
-
-  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  compose_file="$script_dir/../infra/docker/postgres/compose.yml"
-
-  [[ -f "$compose_file" ]] ||
-    fail "Local PostgreSQL Compose configuration was not found."
-
-  server_version="$(local_psql \
-    --tuples-only --no-align \
-    --command 'SHOW server_version_num')"
-
-  [[ "$server_version" =~ ^16[0-9]{4}$ ]] ||
-    fail "Expected a PostgreSQL 16 destination."
-
-  database_exists="$(local_psql \
-    --tuples-only --no-align \
-    --command "SELECT 1 FROM pg_database WHERE datname = '$database_name'")"
-
-  [[ -z "$database_exists" ]] ||
-    fail "Database already exists. restore-new will not overwrite it."
+if [[ "$mode" != "dump" ]]; then
+  prepare_local_destination
 fi
 
 readonly AWS_PROFILE_NAME="trailtasks-terraform"
@@ -162,7 +117,7 @@ if [[ "$account" != "$EXPECTED_ACCOUNT" ]]; then
   fail "Refusing to use an unexpected AWS account."
 fi
 
-printf 'Preflight passed. No backup task or restore has started.\n'
+printf 'Preflight passed. No cloud export task or restore has started.\n'
 
 readonly ECS_CLUSTER_NAME="trailtasks-staging"
 readonly ECS_SERVICE_NAME="trailtasks-staging-api"
@@ -175,7 +130,7 @@ service_json="$(aws ecs describe-services \
   --query '{failures:failures,services:services[].{taskDefinition:taskDefinition,network:networkConfiguration.awsvpcConfiguration}}' \
   --output json)"
 
-task_definition="$(printf '%s' "$service_json" | python3 -c '
+printf '%s' "$service_json" | python3 -c '
 import json
 import sys
 
@@ -189,21 +144,8 @@ arn = services[0].get("taskDefinition")
 if not isinstance(arn, str) or not arn:
     sys.exit("The staging service has no task-definition ARN.")
 
-print(arn)
-')"
+' > /dev/null
 
-task_json="$(aws ecs describe-task-definition \
-  --task-definition "$task_definition" \
-  --profile "$AWS_PROFILE_NAME" \
-  --region "$AWS_REGION_NAME" \
-  --query 'taskDefinition.{taskDefinition:taskDefinitionArn,cpu:cpu,memory:memory,executionRole:executionRoleArn,taskRole:taskRoleArn,containers:containerDefinitions[].{name:name,image:image,entryPoint:entryPoint,command:command}}' \
-  --output json)"
-
-printf '\nStaging service networking:\n'
-printf '%s\n' "$service_json"
-
-printf '\nCurrent task configuration:\n'
-printf '%s\n' "$task_json"
 
 export_id="$(python3 -c 'import uuid; print(uuid.uuid4().hex)')"
 
@@ -262,7 +204,6 @@ request = {
 print(json.dumps(request, indent=2))
 ' "$export_id")"
 
-printf '\nPrepared task request—NOT launched:\n%s\n' "$request_json"
 
 run_dir="$(mktemp -d "${TMPDIR:-/tmp}/tt54-export-run.XXXXXX")"
 
@@ -280,6 +221,7 @@ aws ecs run-task \
 
 task_arn="$(python3 -c '
 import json
+import re
 import sys
 
 with open(sys.argv[1]) as handle:
@@ -291,8 +233,8 @@ if response.get("failures") != [] or len(tasks) != 1:
     sys.exit("Launch did not return exactly one task without failures. Inspect the saved launch response.")
 
 arn = tasks[0].get("taskArn")
-if not isinstance(arn, str) or not arn:
-    sys.exit("The launch response contains no task ARN.")
+if not isinstance(arn, str) or not re.fullmatch(r"arn:aws:ecs:us-east-1:890129487844:task/trailtasks-staging/[a-zA-Z0-9-]+", arn):
+    sys.exit("Launch response is not a task in the expected staging account/region/cluster.")
 
 print(arn)
 ' "$run_dir/launch.json")"
@@ -315,7 +257,6 @@ aws ecs describe-tasks \
   --output json \
   > "$run_dir/completion.json"
 
-python3 -m json.tool "$run_dir/completion.json"
 
 python3 -c '
 import json
@@ -390,6 +331,8 @@ print(size)
 (
   download_tmp=""
 
+  # Called indirectly by the EXIT trap.
+  # shellcheck disable=SC2329
   cleanup_download() {
     if [[ -n "$download_tmp" ]]; then
       rm -f -- "$download_tmp"
@@ -433,7 +376,13 @@ except FileExistsError:
 
 printf 'Download verified and saved: %s\n' "$output_path"
 
-if [[ "$mode" == "restore-new" ]]; then
+if [[ "$mode" != "dump" ]]; then
+  verify_local_container
+  # Catalog preflight before any DROP. This is not a full recovery proof.
+  local_compose pg_restore --list < "$output_path" >/dev/null
+  if [[ "$mode" == "replace" ]]; then
+    replace_existing_database
+  fi
   printf 'Creating new local database: %s\n' "$database_name"
 
   local_compose createdb \
@@ -441,7 +390,7 @@ if [[ "$mode" == "restore-new" ]]; then
     --username=postgres \
     --maintenance-db=postgres \
     --template=template0 \
-    "$database_name"
+    "$database_name" < /dev/null
 
   local_compose pg_restore \
     --host=/var/run/postgresql \
@@ -453,7 +402,7 @@ if [[ "$mode" == "restore-new" ]]; then
     --exit-on-error \
     < "$output_path"
 
-  printf 'Restore completed into new local database: %s\n' "$database_name"
+  printf 'Restore completed into empty local database: %s\n' "$database_name"
 fi
 
 printf 'Command: %s\n' "$mode"

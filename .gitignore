@@ -97,6 +97,9 @@ build/
 images/
 */images/
 
+# Local database exports and pre-replacement safety backups contain private data.
+*.dump
+
 # Infra
 **/.terraform/
 **/terraform.tfstate

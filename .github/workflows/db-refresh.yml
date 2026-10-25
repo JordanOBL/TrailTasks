@@ -1,0 +1,62 @@
+name: Database refresh safety
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'scripts/refresh-local-from-staging.sh'
+      - 'scripts/lib/**'
+      - 'scripts/tests/**'
+      - 'tools/db-export/**'
+      - 'infra/docker/postgres/**'
+      - '.github/workflows/db-refresh.yml'
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/refresh-local-from-staging.sh'
+      - 'scripts/lib/**'
+      - 'scripts/tests/**'
+      - 'tools/db-export/**'
+      - 'infra/docker/postgres/**'
+      - '.github/workflows/db-refresh.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  safety-tests:
+    name: Database refresh safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Check Bash syntax
+        run: |
+          bash -n scripts/refresh-local-from-staging.sh
+          bash -n tools/db-export/export.sh
+
+      - name: Test refresh safety contracts without AWS credentials
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
+
+      - name: Test export worker without AWS credentials
+        run: python3 -m unittest discover -s tools/db-export -p 'test_*.py' -v
+
+      - name: Verify real local backup and restore with disposable PostgreSQL
+        env:
+          TT54_RUN_DOCKER_TESTS: '1'
+        run: |
+          docker pull postgres:16-bookworm
+          python3 -m unittest discover -s scripts/tests -p 'test_refresh_postgres_integration.py' -v
+
+      - name: Validate local Compose configuration without starting it
+        env:
+          POSTGRES_PASSWORD: validation-only-not-a-real-password
+        run: docker compose -f infra/docker/postgres/compose.yml config --quiet
