@@ -86,6 +86,25 @@ jest.mock("react-native-safe-area-context", () => {
 });
 
 describe("SessionScreen", () => {
+  test("uses only matching committed rewards", () => {
+    const Results = require("../SoloResultsScreen");
+    render(<SessionScreen />);
+    act(() => busHandlers.SESSION_COMPLETED({ snapshot: mockSnapshot, reason: "ended_early" }));
+    const committed = {
+      userId: "user-1",
+      sessionId: "session-1",
+      sessionTokens: 5,
+      streakBonus: 15,
+      totalTokens: 20,
+      dailyStreakAward: null,
+    };
+    act(() => busHandlers.SESSION_REWARDS_PERSISTED(committed));
+    expect(Results.mock.calls.at(-1)[0].committedRewards).toEqual(committed);
+    act(() =>
+      busHandlers.SESSION_REWARDS_PERSISTED({ ...committed, sessionId: "other", totalTokens: 999 }),
+    );
+    expect(Results.mock.calls.at(-1)[0].committedRewards.totalTokens).toBe(20);
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     Object.keys(busHandlers).forEach(key => delete busHandlers[key]);

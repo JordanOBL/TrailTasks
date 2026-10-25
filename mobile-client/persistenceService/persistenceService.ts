@@ -112,7 +112,10 @@ export default class PersistenceService {
           rewards,
           user: { ...this.user },
         };
-        this.persistCompletedSessionWithRewards(payload);
+        void this.persistCompletedSessionWithRewards(payload).catch(error => {
+          delete this.sessionWithRewardsIdempotencyCache[idempotencyKey];
+          handleError(error, "PersistenceService reward listener");
+        });
       }),
     );
     return () => unregisterList.forEach(obj => obj.unregister());
@@ -182,13 +185,19 @@ export default class PersistenceService {
   //EVENT: SESSION_COMPLETED
   public async persistCompletedSessionWithRewards(args: TRewardsCalculatedPayload): Promise<void> {
     try {
-      await this.user.finalizeSessionWithRewardsWriter({
+      if (args.finalSnapshot.userId !== this.user.id) return;
+      const committed = await this.user.finalizeSessionWithRewardsWriter({
         user: this.user,
         snapshot: args.finalSnapshot,
         rewards: args.rewards,
       });
+      if (committed) this.bus.emit("SESSION_REWARDS_PERSISTED", committed);
     } catch (e) {
-      handleError(e, "PersistenceService persistCompletedSessionWithRewards");
+      this.bus.emit("SESSION_REWARDS_PERSIST_FAILED", {
+        userId: this.user.id,
+        sessionId: args.finalSnapshot.sessionId,
+      });
+      throw e;
     }
   }
 

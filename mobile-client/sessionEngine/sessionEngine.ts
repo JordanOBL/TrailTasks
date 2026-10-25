@@ -215,12 +215,9 @@ export class SessionEngine {
   skipBreak() {
     if (this.phase !== "SHORT_BREAK" && this.phase !== "LONG_BREAK") return;
 
-    if (this.phase === "SHORT_BREAK") {
-      this.elapsedInPhaseSec = this.shortBreakSec;
-    } else if (this.phase === "LONG_BREAK") {
-      this.elapsedInPhaseSec = this.longBreakSec;
-    }
-
+    // Transition before publishing: consumers must never receive a break snapshot
+    // that the next tick can increment beyond its countdown duration.
+    this.endBreak();
     this.bus.emit("SESSION_BREAK_SKIPPED", { snapshot: this.buildSnapshot() });
   }
 
@@ -272,33 +269,29 @@ export class SessionEngine {
     } else if (this.phase === "SHORT_BREAK" || this.phase === "LONG_BREAK") {
       const breakTarget = this.phase === "SHORT_BREAK" ? this.shortBreakSec : this.longBreakSec;
       if (this.elapsedInPhaseSec >= breakTarget) {
-        if (this.phase == "SHORT_BREAK") {
-          this.phase = "FOCUS";
-          this.elapsedInPhaseSec = 0;
-          this.bus.emit("SESSION_PHASE_CHANGED", {
-            snapshot: this.buildSnapshot(),
-            from: "SHORT_BREAK",
-            to: "FOCUS",
-            reason: "break_ended",
-          });
-        } else {
-          if (this.autoContinue && this.completedSets === this.totalSets) {
-            // auto start another session
-            this.extraSets = this.totalSets;
-            this.elapsedInPhaseSec = 0;
-            this.phase = "FOCUS";
-            this.bus.emit("SESSION_PHASE_CHANGED", {
-              snapshot: this.buildSnapshot(),
-              from: "LONG_BREAK",
-              to: "FOCUS",
-              reason: "break_ended",
-            });
-          } else {
-            this.finishSession("all_sets_completed");
-          }
-        }
+        this.endBreak();
       }
     }
+  }
+
+  private endBreak() {
+    const from = this.phase;
+    if (from !== "SHORT_BREAK" && from !== "LONG_BREAK") return;
+    if (from === "LONG_BREAK") {
+      if (!this.autoContinue || this.completedSets !== this.totalSets) {
+        this.finishSession("all_sets_completed");
+        return;
+      }
+      this.extraSets = this.totalSets;
+    }
+    this.elapsedInPhaseSec = 0;
+    this.phase = "FOCUS";
+    this.bus.emit("SESSION_PHASE_CHANGED", {
+      snapshot: this.buildSnapshot(),
+      from,
+      to: "FOCUS",
+      reason: "break_ended",
+    });
   }
 
   // if user under 3 strikes we simply reset consecutiveTImeWithoutStrikes.

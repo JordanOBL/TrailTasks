@@ -13,6 +13,7 @@ describe("EventBus", () => {
       totalElapsedSec: 0,
       elapsedInPhaseSec: 0,
       distanceNeeded: 1,
+      currentTrailDistance: 1,
       currentSet: 1,
       completedSets: 0,
       totalSets: 1,
@@ -36,6 +37,37 @@ describe("EventBus", () => {
         EventBus.getInstance().clear();
     });
     
+  test("handles async listener rejection without preventing healthy listeners", async () => {
+    const eb = new EventBus();
+    const failure = new Error("expected async listener failure");
+    const log = jest.spyOn(console, "error").mockImplementation(() => {});
+    const healthy = jest.fn();
+    try {
+      eb.on("UI_PAUSE_REQUESTED", async () => {
+        throw failure;
+      });
+      eb.on("UI_PAUSE_REQUESTED", healthy);
+      expect(() => eb.emit("UI_PAUSE_REQUESTED")).not.toThrow();
+      await Promise.resolve();
+      expect(healthy).toHaveBeenCalledTimes(1);
+      expect(log).toHaveBeenCalledWith(expect.stringContaining("UI_PAUSE_REQUESTED"), failure);
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  test("cleanup remains safe after clear and does not remove a new listener", () => {
+    const eb = new EventBus();
+    const old = eb.on("UI_PAUSE_REQUESTED", jest.fn());
+    eb.clear();
+    expect(() => old.unregister()).not.toThrow();
+    const healthy = jest.fn();
+    eb.on("UI_PAUSE_REQUESTED", healthy);
+    old.unregister();
+    eb.emit("UI_PAUSE_REQUESTED");
+    expect(healthy).toHaveBeenCalledTimes(1);
+  });
+
     test('singleton Pattern', async () => {
         const eb = EventBus.getInstance();
         const eb1 = EventBus.getInstance(); 

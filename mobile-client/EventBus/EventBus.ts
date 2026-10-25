@@ -39,7 +39,27 @@ export interface PersistenceStartedNewTrailPayload {
 export interface NewTrailAssignedPayload {
   newTrailDistance: number;
 }
+export interface DailyStreakRewardCommittedPayload {
+  userId: string;
+  sessionId: string;
+  transactionId: string;
+  amount: number;
+  dailyStreak: number;
+}
+
+export interface SessionRewardsPersistedPayload {
+  userId: string;
+  sessionId: string;
+  sessionTokens: number;
+  streakBonus: number;
+  totalTokens: number;
+  dailyStreakAward: DailyStreakRewardCommittedPayload | null;
+}
+
 export interface EventPayloadMap {
+  SESSION_REWARDS_PERSISTED: SessionRewardsPersistedPayload;
+  SESSION_REWARDS_PERSIST_FAILED: { userId: string; sessionId: string };
+  DAILY_STREAK_REWARD_COMMITTED: DailyStreakRewardCommittedPayload;
   SESSION_STARTED: SessionSnapshotPayload;
   SESSION_PHASE_CHANGED: SessionPhaseChangedPayload;
   SESSION_TICK: SessionSnapshotPayload;
@@ -117,7 +137,12 @@ export class EventBus implements EventBus {
 
     Object.keys(subscriberGroup).forEach(key => {
       try {
-        subscriberGroup[key](args[0]);
+        const result = subscriberGroup[key](args[0]);
+        if (result && typeof result.catch === "function") {
+          result.catch((error: unknown) =>
+            console.error(`Async subscriber failed for ${event}`, error),
+          );
+        }
       } catch (e) {
         console.log(`Error with a subscriber in EventBus for ${event}`, e);
       }
@@ -131,11 +156,14 @@ export class EventBus implements EventBus {
     const id = String(this.nextId++);
     if (!this.subscribers[event]) this.subscribers[event] = {};
     this.subscribers[event][id] = callback;
+    const group = this.subscribers[event];
 
     return {
       unregister: () => {
-        delete this.subscribers[event][id];
-        if (Object.keys(this.subscribers[event]).length === 0) {
+        // A stale disposer must not remove a new listener after clear() reuses IDs.
+        if (this.subscribers[event] !== group) return;
+        delete group[id];
+        if (Object.keys(group).length === 0) {
           delete this.subscribers[event];
         }
       },

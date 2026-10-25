@@ -1,5 +1,10 @@
 import { Database, Q } from "@nozbe/watermelondb";
-import { EventBus, Registry, SessionCompletedPayload } from "../EventBus/EventBus";
+import {
+  EventBus,
+  Registry,
+  SessionCompletedPayload,
+  DailyStreakRewardCommittedPayload,
+} from "../EventBus/EventBus";
 
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
 import { User } from "../watermelon/models";
@@ -36,6 +41,15 @@ type RewardRules = {
 };
 
 export default class RewardService {
+  private pending: readonly DailyStreakRewardCommittedPayload[] = [];
+  private seen = new Set<string>();
+  getPending = (): readonly DailyStreakRewardCommittedPayload[] => this.pending;
+  acknowledge = (transactionId: string): void => {
+    this.pending = this.pending.filter(item => item.transactionId !== transactionId);
+  };
+  setIsProMember(value: boolean) {
+    this.isProMember = value;
+  }
   private bus: EventBus;
   private db: Database;
   private user: User;
@@ -74,6 +88,21 @@ export default class RewardService {
   register(): Function {
     const unregisterList: Registry[] = [];
     unregisterList.push(
+      this.bus.on("SESSION_REWARDS_PERSISTED", summary => {
+        const award = summary.dailyStreakAward;
+        if (
+          summary.userId !== this.user.id ||
+          !award ||
+          award.userId !== this.user.id ||
+          this.seen.has(award.transactionId)
+        )
+          return;
+        this.seen.add(award.transactionId);
+        this.pending = [...this.pending, award];
+        this.bus.emit("DAILY_STREAK_REWARD_COMMITTED", award);
+      }),
+    );
+    unregisterList.push(
       this.bus.on("SESSION_COMPLETED", (payload: SessionCompletedPayload) => {
         void this.calculateRewards(payload.snapshot).catch(e => {
           handleError(
@@ -86,6 +115,8 @@ export default class RewardService {
 
     return () => {
       unregisterList.forEach(r => r.unregister());
+      this.pending = [];
+      this.seen.clear();
     };
   }
 

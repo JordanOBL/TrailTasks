@@ -1,5 +1,9 @@
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { RewardsCalculatedPayload, SessionCompletedPayload } from "../EventBus/EventBus";
+import {
+  RewardsCalculatedPayload,
+  SessionCompletedPayload,
+  SessionRewardsPersistedPayload,
+} from "../EventBus/EventBus";
 import React, { useState } from "react";
 
 import { darkTheme, lightTheme } from "../theme";
@@ -33,21 +37,53 @@ const SessionScreen = () => {
     timeRewards: 0,
     totalTokenRewards: 0,
   });
+  const [committedRewards, setCommittedRewards] = useState<SessionRewardsPersistedPayload | null>(
+    null,
+  );
+  const [persistenceFailed, setPersistenceFailed] = useState(false);
+  const sessionIdRef = React.useRef<string | null>(null);
   const [finalSnapshot, setFinalSnapshot] = useState<null | SessionSnapshot>(null);
 
   //this sets the view when engine emits
-  useEventBus("SESSION_STARTED", () => setView("ACTIVE"));
+  useEventBus("SESSION_STARTED", ({ snapshot }) => {
+    if (snapshot.userId !== user?.id) return;
+    sessionIdRef.current = snapshot.sessionId;
+    setCommittedRewards(null);
+    setPersistenceFailed(false);
+    setView("ACTIVE");
+  });
   useEventBus("SESSION_COMPLETED", (payload: SessionCompletedPayload) => {
+    if (payload.snapshot.userId !== user?.id) return;
+    sessionIdRef.current = payload.snapshot.sessionId;
     setFinalSnapshot(payload.snapshot);
     setView("REWARDS_SOLO");
   });
   useEventBus("REWARDS_CALCULATED", (payload: RewardsCalculatedPayload) => {
+    if (
+      payload.finalSnapshot.userId !== user?.id ||
+      (sessionIdRef.current && sessionIdRef.current !== payload.finalSnapshot.sessionId)
+    )
+      return;
+    sessionIdRef.current = payload.finalSnapshot.sessionId;
     setRewards(prev => ({ ...prev, ...payload.rewards }));
     setFinalSnapshot({ ...payload.finalSnapshot });
     //setView('REWARDS_SOLO')
   });
 
+  useEventBus("SESSION_REWARDS_PERSISTED", payload => {
+    if (payload.userId !== user?.id || payload.sessionId !== sessionIdRef.current) return;
+    setCommittedRewards(payload);
+    setPersistenceFailed(false);
+  });
+  useEventBus("SESSION_REWARDS_PERSIST_FAILED", payload => {
+    if (payload.userId === user?.id && payload.sessionId === sessionIdRef.current)
+      setPersistenceFailed(true);
+  });
+
   const resetSession = React.useCallback(() => {
+    sessionIdRef.current = null;
+    setCommittedRewards(null);
+    setPersistenceFailed(false);
     sessionEngineMgr?.resetCurrentSessionEngine();
     setView("OPTIONS");
     setRewards({ trailRewards: 0, wildXpRewards: 0, timeRewards: 0, totalTokenRewards: 0 });
@@ -67,7 +103,13 @@ const SessionScreen = () => {
       {view === "OPTIONS" && <NewSessionOptions />}
       {view === "ACTIVE" && <EnhancedActiveSession user={user} />}
       {view === "REWARDS_SOLO" && (
-        <SoloResultsScreen resetSession={resetSession} snapshot={finalSnapshot} rewards={rewards} />
+        <SoloResultsScreen
+          resetSession={resetSession}
+          snapshot={finalSnapshot}
+          rewards={rewards}
+          committedRewards={committedRewards}
+          persistenceFailed={persistenceFailed}
+        />
       )}
       {/* { view === 'REWARDS_GROUP' &&  <GroupResultsScreen /> }  */}
     </SafeAreaView>

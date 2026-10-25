@@ -172,17 +172,19 @@ export class User extends Model {
     idempotencyKey: string;
     metadata?: Record<string, unknown>;
   }) {
-    return this.collections.get("token_transactions").prepareCreate((transaction: Token_Transaction) => {
-      transaction.userId = this.id;
-      transaction.amount = amount;
-      transaction.type = type;
-      transaction.sourceType = sourceType || "";
-      transaction.sourceId = sourceId || "";
-      transaction.idempotencyKey = idempotencyKey;
-      transaction.ruleVersion = TOKEN_RULE_VERSION;
-      transaction.metadata = tokenMetadata(metadata);
-      transaction.balanceAfter = null;
-    });
+    return this.collections
+      .get("token_transactions")
+      .prepareCreate((transaction: Token_Transaction) => {
+        transaction.userId = this.id;
+        transaction.amount = amount;
+        transaction.type = type;
+        transaction.sourceType = sourceType || "";
+        transaction.sourceId = sourceId || "";
+        transaction.idempotencyKey = idempotencyKey;
+        transaction.ruleVersion = TOKEN_RULE_VERSION;
+        transaction.metadata = tokenMetadata(metadata);
+        transaction.balanceAfter = null;
+      });
   }
 
   @writer
@@ -255,7 +257,9 @@ export class User extends Model {
   async purchaseTrail(trail, cost) {
     const tokenBalance = await this.callReader(() => this.calculateTrailTokenBalance());
     if (tokenBalance < cost) {
-      throw new Error(`You must have at least ${cost} tokens to unlock ${trail.trailName || trail.id}`);
+      throw new Error(
+        `You must have at least ${cost} tokens to unlock ${trail.trailName || trail.id}`,
+      );
     }
 
     const existingTransactions = await this.tokenTransactions
@@ -835,6 +839,12 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         throw new Error(`Cannot finalize missing session ${args.snapshot.sessionId}`);
       }
 
+      const existingTransactions: Token_Transaction[] = await this.tokenTransactions.fetch();
+      const sessionKey = `session_reward:${this.id}:${currentSession.id}`;
+      const existingSessionReward = existingTransactions.find(
+        tx => tx.idempotencyKey === sessionKey,
+      );
+      let dailyStreakTransaction: Token_Transaction | null = null;
       const today = new Date();
       const todayKey = calendarDay(today);
       const yesterdayKey = previousCalendarDay(today);
@@ -847,8 +857,17 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         return total + Number(session.totalSessionTime || 0);
       }, 0);
       const hasQualifiedToday = todaySessionSeconds >= DAILY_STREAK_THRESHOLD_SECONDS;
+      const existingDailyForSession = existingTransactions.find(
+        tx => tx.type === "daily_streak_reward" && tx.sourceId === currentSession.id,
+      );
+      const alreadyAwardedToday = existingTransactions.some(
+        tx => tx.type === "daily_streak_reward" && tx.idempotencyKey.endsWith(`:${todayKey}`),
+      );
       const shouldAwardDailyStreak =
-        hasQualifiedToday && (lastStreakKey !== todayKey || Number(this.dailyStreak || 0) <= 0);
+        hasQualifiedToday &&
+        !existingDailyForSession &&
+        !alreadyAwardedToday &&
+        (lastStreakKey !== todayKey || Number(this.dailyStreak || 0) <= 0);
       const nextDailyStreak =
         lastStreakKey === yesterdayKey && Number(this.dailyStreak || 0) > 0
           ? Number(this.dailyStreak || 0) + 1
@@ -869,7 +888,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         }),
       );
 
-      if (args.rewards.totalTokenRewards > 0) {
+      if (args.rewards.totalTokenRewards > 0 && !existingSessionReward) {
         batchOperations.push(
           this.prepareTokenTransaction({
             amount: args.rewards.totalTokenRewards,
@@ -883,19 +902,18 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       }
 
       if (shouldAwardDailyStreak) {
-        batchOperations.push(
-          this.prepareTokenTransaction({
-            amount: DAILY_STREAK_TOKEN_REWARD,
-            type: "daily_streak_reward",
-            sourceType: "users_session",
-            sourceId: currentSession.id,
-            idempotencyKey: `daily_streak_reward:${this.id}:${currentSession.id}:${todayKey}`,
-            metadata: { dailyStreak: nextDailyStreak },
-          }),
-        );
+        dailyStreakTransaction = this.prepareTokenTransaction({
+          amount: DAILY_STREAK_TOKEN_REWARD,
+          type: "daily_streak_reward",
+          sourceType: "users_session",
+          sourceId: currentSession.id,
+          idempotencyKey: `daily_streak_reward:${this.id}:${currentSession.id}:${todayKey}`,
+          metadata: { dailyStreak: nextDailyStreak },
+        });
+        batchOperations.push(dailyStreakTransaction);
       }
 
-      if (activeWild) {
+      if (activeWild && !existingSessionReward) {
         batchOperations.push(
           activeWild.prepareUpdate(wild => {
             const nextProgress = calculateWildXpProgress({
@@ -912,6 +930,28 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       }
 
       await this.database.batch(...batchOperations);
+      const sessionTokens = existingSessionReward
+        ? Number(existingSessionReward.amount)
+        : args.rewards.totalTokenRewards;
+      const streakBonus = Number(
+        dailyStreakTransaction?.amount ?? existingDailyForSession?.amount ?? 0,
+      );
+      return {
+        userId: this.id,
+        sessionId: currentSession.id,
+        sessionTokens,
+        streakBonus,
+        totalTokens: sessionTokens + streakBonus,
+        dailyStreakAward: dailyStreakTransaction
+          ? {
+              userId: this.id,
+              sessionId: currentSession.id,
+              transactionId: dailyStreakTransaction.id,
+              amount: streakBonus,
+              dailyStreak: nextDailyStreak,
+            }
+          : null,
+      };
     } catch (e) {
       handleError(e, "finalizeSessionWithRewardsWriter");
       throw new Error(`DB Failed to finalize session with rewards: ${e}`);

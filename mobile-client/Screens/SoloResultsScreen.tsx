@@ -7,13 +7,23 @@ import { SessionSnapshot } from "../sessionEngine/sessionEngine";
 import formatTime from "../helpers/formatTime";
 import { useTheme } from "../contexts/ThemeProvider";
 
+import type { SessionRewardsPersistedPayload } from "../EventBus/EventBus";
+
 interface Props {
+  committedRewards?: SessionRewardsPersistedPayload | null;
+  persistenceFailed?: boolean;
   rewards: Rewards;
   snapshot: SessionSnapshot | null;
   resetSession: () => void;
 }
 
-const SoloResultsScreen = ({ rewards, snapshot, resetSession }: Props) => {
+const SoloResultsScreen = ({
+  rewards,
+  snapshot,
+  resetSession,
+  committedRewards,
+  persistenceFailed,
+}: Props) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
@@ -51,6 +61,13 @@ const SoloResultsScreen = ({ rewards, snapshot, resetSession }: Props) => {
       </View>
 
       <Text style={styles.title}>Rewards</Text>
+      {!committedRewards && (
+        <Text testID="rewards-persistence-status">
+          {persistenceFailed
+            ? "Rewards could not be saved. No award confirmed."
+            : "Saving rewards… Awards are not confirmed yet."}
+        </Text>
+      )}
       <View style={styles.sessionSummary}>
         <Text style={styles.summaryText}>
           Trail Tokens:{" "}
@@ -65,9 +82,19 @@ const SoloResultsScreen = ({ rewards, snapshot, resetSession }: Props) => {
           </Text>
         </Text>
         <Text style={styles.summaryText}>
-          Total Tokens Earned:{" "}
+          Session Tokens:{" "}
+          <Text testID="session-tokens-earned-text">
+            {committedRewards?.sessionTokens ?? "Pending"}
+          </Text>
+          {"\n"}
+          Daily Streak Bonus:{" "}
+          <Text testID="streak-bonus-earned-text">
+            {committedRewards?.streakBonus ?? "Pending"}
+          </Text>
+          {"\n"}
+          Total Tokens Awarded:{" "}
           <Text testID="total-tokens-earned-text" style={styles.value}>
-            {rewards.totalTokenRewards}
+            {committedRewards?.totalTokens ?? "Pending"}
           </Text>
         </Text>
       </View>
