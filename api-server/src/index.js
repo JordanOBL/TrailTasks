@@ -1274,10 +1274,9 @@ const connect = async () => {
 		//await seedDatabase()
 		await verifyDatabaseConnection(sequelize);
 		await verifyDatabaseConnection(sequelizeModel);
-		await runMonthlyTrailAccessReroll('server startup');
 
 		console.log(
-			'SERVER - connected to Postgres database trailtasks viia Sequelize!',
+			`SERVER - connected to Postgres ${process.env.PGDBNAME || ''} database viia Sequelize!`,
 		);
 		const PORT = process.env.PORT || 5500;
 		app.listen(PORT, () => {
