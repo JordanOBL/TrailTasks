@@ -24,16 +24,16 @@ automate with the application deployment role.
 The existing `.github/workflows/staging-image-publish.yml` becomes **Staging deployment**; its filename is retained to avoid two competing publishers.
 
 ```text
-Push to dev
+Push to dev changing API/deployment inputs
   -> reusable Quality Gates: API tests + mobile release gate + deployment tests
   -> enabled deployment job checks out that exact commit
-  -> refuse source superseded by a newer dev commit
+  -> refuse source with deployment inputs superseded by newer dev inputs
   -> pinned Terraform + OIDC role + init/validate
   -> reuse an existing SHA-tagged image, or build linux/amd64 and push it
   -> read back its digest from ECR
   -> refreshed Terraform plan (state locking enabled)
   -> allow only the API image/revision update, or an exact no-op rerun
-  -> check dev is still at the source commit
+  -> check deployment inputs still match current dev
   -> apply the very same saved plan
   -> wait for ECS stability
   -> verify actual task revision AND image digest
@@ -49,10 +49,37 @@ apply are handled by a subsequent run; a head check cannot make Git pushes and
 AWS updates atomic. Saved-plan stale-state checking and S3 locks additionally
 protect Terraform operations. Do not run a concurrent local apply during CI.
 
-Every dev push qualifies, including documentation/mobile-only commits. This
-intentionally trades extra builds for simple, correct latest-head ordering: a
-newer non-API commit cannot strand an older API release by cancelling its head
-check without scheduling a replacement run. Arbitrary branches and PRs cannot assume the
+Only dev pushes affecting the following paths qualify for staging deployment:
+
+- `api-server/**` (including Dockerfile, lockfile, migrations, and API tests)
+- `.github/workflows/staging-image-publish.yml`
+- `.github/workflows/quality.yml`
+- `scripts/ci/**`
+- `infra/terraform/environments/staging/**` (including the provider lockfile)
+
+Mobile-only, documentation-only, and production-only Terraform changes do not
+start this workflow. The standalone Quality Gates workflow remains unfiltered
+on dev pushes and PRs targeting dev. Qualifying deployments still run their own
+reusable quality gate; deduplicating those runs is outside this change.
+
+Filtering triggers also requires input-aware source freshness. At both existing
+preflight/pre-apply checkpoints the workflow reads current dev via GitHub, fetches
+that exact SHA with ephemeral credentials, and runs `scripts/ci/staging_source.py`.
+It compares Git trees for the same paths, not the entire repo head. A newer mobile
+or docs commit therefore does not strand an eligible API release; newer different
+API/deployment inputs reject the older run and have their own qualifying run.
+Missing objects, malformed SHAs, fetch errors, or comparison failures fail closed.
+The positive trigger list and guard path list have a regression alignment test.
+
+The deployed image remains tagged with the quality-tested source SHA, which can
+now be older than dev by unrelated mobile/docs commits. Both checks are snapshots,
+not a lock on GitHub: a commit arriving after the final check is still handled by
+a subsequent qualifying deployment. GitHub's native path-filter limits also apply
+(notably its changed-file list limit); these filters target ordinary-sized merges.
+Changing this workflow itself triggers a deployment after merge when enabled;
+the PR does not cancel or modify a deployment already in progress.
+
+Arbitrary branches and PRs cannot assume the
 branch-restricted role. This does not use a GitHub `environment:`: adding one
 changes the OIDC subject and requires a reviewed trust-policy change. The repo's
 default branch is main, so this PR does not promise a manual-dispatch button for
