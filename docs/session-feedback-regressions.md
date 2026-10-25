@@ -61,8 +61,8 @@ Home was already calculating mileage from session facts, but its ordinary query
 observation tracked membership rather than distance changes within existing rows.
 It now observes the `total_distance_hiked` column. A real SQLite regression keeps
 the exact same session IDs and updates a session from zero to 0.48 miles; the
-observed derived total changes from 82.81 to 83.29. Home's existing one-decimal
-format is preserved, so that example renders as 83.3 on Home.
+observed derived total changes from 82.81 to 83.29. Home now matches Stats by
+formatting mileage to two decimal places, including trailing zeros (83.20).
 
 ## Skipped-break countdown
 
@@ -99,7 +99,7 @@ the device date to force rewards.
       dismiss it, then navigate away/back and verify it does not repeat.
 - [ ] Complete another session on the same qualifying day: normal session rewards,
       no second daily bonus or duplicate modal.
-- [ ] Home mileage updates without relaunching; account for its one-decimal display.
+- [ ] Home mileage updates without relaunching and matches Stats to two decimal places.
 - [ ] Skip a short break; focus countdown immediately shows a valid next phase.
       Also verify long-break skip with auto-continue off/on.
 - [ ] Enable Reduce Motion; reward remains readable without confetti animation.

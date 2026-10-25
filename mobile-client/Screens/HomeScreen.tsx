@@ -64,7 +64,7 @@ export const HomeScreen: React.FC<Props> = ({
   const [activeWild] = activeWilds;
   const { width: windowWidth } = useWindowDimensions();
   const progressBarWidth = Math.max(220, windowWidth - 56);
-  const totalMilesLabel = totalMiles === null ? "0.0" : totalMiles.toFixed(1);
+  const totalMilesLabel = totalMiles === null ? "0.00" : totalMiles.toFixed(2);
   const trailProgress = Number(user?.trailProgress ?? 0);
   const trailDistance = Number(currentTrail?.trailDistance ?? 0);
   const trailPercent =

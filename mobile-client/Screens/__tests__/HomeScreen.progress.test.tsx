@@ -227,7 +227,7 @@ describe("HomeScreen progress fields", () => {
       activeWilds: [],
     };
     const screen = render(<HomeScreen {...props} />);
-    await waitFor(() => expect(screen.getByTestId("total-miles")).toHaveTextContent("12.3"));
+    await waitFor(() => expect(screen.getByTestId("total-miles")).toHaveTextContent(/^12\.34$/));
     expect(screen.queryByTestId("streak-modal")).toBeNull();
     mockHomeFocused = true;
     screen.rerender(<HomeScreen {...props} />);
@@ -235,6 +235,21 @@ describe("HomeScreen progress fields", () => {
     fireEvent.press(screen.getByTestId("streak-modal"));
     expect(mockHomeRewardService.acknowledge).toHaveBeenCalledWith("txn-1");
     expect(screen.queryByTestId("streak-modal")).toBeNull();
+  });
+
+  it("pads Home mileage to two decimal places like Stats", async () => {
+    baseUser.calculateTotalMiles.mockResolvedValueOnce(83.2);
+    const screen = render(
+      <HomeScreen
+        user={baseUser as any}
+        currentTrail={currentTrail}
+        navigation={navigation}
+        setUser={jest.fn()}
+        userWilds={[]}
+        activeWilds={[]}
+      />,
+    );
+    await waitFor(() => expect(screen.getByTestId("total-miles")).toHaveTextContent(/^83\.20$/));
   });
 
   it("renders Home progress from the observed WatermelonDB props", async () => {
@@ -263,7 +278,7 @@ describe("HomeScreen progress fields", () => {
     });
     await waitFor(() => {
       expect(baseUser.calculateTotalMiles).toHaveBeenCalled();
-      expect(screen.getByTestId("total-miles")).toHaveTextContent("12.3");
+      expect(screen.getByTestId("total-miles")).toHaveTextContent(/^12\.34$/);
     });
     expect(screen.getByTestId("current-wild")).toHaveTextContent("ember");
     expect(screen.getByTestId("wild-xp")).toHaveTextContent("42 / 100 XP");
