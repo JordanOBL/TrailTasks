@@ -69,7 +69,7 @@ describe("Solo Results Screen", () => {
       />,
     );
     expect(screen.getByTestId("rewards-persistence-status")).toHaveTextContent(
-      "No award confirmed",
+      /No award confirmed/,
     );
     expect(screen.getByTestId("total-tokens-earned-text")).toHaveTextContent("Pending");
   });
