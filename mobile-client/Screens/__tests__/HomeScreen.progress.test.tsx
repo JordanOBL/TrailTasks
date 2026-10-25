@@ -14,13 +14,13 @@ const mockHomeBus = { on: jest.fn(() => ({ unregister: jest.fn() })) };
 jest.mock("../../contexts/ServiceProvider", () => ({
   useServices: () => ({ rewardService: mockHomeRewardService, bus: mockHomeBus }),
 }));
-jest.mock("../../components/HomeScreen/DailyStreakRewardModal", () => {
+jest.mock("../../components/HomeScreen/CelebrationModal", () => {
   const React = require("react");
   const { Text, TouchableOpacity } = require("react-native");
   return ({ award, onDismiss }: any) => (
     <TouchableOpacity testID="streak-modal" onPress={onDismiss}>
       <Text>
-        {award.amount}:{award.dailyStreak}
+        {award.kind}
       </Text>
     </TouchableOpacity>
   );
@@ -195,9 +195,11 @@ describe("HomeScreen progress fields", () => {
 
   const navigation = { navigate: jest.fn() };
 
-  it("shows a queued streak award only on focused Home and dismisses it", async () => {
+  it("shows a queued park award only on focused Home and dismisses it", async () => {
     let pending = [
       {
+        kind: "park",
+        id: "park:txn-1",
         transactionId: "txn-1",
         userId: baseUser.id,
         sessionId: "session-1",
@@ -207,12 +209,12 @@ describe("HomeScreen progress fields", () => {
     ];
     const listeners = new Set<() => void>();
     mockHomeRewardService = {
-      getPending: () => pending,
+      getCelebrations: () => pending,
       subscribe: (fn: () => void) => {
         listeners.add(fn);
         return () => listeners.delete(fn);
       },
-      acknowledge: jest.fn(() => {
+      acknowledgeCelebration: jest.fn(() => {
         pending = [];
         listeners.forEach(fn => fn());
       }),
@@ -231,9 +233,9 @@ describe("HomeScreen progress fields", () => {
     expect(screen.queryByTestId("streak-modal")).toBeNull();
     mockHomeFocused = true;
     screen.rerender(<HomeScreen {...props} />);
-    expect(screen.getByTestId("streak-modal")).toHaveTextContent("15:3");
+    expect(screen.getByTestId("streak-modal")).toHaveTextContent("park");
     fireEvent.press(screen.getByTestId("streak-modal"));
-    expect(mockHomeRewardService.acknowledge).toHaveBeenCalledWith("txn-1");
+    expect(mockHomeRewardService.acknowledgeCelebration).toHaveBeenCalledWith("park:txn-1");
     expect(screen.queryByTestId("streak-modal")).toBeNull();
   });
 

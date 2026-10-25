@@ -13,8 +13,8 @@ import { darkTheme, lightTheme } from "../theme";
 import DistanceProgressBar from "../components/DistanceProgressBar";
 import FullTrailDetails from "../types/fullTrailDetails";
 import HomeScreenLinks from "../components/HomeScreen/HomeScreenLinks";
-import DailyStreakRewardModal from "../components/HomeScreen/DailyStreakRewardModal";
-import { useDailyStreakReward } from "../hooks/useDailyStreakReward";
+import CelebrationModal from "../components/HomeScreen/CelebrationModal";
+import { useCelebration } from "../hooks/useCelebration";
 import { Q } from "@nozbe/watermelondb";
 /* eslint-disable react-native/no-inline-styles */
 import React from "react";
@@ -53,7 +53,7 @@ export const HomeScreen: React.FC<Props> = ({
 }) => {
   const watermelonDatabase = useDatabase();
   const { theme } = useTheme();
-  const streakReward = useDailyStreakReward(user?.id);
+  const celebration = useCelebration(user?.id);
 
   const { isConnected } = useInternetConnection();
   const [showTutorial, setShowTutorial] = React.useState(false);
@@ -217,11 +217,11 @@ export const HomeScreen: React.FC<Props> = ({
     <SafeAreaView testID="homescreen" style={styles.container}>
       {/* <SyncIndicator delay={3000} /> */}
       {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
-      {streakReward.award && !showTutorial && (
-        <DailyStreakRewardModal
-          key={streakReward.award.transactionId}
-          award={streakReward.award}
-          onDismiss={streakReward.dismiss}
+      {celebration.award && !showTutorial && (
+        <CelebrationModal
+          key={celebration.award.id}
+          award={celebration.award}
+          onDismiss={celebration.dismiss}
         />
       )}
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

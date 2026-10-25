@@ -46,6 +46,7 @@ export default class PersistenceService {
   private db: Database;
   private user: User;
   private distanceIdempotencyCache: DistanceIdempotencyCache = {};
+  private assignedTrails = new Map<string, number>();
   private completedTrailsIdempotencyCache: CompletedTrailsIdemptencyCache = {};
   private sessionWithRewardsIdempotencyCache: SessionWithRewardsIdempotencyCache = {};
 
@@ -95,7 +96,10 @@ export default class PersistenceService {
           isProMember,
           trailStartedAt,
         };
-        this.persistCompletedTrail(payload);
+        void this.persistCompletedTrail(payload).catch(error => {
+          delete this.completedTrailsIdempotencyCache[idempotentId];
+          handleError(error, "PersistenceService trail listener");
+        });
       }),
     );
     unregisterList.push(
@@ -162,26 +166,25 @@ export default class PersistenceService {
     isProMember,
     trailStartedAt,
   }: SessionTrailCompletedPayload): Promise<void> {
-    try {
-      if (!completedTrailId || !trailStartedAt) {
-        throw new Error("Error, missing args, cannot persist trail completion");
-      }
-
-      const newTrailDistance: number = await this.user.assignNewTrail({
-        completedTrailId,
-        isProMember,
-      });
-
-      this.bus.emit("NEW_TRAIL_ASSIGNED", { newTrailDistance });
-      await this.user.markTrailCompleted({
-        trailId: completedTrailId,
-        isProMember: isProMember,
-        trailStartedAt: trailStartedAt,
-      });
-    } catch (e) {
-      handleError(e, "PersistenceService persistCompletedTrail");
+    if (!completedTrailId || !trailStartedAt) {
+      throw new Error("Error, missing args, cannot persist trail completion");
     }
+
+    const eventId = this.createCompletedTrailIdempotentId(completedTrailId, trailStartedAt);
+    if (!this.assignedTrails.has(eventId)) {
+      const newTrailDistance = await this.user.assignNewTrail({ completedTrailId, isProMember });
+      // A later park-write failure must not consume another Pro queued trail on retry.
+      this.assignedTrails.set(eventId, newTrailDistance);
+      this.bus.emit("NEW_TRAIL_ASSIGNED", { newTrailDistance });
+    }
+    const committed = await this.user.markTrailCompleted({
+      trailId: completedTrailId,
+      isProMember: isProMember,
+      trailStartedAt: trailStartedAt,
+    });
+    if (committed) this.bus.emit("PARK_REWARD_COMMITTED", committed);
   }
+
   //EVENT: SESSION_COMPLETED
   public async persistCompletedSessionWithRewards(args: TRewardsCalculatedPayload): Promise<void> {
     try {

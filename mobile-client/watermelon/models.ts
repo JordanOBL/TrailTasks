@@ -1,4 +1,5 @@
 // @ts-nocheck
+import type { ParkRewardCommittedPayload, SessionRewardsPersistedPayload } from "../EventBus/EventBus";
 import { Model, Q } from "@nozbe/watermelondb";
 import {
   children,
@@ -26,6 +27,19 @@ const TOKEN_RULE_VERSION = "mvp-v1";
 
 function tokenMetadata(metadata: Record<string, unknown> = {}) {
   return JSON.stringify(metadata);
+}
+
+/** Watermelon 0.27 optimistically mutates cached raws before adapter.batch.
+ * Restore only records owned by this writer when an atomic SQLite batch rejects;
+ * otherwise a retry would apply XP twice or retain an uncommitted active Wild.
+ * No observers are notified until batch succeeds. Keep this compatibility seam local.
+ */
+function checkpointModels(records: Model[]) {
+  const snapshots = records.filter(Boolean).map(record => [record, { ...record._raw }]);
+  return () => snapshots.forEach(([record, raw]) => {
+    record._raw = raw;
+    record._preparedState = null;
+  });
 }
 
 function calendarDay(date: Date | string | number | null | undefined) {
@@ -526,7 +540,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
   }
 
   @writer
-  async markTrailCompleted({ trailId, isProMember, trailStartedAt }): Promise<void> {
+  async markTrailCompleted({ trailId, isProMember, trailStartedAt }): Promise<ParkRewardCommittedPayload | null> {
     //get trail
     const [trail] = await this.collections.get("trails").query(Q.where("id", trailId)).fetch();
     if (!trail) {
@@ -547,7 +561,8 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           uct.bestCompletedTime = getTimeDifference(currentTime, trailStartedAt);
         });
       if (!createdCompletedTrail) throw new Error("DB failed to created new completed trail");
-    } else {
+    } else if (new Date(completedTrail.lastCompletedAt).getTime() < new Date(trailStartedAt).getTime()) {
+      // A retry after the trail write must still attempt the park grant, not count another hike.
       console.debug("Completed trail before trail, updating in markCompletedTrail Writer");
       await completedTrail.update(uct => {
         uct.completionCount += 1;
@@ -559,17 +574,8 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       });
     }
 
-    //check id user has park pass already
-    const hasParkPass = await this.usersParks.extend(Q.where("park_id", trail.parkId)).fetchCount();
-    console.debug("hasParkPass in markTrailCompleted Writer:", hasParkPass);
-    //if not, and user is pro member, redeem park pass
-    if (Number(hasParkPass) === 0) {
-      const shouldRedeemPass = await this.callWriter(() => this.redeemParkWildCheck(trail.parkId));
-      if (shouldRedeemPass) {
-        console.debug("Redeeming Park Pass in markCompletedTrail Writer");
-        await this.callWriter(() => this.redeemParkPass(trail.parkId));
-      }
-    }
+    const hasPass = await this.usersParks.extend(Q.where("park_id", trail.parkId)).fetchCount();
+    return hasPass ? null : await this.callWriter(() => this.redeemParkPass(trail.parkId));
   }
 
   //Add User`
@@ -718,83 +724,75 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
     return results.length;
   }
 
-  //Check if user completed all trails in the park after completing new trail,
-  // if "yes" unlock wild and park
+  // Only local trail completion invokes redemption; sync does not emit celebrations.
   @writer
-  async redeemParkWildCheck(parkId) {
-    console.log("In redeemParkWildCheck after completing new trail for parkid:", parkId);
-    const p = await this.collections.get<Park>("parks").find(parkId);
-    console.log("Park found in redeemParkWildCheck:", p);
-    const trailsInPark = await p.trails.fetch();
-    console.log("Trails in Park:", trailsInPark);
-    //Check if user has completed all trails in the park
-    const completedTrailsInPark = await this.usersCompletedTrails
-      .extend(Q.where("trail_id", Q.oneOf(trailsInPark.map(t => t.id))))
-      .fetch();
-    console.log("Completed Trails in Park by User:", completedTrailsInPark);
-    console.log("returning:", completedTrailsInPark.length === trailsInPark.length);
-
-    return completedTrailsInPark.length === trailsInPark.length;
+  async redeemParkWildCheck(parkId: string): Promise<boolean> {
+    const park = await this.collections.get<Park>("parks").find(parkId);
+    const trails = await park.trails.fetch();
+    if (!trails.length) return false;
+    const completed = await this.usersCompletedTrails
+      .extend(Q.where("trail_id", Q.oneOf(trails.map(t => t.id)))).fetch();
+    return trails.every(trail => completed.some(item => item.trailId === trail.id));
   }
 
   @writer
-  async redeemParkPass(parkId: string): Promise<void> {
-    const reward = this.prestigeLevel * 100 + 200;
-    let newUserPark;
-    let createUserWild;
-    let parkWild;
-    const [existingParkPass] = await this.collections
-      .get("users_parks")
-      .query(Q.and(Q.where("user_id", this.id), Q.where("park_id", parkId)))
-      .fetch();
+  async redeemParkPass(parkId: string): Promise<ParkRewardCommittedPayload | null> {
+    if (!(await this.callWriter(() => this.redeemParkWildCheck(parkId)))) return null;
+    const park = await this.collections.get<Park>("parks").find(parkId);
+    const [existing] = await this.usersParks.extend(Q.where("park_id", parkId)).fetch();
+    // Preserve existing prestige eligibility, but a no-op must not mint tokens.
+    if (existing && Number(this.prestigeLevel) !== Number(existing.parkLevel)) return null;
+    const parkLevel = existing ? Number(existing.parkLevel) + 1 : 1;
+    const key = `park_reward:${this.id}:${parkId}:${parkLevel}`;
+    const [previous] = await this.tokenTransactions.extend(Q.where("idempotency_key", key)).fetch();
+    if (previous) return null;
 
-    // If park pass does not exist, create it
-    if (!existingParkPass) {
-      //create ParkPass
-      newUserPark = this.collections.get("users_parks").prepareCreate(parkPass => {
-        parkPass.userId = this.id;
-        parkPass.parkId = parkId;
-        parkPass.lastCompleted = new Date().toISOString();
-        parkPass.parkLevel = 1;
-        parkPass.isRewardRedeemed = true;
-      });
-      //Unlcok WIld For User
-      [parkWild] = await this.collections.get("wilds").query(Q.where("park_id", parkId)).fetch();
-      if (!parkWild) throw new Error(`Park Wild not found for parkId: ${parkId}`);
-      createUserWild = this.collections.get("users_wilds").prepareCreate(wild => {
+    const reward = this.prestigeLevel * 100 + 200;
+    const operations = [];
+    let newWild = null;
+    // Resolve all reads before preparing writes (including validation of the park Wild).
+    const [parkWild] = await this.collections.get("wilds").query(Q.where("park_id", parkId)).fetch();
+    if (!existing && !parkWild) throw new Error(`Park Wild not found for parkId: ${parkId}`);
+    const ownedWilds = await this.usersWilds.fetch();
+    const restore = checkpointModels([existing, ...ownedWilds]);
+    if (!existing && !ownedWilds.some(w => w.wildId === parkWild.id)) {
+      const unlocked = this.collections.get("users_wilds").prepareCreate(wild => {
         wild.userId = this.id;
-        wild.wildId = parkWild.id; // Assuming '1' is a default wild ID
+        wild.wildId = parkWild.id;
         wild.isActive = true;
         wild.level = 1;
         wild.xp = 0;
         wild.xpToNext = 100;
-        wild.unlockedAt = new Date().toISOString();
+        wild.unlockedAt = new Date();
       });
-    } else if (this.prestigeLevel == existingParkPass.parkLevel) {
-      newUserPark = existingParkPass.prepareUpdate(pass => {
-        pass.parkLevel += 1;
-        pass.lastCompleted = new Date().toISOString();
-        pass.isRewardRedeemed = true;
-      });
+      // Preserve auto-selection of the new companion, with exactly one active Wild.
+      operations.push(...ownedWilds.filter(w => w.isActive).map(w =>
+        w.prepareUpdate(record => { record.isActive = false; })), unlocked);
+      newWild = { userWildId: unlocked.id, wildId: parkWild.id, wildName: parkWild.wildName };
     }
-    await this.database.batch([
-      this.prepareTokenTransaction({
-        amount: reward,
-        type: "park_reward",
-        sourceType: "park",
-        sourceId: parkId,
-        idempotencyKey: `park_reward:${this.id}:${parkId}:${existingParkPass?.parkLevel || 1}`,
-        metadata: { reward },
-      }),
-      newUserPark,
-      createUserWild,
-      //   this.database.get('users_wilds').prepareCreate((userWild) => {
-      //     userWild.userId = this.id;
-      //     userWild.wildId = parkWild.id; // Assuming wild.id is the ID of the wild created earlier
-      //     userWild.isActive = true;
-      //     userWild.unlockedAt = new Date().toISOString();
-      //   })
-    ]);
+    operations.push(existing
+      ? existing.prepareUpdate(pass => {
+          pass.parkLevel = parkLevel;
+          pass.lastCompleted = new Date().toISOString();
+          pass.isRewardRedeemed = true;
+        })
+      : this.collections.get("users_parks").prepareCreate(pass => {
+          pass.userId = this.id;
+          pass.parkId = parkId;
+          pass.parkLevel = parkLevel;
+          pass.lastCompleted = new Date().toISOString();
+          pass.isRewardRedeemed = true;
+        }));
+    const transaction = this.prepareTokenTransaction({ amount: reward, type: "park_reward",
+      sourceType: "park", sourceId: parkId, idempotencyKey: key, metadata: { reward, parkLevel } });
+    try {
+      await this.database.batch(...operations, transaction);
+    } catch (error) {
+      restore();
+      throw error;
+    }
+    return { userId: this.id, transactionId: transaction.id, parkId, parkName: park.parkName,
+      parkLevel, amount: reward, newWild };
   }
 
   @writer
@@ -825,9 +823,10 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       totalTokenRewards: number;
       wildXpRewards: number;
     };
-  }) {
+  }): Promise<SessionRewardsPersistedPayload> {
     try {
       const batchOperations = [];
+      const wildLevelUps = [];
 
       const [[currentSession], [activeWild], userSessions] = await Promise.all([
         this.usersSessions.extend(Q.where("id", args.snapshot.sessionId)).fetch(),
@@ -873,6 +872,10 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           ? Number(this.dailyStreak || 0) + 1
           : 1;
 
+      // Read catalog before preparing any model: failed reads must leave writers retryable.
+      const [activeWildCatalog] = activeWild && !existingSessionReward
+        ? await this.collections.get("wilds").query(Q.where("id", activeWild.wildId)).fetch() : [];
+      const restore = checkpointModels([this, currentSession, activeWild]);
       const userUpdate = this.prepareUpdate(updatedUser => {
         if (shouldAwardDailyStreak) {
           updatedUser.dailyStreak = nextDailyStreak;
@@ -888,7 +891,9 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         }),
       );
 
-      if (args.rewards.totalTokenRewards > 0 && !existingSessionReward) {
+      // Even zero-token sessions need a durable finalization marker so XP cannot replay.
+      // Signed ledger sums are unchanged; amount=0 is not an additional reward.
+      if (!existingSessionReward) {
         batchOperations.push(
           this.prepareTokenTransaction({
             amount: args.rewards.totalTokenRewards,
@@ -896,7 +901,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
             sourceType: "users_session",
             sourceId: currentSession.id,
             idempotencyKey: `session_reward:${this.id}:${currentSession.id}`,
-            metadata: args.rewards,
+            metadata: { ...args.rewards, sessionFinalized: true },
           }),
         );
       }
@@ -914,14 +919,15 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       }
 
       if (activeWild && !existingSessionReward) {
+        const nextProgress = calculateWildXpProgress({ currentXp: activeWild.xp,
+          xpToNext: activeWild.xpToNext, level: activeWild.level, rewardXp: args.rewards.wildXpRewards });
+        if (nextProgress.level > activeWild.level) {
+          wildLevelUps.push({ userId: this.id, sessionId: currentSession.id,
+            userWildId: activeWild.id, wildId: activeWild.wildId, wildName: activeWildCatalog?.wildName || "Your Wild",
+            fromLevel: activeWild.level, toLevel: nextProgress.level });
+        }
         batchOperations.push(
           activeWild.prepareUpdate(wild => {
-            const nextProgress = calculateWildXpProgress({
-              currentXp: wild.xp,
-              xpToNext: wild.xpToNext,
-              level: wild.level,
-              rewardXp: args.rewards.wildXpRewards,
-            });
             wild.xp = nextProgress.xp;
             wild.level = nextProgress.level;
             wild.xpToNext = nextProgress.xpToNext;
@@ -929,7 +935,12 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         );
       }
 
-      await this.database.batch(...batchOperations);
+      try {
+        await this.database.batch(...batchOperations);
+      } catch (error) {
+        restore();
+        throw error;
+      }
       const sessionTokens = existingSessionReward
         ? Number(existingSessionReward.amount)
         : args.rewards.totalTokenRewards;
@@ -940,6 +951,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
         userId: this.id,
         sessionId: currentSession.id,
         sessionTokens,
+        wildLevelUps,
         streakBonus,
         totalTokens: sessionTokens + streakBonus,
         dailyStreakAward: dailyStreakTransaction

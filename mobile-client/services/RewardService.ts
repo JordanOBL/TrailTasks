@@ -4,6 +4,7 @@ import {
   Registry,
   SessionCompletedPayload,
   DailyStreakRewardCommittedPayload,
+  Celebration,
 } from "../EventBus/EventBus";
 
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
@@ -41,12 +42,24 @@ type RewardRules = {
 };
 
 export default class RewardService {
-  private pending: readonly DailyStreakRewardCommittedPayload[] = [];
+  private pending: readonly Celebration[] = [];
   private seen = new Set<string>();
-  getPending = (): readonly DailyStreakRewardCommittedPayload[] => this.pending;
-  acknowledge = (transactionId: string): void => {
-    this.pending = this.pending.filter(item => item.transactionId !== transactionId);
+  getCelebrations = (): readonly Celebration[] => this.pending;
+  acknowledgeCelebration = (id: string): void => {
+    this.pending = this.pending.filter(item => item.id !== id);
   };
+  // Compatibility for existing streak consumers; all awards share one queue.
+  getPending = (): readonly DailyStreakRewardCommittedPayload[] => this.pending
+    .filter((item): item is Extract<Celebration, { kind: "daily_streak" }> => item.kind === "daily_streak")
+    .map(({ kind, id, ...award }) => award);
+  acknowledge = (transactionId: string): void => this.acknowledgeCelebration(`streak:${transactionId}`);
+  private enqueue(award: Celebration): boolean {
+    if (award.userId !== this.user.id || this.seen.has(award.id)) return false;
+    this.seen.add(award.id);
+    this.pending = [...this.pending, award];
+    this.bus.emit("CELEBRATION_QUEUED", award);
+    return true;
+  }
   setIsProMember(value: boolean) {
     this.isProMember = value;
   }
@@ -89,19 +102,19 @@ export default class RewardService {
     const unregisterList: Registry[] = [];
     unregisterList.push(
       this.bus.on("SESSION_REWARDS_PERSISTED", summary => {
+        if (summary.userId !== this.user.id) return;
         const award = summary.dailyStreakAward;
-        if (
-          summary.userId !== this.user.id ||
-          !award ||
-          award.userId !== this.user.id ||
-          this.seen.has(award.transactionId)
-        )
-          return;
-        this.seen.add(award.transactionId);
-        this.pending = [...this.pending, award];
-        this.bus.emit("DAILY_STREAK_REWARD_COMMITTED", award);
+        if (award && this.enqueue({ ...award, kind: "daily_streak", id: `streak:${award.transactionId}` })) {
+          this.bus.emit("DAILY_STREAK_REWARD_COMMITTED", award);
+        }
+        for (const level of summary.wildLevelUps ?? []) {
+          this.enqueue({ ...level, kind: "wild_level", id: `level:${level.sessionId}:${level.userWildId}:${level.toLevel}` });
+        }
       }),
     );
+    unregisterList.push(this.bus.on("PARK_REWARD_COMMITTED", award => {
+      this.enqueue({ ...award, kind: "park", id: `park:${award.transactionId}` });
+    }));
     unregisterList.push(
       this.bus.on("SESSION_COMPLETED", (payload: SessionCompletedPayload) => {
         void this.calculateRewards(payload.snapshot).catch(e => {

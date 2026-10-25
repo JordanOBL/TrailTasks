@@ -47,6 +47,29 @@ export interface DailyStreakRewardCommittedPayload {
   dailyStreak: number;
 }
 
+export interface ParkRewardCommittedPayload {
+  userId: string;
+  transactionId: string;
+  parkId: string;
+  parkName: string;
+  parkLevel: number;
+  amount: number;
+  newWild: { userWildId: string; wildId: string; wildName: string } | null;
+}
+export interface WildLevelUpPayload {
+  userId: string;
+  sessionId: string;
+  userWildId: string;
+  wildId: string;
+  wildName: string;
+  fromLevel: number;
+  toLevel: number;
+}
+export type Celebration =
+  | ({ kind: "daily_streak"; id: string } & DailyStreakRewardCommittedPayload)
+  | ({ kind: "park"; id: string } & ParkRewardCommittedPayload)
+  | ({ kind: "wild_level"; id: string } & WildLevelUpPayload);
+
 export interface SessionRewardsPersistedPayload {
   userId: string;
   sessionId: string;
@@ -54,9 +77,12 @@ export interface SessionRewardsPersistedPayload {
   streakBonus: number;
   totalTokens: number;
   dailyStreakAward: DailyStreakRewardCommittedPayload | null;
+  wildLevelUps?: WildLevelUpPayload[];
 }
 
 export interface EventPayloadMap {
+  PARK_REWARD_COMMITTED: ParkRewardCommittedPayload;
+  CELEBRATION_QUEUED: Celebration;
   SESSION_REWARDS_PERSISTED: SessionRewardsPersistedPayload;
   SESSION_REWARDS_PERSIST_FAILED: { userId: string; sessionId: string };
   DAILY_STREAK_REWARD_COMMITTED: DailyStreakRewardCommittedPayload;

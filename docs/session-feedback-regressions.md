@@ -21,7 +21,7 @@ SessionEngine: SESSION_COMPLETED
            -> SESSION_REWARDS_PERSISTED (confirmed receipt)
               -> SessionScreen shows confirmed token breakdown
               -> RewardService queues a newly committed streak transaction
-                 -> DAILY_STREAK_REWARD_COMMITTED
+                 -> CELEBRATION_QUEUED (also emits the streak-specific event)
                     -> focused Home shows reward modal + confetti
 ```
 
@@ -40,10 +40,10 @@ it does not insert duplicate token rows or replay a streak celebration.
 ## Why queue an event?
 
 An event bus is not a history: an unmounted listener cannot hear an earlier event.
-RewardService therefore retains pending streak transaction identities. Home
-subscribes to the typed committed-award event AND reads that pending queue when
-it mounts. It only renders a modal when focused, and acknowledges the specific
-transaction when dismissed. Duplicate receipts are deduplicated even after
+RewardService therefore retains pending celebration identities. Home subscribes
+to `CELEBRATION_QUEUED` AND reads that pending queue when it mounts. It only
+renders a modal when focused, and acknowledges the specific celebration when
+dismissed. Duplicate receipts are deduplicated even after
 acknowledgement. The queue is account-scoped, survives Home unmount/focus changes
 and Pro-membership refreshes, and clears when the account service is disposed.
 
@@ -54,6 +54,59 @@ not trigger celebrations. The underlying award remains in the durable ledger.
 Confetti uses existing React Native Animated APIs: no new dependency, native
 module, or Pod changes. It respects Reduce Motion and has no decorative screen
 reader content. Button dismissal and native modal dismissal are both supported.
+
+## Park-pass completion, Wild unlocks, and Wild level-ups
+
+The same RewardService now owns one typed celebration queue for daily streaks,
+park-pass completion, and Wild level-ups. These are announcements of committed
+local gameplay facts, not additional reward-granting operations.
+
+```
+SESSION_TRAIL_COMPLETED
+  -> PersistenceService awaits markTrailCompleted
+     -> persist trail completion
+     -> first-pass eligibility check and redeemParkPass
+        -> atomic batch: park pass + park token transaction + new Wild if needed
+        -> return committed park receipt
+     -> PARK_REWARD_COMMITTED
+        -> RewardService queues combined park-pass/Wild-unlock celebration
+
+SESSION_REWARDS_PERSISTED
+  -> RewardService queues newly committed daily-streak and Wild-level receipts
+     -> CELEBRATION_QUEUED
+        -> focused Home presents one celebration at a time
+```
+
+Completing the last required trail can grant its park reward while a session is
+running. The modal waits for focused Home instead of interrupting the timer.
+A park celebration includes the confirmed token amount and newly unlocked Wild;
+an already-owned Wild is not described as a new unlock. New Wild auto-selection
+is retained, with the previous active companion deactivated in the same batch.
+Automatic trail completion remains first-pass-only: it does not introduce an
+extra automatic prestige-upgrade grant on repeat hikes.
+
+Redemption verifies nonempty park eligibility and checks the park/level reward
+identity before preparing a grant. A retry must not mint another transaction,
+duplicate a Wild, or count the same trail completion twice. If the trail fact
+saved but park redemption failed, retrying can still finish the park grant.
+Within the service lifetime, a successful next-trail assignment is retained
+separately from park persistence so a retry does not consume a second Pro queue
+entry or reset progress again. This is not a new durable cross-restart trail-event
+replay/outbox system.
+
+Session finalization returns a Wild-level receipt only when committed XP crosses
+a level boundary. A multi-level gain is one celebration showing the previous and
+new level, not one modal per intermediate level. Ordinary XP progress does not
+celebrate. A zero-token session still records its session-reward identity with a
+zero amount so replay cannot apply Wild XP again; this does not change the token
+balance or XP formula. Level-up display metadata must not prevent saving an
+otherwise valid reward when a Wild catalog name is unavailable.
+
+The queue deduplicates reward identities, including after dismissal. Streak,
+park, and level-up rewards are displayed sequentially rather than as overlapping
+modals. Its account scope, navigation lifetime, Reduce Motion behavior, and
+in-memory restart/logout limitation are the same as described above. Syncing
+historical park ownership or Wild levels does not enqueue a celebration.
 
 ## Home mileage
 
@@ -102,8 +155,25 @@ the device date to force rewards.
 - [ ] Home mileage updates without relaunching and matches Stats to two decimal places.
 - [ ] Skip a short break; focus countdown immediately shows a valid next phase.
       Also verify long-break skip with auto-continue off/on.
-- [ ] Enable Reduce Motion; reward remains readable without confetti animation.
+- [ ] With a disposable account that has one unfinished trail in a park, finish
+      that trail during a session. Verify its park pass, one park-reward ledger
+      row, and the associated Wild ownership save. The timer is not interrupted.
+- [ ] Finish the session and return to Home. See one combined park-pass/Wild
+      celebration with the correct park, Wild artwork/name, and token amount.
+      Dismiss and navigate away/back: it does not repeat.
+- [ ] Cross an active Wild's XP threshold during session finalization. See its
+      committed old/new levels on Home; verify the displayed level matches the
+      owned Wild. XP below the threshold does not show a level-up modal.
+- [ ] Earn a park completion, streak bonus, and/or Wild level-up together. See
+      queued celebrations one at a time; dismissing one exposes the next.
+- [ ] Verify an already-owned Wild is not announced as newly unlocked, and a
+      repeat hike does not grant the same park reward again.
+- [ ] Enable Reduce Motion; every celebration remains readable without confetti
+      animation, and both button and native dismissal work.
 - [ ] Logout/switch accounts; no old account celebration appears.
+- [ ] Relaunch/sync on a disposable install: durable park/Wild/token state remains,
+      but historical synced awards do not replay modals. The pending queue itself
+      is intentionally not durable across process termination/logout.
 - [ ] Verify persistence/server sync separately: reopening only proves local state.
 
 No AWS writes, server/schema migrations, reward-rate changes, or production-data
