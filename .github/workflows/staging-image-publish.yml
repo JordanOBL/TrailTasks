@@ -3,6 +3,13 @@ name: Staging deployment
 on:
   push:
     branches: [dev]
+    # Keep aligned with scripts/ci/staging_source.py deployment inputs.
+    paths:
+      - 'api-server/**'
+      - '.github/workflows/staging-image-publish.yml'
+      - '.github/workflows/quality.yml'
+      - 'scripts/ci/**'
+      - 'infra/terraform/environments/staging/**'
 
 permissions:
   contents: read
@@ -56,7 +63,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/dev" --jq .object.sha)"
-          test "$current" = "$GITHUB_SHA" || { printf 'Refusing superseded dev revision.\n'; exit 1; }
+          # Fetch only this exact tree, using the ephemeral GitHub token without
+          # persisting credentials. An unrelated mobile/docs head is still safe.
+          git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
+            fetch --no-tags --depth=1 origin "$current"
+          python3 scripts/ci/staging_source.py "$GITHUB_SHA" "$current"
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
@@ -152,7 +163,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/dev" --jq .object.sha)"
-          test "$current" = "$GITHUB_SHA" || { printf 'Refusing superseded dev revision.\n'; exit 1; }
+          # Fetch only this exact tree, using the ephemeral GitHub token without
+          # persisting credentials. An unrelated mobile/docs head is still safe.
+          git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
+            fetch --no-tags --depth=1 origin "$current"
+          python3 scripts/ci/staging_source.py "$GITHUB_SHA" "$current"
 
       - name: Apply the exact validated saved plan
         run: |
