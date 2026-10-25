@@ -48,16 +48,26 @@ export const ServiceProvider = ({ children }: { children: React.ReactNode }) => 
       bus,
       isProMember,
     );
-    const rewardService = new RewardService(bus, db, user, isProMember);
 
-    const disposers = [persistenceService.register(), rewardService.register()];
-
-    setServicesState({ persistenceService, sessionEngineMgr, rewardService });
+    const disposers = [persistenceService.register()];
+    setServicesState(previous => ({ ...previous, persistenceService, sessionEngineMgr }));
 
     return () => {
       disposers.forEach(r => r());
     };
   }, [user?.id, db, isProMember]);
+
+  // Notification queue is account scoped, not membership scoped.
+  useEffect(() => {
+    if (!user || !db) return;
+    const rewardService = new RewardService(bus, db, user, isProMember);
+    const unregister = rewardService.register();
+    setServicesState(previous => ({ ...previous, rewardService }));
+    return () => unregister();
+  }, [user?.id, db]);
+  useEffect(() => {
+    servicesState.rewardService?.setIsProMember(isProMember);
+  }, [isProMember, servicesState.rewardService]);
 
   return (
     <ServiceContext.Provider

@@ -12,6 +12,7 @@ const mockRewardRegister = jest.fn(() => mockRewardCleanup);
 
 const user = { id: "1" };
 const mockDb = { adapter: {} };
+let mockIsProMember = false;
 
 jest.mock("@nozbe/watermelondb/react", () => {
   return {
@@ -22,7 +23,7 @@ jest.mock("@nozbe/watermelondb/react", () => {
 jest.mock("../services/AuthContext", () => ({
   useAuthContext: jest.fn(() => ({
     user: user as User,
-    isProMember: false,
+    isProMember: mockIsProMember,
   })),
 }));
 
@@ -41,12 +42,20 @@ jest.mock("../sessionEngine/SessionEngineManager", () => {
 jest.mock("../services/RewardService", () => {
   return jest.fn().mockImplementation(() => ({
     register: mockRewardRegister,
+    setIsProMember: jest.fn(),
   }));
 });
 
 describe("ServiceProvider", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    user.id = "1";
+    mockIsProMember = false;
+  });
   afterEach(() => {
     jest.clearAllMocks();
+    user.id = "1";
+    mockIsProMember = false;
   });
 
   test("Initializes services for consumers after user and db are available", async () => {
@@ -72,6 +81,32 @@ describe("ServiceProvider", () => {
       expect(firstRenderedServices.sessionEngineMgr).not.toBeNull();
       expect(firstRenderedServices.rewardService).not.toBeNull();
     });
+  });
+
+  test("keeps the reward notification owner when membership changes", async () => {
+    let latest: ServiceContext;
+    const Consumer = () => {
+      latest = useServices();
+      return null;
+    };
+    const screen = render(
+      <ServiceProvider>
+        <Consumer />
+      </ServiceProvider>,
+    );
+    await waitFor(() => expect(latest.rewardService).not.toBeNull());
+    const first = latest!.rewardService;
+    mockIsProMember = true;
+    screen.rerender(
+      <ServiceProvider>
+        <Consumer />
+      </ServiceProvider>,
+    );
+    await waitFor(() => {
+      expect(latest.rewardService).toBe(first);
+      expect(first!.setIsProMember).toHaveBeenCalledWith(true);
+    });
+    expect(mockRewardCleanup).not.toHaveBeenCalled();
   });
 
   test("recreates services after user changes", async () => {
@@ -116,9 +151,12 @@ describe("ServiceProvider", () => {
       expect(secondRenderedServices.sessionEngineMgr).not.toBeNull();
       expect(secondRenderedServices.rewardService).not.toBeNull();
 
-      expect(
-        firstRenderedServices?.persistenceService).not.toBe(secondRenderedServices?.persistenceService);
-      expect(firstRenderedServices?.sessionEngineMgr).not.toBe(secondRenderedServices?.sessionEngineMgr);
+      expect(firstRenderedServices?.persistenceService).not.toBe(
+        secondRenderedServices?.persistenceService,
+      );
+      expect(firstRenderedServices?.sessionEngineMgr).not.toBe(
+        secondRenderedServices?.sessionEngineMgr,
+      );
       expect(firstRenderedServices?.rewardService).not.toBe(secondRenderedServices?.rewardService);
     });
   });

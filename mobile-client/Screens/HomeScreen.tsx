@@ -13,6 +13,8 @@ import { darkTheme, lightTheme } from "../theme";
 import DistanceProgressBar from "../components/DistanceProgressBar";
 import FullTrailDetails from "../types/fullTrailDetails";
 import HomeScreenLinks from "../components/HomeScreen/HomeScreenLinks";
+import CelebrationModal from "../components/HomeScreen/CelebrationModal";
+import { useCelebration } from "../hooks/useCelebration";
 import { Q } from "@nozbe/watermelondb";
 /* eslint-disable react-native/no-inline-styles */
 import React from "react";
@@ -51,6 +53,7 @@ export const HomeScreen: React.FC<Props> = ({
 }) => {
   const watermelonDatabase = useDatabase();
   const { theme } = useTheme();
+  const celebration = useCelebration(user?.id);
 
   const { isConnected } = useInternetConnection();
   const [showTutorial, setShowTutorial] = React.useState(false);
@@ -61,7 +64,7 @@ export const HomeScreen: React.FC<Props> = ({
   const [activeWild] = activeWilds;
   const { width: windowWidth } = useWindowDimensions();
   const progressBarWidth = Math.max(220, windowWidth - 56);
-  const totalMilesLabel = totalMiles === null ? "0.0" : totalMiles.toFixed(1);
+  const totalMilesLabel = totalMiles === null ? "0.00" : totalMiles.toFixed(2);
   const trailProgress = Number(user?.trailProgress ?? 0);
   const trailDistance = Number(currentTrail?.trailDistance ?? 0);
   const trailPercent =
@@ -214,6 +217,13 @@ export const HomeScreen: React.FC<Props> = ({
     <SafeAreaView testID="homescreen" style={styles.container}>
       {/* <SyncIndicator delay={3000} /> */}
       {showTutorial && <TutorialModal onClose={handleTutorialClose} />}
+      {celebration.award && !showTutorial && (
+        <CelebrationModal
+          key={celebration.award.id}
+          award={celebration.award}
+          onDismiss={celebration.dismiss}
+        />
+      )}
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.heroCard}>
           <View style={styles.heroTopRow}>
@@ -274,7 +284,11 @@ export const HomeScreen: React.FC<Props> = ({
           <View style={styles.sessionRow}>
             {activeWild ? (
               <View style={styles.wildInlineCard}>
-                <XpRing size={60} xp={activeWild.xp} xpToLevel={activeWild.xpToNext} ringColor={"#00998aff"}>
+                <XpRing
+                  size={60}
+                  xp={activeWild.xp}
+                  xpToLevel={activeWild.xpToNext}
+                  ringColor={"#00998aff"}>
                   <WildAvatar id={activeWild.wildId} pose={"wave"} size={46} animated={true} />
                 </XpRing>
                 <View style={styles.wildInlineCopy}>
@@ -332,7 +346,8 @@ export const HomeScreen: React.FC<Props> = ({
 const enhance = withObservables(["user"], ({ user }) => ({
   user: user.observe(),
   currentTrail: user.trail.observe(),
-  userSessions: user.usersSessions.observe(),
+  // Query membership alone does not emit when an existing session gains distance.
+  userSessions: user.usersSessions.observeWithColumns(["total_distance_hiked"]),
   tokenTransactions: user.tokenTransactions.observe(),
   userWilds: user.usersWilds.observe(),
   activeWilds: user.usersWilds.extend(Q.where("is_active", true), Q.take(1)).observe(),

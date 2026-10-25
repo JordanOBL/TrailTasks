@@ -150,6 +150,29 @@ afterEach(() => {
 });
 
 describe("active Session UI screen", () => {
+  test("shows equipped item names and applied modifier values from the engine snapshot", async () => {
+    mockSnapshot.activeModifiers = [
+      { name: "Hiking Poles II", effectType: "pace_increase_interval", effectValue: 600 },
+      { name: "Trail Mix II", effectType: "pace_increase_value", effectValue: 0.5 },
+      { name: "Ultralight II", effectType: "min_pace_increase", effectValue: 3 },
+      { name: "Running Shoes II", effectType: "max_pace_increase", effectValue: 6 },
+      { name: "Treasure Map II", effectType: "trail_token_bonus", effectValue: 2 },
+    ];
+    render(<EnhancedActiveSession />);
+    expect(await screen.findByText("Active modifiers")).toBeDefined();
+    for (const item of mockSnapshot.activeModifiers) expect(screen.getByText(item.name)).toBeDefined();
+    for (const text of ["Pace increases every 10 min", "+0.5 mph per pace increase", "Starting pace: 3 mph", "Maximum pace: 6 mph", "+2 tokens to session trail rewards"]) {
+      expect(screen.getByText(text)).toBeDefined();
+    }
+  });
+
+  test("does not show a modifier card for an unequipped session", async () => {
+    mockSnapshot.activeModifiers = [];
+    render(<EnhancedActiveSession />);
+    await screen.findByTestId("active-session-screen");
+    expect(screen.queryByText("Active modifiers")).toBeNull();
+  });
+
   test("renders visible session stats from the current engine snapshot", async () => {
     render(<EnhancedActiveSession />);
 

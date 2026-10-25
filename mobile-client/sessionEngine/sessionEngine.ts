@@ -7,7 +7,9 @@ import { SessionCfg } from "../types/session";
 
 export type SessionPhase = "IDLE" | "FOCUS" | "SHORT_BREAK" | "LONG_BREAK" | "COMPLETED";
 export type SessionType = "SOLO" | "GROUP";
+export type SessionModifier = { name: string; effectType: string; effectValue: number };
 export interface SessionSnapshot {
+  activeModifiers?: SessionModifier[];
   sessionId: string;
   userId: string;
   sessionName: string;
@@ -62,6 +64,7 @@ export class SessionEngine {
   private readonly paceIncreaseIntervalSec: number;
   private readonly paceIncreaseValueMph: number;
   private readonly backpack: { addon: Addon | null; minimumTotalMiles: number }[];
+  private readonly activeModifiers: SessionModifier[];
   readonly tokenBonusFlat: number;
   readonly tokenBonusPercent: number;
 
@@ -114,6 +117,19 @@ export class SessionEngine {
 
     this.currentPaceMph = cfg.currentPaceMph ?? this.minPaceMph;
     this.backpack = cfg.backpack;
+    // Capture plain applied values once: inventory consumption must not affect the UI.
+    const appliedEffects: Record<string, number> = {
+      min_pace_increase: this.minPaceMph,
+      max_pace_increase: this.maxPaceMph,
+      pace_increase_interval: this.paceIncreaseIntervalSec,
+      pace_increase_value: this.paceIncreaseValueMph,
+      trail_token_bonus: this.tokenBonusFlat,
+    };
+    this.activeModifiers = (cfg.backpack ?? []).flatMap(({ addon }) =>
+      addon && Object.prototype.hasOwnProperty.call(appliedEffects, addon.effectType)
+        ? [{ name: addon.name, effectType: addon.effectType, effectValue: appliedEffects[addon.effectType] }]
+        : [],
+    );
   }
 
   /* -------------------- public commands -------------------- */
@@ -215,12 +231,9 @@ export class SessionEngine {
   skipBreak() {
     if (this.phase !== "SHORT_BREAK" && this.phase !== "LONG_BREAK") return;
 
-    if (this.phase === "SHORT_BREAK") {
-      this.elapsedInPhaseSec = this.shortBreakSec;
-    } else if (this.phase === "LONG_BREAK") {
-      this.elapsedInPhaseSec = this.longBreakSec;
-    }
-
+    // Transition before publishing: consumers must never receive a break snapshot
+    // that the next tick can increment beyond its countdown duration.
+    this.endBreak();
     this.bus.emit("SESSION_BREAK_SKIPPED", { snapshot: this.buildSnapshot() });
   }
 
@@ -272,33 +285,29 @@ export class SessionEngine {
     } else if (this.phase === "SHORT_BREAK" || this.phase === "LONG_BREAK") {
       const breakTarget = this.phase === "SHORT_BREAK" ? this.shortBreakSec : this.longBreakSec;
       if (this.elapsedInPhaseSec >= breakTarget) {
-        if (this.phase == "SHORT_BREAK") {
-          this.phase = "FOCUS";
-          this.elapsedInPhaseSec = 0;
-          this.bus.emit("SESSION_PHASE_CHANGED", {
-            snapshot: this.buildSnapshot(),
-            from: "SHORT_BREAK",
-            to: "FOCUS",
-            reason: "break_ended",
-          });
-        } else {
-          if (this.autoContinue && this.completedSets === this.totalSets) {
-            // auto start another session
-            this.extraSets = this.totalSets;
-            this.elapsedInPhaseSec = 0;
-            this.phase = "FOCUS";
-            this.bus.emit("SESSION_PHASE_CHANGED", {
-              snapshot: this.buildSnapshot(),
-              from: "LONG_BREAK",
-              to: "FOCUS",
-              reason: "break_ended",
-            });
-          } else {
-            this.finishSession("all_sets_completed");
-          }
-        }
+        this.endBreak();
       }
     }
+  }
+
+  private endBreak() {
+    const from = this.phase;
+    if (from !== "SHORT_BREAK" && from !== "LONG_BREAK") return;
+    if (from === "LONG_BREAK") {
+      if (!this.autoContinue || this.completedSets !== this.totalSets) {
+        this.finishSession("all_sets_completed");
+        return;
+      }
+      this.extraSets = this.totalSets;
+    }
+    this.elapsedInPhaseSec = 0;
+    this.phase = "FOCUS";
+    this.bus.emit("SESSION_PHASE_CHANGED", {
+      snapshot: this.buildSnapshot(),
+      from,
+      to: "FOCUS",
+      reason: "break_ended",
+    });
   }
 
   // if user under 3 strikes we simply reset consecutiveTImeWithoutStrikes.
@@ -420,6 +429,7 @@ export class SessionEngine {
 
   public buildSnapshot(): SessionSnapshot {
     return {
+      activeModifiers: this.activeModifiers.map(modifier => ({ ...modifier })),
       sessionId: this.sessionId,
       userId: this.userId,
       sessionName: this.sessionName,

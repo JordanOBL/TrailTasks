@@ -1,7 +1,7 @@
-import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { Badge, Button } from "react-native-paper";
-import { Addon, Park, Trail } from "../watermelon/models";
-import React, { useEffect, useState } from "react";
+import { Park, Trail, User_Addon, User_Session } from "../watermelon/models";
+import React, { useEffect, useRef, useState } from "react";
 
 import BackpackModal from "../components/Session/BackpackModal";
 import EnhancedDistanceProgressBar from "../components/DistanceProgressBar";
@@ -14,6 +14,7 @@ import handleError from "../helpers/ErrorHandler";
 import { useAuthContext } from "../services/AuthContext";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useServices } from "../contexts/ServiceProvider";
+import { validateSessionBackpack } from "../helpers/Addons/sessionBackpack";
 
 const DEFAULT_BACKPACK = [
   { addon: null, minimumTotalMiles: 0.0 },
@@ -23,8 +24,6 @@ const DEFAULT_BACKPACK = [
 ];
 
 const baseAddonConfig = {
-  totalSets: 3,
-  completedTrails: 0,
   currentPaceMph: 2,
   minPaceMph: 2,
   maxPaceMph: 5.5,
@@ -63,7 +62,7 @@ const NewSessionOptions = () => {
     longBreakSec: 2700,
     tokenBonusFlat: 0,
     tokenBonusPercent: 0,
-    backpack: DEFAULT_BACKPACK,
+    backpack: DEFAULT_BACKPACK.map(slot => ({ ...slot })),
   });
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -71,10 +70,20 @@ const NewSessionOptions = () => {
   const [categories, setCategories] = useState<Session_Category[]>([]);
   const [currentTrail, setCurrentTrail] = useState<Trail | null>(null);
   const [currentPark, setCurrentPark] = useState<Park | null>(null);
-  const [usersAddonSelection, setUsersAddonSelection] = useState<Addon[]>([]);
+  const [usersAddonSelection, setUsersAddonSelection] = useState<User_Addon[]>([]);
   const [totalMiles, setTotalMiles] = useState(0);
+  const startingRef = useRef(false);
+  const [isStarting, setIsStarting] = useState(false);
+  // A persisted session has already consumed its addons. Engine-start retries must reuse it.
+  const persistedStart = useRef<{ cfg: SessionCfg; session: User_Session } | null>(null);
 
   const closeBackpackModal = () => {
+    try {
+      validateSessionBackpack(sessionCfg.backpack, totalMiles, isProMember);
+    } catch (error) {
+      Alert.alert("Check your backpack", error instanceof Error ? error.message : "Remove unavailable items before starting.");
+      return;
+    }
     const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
 
     sessionCfgWithAddons.backpack.forEach((slot, index) => {
@@ -105,9 +114,18 @@ const NewSessionOptions = () => {
       }
     });
 
+    sessionCfgWithAddons.currentPaceMph = sessionCfgWithAddons.minPaceMph;
     setSessionCfg(sessionCfgWithAddons);
     setIsBackpackModalVisible(false);
   };
+
+  useEffect(() => {
+    if (!user) return;
+    const subscription = user.usersAddons.observeWithColumns(["quantity"]).subscribe(rows => {
+      setUsersAddonSelection(rows.filter(row => row.quantity > 0));
+    });
+    return () => subscription.unsubscribe();
+  }, [user?.id]);
 
   useEffect(() => {
     let alive = true;
@@ -120,10 +138,7 @@ const NewSessionOptions = () => {
           db.get<Session_Category>("session_categories").query().fetch(),
           db.get<Trail>("trails").query(Q.where("id", user?.trailId)).fetch(),
         ]);
-        const [usersAddons, calculatedTotalMiles] = await Promise.all([
-          user.usersAddons,
-          user.calculateTotalMiles(),
-        ]);
+        const calculatedTotalMiles = await user.calculateTotalMiles();
         if (!sc) {
           throw Error("Error getting session categories");
         }
@@ -138,7 +153,6 @@ const NewSessionOptions = () => {
           setCurrentTrail(ct);
           setCurrentPark(park);
           setCategories(sc);
-          setUsersAddonSelection(usersAddons);
           setTotalMiles(calculatedTotalMiles);
           setLoading(false);
         }
@@ -218,6 +232,9 @@ const NewSessionOptions = () => {
         <Pressable
           testID="start-session-button"
           onPress={async () => {
+            if (startingRef.current) return;
+            startingRef.current = true;
+            setIsStarting(true);
             try {
               //start manager and create new user in persistance service
               if (!user) {
@@ -227,13 +244,24 @@ const NewSessionOptions = () => {
                 throw new Error("Database not found");
               }
 
-              const createdSession = await sessionEngineMgr.requestNewSession(sessionCfg);
+              const cfg = persistedStart.current?.cfg ?? {
+                ...sessionCfg,
+                backpack: sessionCfg.backpack.map(slot => ({ ...slot })),
+              };
+              if (!persistedStart.current) validateSessionBackpack(cfg.backpack, totalMiles, isProMember);
+              const createdSession = persistedStart.current?.session ??
+                await sessionEngineMgr.requestNewSession(cfg);
               if (!createdSession) {
                 throw new Error("Session Manager didnt return a valid User Session ");
               }
 
+              persistedStart.current = { cfg, session: createdSession };
+              // Consumption committed with session creation, not on completion/quit.
+              setSessionCfg(previous => ({ ...previous, ...baseAddonConfig,
+                backpack: DEFAULT_BACKPACK.map(slot => ({ ...slot })),
+              }));
               const sEngine = await sessionEngineMgr.createSessionEngine(
-                sessionCfg,
+                cfg,
                 createdSession,
               );
               if (!sEngine) {
@@ -242,6 +270,9 @@ const NewSessionOptions = () => {
 
               sEngine.start();
             } catch (e) {
+              startingRef.current = false;
+              setIsStarting(false);
+              Alert.alert("Cannot start session", e instanceof Error ? e.message : "Please try again.");
               handleError(e, "NewSessionOptions start session press");
             }
           }}
@@ -255,7 +286,7 @@ const NewSessionOptions = () => {
                   : "rgb(7,254,213)",
             },
           ]}
-          disabled={!sessionCfg.sessionCategory[0] || !sessionCfg.sessionName}>
+          disabled={isStarting || !sessionCfg.sessionCategory[0] || !sessionCfg.sessionName}>
           <Text style={styles.startBtnText}>Start Session</Text>
         </Pressable>
       </View>

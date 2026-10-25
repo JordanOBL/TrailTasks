@@ -76,6 +76,69 @@ describe("Persistence Service", () => {
     bus.clear();
   });
 
+  test("publishes only after commit and propagates failed commits without success events", async () => {
+    const committed = jest.fn();
+    bus.on("SESSION_REWARDS_PERSISTED", committed);
+    const payload = {
+      finalSnapshot: { ...mockSnapshot, userId: mockUser.id },
+      rewards: { trailRewards: 0, timeRewards: 5, totalTokenRewards: 5, wildXpRewards: 0 },
+    };
+    const writer = mockUser.finalizeSessionWithRewardsWriter as jest.Mock<any>;
+    writer.mockImplementationOnce(async () => {
+      throw new Error("commit failed");
+    });
+    await expect(persistenceService.persistCompletedSessionWithRewards(payload)).rejects.toThrow(
+      "commit failed",
+    );
+    expect(committed).not.toHaveBeenCalled();
+    const result = {
+      userId: mockUser.id,
+      sessionId: mockSnapshot.sessionId,
+      sessionTokens: 5,
+      streakBonus: 0,
+      totalTokens: 5,
+      dailyStreakAward: null,
+    };
+    writer.mockImplementationOnce(async () => result);
+    await persistenceService.persistCompletedSessionWithRewards(payload);
+    expect(committed).toHaveBeenCalledWith(result);
+  });
+
+  test("does not announce an in-flight commit and retries a failed event", async () => {
+    const committed = jest.fn();
+    bus.on("SESSION_REWARDS_PERSISTED", committed);
+    const payload = {
+      finalSnapshot: { ...mockSnapshot, userId: mockUser.id },
+      rewards: { trailRewards: 0, timeRewards: 5, totalTokenRewards: 5, wildXpRewards: 0 },
+    };
+    const writer = mockUser.finalizeSessionWithRewardsWriter as jest.Mock<any>;
+    let rejectCommit!: (error: Error) => void;
+    writer.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectCommit = reject;
+        }),
+    );
+    bus.emit("REWARDS_CALCULATED", payload);
+    expect(committed).not.toHaveBeenCalled();
+    const failed = jest.fn();
+    bus.on("SESSION_REWARDS_PERSIST_FAILED", failed);
+    rejectCommit(new Error("commit failed"));
+    await waitFor(() => expect(failed).toHaveBeenCalled());
+    await Promise.resolve();
+    const result = {
+      userId: mockUser.id,
+      sessionId: mockSnapshot.sessionId,
+      sessionTokens: 5,
+      streakBonus: 0,
+      totalTokens: 5,
+      dailyStreakAward: null,
+    };
+    writer.mockImplementationOnce(async () => result);
+    bus.emit("REWARDS_CALCULATED", payload);
+    await waitFor(() => expect(committed).toHaveBeenCalledWith(result));
+  });
+
   test("it doesnt recall increaseDistance on the same snapshot", () => {
     const persistNewDistanceSpy = jest.spyOn(persistenceService, "persistNewDistance");
 
@@ -125,7 +188,7 @@ describe("Persistence Service", () => {
     );
 
     const payload = {
-      finalSnapshot: mockSnapshot,
+      finalSnapshot: { ...mockSnapshot, userId: mockUser.id },
       rewards: {
         trailRewards: 1,
         timeRewards: 1,

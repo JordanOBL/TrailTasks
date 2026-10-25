@@ -51,6 +51,28 @@ const mockRewards = {
 };
 
 describe("Solo Results Screen", () => {
+  test("calculated rewards remain pending and failures never claim an award", () => {
+    const { rerender } = render(
+      <SoloResultScreen
+        rewards={mockRewards}
+        snapshot={mockSnapshot}
+        resetSession={resetSession}
+      />,
+    );
+    expect(screen.getByTestId("total-tokens-earned-text")).toHaveTextContent("Pending");
+    rerender(
+      <SoloResultScreen
+        rewards={mockRewards}
+        snapshot={mockSnapshot}
+        resetSession={resetSession}
+        persistenceFailed
+      />,
+    );
+    expect(screen.getByTestId("rewards-persistence-status")).toHaveTextContent(
+      "No award confirmed",
+    );
+    expect(screen.getByTestId("total-tokens-earned-text")).toHaveTextContent("Pending");
+  });
   test("renders fallback when rewards are missing", async () => {
     render(
       <SoloResultScreen
@@ -73,6 +95,14 @@ describe("Solo Results Screen", () => {
     render(
       <SoloResultScreen
         rewards={mockRewards}
+        committedRewards={{
+          userId: "user-1",
+          sessionId: "session-1",
+          sessionTokens: 5,
+          streakBonus: 15,
+          totalTokens: 20,
+          dailyStreakAward: null,
+        }}
         snapshot={mockSnapshot}
         resetSession={resetSession}
       />,
@@ -93,15 +123,21 @@ describe("Solo Results Screen", () => {
     expect((await screen.findByTestId("time-tokens-earned-text")).props.children).toEqual(
       mockRewards.timeRewards,
     );
-    expect((await screen.findByTestId("total-tokens-earned-text")).props.children).toEqual(
-      mockRewards.totalTokenRewards,
-    );
+    expect((await screen.findByTestId("total-tokens-earned-text")).props.children).toEqual(20);
   });
 
   test("pressing return to lobby calls resetSession", async () => {
     render(
       <SoloResultScreen
         rewards={mockRewards}
+        committedRewards={{
+          userId: "user-1",
+          sessionId: "session-1",
+          sessionTokens: 5,
+          streakBonus: 15,
+          totalTokens: 20,
+          dailyStreakAward: null,
+        }}
         snapshot={mockSnapshot}
         resetSession={resetSession}
       />,

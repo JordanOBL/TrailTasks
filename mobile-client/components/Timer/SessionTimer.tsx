@@ -4,16 +4,18 @@ import React from "react";
 import { SessionSnapshot } from "../../sessionEngine/sessionEngine";
 import formatCountdown from "../../helpers/Timer/formatCountdown";
 
-const SessionTimer = React.memo(({ snapshot }: { snapshot: SessionSnapshot }) => {
-  const isCompleted = snapshot.phase === "COMPLETED";
+// Keep transient/invalid runtime values out of the visible countdown.
+const formatSafeTime = (seconds: number): string =>
+  formatCountdown(Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0);
 
+const SessionTimer = React.memo(({ snapshot }: { snapshot: SessionSnapshot }) => {
   const timerDisplay = (): string => {
     if (snapshot.phase === "FOCUS")
-      return formatCountdown(snapshot.focusTimeSec - snapshot.elapsedInPhaseSec);
+      return formatSafeTime(snapshot.focusTimeSec - snapshot.elapsedInPhaseSec);
     else if (snapshot.phase === "SHORT_BREAK")
-      return formatCountdown(snapshot.shortBreakSec - snapshot.elapsedInPhaseSec);
+      return formatSafeTime(snapshot.shortBreakSec - snapshot.elapsedInPhaseSec);
     else if (snapshot.phase === "LONG_BREAK")
-      return formatCountdown(snapshot.longBreakSec - snapshot.elapsedInPhaseSec);
+      return formatSafeTime(snapshot.longBreakSec - snapshot.elapsedInPhaseSec);
     else if (snapshot.phase === "Paused") return "Paused";
     else return "Completed";
   };
@@ -27,7 +29,7 @@ const SessionTimer = React.memo(({ snapshot }: { snapshot: SessionSnapshot }) =>
         ]}>
         {timerDisplay()}
       </Text>
-      <Text style={styles.elapsedText}>{formatCountdown(snapshot.totalElapsedSec)}</Text>
+      <Text style={styles.elapsedText}>{formatSafeTime(snapshot.totalElapsedSec)}</Text>
     </View>
   );
 });

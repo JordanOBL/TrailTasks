@@ -85,7 +85,19 @@ describe("Session Engine", () => {
     bus.clear();
   });
 
+  test("modifier snapshots retain applied config values independently of mutable inventory models", () => {
+    const addon = { name: "Hiking Poles II", effectType: "pace_increase_interval", effectValue: 780 } as any;
+    const equipped = new SessionEngine(bus, { ...sessionConfig, paceIncreaseIntervalSec: 600,
+      backpack: [{ addon, minimumTotalMiles: 0 }] }, userMock, false);
+    addon.name = "Changed after start";
+    addon.effectValue = 900;
+    expect(equipped.buildSnapshot().activeModifiers).toEqual([
+      { name: "Hiking Poles II", effectType: "pace_increase_interval", effectValue: 600 },
+    ]);
+  });
+
   test("Start begins a session and emits SESSION_STARTED with an initial snapshot", async () => {
+    expect(engine.buildSnapshot().activeModifiers).toEqual([]);
     engine.start();
 
     const snapshot = engine.buildSnapshot();
@@ -356,6 +368,62 @@ describe("Session Engine", () => {
 
     expect(sessionCompletedCb).toBeCalled();
   });
+  test.each([false, true])(
+    "skipping a %s long break publishes the next phase immediately",
+    isLong => {
+      bus.clear();
+      engine = new SessionEngine(
+        bus,
+        {
+          ...sessionConfig,
+          focusTimeSec: 300,
+          shortBreakSec: 300,
+          longBreakSec: 300,
+          autoContinue: true,
+        },
+        userMock,
+        true,
+      );
+      engine.register();
+      bus.on("SESSION_STARTED", sessionStartedCb);
+      bus.on("SESSION_PHASE_CHANGED", sessionPhaseChangeCb);
+      bus.on("SESSION_TICK", sessionTickCb);
+      bus.on("SESSION_SET_COMPLETED", sessionSetCompletedCb);
+      bus.on("SESSION_DISTANCE_INCREASED", sessionDistanceIncreasedCb);
+      bus.on("SESSION_PACE_INCREASED", sessionPaceIncreasedCb);
+      bus.on("SESSION_BREAK_SKIPPED", sessionBreakSkippedCb);
+      engine.start();
+      // Reach the third set for the long-break case; all durations are five minutes.
+      jest.advanceTimersByTime((isLong ? 1500 : 300) * 1000);
+      expect(engine.buildSnapshot().phase).toBe(isLong ? "LONG_BREAK" : "SHORT_BREAK");
+      const before = engine.buildSnapshot();
+      bus.emit("UI_BREAK_SKIP_REQUESTED");
+      const snapshot = engine.buildSnapshot();
+      expect(snapshot.phase).toBe("FOCUS");
+      expect(snapshot.elapsedInPhaseSec).toBe(0);
+      expect(snapshot.totalElapsedSec).toBe(before.totalElapsedSec);
+      expect(snapshot.completedSets).toBe(before.completedSets);
+      expect(snapshot.extraSets).toBe(isLong ? 3 : 0);
+      expect(sessionBreakSkippedCb).toHaveBeenLastCalledWith({ snapshot });
+      jest.advanceTimersByTime(1000);
+      expect(engine.buildSnapshot().elapsedInPhaseSec).toBe(1);
+    },
+  );
+
+  test("skipping the final long break completes without adding a phantom second", () => {
+    engine.start();
+    jest.advanceTimersByTime((1500 * 3 + 300 * 2) * 1000);
+    const before = engine.buildSnapshot();
+    bus.emit("UI_BREAK_SKIP_REQUESTED");
+    expect(engine.buildSnapshot().phase).toBe("COMPLETED");
+    expect(engine.buildSnapshot().totalElapsedSec).toBe(before.totalElapsedSec);
+    expect(sessionCompletedCb).toHaveBeenCalledTimes(1);
+    bus.emit("UI_BREAK_SKIP_REQUESTED");
+    jest.advanceTimersByTime(1000);
+    expect(sessionCompletedCb).toHaveBeenCalledTimes(1);
+    expect(engine.buildSnapshot().totalElapsedSec).toBe(before.totalElapsedSec);
+  });
+
   test("Session stores completed trail Id and trail distance upon completion", async () => {
     const newSessionConfig = structuredClone(sessionConfig);
     newSessionConfig.distanceNeeded = 0.01;

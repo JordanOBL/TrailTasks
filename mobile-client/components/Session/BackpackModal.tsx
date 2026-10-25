@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import EnhancedAddonListItem from "../AddOnStore/AddonListItem";
 import { SessionCfg } from "../../types/session";
-import { Addon, User } from "../../watermelon/models";
+import { Addon, User, User_Addon } from "../../watermelon/models";
 import { useAuthContext } from "../../services/AuthContext";
+import { isBackpackSlotEligible, validateAddonFamilies } from "../../helpers/Addons/sessionBackpack";
 
 interface backpackModalProps {
   isVisible: boolean;
@@ -21,7 +22,7 @@ interface backpackModalProps {
   setSessionCfg: React.Dispatch<React.SetStateAction<SessionCfg>>;
   user: User;
   totalMiles: number;
-  usersAddons: Addon[];
+  usersAddons: User_Addon[];
 }
 
 export const BackpackModal = ({
@@ -36,24 +37,38 @@ export const BackpackModal = ({
   const { isProMember } = useAuthContext();
 
   const selectAddon = (addon: Addon | null) => {
-    const position = sessionCfg.backpack.findIndex(slot => slot.addon === null);
+    const position = sessionCfg.backpack.findIndex((slot, index) =>
+      slot.addon === null && isBackpackSlotEligible(slot, index, totalMiles, isProMember),
+    );
 
     if (addon && sessionCfg.backpack.some(slot => slot.addon?.id === addon.id)) {
       Alert.alert("Addon already in backpack", "Addons do not stack.");
       return;
     }
 
+    if (addon) {
+      try {
+        validateAddonFamilies([...sessionCfg.backpack.flatMap(slot => slot.addon ? [slot.addon] : []), addon]);
+      } catch (error) {
+        Alert.alert("Item type already equipped", (error as Error).message);
+        return;
+      }
+    }
+
     if (position >= 0) {
-      const updatedBackpack = [...sessionCfg.backpack];
-      updatedBackpack[position].addon = addon;
+      const updatedBackpack = sessionCfg.backpack.map((slot, index) =>
+        index === position ? { ...slot, addon } : slot,
+      );
       setSessionCfg({ ...sessionCfg, backpack: updatedBackpack });
+    } else {
+      Alert.alert("No available backpack slot", "Remove an item or unlock an eligible slot first.");
     }
   };
 
   const removeAddon = (index: number) => {
-    const newCfg = { ...sessionCfg };
-    newCfg.backpack[index].addon = null;
-    setSessionCfg(newCfg);
+    setSessionCfg({ ...sessionCfg, backpack: sessionCfg.backpack.map((slot, i) =>
+      i === index ? { ...slot, addon: null } : slot,
+    ) });
   };
 
   return (
@@ -70,7 +85,7 @@ export const BackpackModal = ({
                   styles.backpackSlot,
                   {
                     borderColor:
-                      totalMiles < slot.minimumTotalMiles
+                      !isBackpackSlotEligible(slot, index, totalMiles, isProMember)
                         ? "grey"
                         : slot.addon
                         ? "rgb(235, 33, 26)"
@@ -89,11 +104,11 @@ export const BackpackModal = ({
                   style={[
                     styles.slotText,
                     {
-                      color: totalMiles >= slot.minimumTotalMiles ? "white" : "grey",
+                      color: isBackpackSlotEligible(slot, index, totalMiles, isProMember) ? "white" : "grey",
                     },
                   ]}>
                   {slot.addon?.name ||
-                    (totalMiles >= slot.minimumTotalMiles
+                    (isBackpackSlotEligible(slot, index, totalMiles, isProMember)
                       ? "+"
                       : `${index > 1 && !isProMember ? "Pro\n" : ""}Unlock at ${
                           slot.minimumTotalMiles
@@ -112,6 +127,7 @@ export const BackpackModal = ({
                   key={index}
                   userAddon={userAddon}
                   selectAddon={selectAddon}
+                  sessionOnly
                 />
               ))
             ) : (

@@ -10,7 +10,6 @@ import { User, User_Session } from "../watermelon/models";
 import { Database } from "@nozbe/watermelondb";
 import { SessionCfg } from "../types/session";
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
-import formatDateTime from "../helpers/formatDateTime";
 import handleError from "../helpers/ErrorHandler";
 
 type TRewardsCalculatedPayload = {
@@ -46,6 +45,7 @@ export default class PersistenceService {
   private db: Database;
   private user: User;
   private distanceIdempotencyCache: DistanceIdempotencyCache = {};
+  private assignedTrails = new Map<string, number>();
   private completedTrailsIdempotencyCache: CompletedTrailsIdemptencyCache = {};
   private sessionWithRewardsIdempotencyCache: SessionWithRewardsIdempotencyCache = {};
 
@@ -95,7 +95,10 @@ export default class PersistenceService {
           isProMember,
           trailStartedAt,
         };
-        this.persistCompletedTrail(payload);
+        void this.persistCompletedTrail(payload).catch(error => {
+          delete this.completedTrailsIdempotencyCache[idempotentId];
+          handleError(error, "PersistenceService trail listener");
+        });
       }),
     );
     unregisterList.push(
@@ -112,7 +115,10 @@ export default class PersistenceService {
           rewards,
           user: { ...this.user },
         };
-        this.persistCompletedSessionWithRewards(payload);
+        void this.persistCompletedSessionWithRewards(payload).catch(error => {
+          delete this.sessionWithRewardsIdempotencyCache[idempotencyKey];
+          handleError(error, "PersistenceService reward listener");
+        });
       }),
     );
     return () => unregisterList.forEach(obj => obj.unregister());
@@ -121,18 +127,7 @@ export default class PersistenceService {
   //--------------USER SESSION--------------//
 
   public async createNewSession(cfg: SessionCfg): Promise<User_Session> {
-    console.log("Config in createnewsession", cfg);
-    const newSession = await this.db.write(async () => {
-      const newSession = await this.db.get<User_Session>("users_sessions").create(session => {
-        session.userId = cfg.userId;
-        session.sessionCategoryId = cfg.sessionCategory[0];
-        session.sessionName = cfg.sessionName;
-        session.totalDistanceHiked = "0.00";
-        session.totalSessionTime = 0;
-        session.dateAdded = formatDateTime(new Date());
-      });
-      return newSession;
-    });
+    const { newSession } = await this.user.startNewSession(cfg);
     if (!newSession) {
       throw new Error("Error creating new session in persistenceService");
     }
@@ -159,36 +154,41 @@ export default class PersistenceService {
     isProMember,
     trailStartedAt,
   }: SessionTrailCompletedPayload): Promise<void> {
-    try {
-      if (!completedTrailId || !trailStartedAt) {
-        throw new Error("Error, missing args, cannot persist trail completion");
-      }
-
-      const newTrailDistance: number = await this.user.assignNewTrail({
-        completedTrailId,
-        isProMember,
-      });
-
-      this.bus.emit("NEW_TRAIL_ASSIGNED", { newTrailDistance });
-      await this.user.markTrailCompleted({
-        trailId: completedTrailId,
-        isProMember: isProMember,
-        trailStartedAt: trailStartedAt,
-      });
-    } catch (e) {
-      handleError(e, "PersistenceService persistCompletedTrail");
+    if (!completedTrailId || !trailStartedAt) {
+      throw new Error("Error, missing args, cannot persist trail completion");
     }
+
+    const eventId = this.createCompletedTrailIdempotentId(completedTrailId, trailStartedAt);
+    if (!this.assignedTrails.has(eventId)) {
+      const newTrailDistance = await this.user.assignNewTrail({ completedTrailId, isProMember });
+      // A later park-write failure must not consume another Pro queued trail on retry.
+      this.assignedTrails.set(eventId, newTrailDistance);
+      this.bus.emit("NEW_TRAIL_ASSIGNED", { newTrailDistance });
+    }
+    const committed = await this.user.markTrailCompleted({
+      trailId: completedTrailId,
+      isProMember: isProMember,
+      trailStartedAt: trailStartedAt,
+    });
+    if (committed) this.bus.emit("PARK_REWARD_COMMITTED", committed);
   }
+
   //EVENT: SESSION_COMPLETED
   public async persistCompletedSessionWithRewards(args: TRewardsCalculatedPayload): Promise<void> {
     try {
-      await this.user.finalizeSessionWithRewardsWriter({
+      if (args.finalSnapshot.userId !== this.user.id) return;
+      const committed = await this.user.finalizeSessionWithRewardsWriter({
         user: this.user,
         snapshot: args.finalSnapshot,
         rewards: args.rewards,
       });
+      if (committed) this.bus.emit("SESSION_REWARDS_PERSISTED", committed);
     } catch (e) {
-      handleError(e, "PersistenceService persistCompletedSessionWithRewards");
+      this.bus.emit("SESSION_REWARDS_PERSIST_FAILED", {
+        userId: this.user.id,
+        sessionId: args.finalSnapshot.sessionId,
+      });
+      throw e;
     }
   }
 

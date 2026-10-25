@@ -1,5 +1,11 @@
 import { Database, Q } from "@nozbe/watermelondb";
-import { EventBus, Registry, SessionCompletedPayload } from "../EventBus/EventBus";
+import {
+  EventBus,
+  Registry,
+  SessionCompletedPayload,
+  DailyStreakRewardCommittedPayload,
+  Celebration,
+} from "../EventBus/EventBus";
 
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
 import { User } from "../watermelon/models";
@@ -36,6 +42,27 @@ type RewardRules = {
 };
 
 export default class RewardService {
+  private pending: readonly Celebration[] = [];
+  private seen = new Set<string>();
+  getCelebrations = (): readonly Celebration[] => this.pending;
+  acknowledgeCelebration = (id: string): void => {
+    this.pending = this.pending.filter(item => item.id !== id);
+  };
+  // Compatibility for existing streak consumers; all awards share one queue.
+  getPending = (): readonly DailyStreakRewardCommittedPayload[] => this.pending
+    .filter((item): item is Extract<Celebration, { kind: "daily_streak" }> => item.kind === "daily_streak")
+    .map(({ kind, id, ...award }) => award);
+  acknowledge = (transactionId: string): void => this.acknowledgeCelebration(`streak:${transactionId}`);
+  private enqueue(award: Celebration): boolean {
+    if (award.userId !== this.user.id || this.seen.has(award.id)) return false;
+    this.seen.add(award.id);
+    this.pending = [...this.pending, award];
+    this.bus.emit("CELEBRATION_QUEUED", award);
+    return true;
+  }
+  setIsProMember(value: boolean) {
+    this.isProMember = value;
+  }
   private bus: EventBus;
   private db: Database;
   private user: User;
@@ -74,6 +101,21 @@ export default class RewardService {
   register(): Function {
     const unregisterList: Registry[] = [];
     unregisterList.push(
+      this.bus.on("SESSION_REWARDS_PERSISTED", summary => {
+        if (summary.userId !== this.user.id) return;
+        const award = summary.dailyStreakAward;
+        if (award && this.enqueue({ ...award, kind: "daily_streak", id: `streak:${award.transactionId}` })) {
+          this.bus.emit("DAILY_STREAK_REWARD_COMMITTED", award);
+        }
+        for (const level of summary.wildLevelUps ?? []) {
+          this.enqueue({ ...level, kind: "wild_level", id: `level:${level.sessionId}:${level.userWildId}:${level.toLevel}` });
+        }
+      }),
+    );
+    unregisterList.push(this.bus.on("PARK_REWARD_COMMITTED", award => {
+      this.enqueue({ ...award, kind: "park", id: `park:${award.transactionId}` });
+    }));
+    unregisterList.push(
       this.bus.on("SESSION_COMPLETED", (payload: SessionCompletedPayload) => {
         void this.calculateRewards(payload.snapshot).catch(e => {
           handleError(
@@ -86,6 +128,8 @@ export default class RewardService {
 
     return () => {
       unregisterList.forEach(r => r.unregister());
+      this.pending = [];
+      this.seen.clear();
     };
   }
 
