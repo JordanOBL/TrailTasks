@@ -80,8 +80,12 @@ SESSION_REWARDS_PERSISTED
 Completing the last required trail can grant its park reward while a session is
 running. The modal waits for focused Home instead of interrupting the timer.
 A park celebration includes the confirmed token amount and newly unlocked Wild;
-an already-owned Wild is not described as a new unlock. New Wild auto-selection
-is retained, with the previous active companion deactivated in the same batch.
+an already-owned Wild is not described as a new unlock. Unlocking grants ownership
+only: the new Wild starts inactive, and the selected companion is not changed or
+deactivated. The user explicitly selects a different companion through the Wild
+selection UI. Session XP therefore remains with the selected Wild after a park
+unlock. This also applies when no companion is currently active: unlocking does
+not silently choose one.
 Automatic trail completion remains first-pass-only: it does not introduce an
 extra automatic prestige-upgrade grant on repeat hikes.
 
@@ -107,6 +111,52 @@ park, and level-up rewards are displayed sequentially rather than as overlapping
 modals. Its account scope, navigation lifetime, Reduce Motion behavior, and
 in-memory restart/logout limitation are the same as described above. Syncing
 historical park ownership or Wild levels does not enqueue a celebration.
+
+## Backpack consumables: explicit selection, one use
+
+Owned inventory and the equipped backpack are different state:
+
+- Buying or owning an item does not equip it.
+- Explicitly adding an item to a backpack applies it to that session only.
+- Successful session creation atomically saves the session, its `sessions_addons`
+  consumption receipts, and a decrement of exactly one owned copy per selected
+  add-on. The last owned copy is marked deleted; additional copies remain in
+  inventory. Ending/quit does not consume another copy or refund the used one.
+- After that successful commit, the equipped draft slots are cleared. The running
+  engine keeps the committed session's effect configuration, not the empty next
+  draft. Later sessions have no items/effects until explicitly equipped again.
+- A failed database batch leaves inventory unchanged and can be retried. Repeated
+  Start taps are guarded; an engine-start retry reuses the already-created session
+  and its effect snapshot instead of consuming items again.
+
+The reported reuse illusion had two separate causes: BackpackModal mutated shared
+`DEFAULT_BACKPACK` slot objects through shallow copies, and the current
+PersistenceService session-creation path bypassed the older consumption writer.
+The next screen could therefore look equipped while its effect values had reset.
+Slots are now copied immutably, every options instance gets fresh slots, inventory
+quantity changes are observed, and the active path calls the atomic writer.
+
+Focused regressions use the reported Ultralight II and Trail Mix II pair:
+Ultralight II sets minimum/starting pace to 3 mph; Trail Mix II sets the pace
+increase amount to 0.5 mph, using existing catalog values. With two owned copies
+of each: explicitly equipped first session leaves one of each, a second session
+without equipping changes neither inventory nor base effects, and a third session
+with explicit re-equipping consumes the final copy. Configured set count is not
+reset by editing the backpack. Tests use isolated fixtures, not staging inventory.
+
+Selection and start validation share mileage/Pro slot eligibility. An item cannot
+be placed into a locked slot or consumed when its effect would be ignored. Water
+Bottle (`break_time_reduction`) and First Aid (`penalty_reduction`) effects are
+not implemented in the current engine: backpack selection labels them unavailable,
+and the writer rejects them before consuming anything. This safety guard does not
+implement or invent those effect formulas; existing inventory is retained.
+
+The retry snapshot for a persisted session whose engine has not started is held
+in the current options component. It avoids a second consume while that component
+survives, but is not a durable launch-resume record across unmount/process restart.
+No past session use is retroactively charged, and the earlier auto-selected Wild
+is not automatically changed back; the user can explicitly select their preferred
+companion once. Neither correction requires resetting user data.
 
 ## Home mileage
 
@@ -157,7 +207,10 @@ the device date to force rewards.
       Also verify long-break skip with auto-continue off/on.
 - [ ] With a disposable account that has one unfinished trail in a park, finish
       that trail during a session. Verify its park pass, one park-reward ledger
-      row, and the associated Wild ownership save. The timer is not interrupted.
+      row, and the associated Wild ownership save. The timer is not interrupted,
+      the selected companion does not change, and the new Wild remains inactive.
+      Verify session XP still goes to the selected companion; manually choosing
+      the new Wild afterward switches it normally.
 - [ ] Finish the session and return to Home. See one combined park-pass/Wild
       celebration with the correct park, Wild artwork/name, and token amount.
       Dismiss and navigate away/back: it does not repeat.
@@ -174,6 +227,12 @@ the device date to force rewards.
 - [ ] Relaunch/sync on a disposable install: durable park/Wild/token state remains,
       but historical synced awards do not replay modals. The pending queue itself
       is intentionally not durable across process termination/logout.
+- [ ] With a disposable account owning multiple copies, explicitly equip
+      Ultralight II and Trail Mix II. Start a session: owned quantity decreases
+      by one each, starting pace is 3 mph and each normal pace increase is 0.5 mph.
+      After ending it, open a new session: backpack slots are empty. Start without
+      re-equipping: remaining inventory is unchanged and base pace effects apply.
+      Explicitly equip again: one more copy is consumed, not the entire inventory.
 - [ ] Verify persistence/server sync separately: reopening only proves local state.
 
 No AWS writes, server/schema migrations, reward-rate changes, or production-data

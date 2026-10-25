@@ -45,14 +45,29 @@ test("non-final trail and empty park do not redeem", async () => {
   expect(await user.redeemParkPass(empty.id)).toBeNull();
   expect(await user.calculateTrailTokenBalance()).toBe(0);
 });
-test("unlock preserves auto-selection but deactivates the former active Wild atomically", async () => {
-  const { user, park, trail } = await setup();
+test("park unlock preserves the selected companion and session XP until the user explicitly switches", async () => {
+  const { user, park, trail, wild, session } = await setup();
   const oldWild = await testDb.write(() => testDb.get<Wild>("wilds").create(r => { r.wildName = "Old"; }));
   const old = await companion(user, oldWild);
-  await complete(user, trail);
-  expect(old.isActive).toBe(false);
-  expect((await user.usersWilds.fetch()).filter(w => w.isActive)).toHaveLength(1);
+  const receipt = await complete(user, trail);
+  expect(receipt?.newWild?.wildId).toBe(wild.id);
+  const unlocked = (await user.usersWilds.fetch()).find(w => w.wildId === wild.id)!;
+  expect(old.isActive).toBe(true);
+  expect(unlocked.isActive).toBe(false);
+  expect((await user.usersWilds.fetch()).filter(w => w.isActive).map(w => w.id)).toEqual([old.id]);
   expect(await user.redeemParkPass(park.id)).toBeNull();
+  expect((await finalize(user, session, 20)).wildLevelUps).toMatchObject([{ wildId: oldWild.id, fromLevel: 1, toLevel: 2 }]);
+  expect(old.xp).toBe(10);
+  expect(unlocked.xp).toBe(0);
+  expect(unlocked.level).toBe(1);
+  await user.setActiveWild(wild.id);
+  expect(old.isActive).toBe(false);
+  expect(unlocked.isActive).toBe(true);
+});
+test("a park unlock does not auto-select a companion when none is active", async () => {
+  const { user, trail } = await setup();
+  await complete(user, trail);
+  expect((await user.usersWilds.fetch()).map(w => w.isActive)).toEqual([false]);
 });
 test("existing Wild is not duplicated or claimed as newly unlocked on pass grant or upgrade", async () => {
   const { user, wild, trail, park } = await setup();
@@ -166,8 +181,10 @@ test("failed park batch restores active companion and retry atomically unlocks j
   expect(await user.usersWilds.fetchCount()).toBe(1);
   expect(await user.calculateTrailTokenBalance()).toBe(0);
   expect(await user.redeemParkPass(park.id)).toMatchObject({ parkId: park.id });
-  expect(old.isActive).toBe(false);
-  expect((await user.usersWilds.fetch()).filter(w => w.isActive)).toHaveLength(1);
+  expect(old.isActive).toBe(true);
+  const owned = await user.usersWilds.fetch();
+  expect(owned.filter(w => w.isActive).map(w => w.id)).toEqual([old.id]);
+  expect(owned.filter(w => w.id !== old.id).map(w => w.isActive)).toEqual([false]);
   expect(await user.calculateTrailTokenBalance()).toBe(200);
 });
 test("service starts empty beside historical committed awards and ignores sessions with no new transition", async () => {

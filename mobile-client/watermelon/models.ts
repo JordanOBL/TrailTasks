@@ -1,6 +1,7 @@
 // @ts-nocheck
 import type { ParkRewardCommittedPayload, SessionRewardsPersistedPayload } from "../EventBus/EventBus";
 import { Model, Q } from "@nozbe/watermelondb";
+import { isSupportedSessionAddon } from "../helpers/Addons/sessionBackpack";
 import {
   children,
   date,
@@ -315,11 +316,29 @@ export class User extends Model {
   //create new session
   @writer
   async startNewSession(sessionDetails) {
+    // Resolve and validate ALL inventory before preparing mutations. A rejected
+    // selection must not leave a cached Watermelon model with pending changes.
+    const addonIds = [...new Set<string>(sessionDetails.backpack
+      .filter(slot => slot.addon)
+      .map(slot => slot.addon.id))];
+    const inventory: User_Addon[] = [];
+    for (const addonId of addonIds) {
+      const [record] = await this.usersAddons.extend(Q.where("addon_id", addonId)).fetch();
+      if (!record || !Number.isInteger(record.quantity) || record.quantity < 1) {
+        throw new Error(`Addon is not available in owned inventory: ${addonId}`);
+      }
+      const addon = await record.addon.fetch();
+      if (!isSupportedSessionAddon(addon)) {
+        throw new Error(`${addon.name} is not supported for sessions yet.`);
+      }
+      inventory.push(record);
+    }
+    const restoreInventory = checkpointModels(inventory);
     const newSession = this.collections.get("users_sessions").prepareCreate(userSession => {
       userSession.userId = this.id;
       userSession.sessionName = sessionDetails.sessionName;
       userSession.sessionDescription = sessionDetails.sessionDescription || "";
-      userSession.sessionCategoryId = sessionDetails.sessionCategoryId;
+      userSession.sessionCategoryId = sessionDetails.sessionCategory?.[0] ?? sessionDetails.sessionCategoryId;
       userSession.totalSessionTime = "0";
       userSession.totalDistanceHiked = "0.00";
       userSession.dateAdded = formatDateTime(new Date());
@@ -328,28 +347,25 @@ export class User extends Model {
     const sessionAddonsPrepares = [];
     const consumePrepares = [];
 
-    for (const slot of sessionDetails.backpack) {
-      if (!slot.addon) {
-        continue;
-      }
-
+    for (const addonRecord of inventory) {
       // create a session_addons record
       const sessionAddonPrepared = this.collections.get("sessions_addons").prepareCreate(sa => {
         sa.sessionId = newSession.id;
-        sa.addonId = slot.addon.id;
+        sa.addonId = addonRecord.addonId;
       });
       sessionAddonsPrepares.push(sessionAddonPrepared);
 
-      const [addonRecord] = await this.usersAddons.extend(Q.where("addon_id", slot.addon.id));
-
-      if (addonRecord) {
-        const consumePrepared = this.prepareConsumeUserAddons(addonRecord);
-        consumePrepares.push(consumePrepared);
-      }
+      const consumePrepared = this.prepareConsumeUserAddons(addonRecord);
+      consumePrepares.push(consumePrepared);
     }
 
-    // 3) batch everything
-    await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares);
+    // Session facts, consumption receipts, and one inventory unit commit together.
+    try {
+      await this.batch(newSession, ...sessionAddonsPrepares, ...consumePrepares);
+    } catch (error) {
+      restoreInventory();
+      throw error;
+    }
 
     return { newSession, status: true };
   }
@@ -759,15 +775,14 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
       const unlocked = this.collections.get("users_wilds").prepareCreate(wild => {
         wild.userId = this.id;
         wild.wildId = parkWild.id;
-        wild.isActive = true;
+        // Unlock ownership only; selecting a companion is an explicit user action.
+        wild.isActive = false;
         wild.level = 1;
         wild.xp = 0;
         wild.xpToNext = 100;
         wild.unlockedAt = new Date();
       });
-      // Preserve auto-selection of the new companion, with exactly one active Wild.
-      operations.push(...ownedWilds.filter(w => w.isActive).map(w =>
-        w.prepareUpdate(record => { record.isActive = false; })), unlocked);
+      operations.push(unlocked);
       newWild = { userWildId: unlocked.id, wildId: parkWild.id, wildName: parkWild.wildName };
     }
     operations.push(existing

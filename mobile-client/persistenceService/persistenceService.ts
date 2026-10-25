@@ -10,7 +10,6 @@ import { User, User_Session } from "../watermelon/models";
 import { Database } from "@nozbe/watermelondb";
 import { SessionCfg } from "../types/session";
 import { SessionSnapshot } from "../sessionEngine/sessionEngine";
-import formatDateTime from "../helpers/formatDateTime";
 import handleError from "../helpers/ErrorHandler";
 
 type TRewardsCalculatedPayload = {
@@ -128,18 +127,7 @@ export default class PersistenceService {
   //--------------USER SESSION--------------//
 
   public async createNewSession(cfg: SessionCfg): Promise<User_Session> {
-    console.log("Config in createnewsession", cfg);
-    const newSession = await this.db.write(async () => {
-      const newSession = await this.db.get<User_Session>("users_sessions").create(session => {
-        session.userId = cfg.userId;
-        session.sessionCategoryId = cfg.sessionCategory[0];
-        session.sessionName = cfg.sessionName;
-        session.totalDistanceHiked = "0.00";
-        session.totalSessionTime = 0;
-        session.dateAdded = formatDateTime(new Date());
-      });
-      return newSession;
-    });
+    const { newSession } = await this.user.startNewSession(cfg);
     if (!newSession) {
       throw new Error("Error creating new session in persistenceService");
     }

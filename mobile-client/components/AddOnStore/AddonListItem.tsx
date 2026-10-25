@@ -5,18 +5,21 @@ import { withObservables } from "@nozbe/watermelondb/react";
 import { useTheme } from "../../contexts/ThemeProvider";
 import { Addon, User_Addon } from "../../watermelon/models";
 import { darkTheme, lightTheme } from "../../theme";
+import { isSupportedSessionAddon } from "../../helpers/Addons/sessionBackpack";
 
 interface AddonListItemProps {
   userAddon: User_Addon;
   selectAddon: (addon: Addon) => void;
   addon: Addon;
+  sessionOnly?: boolean;
 }
 
-const AddonListItem = ({ userAddon, selectAddon, addon }: AddonListItemProps) => {
+export const AddonListItem = ({ userAddon, selectAddon, addon, sessionOnly = false }: AddonListItemProps) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
+  const unavailable = sessionOnly && !isSupportedSessionAddon(addon);
   return (
-    <TouchableOpacity onPress={() => selectAddon(addon)}>
+    <TouchableOpacity disabled={unavailable} accessibilityState={{ disabled: unavailable }} onPress={() => selectAddon(addon)}>
       <View style={styles.container}>
         <Image
           source={addonImages[addon?.name.replace(/\s/g, "")]}
@@ -26,6 +29,7 @@ const AddonListItem = ({ userAddon, selectAddon, addon }: AddonListItemProps) =>
           <Text style={styles.addonName}>{addon.name}</Text>
           <Text style={styles.ownedText}>Owned: {userAddon.quantity}</Text>
           <Text style={styles.addonDescription}>{addon.description}</Text>
+          {unavailable && <Text style={styles.addonDescription}>Not available for sessions yet. Your inventory will not be used.</Text>}
         </View>
       </View>
     </TouchableOpacity>
