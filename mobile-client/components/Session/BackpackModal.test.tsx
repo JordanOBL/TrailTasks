@@ -1,13 +1,33 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 
 import { BackpackModal } from './BackpackModal';
 
 let mockIsProMember = true;
 
+test.each([false, true])('rejects a different pole level without changing the backpack (reverse=%s)', reverse => {
+  const levels = [
+    { id: '1', name: 'Hiking Poles I', effectType: 'pace_increase_interval' },
+    { id: '2', name: 'Hiking Poles II', effectType: 'pace_increase_interval' },
+  ];
+  if (reverse) levels.reverse();
+  const setSessionCfg = jest.fn();
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  try {
+    const screen = render(<BackpackModal isVisible onClose={jest.fn()}
+      sessionCfg={{ backpack: [{ addon: levels[0], minimumTotalMiles: 0 }, { addon: null, minimumTotalMiles: 75 }] } as any}
+      setSessionCfg={setSessionCfg} user={{} as any} totalMiles={75}
+      usersAddons={[{ addon: levels[1] }] as any} />);
+    fireEvent.press(screen.getByText(levels[1].name));
+    expect(setSessionCfg).not.toHaveBeenCalled();
+    expect(alert).toHaveBeenCalledWith(expect.any(String), expect.stringMatching(/remove|different level/i));
+  } finally { alert.mockRestore(); }
+});
+
 jest.mock('../AddOnStore/AddonListItem', () => {
   const { Text } = require('react-native');
-  return () => <Text>Addon item</Text>;
+  return ({ userAddon, selectAddon }: any) => <Text onPress={() => selectAddon(userAddon.addon)}>{userAddon.addon.name}</Text>;
 });
 
 jest.mock('../../services/AuthContext', () => ({

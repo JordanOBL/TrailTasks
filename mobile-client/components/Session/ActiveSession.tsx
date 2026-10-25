@@ -1,6 +1,6 @@
 import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
-import { SessionEngine, SessionSnapshot } from "../../sessionEngine/sessionEngine";
+import { SessionEngine, SessionSnapshot, SessionModifier } from "../../sessionEngine/sessionEngine";
 import { useNavigation, usePreventRemove } from "@react-navigation/native"; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
 import { darkTheme, lightTheme } from "../../theme";
 
@@ -15,6 +15,22 @@ import useBusEvent from "../../EventBus/useBusEvent";
 import { useServices } from "../../contexts/ServiceProvider";
 import { useTheme } from "../../contexts/ThemeProvider";
 import { withObservables } from "@nozbe/watermelondb/react";
+
+function modifierCopy(modifier: SessionModifier): string {
+  const value = modifier.effectValue;
+  switch (modifier.effectType) {
+    case "pace_increase_interval": {
+      const minutes = Math.floor(value / 60);
+      const seconds = value % 60;
+      return `Pace increases every ${minutes ? `${minutes} min` : ""}${seconds ? `${minutes ? " " : ""}${seconds} sec` : ""}`;
+    }
+    case "pace_increase_value": return `+${value} mph per pace increase`;
+    case "min_pace_increase": return `Starting pace: ${value} mph`;
+    case "max_pace_increase": return `Maximum pace: ${value} mph`;
+    case "trail_token_bonus": return `+${value} tokens to session trail rewards`;
+    default: return "";
+  }
+}
 
 const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
   const navigation = useNavigation();
@@ -219,6 +235,18 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
           </Text>
           <EnhancedDistanceProgressBar user={user} trail={currentTrail} />
         </View>
+
+        {!!snapshot.activeModifiers?.length && (
+          <View style={styles.statsCard} testID="active-session-modifiers">
+            <Text style={styles.sectionTitle}>Active modifiers</Text>
+            {snapshot.activeModifiers.map(modifier => (
+              <View key={modifier.effectType} style={styles.modifierRow}>
+                <Text style={styles.companionLabel}>{modifier.name}</Text>
+                <Text style={styles.companionCopy}>{modifierCopy(modifier)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={styles.statsCard}>
           <Text style={styles.sectionTitle}>Trek stats</Text>
@@ -441,6 +469,10 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       fontSize: 20,
       fontWeight: "700",
       marginBottom: 12,
+    },
+    modifierRow: {
+      paddingVertical: 8,
+      gap: 4,
     },
     statsCard: {
       backgroundColor: theme.card,

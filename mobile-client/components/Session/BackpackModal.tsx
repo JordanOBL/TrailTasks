@@ -13,7 +13,7 @@ import EnhancedAddonListItem from "../AddOnStore/AddonListItem";
 import { SessionCfg } from "../../types/session";
 import { Addon, User, User_Addon } from "../../watermelon/models";
 import { useAuthContext } from "../../services/AuthContext";
-import { isBackpackSlotEligible } from "../../helpers/Addons/sessionBackpack";
+import { isBackpackSlotEligible, validateAddonFamilies } from "../../helpers/Addons/sessionBackpack";
 
 interface backpackModalProps {
   isVisible: boolean;
@@ -44,6 +44,15 @@ export const BackpackModal = ({
     if (addon && sessionCfg.backpack.some(slot => slot.addon?.id === addon.id)) {
       Alert.alert("Addon already in backpack", "Addons do not stack.");
       return;
+    }
+
+    if (addon) {
+      try {
+        validateAddonFamilies([...sessionCfg.backpack.flatMap(slot => slot.addon ? [slot.addon] : []), addon]);
+      } catch (error) {
+        Alert.alert("Item type already equipped", (error as Error).message);
+        return;
+      }
     }
 
     if (position >= 0) {

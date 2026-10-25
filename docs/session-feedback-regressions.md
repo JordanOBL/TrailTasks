@@ -151,6 +151,23 @@ not implemented in the current engine: backpack selection labels them unavailabl
 and the writer rejects them before consuming anything. This safety guard does not
 implement or invent those effect formulas; existing inventory is retained.
 
+Only one level of an item family can be equipped per session. The current catalog
+identifies families by their shared `effect_type`; each family has a distinct
+effect type. Selecting Hiking Poles I plus II is rejected in either order, rather
+than consuming both and letting the later slot overwrite the effect. Remove the
+equipped item before selecting a different level. The same rule is checked before
+applying draft effects and against the resolved owned add-ons before preparing
+any database mutations. Different families (such as poles and trail mix) still
+work together. Existing exact-ID receipt/consumption deduplication is preserved.
+
+The active session has an **Active modifiers** card when items are equipped. It
+shows item names/levels and actual applied settings: starting/maximum pace, pace
+increase amount/interval, or flat extra tokens to session trail rewards (not once
+per completed trail). Values are captured
+as plain data from the engine configuration at construction, not read from mutable
+owned inventory after consumption. Empty backpacks do not show the card. This is
+display-only and does not change engine pacing or reward formulas.
+
 The retry snapshot for a persisted session whose engine has not started is held
 in the current options component. It avoids a second consume while that component
 survives, but is not a durable launch-resume record across unmount/process restart.
@@ -234,6 +251,14 @@ the device date to force rewards.
       re-equipping: remaining inventory is unchanged and base pace effects apply.
       Explicitly equip again: one more copy is consumed, not the entire inventory.
 - [ ] Verify persistence/server sync separately: reopening only proves local state.
+- [ ] With two eligible slots, equip Hiking Poles I, then try II (also test the
+      reverse order). An alert asks you to remove the existing level; the backpack
+      and inventory remain unchanged. Remove it and equip the other level normally.
+- [ ] Equip poles alongside trail mix and start: **Active modifiers** lists both
+      names and applied effects. Poles II shows a 10-minute pace interval; Trail
+      Mix II shows +0.5 mph per increase. The card remains during pause/breaks and
+      is absent in a later session started without items. Check narrow screens,
+      large text, and both themes on a simulator/device.
 
 No AWS writes, server/schema migrations, reward-rate changes, or production-data
 operations are part of this patch. Automated tests do not establish successful

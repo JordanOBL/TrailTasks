@@ -85,7 +85,19 @@ describe("Session Engine", () => {
     bus.clear();
   });
 
+  test("modifier snapshots retain applied config values independently of mutable inventory models", () => {
+    const addon = { name: "Hiking Poles II", effectType: "pace_increase_interval", effectValue: 780 } as any;
+    const equipped = new SessionEngine(bus, { ...sessionConfig, paceIncreaseIntervalSec: 600,
+      backpack: [{ addon, minimumTotalMiles: 0 }] }, userMock, false);
+    addon.name = "Changed after start";
+    addon.effectValue = 900;
+    expect(equipped.buildSnapshot().activeModifiers).toEqual([
+      { name: "Hiking Poles II", effectType: "pace_increase_interval", effectValue: 600 },
+    ]);
+  });
+
   test("Start begins a session and emits SESSION_STARTED with an initial snapshot", async () => {
+    expect(engine.buildSnapshot().activeModifiers).toEqual([]);
     engine.start();
 
     const snapshot = engine.buildSnapshot();

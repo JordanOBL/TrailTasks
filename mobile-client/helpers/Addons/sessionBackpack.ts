@@ -1,6 +1,17 @@
 type SessionAddon = { effectType?: unknown; name?: string };
 type BackpackSlot = { minimumTotalMiles: number; addon: SessionAddon | null };
 
+/** Each current catalog family has one effect type, shared across its levels. */
+export function validateAddonFamilies(addons: readonly SessionAddon[]): void {
+  const effects = new Set<unknown>();
+  for (const addon of addons) {
+    if (effects.has(addon.effectType)) {
+      throw new Error("An item of the same type is already equipped. Remove it before choosing a different level.");
+    }
+    effects.add(addon.effectType);
+  }
+}
+
 const supportedEffects = new Set([
   "min_pace_increase", "max_pace_increase", "pace_increase_interval",
   "pace_increase_value", "trail_token_bonus",
@@ -23,6 +34,7 @@ export function isBackpackSlotEligible(
 export function validateSessionBackpack(
   backpack: readonly BackpackSlot[], totalMiles: number, isProMember: boolean,
 ): void {
+  validateAddonFamilies(backpack.flatMap(slot => slot.addon ? [slot.addon] : []));
   backpack.forEach((slot, index) => {
     if (!slot.addon) return;
     if (!isBackpackSlotEligible(slot, index, totalMiles, isProMember)) {

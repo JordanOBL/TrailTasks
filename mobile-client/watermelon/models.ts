@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { ParkRewardCommittedPayload, SessionRewardsPersistedPayload } from "../EventBus/EventBus";
 import { Model, Q } from "@nozbe/watermelondb";
-import { isSupportedSessionAddon } from "../helpers/Addons/sessionBackpack";
+import { isSupportedSessionAddon, validateAddonFamilies } from "../helpers/Addons/sessionBackpack";
 import {
   children,
   date,
@@ -322,6 +322,7 @@ export class User extends Model {
       .filter(slot => slot.addon)
       .map(slot => slot.addon.id))];
     const inventory: User_Addon[] = [];
+    const selectedAddons: Addon[] = [];
     for (const addonId of addonIds) {
       const [record] = await this.usersAddons.extend(Q.where("addon_id", addonId)).fetch();
       if (!record || !Number.isInteger(record.quantity) || record.quantity < 1) {
@@ -332,7 +333,9 @@ export class User extends Model {
         throw new Error(`${addon.name} is not supported for sessions yet.`);
       }
       inventory.push(record);
+      selectedAddons.push(addon);
     }
+    validateAddonFamilies(selectedAddons);
     const restoreInventory = checkpointModels(inventory);
     const newSession = this.collections.get("users_sessions").prepareCreate(userSession => {
       userSession.userId = this.id;

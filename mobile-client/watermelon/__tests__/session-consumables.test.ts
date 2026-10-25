@@ -52,6 +52,28 @@ test("duplicate slots do not stack receipts or consume multiple units", async ()
   expect(await testDb.get("sessions_addons").query().fetchCount()).toBe(1);
 });
 
+test.each([false, true])("mixed pole levels reject before any consumption and allow a corrected retry (reverse=%s)", async reverse => {
+  const { user, addon, inventory, cfg, service } = await setup(2);
+  const other = await testDb.write(async () => {
+    await addon.update(r => { r.name = "Hiking Poles I"; r.effectType = "pace_increase_interval"; r.effectValue = 780; });
+    const second = await testDb.get<Addon>("addons").create(r => {
+      r.name = "Hiking Poles II"; r.effectType = "pace_increase_interval"; r.effectValue = 600;
+    });
+    const owned = await testDb.get<User_Addon>("users_addons").create(r => {
+      r.userId = user.id; r.addonId = second.id; r.quantity = 2;
+    });
+    return { addon: second, owned };
+  });
+  const backpack = [...cfg.backpack, { addon: other.addon, minimumTotalMiles: 0 }];
+  if (reverse) backpack.reverse();
+  await expect(service.createNewSession({ ...cfg, backpack })).rejects.toThrow(/same type|different level|already/i);
+  expect([inventory.quantity, other.owned.quantity]).toEqual([2, 2]);
+  expect(await user.usersSessions.fetchCount()).toBe(0);
+  expect(await testDb.get("sessions_addons").query().fetchCount()).toBe(0);
+  await expect(service.createNewSession(cfg)).resolves.toBeDefined();
+  expect([inventory.quantity, other.owned.quantity]).toEqual([1, 2]);
+});
+
 test("zero quantity cannot create a session or receipt", async () => {
   const { user, cfg, service } = await setup(0);
   await expect(service.createNewSession(cfg)).rejects.toThrow(/owned|inventory|available/i);

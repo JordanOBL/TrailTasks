@@ -7,7 +7,9 @@ import { SessionCfg } from "../types/session";
 
 export type SessionPhase = "IDLE" | "FOCUS" | "SHORT_BREAK" | "LONG_BREAK" | "COMPLETED";
 export type SessionType = "SOLO" | "GROUP";
+export type SessionModifier = { name: string; effectType: string; effectValue: number };
 export interface SessionSnapshot {
+  activeModifiers?: SessionModifier[];
   sessionId: string;
   userId: string;
   sessionName: string;
@@ -62,6 +64,7 @@ export class SessionEngine {
   private readonly paceIncreaseIntervalSec: number;
   private readonly paceIncreaseValueMph: number;
   private readonly backpack: { addon: Addon | null; minimumTotalMiles: number }[];
+  private readonly activeModifiers: SessionModifier[];
   readonly tokenBonusFlat: number;
   readonly tokenBonusPercent: number;
 
@@ -114,6 +117,19 @@ export class SessionEngine {
 
     this.currentPaceMph = cfg.currentPaceMph ?? this.minPaceMph;
     this.backpack = cfg.backpack;
+    // Capture plain applied values once: inventory consumption must not affect the UI.
+    const appliedEffects: Record<string, number> = {
+      min_pace_increase: this.minPaceMph,
+      max_pace_increase: this.maxPaceMph,
+      pace_increase_interval: this.paceIncreaseIntervalSec,
+      pace_increase_value: this.paceIncreaseValueMph,
+      trail_token_bonus: this.tokenBonusFlat,
+    };
+    this.activeModifiers = (cfg.backpack ?? []).flatMap(({ addon }) =>
+      addon && Object.prototype.hasOwnProperty.call(appliedEffects, addon.effectType)
+        ? [{ name: addon.name, effectType: addon.effectType, effectValue: appliedEffects[addon.effectType] }]
+        : [],
+    );
   }
 
   /* -------------------- public commands -------------------- */
@@ -413,6 +429,7 @@ export class SessionEngine {
 
   public buildSnapshot(): SessionSnapshot {
     return {
+      activeModifiers: this.activeModifiers.map(modifier => ({ ...modifier })),
       sessionId: this.sessionId,
       userId: this.userId,
       sessionName: this.sessionName,
