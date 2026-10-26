@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
-  SafeAreaView,
-  Image,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from "react-native";
 import { withObservables } from "@nozbe/watermelondb/react";
 import addonImages from "../../helpers/Addons/addonImages";
 import { useTheme } from "../../contexts/ThemeProvider";
@@ -22,52 +14,83 @@ interface AddonStoreProps {
   onPurchase: (item: Addon) => void;
   usersAddons: User_Addon[];
 }
-export const AddOnStore = ({ availableAddOns, user, totalMiles, tokenBalance, onPurchase, usersAddons }: AddonStoreProps) => {
+
+export const AddOnStore = ({
+  availableAddOns,
+  totalMiles,
+  tokenBalance,
+  onPurchase,
+  usersAddons,
+}: AddonStoreProps) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <FlatList
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
         data={availableAddOns}
         keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.addonItem}>
-            <Image source={addonImages[item.name.replace(/\s/g, "")]} style={styles.image} />
-            <View style={styles.metaContainer}>
-              <Text style={styles.addonName}>{item.name}</Text>
-              <Text style={styles.addonCost}>Cost: {item.price}</Text>
-              <Text style={[styles.addonName, { fontSize: 12 }]}>
-                Owned: {usersAddons.find(addon => addon.addonId === item.id)?.quantity || 0}
-              </Text>
-            </View>
-            <Text style={styles.addonDescription}>
-              {item.description.slice(0, item.description.length - 1)} by {item.effectValue}
-            </Text>
-            <TouchableOpacity
-              style={[
-                styles.buyButton,
-                {
-                  backgroundColor:
-                    totalMiles >= item.requiredTotalMiles && tokenBalance >= item.price
-                      ? theme.button
-                      : theme.border,
-                },
-              ]}
-              disabled={totalMiles < item.requiredTotalMiles || tokenBalance < item.price}
-              onPress={() => onPurchase(item)}>
-              <Text style={styles.buyButtonText}>
-                {totalMiles >= item.requiredTotalMiles && tokenBalance >= item.price
-                  ? "Buy Now"
-                  : totalMiles < item.requiredTotalMiles
-                  ? `You need ${(item.requiredTotalMiles - totalMiles).toFixed(2)} more miles`
-                  : `You need ${item.price - tokenBalance} more tokens`}
-              </Text>
-            </TouchableOpacity>
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.addonName}>No add-ons yet</Text>
+            <Text style={styles.addonDescription}>Check back soon for more trail essentials.</Text>
           </View>
-        )}
+        }
+        renderItem={({ item }) => {
+          const canBuy = totalMiles >= item.requiredTotalMiles && tokenBalance >= item.price;
+          const requirement =
+            totalMiles < item.requiredTotalMiles
+              ? `You need ${(item.requiredTotalMiles - totalMiles).toFixed(2)} more miles`
+              : `You need ${item.price - tokenBalance} more tokens`;
+
+          return (
+            <View style={styles.addonItem}>
+              <View style={styles.itemHeader}>
+                <Image
+                  source={addonImages[item.name.replace(/\s/g, "")]}
+                  style={styles.image}
+                  accessibilityIgnoresInvertColors
+                />
+                <View style={styles.metaContainer}>
+                  <Text style={styles.addonName}>{item.name}</Text>
+                  <Text style={styles.addonCost}>{item.price} Trail Tokens</Text>
+                  <Text style={styles.owned}>
+                    Owned: {usersAddons.find(addon => addon.addonId === item.id)?.quantity || 0}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.addonDescription}>
+                {item.description.slice(0, item.description.length - 1)} by {item.effectValue}
+              </Text>
+              {!canBuy && <Text style={styles.requirement}>{requirement}</Text>}
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={`Buy ${item.name} for ${item.price} Trail Tokens`}
+                accessibilityHint={canBuy ? undefined : requirement}
+                accessibilityState={{ disabled: !canBuy }}
+                style={[
+                  styles.buyButton,
+                  { backgroundColor: canBuy ? theme.button : theme.border },
+                ]}
+                disabled={totalMiles < item.requiredTotalMiles || tokenBalance < item.price}
+                onPress={() => onPurchase(item)}>
+                <Text
+                  style={[
+                    styles.buyButtonText,
+                    { color: canBuy ? theme.buttonText : theme.secondaryText },
+                  ]}>
+                  {canBuy ? "Buy Now" : "Locked"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -81,62 +104,39 @@ export default EnhancedAddOnStore;
 
 const getStyles = (theme: typeof darkTheme | typeof lightTheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
+    container: { flex: 1, minHeight: 0, backgroundColor: theme.background },
+    content: { paddingBottom: 16, gap: 12 },
     addonItem: {
       backgroundColor: theme.card,
       padding: 16,
-      marginBottom: 20,
-      borderRadius: 12,
-      shadowColor: "#000",
-      shadowOpacity: 0.1,
-      shadowOffset: { width: 0, height: 2 },
-      shadowRadius: 8,
-      elevation: 3,
-      alignItems: "center",
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: theme.border,
+      gap: 12,
     },
-    image: {
-      width: 200,
-      height: 200,
-      alignSelf: "center",
-    },
-    metaContainer: {
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    addonName: {
-      fontSize: 18,
-      fontWeight: "600",
-      color: theme.button,
-      marginTop: 12,
-      marginBottom: 4,
-      textAlign: "center",
-    },
-    addonCost: {
-      fontSize: 14,
-      color: "gold",
-      marginBottom: 4,
-    },
-    addonDescription: {
-      color: theme.secondaryText,
-      fontSize: 14,
-      textAlign: "center",
-      marginVertical: 8,
-    },
+    itemHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
+    image: { width: 64, height: 64, resizeMode: "contain" },
+    metaContainer: { flex: 1, minWidth: 0, gap: 4 },
+    addonName: { fontSize: 17, fontWeight: "600", color: theme.text },
+    addonCost: { fontSize: 14, fontWeight: "600", color: theme.button },
+    owned: { fontSize: 12, color: theme.secondaryText },
+    addonDescription: { color: theme.secondaryText, fontSize: 14, lineHeight: 20 },
+    requirement: { color: theme.secondaryText, fontSize: 13, lineHeight: 18 },
     buyButton: {
+      minHeight: 44,
       paddingVertical: 12,
-      paddingHorizontal: 24,
+      paddingHorizontal: 16,
       borderRadius: 10,
       alignItems: "center",
-      marginTop: 10,
+      justifyContent: "center",
     },
-    buyButtonText: {
-      color: theme.buttonText,
-      fontWeight: "600",
-      fontSize: 16,
+    buyButtonText: { fontWeight: "600", fontSize: 14 },
+    empty: {
+      padding: 24,
+      gap: 8,
+      borderRadius: 16,
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
     },
   });

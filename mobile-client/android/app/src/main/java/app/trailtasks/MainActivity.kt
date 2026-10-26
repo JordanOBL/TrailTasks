@@ -5,6 +5,7 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
+import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory
 import android.os.Bundle
 import com.zoontek.rnbootsplash.RNBootSplash
 
@@ -25,7 +26,8 @@ class MainActivity : ReactActivity() {
 
  override fun onCreate(savedInstanceState: Bundle?) {
     RNBootSplash.init(this, R.style.BootTheme) // ⬅️ initialize the splash screen
-    super.onCreate(savedInstanceState) // super.onCreate(null) with react-native-screens
+    supportFragmentManager.fragmentFactory = RNScreensFragmentFactory()
+    super.onCreate(savedInstanceState)
   }
 
 }

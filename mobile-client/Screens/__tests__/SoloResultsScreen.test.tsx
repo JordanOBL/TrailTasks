@@ -4,6 +4,7 @@ import { render, screen, userEvent } from "@testing-library/react-native";
 import { SessionSnapshot } from "../../sessionEngine/sessionEngine";
 import { Rewards } from "../../services/RewardService";
 import formatTime from "../../helpers/formatTime";
+import { ScrollView, StyleSheet } from "react-native";
 
 jest.mock("../../contexts/ThemeProvider", () => {
   return {
@@ -51,6 +52,20 @@ const mockRewards = {
 };
 
 describe("Solo Results Screen", () => {
+  test("small viewports can scroll to a full-height accessible return action", () => {
+    const result = render(
+      <SoloResultScreen
+        rewards={mockRewards}
+        snapshot={mockSnapshot}
+        resetSession={resetSession}
+      />,
+    );
+    const scroll = result.UNSAFE_getByType(ScrollView);
+    expect(StyleSheet.flatten(scroll.props.style)).toMatchObject({ flex: 1 });
+    expect(StyleSheet.flatten(scroll.props.contentContainerStyle)).toMatchObject({ flexGrow: 1 });
+    const button = screen.getByRole("button", { name: "Return to Lobby" });
+    expect(StyleSheet.flatten(button.props.style)).toMatchObject({ minHeight: 48, flexShrink: 0 });
+  });
   test("calculated rewards remain pending and failures never claim an award", () => {
     const { rerender } = render(
       <SoloResultScreen

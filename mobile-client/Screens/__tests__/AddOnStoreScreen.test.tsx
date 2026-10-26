@@ -1,7 +1,6 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 
-
 import AddOnStoreScreen from "../AddOnStoreScreen";
 
 const mockRead = jest.fn(async callback => callback());
@@ -38,7 +37,9 @@ jest.mock("../../components/AddOnStore/AddOnStore", () => {
   const { Text } = require("react-native");
 
   return ({ totalMiles }: { totalMiles?: number }) => (
-    <Text testID="addon-store-total-miles">{typeof totalMiles === "number" ? totalMiles.toFixed(2) : "missing"}</Text>
+    <Text testID="addon-store-total-miles">
+      {typeof totalMiles === "number" ? totalMiles.toFixed(2) : "missing"}
+    </Text>
   );
 });
 
@@ -77,6 +78,40 @@ describe("AddOnStoreScreen", () => {
     mockCalculateTotalMiles.mockResolvedValue(42.5);
     mockCalculateTokenBalance.mockResolvedValue(100);
     mockRead.mockImplementation(async callback => callback());
+  });
+
+  afterEach(() =>
+    mockUseAddons.mockReturnValue({
+      addons: [
+        {
+          id: "addon-1",
+          name: "Trail Snack",
+          price: 5,
+          requiredTotalMiles: 10,
+          description: "Boost pace.",
+          effectValue: 1,
+        },
+      ],
+      loading: false,
+      error: "",
+    }),
+  );
+
+  it.each([
+    [true, "", "Loading add-ons…"],
+    [false, "Offline", "Unable to load add-ons"],
+  ])("keeps balances visible during catalog status (%s, %s)", async (loading, error, message) => {
+    mockUseAddons.mockReturnValue({ addons: [], loading, error });
+    const screen = render(
+      <AddOnStoreScreen user={user as any} userAddons={[]} userSessions={[]} />,
+    );
+    await waitFor(() => expect(screen.getByText("Trail Tokens: 100")).toBeTruthy());
+    expect(screen.getByText(message)).toBeTruthy();
+    expect(screen.getByTestId("addon-store-screen")).toHaveStyle({
+      flex: 1,
+      backgroundColor: "#000000",
+    });
+    expect(screen.queryByTestId("addon-store-total-miles")).toBeNull();
   });
 
   it("uses the user total-miles reader directly instead of nesting it in an anonymous database read", async () => {

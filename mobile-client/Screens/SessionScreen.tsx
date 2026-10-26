@@ -99,7 +99,7 @@ const SessionScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container} testID="session-screen">
+    <SafeAreaView edges={[]} style={styles.container} testID="session-screen">
       {view === "OPTIONS" && <NewSessionOptions />}
       {view === "ACTIVE" && <EnhancedActiveSession user={user} />}
       {view === "REWARDS_SOLO" && (

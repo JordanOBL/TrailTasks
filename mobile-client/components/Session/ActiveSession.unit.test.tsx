@@ -1,6 +1,6 @@
 import { jest, describe, test, afterAll, afterEach, expect, beforeEach } from "@jest/globals";
 import { render, screen, userEvent, act, fireEvent } from "@testing-library/react-native";
-import { StyleSheet } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { createMockUserBase } from "../../__mocks__/UserModel";
 import EnhancedActiveSession from "./ActiveSession";
 import formatCountdown from "../../helpers/Timer/formatCountdown";
@@ -150,6 +150,16 @@ afterEach(() => {
 });
 
 describe("active Session UI screen", () => {
+  test("bounds the active scroll viewport without reapplying navigator insets", async () => {
+    const result = render(<EnhancedActiveSession />);
+    await result.findByTestId("active-session-screen");
+    const scroll = result.UNSAFE_getByType(ScrollView);
+    expect(StyleSheet.flatten(scroll.props.style)).toMatchObject({ flex: 1 });
+    expect(scroll.props.contentInsetAdjustmentBehavior).toBe("never");
+    expect(
+      scroll.findAll(node => node.props.testID === "current-trail-name").length,
+    ).toBeGreaterThan(0);
+  });
   test("shows equipped item names and applied modifier values from the engine snapshot", async () => {
     mockSnapshot.activeModifiers = [
       { name: "Hiking Poles II", effectType: "pace_increase_interval", effectValue: 600 },
@@ -160,8 +170,15 @@ describe("active Session UI screen", () => {
     ];
     render(<EnhancedActiveSession />);
     expect(await screen.findByText("Active modifiers")).toBeDefined();
-    for (const item of mockSnapshot.activeModifiers) expect(screen.getByText(item.name)).toBeDefined();
-    for (const text of ["Pace increases every 10 min", "+0.5 mph per pace increase", "Starting pace: 3 mph", "Maximum pace: 6 mph", "+2 tokens to session trail rewards"]) {
+    for (const item of mockSnapshot.activeModifiers)
+      expect(screen.getByText(item.name)).toBeDefined();
+    for (const text of [
+      "Pace increases every 10 min",
+      "+0.5 mph per pace increase",
+      "Starting pace: 3 mph",
+      "Maximum pace: 6 mph",
+      "+2 tokens to session trail rewards",
+    ]) {
       expect(screen.getByText(text)).toBeDefined();
     }
   });
@@ -195,7 +212,8 @@ describe("active Session UI screen", () => {
   });
 
   test("keeps the phase badge visible when the session title is long", async () => {
-    mockSnapshot.sessionName = "A very long trail focus title that should wrap instead of pushing the state badge away";
+    mockSnapshot.sessionName =
+      "A very long trail focus title that should wrap instead of pushing the state badge away";
 
     render(<EnhancedActiveSession />);
 

@@ -1,16 +1,16 @@
-import { Addon, User, User_Session } from '../watermelon/models';
-import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { Addon, User, User_Session } from "../watermelon/models";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
 
-import EnhancedAddOnStore from '../components/AddOnStore/AddOnStore';
+import EnhancedAddOnStore from "../components/AddOnStore/AddOnStore";
 //import handleAddonPurchase from '../helpers/Addons/handleAddonPurchase';
 import handleError from "../helpers/ErrorHandler";
-import { sync } from '../watermelon/sync';
-import useAddons from '../helpers/Addons/useAddons';
-import { useDatabase } from '@nozbe/watermelondb/react';
-import { useInternetConnection } from '../contexts/InternetConnectionProvider';
-import { useTheme } from '../contexts/ThemeProvider';
-import { withObservables } from '@nozbe/watermelondb/react';
+import { sync } from "../watermelon/sync";
+import useAddons from "../helpers/Addons/useAddons";
+import { useDatabase } from "@nozbe/watermelondb/react";
+import { useInternetConnection } from "../contexts/InternetConnectionProvider";
+import { useTheme } from "../contexts/ThemeProvider";
+import { withObservables } from "@nozbe/watermelondb/react";
 
 const AddOnStoreScreen = ({
   user,
@@ -64,44 +64,65 @@ const AddOnStoreScreen = ({
     };
   }, [user, userAddons, watermelondb]);
 
-  if (loading) {
-    return <Text style={{ color: theme.text }}>Loading Add-Ons...</Text>;
-  }
-  if (error) {
-    return <Text style={{ color: theme.text }}>Error loading Add-Ons: {error}</Text>;
-  }
-
   async function handleAddonPurchase(addon: Addon) {
     try {
       let successMessage = await user.buyAddon(addon);
       if (successMessage) {
         await sync(watermelondb, isConnected, user.id);
       }
-      Alert.alert('Success', successMessage);
+      Alert.alert("Success", successMessage);
     } catch (err) {
-      Alert.alert('Purchase Failed');
+      Alert.alert("Purchase Failed");
     }
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.topBar]}>
-        <Text style={[styles.tokens, { color: theme.button }]}>{`Trail Tokens: ${tokenBalance}`}</Text>
-        <Text style={[styles.miles, { color: theme.text }]}>{`Total Miles: ${totalMiles.toFixed(2)}`}</Text>
+    <View
+      testID="addon-store-screen"
+      style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.topBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <Text
+          style={[styles.tokens, { color: theme.text }]}>{`Trail Tokens: ${tokenBalance}`}</Text>
+        <Text
+          style={[
+            styles.miles,
+            { color: theme.secondaryText },
+          ]}>{`Total Miles: ${totalMiles.toFixed(2)}`}</Text>
       </View>
-      <EnhancedAddOnStore
-        availableAddOns={addons}
-        usersAddons={userAddons}
-        user={user}
-        totalMiles={totalMiles}
-        tokenBalance={tokenBalance}
-        onPurchase={handleAddonPurchase}
-      />
-    </SafeAreaView>
+      {loading || error ? (
+        <ScrollView
+          style={styles.statusScroll}
+          contentInsetAdjustmentBehavior="never"
+          automaticallyAdjustContentInsets={false}>
+          <View
+            accessibilityLiveRegion="polite"
+            style={[styles.status, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            {loading && <ActivityIndicator color={theme.button} />}
+            <Text style={[styles.tokens, { color: theme.text }]}>
+              {loading ? "Loading add-ons…" : "Unable to load add-ons"}
+            </Text>
+            <Text style={[styles.statusDetail, { color: theme.secondaryText }]}>
+              {loading
+                ? "Getting the shop ready for your next trail."
+                : `Error loading Add-Ons: ${error}`}
+            </Text>
+          </View>
+        </ScrollView>
+      ) : (
+        <EnhancedAddOnStore
+          availableAddOns={addons}
+          usersAddons={userAddons}
+          user={user}
+          totalMiles={totalMiles}
+          tokenBalance={tokenBalance}
+          onPurchase={handleAddonPurchase}
+        />
+      )}
+    </View>
   );
 };
 
-const enhance = withObservables(['user', 'userAddons'], ({ user }) => ({
+const enhance = withObservables(["user", "userAddons"], ({ user }) => ({
   user,
   userAddons: user.usersAddons,
   userSessions: user.usersSessions,
@@ -111,23 +132,21 @@ const EnhancedAddOnStoreScreen = enhance(AddOnStoreScreen);
 export default EnhancedAddOnStoreScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
+  container: { flex: 1, minHeight: 0, paddingHorizontal: 16, paddingTop: 12 },
   topBar: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 10,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    padding: 14,
+    marginBottom: 16,
+    borderRadius: 14,
+    borderWidth: 1,
   },
-  tokens: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  miles: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  tokens: { fontSize: 16, fontWeight: "600" },
+  miles: { fontSize: 13 },
+  statusScroll: { flex: 1, minHeight: 0 },
+  status: { padding: 24, gap: 12, borderRadius: 16, borderWidth: 1, alignItems: "center" },
+  statusDetail: { fontSize: 14, lineHeight: 20, textAlign: "center" },
 });
-

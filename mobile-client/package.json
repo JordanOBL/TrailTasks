@@ -18,7 +18,8 @@
     "ios:staging": "ENVFILE=.env.staging python3 scripts/check-native-env.py && ENVFILE=.env.staging react-native run-ios --scheme=\"Copy of TrailTasks\" --port=8081 --extra-params=\"ENVFILE=.env.staging\"",
     "build-ios-staging": "ENVFILE=.env.staging python3 scripts/check-native-env.py && ENVFILE=.env.staging xcodebuild -workspace ios/TrailTasks.xcworkspace -scheme TrailTasks -configuration Release -destination \"generic/platform=iOS\" -archivePath ios/build/TrailTasks-staging.xcarchive ENVFILE=.env.staging clean archive",
     "build-ios-prod": "ENVFILE=.env.production python3 scripts/check-native-env.py && ENVFILE=.env.production xcodebuild -workspace ios/TrailTasks.xcworkspace -scheme TrailTasks -configuration Release -destination \"generic/platform=iOS\" -archivePath ios/build/TrailTasks-production.xcarchive ENVFILE=.env.production clean archive",
-    "test:env": "node --test scripts/*.test.cjs && python3 -m unittest discover -s scripts -p \"test_native_env.py\"",
+    "postinstall": "node scripts/patch-rive-events.cjs",
+    "test:env": "node scripts/patch-rive-events.cjs --check && node --test scripts/*.test.cjs && python3 -m unittest discover -s scripts -p \"test_native_env.py\"",
     "lint": "eslint .",
     "start": "react-native start --reset-cache",
     "start:test": "ENVFILE=.env.test npx react-native start",
@@ -43,7 +44,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
-    "react-native-bootsplash": "^6.3.2",
+    "react-native-bootsplash": "7.3.4",
     "react-native-config": "^1.5.3",
     "react-native-element-dropdown": "^2.12.2",
     "react-native-fs": "^2.20.0",
@@ -55,7 +56,6 @@
     "react-native-safe-area-context": "5.10.1",
     "react-native-screens": "4.30.0",
     "react-native-select-dropdown": "^4.0.1",
-    "react-native-stack": "^1.0.0-alpha11",
     "react-native-svg": "^15.15.0",
     "react-native-svg-transformer": "^1.5.0",
     "react-native-vector-icons": "^10.2.0",
@@ -70,9 +70,9 @@
     "@babel/plugin-proposal-decorators": "^7.25.9",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "20.1.0",
-    "@react-native-community/cli-platform-android": "20.1.0",
-    "@react-native-community/cli-platform-ios": "20.1.0",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native-community/cli-platform-ios": "20.2.0",
     "@react-native/babel-preset": "0.86.3",
     "@react-native/eslint-config": "0.86.3",
     "@react-native/metro-babel-transformer": "0.86.3",
@@ -102,6 +102,11 @@
     "@react-native/jest-preset": "0.86.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": "^20.19.4 || ^22.13.0 || ^24.3.0 || >=25.0.0"
+  },
+  "overrides": {
+    "@nozbe/watermelondb": {
+      "@babel/runtime": "7.26.10"
+    }
   }
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { ScrollView, StyleSheet } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
 import { SessionTypeScreen } from "../SessionTypeScreen";
 
@@ -58,6 +59,21 @@ const renderScreen = (activeWilds = [{ wildId: "ember" }]) =>
 describe("SessionTypeScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it("keeps the primary action outside overflowing picker content", () => {
+    const result = renderScreen();
+    const button = result.getByRole("button", { name: "Start Solo Session" });
+    const scroll = result.UNSAFE_getByType(ScrollView);
+    expect(scroll.findAll(node => node === button)).toHaveLength(0);
+    expect(StyleSheet.flatten(button.props.style)).toMatchObject({ minHeight: 48, flexShrink: 0 });
+    expect(result.getByRole("radio", { name: "Solo Trek" }).props.accessibilityState).toMatchObject(
+      { selected: true },
+    );
+    fireEvent.press(result.getByRole("radio", { name: "Group Hike" }));
+    expect(
+      result.getByRole("radio", { name: "Group Hike" }).props.accessibilityState,
+    ).toMatchObject({ selected: true });
   });
 
   it("renders a polished session picker with clear solo and group choices", () => {

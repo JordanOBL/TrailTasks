@@ -1,22 +1,15 @@
 import "react-native-gesture-handler";
 import "react-native-reanimated";
 
-import { DarkTheme, NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { EventBus, Registry } from "./EventBus/EventBus";
-import {
-  PermissionsAndroid,
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  useColorScheme,
-} from "react-native";
+import { PermissionsAndroid, Platform, StatusBar, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ReanimatedLogLevel, configureReanimatedLogger } from "react-native-reanimated";
 
 import AuthScreen from "./Screens/AuthScreen";
 import BootSplash from "react-native-bootsplash";
-import { Colors } from "react-native/Libraries/NewAppScreen";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import RNFS from "react-native-fs";
 import TabNavigator from "./components/Navigation/TabNavigator";
@@ -26,6 +19,12 @@ import { pullCatalogChanges, sync } from "./watermelon/sync";
 import { useAuthContext } from "./services/AuthContext";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useInternetConnection } from "./contexts/InternetConnectionProvider";
+import { useTheme } from "./contexts/ThemeProvider";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  initialWindowMetrics,
+} from "react-native-safe-area-context";
 
 // This is the default configuration
 configureReanimatedLogger({
@@ -38,13 +37,15 @@ const App = () => {
   const { user } = useAuthContext();
   const { isConnected } = useInternetConnection();
 
-  const isDarkMode = useColorScheme() === "dark";
+  const { theme } = useTheme();
+  const isDarkMode = theme.themeName === "darkTheme";
   const [form, setForm] = useState("login");
   const eventBus = EventBus.getInstance();
-  console.log(eventBus);
+
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    backgroundColor: theme.background,
   };
+
   const handleFormChange = () => {
     if (form === "login") {
       setForm("register");
@@ -109,26 +110,28 @@ const App = () => {
   }, [isConnected, user?.id, watermelonDatabase]);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer
-        theme={DarkTheme}
-        onReady={() => {
-          BootSplash.hide({ fade: true });
-        }}>
-        <SafeAreaView style={[backgroundStyle, styles.container]}>
-          <StatusBar
-            barStyle={isDarkMode ? "light-content" : "dark-content"}
-            backgroundColor={backgroundStyle.backgroundColor}
-          />
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NavigationContainer
+          theme={isDarkMode ? DarkTheme : DefaultTheme}
+          onReady={() => {
+            BootSplash.hide({ fade: true });
+          }}>
+          <SafeAreaView
+            testID="app-safe-area"
+            edges={user ? ["left", "right"] : ["top", "right", "bottom", "left"]}
+            style={[styles.container, backgroundStyle]}>
+            <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
-          {user != null ? (
-            <TabNavigator />
-          ) : (
-            <AuthScreen form={form} handleFormChange={handleFormChange} />
-          )}
-        </SafeAreaView>
-      </NavigationContainer>
-    </GestureHandlerRootView>
+            {user != null ? (
+              <TabNavigator />
+            ) : (
+              <AuthScreen form={form} handleFormChange={handleFormChange} />
+            )}
+          </SafeAreaView>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 };
 

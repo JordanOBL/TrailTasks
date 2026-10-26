@@ -86,6 +86,10 @@ jest.mock("react-native-safe-area-context", () => {
 });
 
 describe("SessionScreen", () => {
+  test("does not add header or tab insets again inside the Solo route", () => {
+    render(<SessionScreen />);
+    expect(screen.getByTestId("session-screen").props.edges).toEqual([]);
+  });
   test("uses only matching committed rewards", () => {
     const Results = require("../SoloResultsScreen");
     render(<SessionScreen />);
