@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { darkTheme, lightTheme } from "../theme";
 
 import React from "react";
@@ -36,7 +36,11 @@ const SoloResultsScreen = ({
   }
 
   return (
-    <View style={styles.container} testID="session-results-screen">
+    <ScrollView
+      style={styles.viewport}
+      contentContainerStyle={styles.container}
+      contentInsetAdjustmentBehavior="never"
+      testID="session-results-screen">
       <Text style={styles.title}>Session Results</Text>
 
       <View style={styles.sessionSummary}>
@@ -102,12 +106,14 @@ const SoloResultsScreen = ({
       {/* Wild xp rewards */}
 
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Return to Lobby"
         style={styles.returnButton}
         testID="return-to-lobby-button"
         onPress={() => resetSession()}>
         <Text style={styles.returnButtonText}>Return to Lobby</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -115,8 +121,12 @@ export default SoloResultsScreen;
 
 const getStyles = (theme: typeof lightTheme | typeof darkTheme) => {
   return StyleSheet.create({
-    container: {
+    viewport: {
       flex: 1,
+      backgroundColor: theme.background,
+    },
+    container: {
+      flexGrow: 1,
       padding: 20,
       backgroundColor: theme.background, // Light grey background for contrast
     },
@@ -155,6 +165,8 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) => {
     },
 
     returnButton: {
+      minHeight: 48,
+      flexShrink: 0,
       backgroundColor: theme.button, // Dark teal button color
       paddingVertical: 12,
       borderRadius: 25,

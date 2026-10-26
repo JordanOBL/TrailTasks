@@ -34,53 +34,56 @@ const SessionTypeScreen = ({ navigation, user, activeWilds = [] }: Props) => {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.scrollContent}
-      style={styles.container}
-      testID="session-type-screen">
-      <View style={styles.heroCard}>
-        <Text style={styles.eyebrow}>Trail Tasks Session</Text>
-        <Text style={styles.title}>Choose your session</Text>
-        <Text style={styles.subtitle}>Pick how you want to move your trail forward today.</Text>
+    <View style={styles.container} testID="session-type-screen">
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        style={styles.scroll}
+        contentInsetAdjustmentBehavior="never">
+        <View style={styles.heroCard}>
+          <Text style={styles.eyebrow}>Trail Tasks Session</Text>
+          <Text style={styles.title}>Choose your session</Text>
+          <Text style={styles.subtitle}>Pick how you want to move your trail forward today.</Text>
 
-        <View style={styles.avatarStage}>
-          {isSoloSelected ? (
-            <WildAvatar id={currentWild} pose="wave" size={180} animated />
-          ) : (
-            <View style={styles.groupWildsContainer}>
-              <WildAvatar id="ember" pose="wave" size={96} animated />
-              <WildAvatar id={currentWild} pose="still" size={108} animated />
-              <WildAvatar id="scout" pose="wave" size={96} animated />
-            </View>
-          )}
+          <View style={styles.avatarStage}>
+            {isSoloSelected ? (
+              <WildAvatar id={currentWild} pose="wave" size={180} animated />
+            ) : (
+              <View style={styles.groupWildsContainer}>
+                <WildAvatar id="ember" pose="wave" size={96} animated />
+                <WildAvatar id={currentWild} pose="still" size={108} animated />
+                <WildAvatar id="scout" pose="wave" size={96} animated />
+              </View>
+            )}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.choiceList}>
-        <SessionChoiceCard
-          description="Focus mode for today’s hike, trail progress, and rewards."
-          isSelected={isSoloSelected}
-          meta="Supported MVP path"
-          onPress={() => setSelection("solo")}
-          styles={styles}
-          title="Solo Trek"
-        />
-        <SessionChoiceCard
-          description="Coming soon: message-bus powered group sessions."
-          isSelected={!isSoloSelected}
-          meta="Post-MVP architecture work"
-          onPress={() => setSelection("group")}
-          styles={styles}
-          title="Group Hike"
-        />
+        <View style={styles.choiceList}>
+          <SessionChoiceCard
+            description="Focus mode for today’s hike, trail progress, and rewards."
+            isSelected={isSoloSelected}
+            meta="Supported MVP path"
+            onPress={() => setSelection("solo")}
+            styles={styles}
+            title="Solo Trek"
+          />
+          <SessionChoiceCard
+            description="Coming soon: message-bus powered group sessions."
+            isSelected={!isSoloSelected}
+            meta="Post-MVP architecture work"
+            onPress={() => setSelection("group")}
+            styles={styles}
+            title="Group Hike"
+          />
+        </View>
+      </ScrollView>
+      <View style={styles.footer}>
+        <Pressable accessibilityRole="button" onPress={handleSelection} style={styles.goButton}>
+          <Text style={styles.goButtonText}>
+            {isSoloSelected ? "Start Solo Session" : "Preview Group Sessions"}
+          </Text>
+        </Pressable>
       </View>
-
-      <Pressable onPress={handleSelection} style={styles.goButton}>
-        <Text style={styles.goButtonText}>
-          {isSoloSelected ? "Start Solo Session" : "Preview Group Sessions"}
-        </Text>
-      </Pressable>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -102,6 +105,9 @@ const SessionChoiceCard = ({
   title,
 }: SessionChoiceCardProps) => (
   <Pressable
+    accessibilityRole="radio"
+    accessibilityLabel={title}
+    accessibilityState={{ selected: isSelected, checked: isSelected }}
     onPress={onPress}
     style={({ pressed }) => [
       styles.choiceCard,
@@ -135,6 +141,15 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
     container: {
       backgroundColor: theme.background,
       flex: 1,
+    },
+    scroll: {
+      flex: 1,
+    },
+    footer: {
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      flexShrink: 0,
+      backgroundColor: theme.background,
     },
     scrollContent: {
       flexGrow: 1,
@@ -252,6 +267,8 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       marginTop: 10,
     },
     goButton: {
+      minHeight: 48,
+      flexShrink: 0,
       alignItems: "center",
       backgroundColor: theme.button,
       borderRadius: 18,

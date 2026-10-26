@@ -1,5 +1,7 @@
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { Image, ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import TrailDetailScreen from "../TrailDetailScreen";
 
@@ -226,7 +228,7 @@ describe("TrailDetailScreen Pro gating indicators", () => {
     expect(mockAddToQueuedTrails).toHaveBeenCalledWith({ trailId: "trail-1" });
   });
 
-  it("closes trail details from the hero close button", async () => {
+  it("closes trail details from the pinned close button", async () => {
     const goBack = jest.fn();
 
     const screen = render(
@@ -242,6 +244,41 @@ describe("TrailDetailScreen Pro gating indicators", () => {
 
     fireEvent.press(screen.getByLabelText("Close trail details"));
 
+    expect(goBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps hero artwork out of normal layout so the title and controls remain visible", async () => {
+    const screen = render(
+      <TrailDetailScreen navigation={{ goBack: jest.fn(), navigate: jest.fn() }} route={{ params: { fullTrail } }} />,
+    );
+    await waitFor(() => expect(screen.getByText("Misty Ridge")).toBeTruthy());
+    expect(StyleSheet.flatten(screen.UNSAFE_getByType(Image).props.style)).toMatchObject({
+      position: "absolute", top: 0, right: 0, bottom: 0, left: 0,
+    });
+  });
+
+  it("keeps a safe-area close control outside the scrolling trail card", async () => {
+    const goBack = jest.fn();
+    const screen = render(
+      <TrailDetailScreen navigation={{ goBack, navigate: jest.fn() }} route={{ params: { fullTrail } }} />,
+    );
+    await waitFor(() => expect(screen.getByText("Misty Ridge")).toBeTruthy());
+    const close = screen.getByRole("button", { name: "Close trail details" });
+    const scroll = screen.UNSAFE_getByType(ScrollView);
+    expect(scroll.findAll(node => node.props.accessibilityLabel === "Close trail details")).toHaveLength(0);
+    expect(StyleSheet.flatten(close.props.style)).toMatchObject({ minHeight: 48, minWidth: 48 });
+    expect(screen.UNSAFE_getByType(SafeAreaView).props.edges).toEqual(["top"]);
+    fireEvent.press(close);
+    expect(goBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers close navigation even while trail details are loading", async () => {
+    const goBack = jest.fn();
+    const screen = render(
+      <TrailDetailScreen navigation={{ goBack, navigate: jest.fn() }} route={{ params: {} }} />,
+    );
+    await waitFor(() => expect(screen.getByText("Loading…")).toBeTruthy());
+    fireEvent.press(screen.getByRole("button", { name: "Close trail details" }));
     expect(goBack).toHaveBeenCalledTimes(1);
   });
 

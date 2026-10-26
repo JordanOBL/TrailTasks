@@ -1,6 +1,8 @@
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +12,7 @@ import {
   View,
 } from "react-native";
 import React, { useCallback } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Dropdown } from "react-native-element-dropdown";
 import { SessionCfg } from "../../types/session";
@@ -40,15 +43,15 @@ const SettingsModal = ({
       value: string | string[] | { label: string; value: number } | boolean,
       isProMember: boolean,
     ) => {
-      console.log(value);
       const proNotNeeded = ["sessionName", "sessionCategory"];
       if (!isProMember && proNotNeeded.find(i => i === entry) == undefined) {
         Alert.alert("Pro Needed to change this value");
         setSessionCfg(prev => ({ ...prev }));
       } else {
         if (entry === "totalSets") {
-          if (!/^d+&/.test(value.toString())) {
-            setSessionCfg(prev => ({ ...prev, ["totalSets"]: 3 }));
+          const count = Number(value);
+          if (/^[1-9]\d*$/.test(String(value)) && Number.isSafeInteger(count)) {
+            setSessionCfg(prev => ({ ...prev, totalSets: count }));
           }
           return;
         }
@@ -86,15 +89,26 @@ const SettingsModal = ({
       visible={visible}
       onRequestClose={() => setVisible(false)}
       testID="settings-modal">
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+      <KeyboardAvoidingView
+        style={styles.modalOverlay}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <SafeAreaView
+          edges={["left", "right", "bottom"]}
+          style={styles.modalContent}
+          testID="session-settings-sheet">
+          <View style={styles.handle} />
           <Text style={styles.title}>Session Settings</Text>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Text style={styles.subtitle}>Changes are saved as you go.</Text>
+          <ScrollView
+            style={styles.scrollBody}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled">
             {/* Session Name */}
             <View style={styles.fieldContainer}>
               <Text style={styles.label}>Session Title</Text>
               <TextInput
                 testID="session-name-input"
+                accessibilityLabel="Session title"
                 value={sessionCfg.sessionName}
                 style={styles.input}
                 onChangeText={value => setSessionCfg(prev => ({ ...prev, sessionName: value }))}
@@ -134,8 +148,8 @@ const SettingsModal = ({
               </View>
 
               {/* Time Settings */}
-              <View style={styles.row}>
-                <View style={styles.column}>
+              <View style={styles.timeFields}>
+                <View style={styles.timeField} testID="focus-time-field">
                   <Text style={styles.label}>Focus Time</Text>
                   <Dropdown
                     testID="focus-time-dropdown"
@@ -152,7 +166,7 @@ const SettingsModal = ({
                     }}
                   />
                 </View>
-                <View style={styles.column}>
+                <View style={styles.timeField}>
                   <Text style={styles.label}>Short Break</Text>
                   <Dropdown
                     testID="short-break-dropdown"
@@ -169,7 +183,7 @@ const SettingsModal = ({
                     }}
                   />
                 </View>
-                <View style={styles.column}>
+                <View style={styles.timeField}>
                   <Text style={styles.label}>Long Break</Text>
                   <Dropdown
                     testID="long-break-dropdown"
@@ -194,9 +208,10 @@ const SettingsModal = ({
                   <Text style={styles.label}>Sets</Text>
                   <TextInput
                     testID="sets-input"
+                    accessibilityLabel="Number of sets"
                     value={String(sessionCfg.totalSets)}
                     onChangeText={value => {
-                      onChangeHandler("autoContinue", value, isProMember);
+                      onChangeHandler("totalSets", value, isProMember);
                     }}
                     keyboardType="numeric"
                     style={styles.input}
@@ -223,6 +238,8 @@ const SettingsModal = ({
           {/* Save and Close */}
           <Pressable
             testID="save-and-close-button"
+            accessibilityRole="button"
+            accessibilityLabel="Save & Close"
             style={styles.saveButton}
             onPress={() => {
               // setSessionCfg(prev => ({...cfg}))
@@ -230,8 +247,8 @@ const SettingsModal = ({
             }}>
             <Text style={styles.buttonText}>Save & Close</Text>
           </Pressable>
-        </View>
-      </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -245,17 +262,42 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   modalContent: {
+    maxHeight: "90%",
     backgroundColor: "#1c1c1c",
     padding: 20,
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
   },
+  handle: {
+    alignSelf: "center",
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#555",
+    marginBottom: 16,
+  },
+  subtitle: {
+    color: "#aaa",
+    textAlign: "center",
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  timeFields: {
+    gap: 14,
+    marginBottom: 18,
+  },
+  timeField: {
+    width: "100%",
+  },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 15,
-    color: "rgb(7,254,213)",
+    marginBottom: 6,
+    color: "#fff",
+  },
+  scrollBody: {
+    flexShrink: 1,
   },
   scrollContent: {
     paddingBottom: 20,
@@ -312,7 +354,8 @@ const styles = StyleSheet.create({
   dropdown: {
     backgroundColor: "#333",
     borderRadius: 8,
-    padding: 10,
+    minHeight: 48,
+    padding: 12,
     borderColor: "#444",
     borderWidth: 1,
   },
@@ -334,6 +377,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   saveButton: {
+    minHeight: 48,
+    flexShrink: 0,
     backgroundColor: "rgb(7,254,213)",
     paddingVertical: 12,
     borderRadius: 8,

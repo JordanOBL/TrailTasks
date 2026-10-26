@@ -1,28 +1,25 @@
 // jest.config.js
 module.exports = {
-  preset: 'react-native',
+  preset: "@react-native/jest-preset",
   verbose: true,
-  testEnvironment: 'jsdom', // or 'node', depending on your needs
+  testEnvironment: "jsdom", // or 'node', depending on your needs
   globals: {
-    structuredClone: globalThis.structuredClone
+    structuredClone: globalThis.structuredClone,
   },
   transform: {
-    '^.+\\.(js|jsx)$': 'babel-jest',
+    "^.+\\.(js|jsx)$": "babel-jest",
   },
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native|react-clone-referenced-element|@nozbe|watermelondb))',
+    "node_modules/(?!((jest-)?react-native|@react-native|@react-navigation|react-clone-referenced-element|@nozbe|watermelondb))",
   ],
   setupFiles: [
-    './jest-setup.js', // if you have any global mocks or setup
+    "./jest-setup.js", // if you have any global mocks or setup
   ],
-  setupFilesAfterEnv: [
-    '@testing-library/jest-native/extend-expect',
-  ],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  setupFilesAfterEnv: ["@testing-library/jest-native/extend-expect"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   moduleNameMapper: {
-    '^react-native-config$': '<rootDir>/__mocks__/react-native-config.js',
-    '^rive-react-native$': '<rootDir>/__mocks__/rive-react-native.js',
-    '\\.(png|jpg|jpeg|gif|webp|svg|riv)$': '<rootDir>/__mocks__/assetMock.js',
+    "^react-native-config$": "<rootDir>/__mocks__/react-native-config.js",
+    "^rive-react-native$": "<rootDir>/__mocks__/rive-react-native.js",
+    "\\.(png|jpg|jpeg|gif|webp|svg|riv)$": "<rootDir>/__mocks__/assetMock.js",
   },
 };
-

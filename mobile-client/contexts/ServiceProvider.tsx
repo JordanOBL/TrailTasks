@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { AppState } from "react-native";
+import type { SessionEngine } from "../sessionEngine/sessionEngine";
 
 import { Database } from "@nozbe/watermelondb";
 import { EventBus } from "../EventBus/EventBus";
@@ -56,6 +58,31 @@ export const ServiceProvider = ({ children }: { children: React.ReactNode }) => 
       disposers.forEach(r => r());
     };
   }, [user?.id, db, isProMember]);
+
+  // Keep native lifecycle handling account-scoped, even if the session tab is not
+  // focused. Reuse the engine's pause policy: focus earns a strike, breaks do not.
+  useEffect(() => {
+    const manager = servicesState.sessionEngineMgr;
+    if (!manager) return;
+    let previousState = AppState.currentState;
+    let lifecyclePausedEngine: SessionEngine | null = null;
+    const subscription = AppState.addEventListener("change", nextState => {
+      const wasActive = previousState === "active";
+      previousState = nextState;
+      const engine = manager.getCurrent();
+      if (nextState === "active") {
+        if (engine && engine === lifecyclePausedEngine) engine.resume();
+        lifecyclePausedEngine = null;
+        return;
+      }
+      if (!wasActive || !engine) return;
+      const snapshot = engine.buildSnapshot();
+      if (snapshot.isPaused || snapshot.phase === "IDLE" || snapshot.phase === "COMPLETED") return;
+      lifecyclePausedEngine = engine;
+      engine.pause();
+    });
+    return () => subscription.remove();
+  }, [servicesState.sessionEngineMgr]);
 
   // Notification queue is account scoped, not membership scoped.
   useEffect(() => {

@@ -1,4 +1,12 @@
-import { ActivityIndicator, Alert, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Badge, Button } from "react-native-paper";
 import { Park, Trail, User_Addon, User_Session } from "../watermelon/models";
 import React, { useEffect, useRef, useState } from "react";
@@ -81,7 +89,10 @@ const NewSessionOptions = () => {
     try {
       validateSessionBackpack(sessionCfg.backpack, totalMiles, isProMember);
     } catch (error) {
-      Alert.alert("Check your backpack", error instanceof Error ? error.message : "Remove unavailable items before starting.");
+      Alert.alert(
+        "Check your backpack",
+        error instanceof Error ? error.message : "Remove unavailable items before starting.",
+      );
       return;
     }
     const sessionCfgWithAddons: SessionCfg = { ...sessionCfg, ...baseAddonConfig };
@@ -184,112 +195,124 @@ const NewSessionOptions = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container} testID="new-session-options">
-      <View style={styles.header}>
-        <Text testID="session-name-display" style={styles.sessionName}>
-          {sessionCfg.sessionName}
-        </Text>
-        <Text testID="session-category-display" style={styles.sessionCategory}>
-          {categories.filter(item => item.id === sessionCfg.sessionCategory[0])[0]
-            ?.sessionCategoryName || "Select a Category"}
-        </Text>
-      </View>
-      <View style={styles.timerContainer}>
-        <Text style={styles.timerText}>{formatCountdown(sessionCfg.focusTimeSec)}</Text>
-      </View>
-      {/* Trail Info and Progress Bar */}
-      <View style={styles.middleContainer}>
-        <Text style={styles.trailName}>{currentTrail?.trailName || ""}</Text>
-        <Text style={styles.parkName}>{currentPark?.parkName || ""} National Park</Text>
-        <EnhancedDistanceProgressBar user={user} />
-      </View>
-      {/* Buttons */}
-      <View style={styles.buttonsContainer}>
-        <Button
-          icon="cog-outline"
-          mode="contained"
-          onPress={() => setIsSettingsModalVisible(true)}
-          style={styles.button}
-          testID="settings-modal-button">
-          <Text>Settings</Text>
-        </Button>
-
-        <View style={styles.buttonWrapper}>
-          <Button
-            icon="bag-personal-outline"
-            mode="contained"
-            onPress={() => setIsBackpackModalVisible(true)}
-            style={styles.button}>
-            <Text>Backpack</Text>
-          </Button>
-          {sessionCfg.backpack.filter(item => item.addon != null).length > 0 && (
-            <Badge style={styles.badge}>
-              {sessionCfg.backpack.filter(item => item.addon != null).length}
-            </Badge>
-          )}
+    <View style={styles.container} testID="new-session-options">
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        contentInsetAdjustmentBehavior="never"
+        keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <Text testID="session-name-display" style={styles.sessionName}>
+            {sessionCfg.sessionName}
+          </Text>
+          <Text testID="session-category-display" style={styles.sessionCategory}>
+            {categories.filter(item => item.id === sessionCfg.sessionCategory[0])[0]
+              ?.sessionCategoryName || "Select a Category"}
+          </Text>
         </View>
+        <View testID="ready-session-timer" style={styles.timerContainer}>
+          <Text style={styles.timerText}>{formatCountdown(sessionCfg.focusTimeSec)}</Text>
+        </View>
+        {/* Trail Info and Progress Bar */}
+        <View testID="ready-session-trail" style={styles.middleContainer}>
+          <Text style={styles.trailName}>{currentTrail?.trailName || ""}</Text>
+          <Text style={styles.parkName}>{currentPark?.parkName || ""} National Park</Text>
+          <EnhancedDistanceProgressBar user={user} />
+        </View>
+        {/* Buttons */}
+        <View style={styles.buttonsContainer}>
+          <Button
+            icon="cog-outline"
+            mode="contained"
+            onPress={() => setIsSettingsModalVisible(true)}
+            style={styles.button}
+            testID="settings-modal-button">
+            <Text>Settings</Text>
+          </Button>
 
-        <Pressable
-          testID="start-session-button"
-          onPress={async () => {
-            if (startingRef.current) return;
-            startingRef.current = true;
-            setIsStarting(true);
-            try {
-              //start manager and create new user in persistance service
-              if (!user) {
-                throw new Error("No User please login");
-              }
-              if (!db) {
-                throw new Error("Database not found");
-              }
+          <View style={styles.buttonWrapper}>
+            <Button
+              icon="bag-personal-outline"
+              mode="contained"
+              onPress={() => setIsBackpackModalVisible(true)}
+              style={styles.button}>
+              <Text>Backpack</Text>
+            </Button>
+            {sessionCfg.backpack.filter(item => item.addon != null).length > 0 && (
+              <Badge style={styles.badge}>
+                {sessionCfg.backpack.filter(item => item.addon != null).length}
+              </Badge>
+            )}
+          </View>
 
-              const cfg = persistedStart.current?.cfg ?? {
-                ...sessionCfg,
-                backpack: sessionCfg.backpack.map(slot => ({ ...slot })),
-              };
-              if (!persistedStart.current) validateSessionBackpack(cfg.backpack, totalMiles, isProMember);
-              const createdSession = persistedStart.current?.session ??
-                await sessionEngineMgr.requestNewSession(cfg);
-              if (!createdSession) {
-                throw new Error("Session Manager didnt return a valid User Session ");
-              }
+          <Pressable
+            testID="start-session-button"
+            accessibilityRole="button"
+            accessibilityLabel="Start Session"
+            onPress={async () => {
+              if (startingRef.current) return;
+              startingRef.current = true;
+              setIsStarting(true);
+              try {
+                //start manager and create new user in persistance service
+                if (!user) {
+                  throw new Error("No User please login");
+                }
+                if (!db) {
+                  throw new Error("Database not found");
+                }
 
-              persistedStart.current = { cfg, session: createdSession };
-              // Consumption committed with session creation, not on completion/quit.
-              setSessionCfg(previous => ({ ...previous, ...baseAddonConfig,
-                backpack: DEFAULT_BACKPACK.map(slot => ({ ...slot })),
-              }));
-              const sEngine = await sessionEngineMgr.createSessionEngine(
-                cfg,
-                createdSession,
-              );
-              if (!sEngine) {
-                throw new Error("Session Manager didnt return a valid Session Engine");
-              }
+                const cfg = persistedStart.current?.cfg ?? {
+                  ...sessionCfg,
+                  backpack: sessionCfg.backpack.map(slot => ({ ...slot })),
+                };
+                if (!persistedStart.current)
+                  validateSessionBackpack(cfg.backpack, totalMiles, isProMember);
+                const createdSession =
+                  persistedStart.current?.session ??
+                  (await sessionEngineMgr.requestNewSession(cfg));
+                if (!createdSession) {
+                  throw new Error("Session Manager didnt return a valid User Session ");
+                }
 
-              sEngine.start();
-            } catch (e) {
-              startingRef.current = false;
-              setIsStarting(false);
-              Alert.alert("Cannot start session", e instanceof Error ? e.message : "Please try again.");
-              handleError(e, "NewSessionOptions start session press");
-            }
-          }}
-          style={[
-            styles.startBtn,
-            {
-              backgroundColor:
-                sessionCfg.sessionName === "" ||
-                sessionCfg.sessionCategory.every(item => !item) == true
-                  ? "#444"
-                  : "rgb(7,254,213)",
-            },
-          ]}
-          disabled={isStarting || !sessionCfg.sessionCategory[0] || !sessionCfg.sessionName}>
-          <Text style={styles.startBtnText}>Start Session</Text>
-        </Pressable>
-      </View>
+                persistedStart.current = { cfg, session: createdSession };
+                // Consumption committed with session creation, not on completion/quit.
+                setSessionCfg(previous => ({
+                  ...previous,
+                  ...baseAddonConfig,
+                  backpack: DEFAULT_BACKPACK.map(slot => ({ ...slot })),
+                }));
+                const sEngine = await sessionEngineMgr.createSessionEngine(cfg, createdSession);
+                if (!sEngine) {
+                  throw new Error("Session Manager didnt return a valid Session Engine");
+                }
+
+                sEngine.start();
+              } catch (e) {
+                startingRef.current = false;
+                setIsStarting(false);
+                Alert.alert(
+                  "Cannot start session",
+                  e instanceof Error ? e.message : "Please try again.",
+                );
+                handleError(e, "NewSessionOptions start session press");
+              }
+            }}
+            style={[
+              styles.startBtn,
+              {
+                backgroundColor:
+                  sessionCfg.sessionName === "" ||
+                  sessionCfg.sessionCategory.every(item => !item) == true
+                    ? "#444"
+                    : "rgb(7,254,213)",
+              },
+            ]}
+            disabled={isStarting || !sessionCfg.sessionCategory[0] || !sessionCfg.sessionName}>
+            <Text style={styles.startBtnText}>Start Session</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
       {/* Settings Modal */}
       <SettingsModal
         visible={isSettingsModalVisible}
@@ -308,7 +331,7 @@ const NewSessionOptions = () => {
         totalMiles={totalMiles}
         usersAddons={usersAddonSelection}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -318,7 +341,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1c1c1c",
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   header: {
     paddingVertical: 20,
@@ -341,9 +371,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   middleContainer: {
-    flex: 1,
+    flexShrink: 0,
     alignItems: "center",
     justifyContent: "center",
+    marginVertical: 20,
   },
   trailName: {
     color: "white",
@@ -390,6 +421,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   startBtn: {
+    minHeight: 48,
+    flexShrink: 0,
     width: "100%",
     paddingVertical: 15,
     borderRadius: 8,
@@ -403,6 +436,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   timerContainer: {
+    flexShrink: 0,
     alignItems: "center",
     margin: 12,
   },

@@ -1,4 +1,4 @@
-import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { SessionEngine, SessionSnapshot, SessionModifier } from "../../sessionEngine/sessionEngine";
 import { useNavigation, usePreventRemove } from "@react-navigation/native"; // You can choose any icon set like FontAwesome, MaterialIcons, etc.
@@ -22,13 +22,20 @@ function modifierCopy(modifier: SessionModifier): string {
     case "pace_increase_interval": {
       const minutes = Math.floor(value / 60);
       const seconds = value % 60;
-      return `Pace increases every ${minutes ? `${minutes} min` : ""}${seconds ? `${minutes ? " " : ""}${seconds} sec` : ""}`;
+      return `Pace increases every ${minutes ? `${minutes} min` : ""}${
+        seconds ? `${minutes ? " " : ""}${seconds} sec` : ""
+      }`;
     }
-    case "pace_increase_value": return `+${value} mph per pace increase`;
-    case "min_pace_increase": return `Starting pace: ${value} mph`;
-    case "max_pace_increase": return `Maximum pace: ${value} mph`;
-    case "trail_token_bonus": return `+${value} tokens to session trail rewards`;
-    default: return "";
+    case "pace_increase_value":
+      return `+${value} mph per pace increase`;
+    case "min_pace_increase":
+      return `Starting pace: ${value} mph`;
+    case "max_pace_increase":
+      return `Maximum pace: ${value} mph`;
+    case "trail_token_bonus":
+      return `+${value} tokens to session trail rewards`;
+    default:
+      return "";
   }
 }
 
@@ -116,7 +123,7 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
     : "Your wild is pacing this trail with you.";
 
   return (
-    <SafeAreaView style={styles.container} testID="active-session-screen">
+    <View style={styles.container} testID="active-session-screen">
       <QuitSessionModal
         isVisible={showQuitSessionModal}
         cancel={() => {
@@ -131,7 +138,11 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
         }}
         sessionDetails={snapshot}
       />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentInsetAdjustmentBehavior="never"
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
         <View style={styles.heroCard}>
           <View style={styles.heroHeader}>
             <View style={styles.heroTitleBlock}>
@@ -267,7 +278,7 @@ const ActiveSession = ({ user, currentTrail, activeWilds = [] }: any) => {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

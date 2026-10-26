@@ -1,0 +1,48 @@
+{
+  "version": "9.8.6",
+  "file": "android/src/main/java/com/rivereactnative/RiveReactNativeView.kt",
+  "originalSha256": "1b1b6129535e9345af3d576506a6a518a55b491196bdecdf0afef3d968e34775",
+  "patchedSha256": "dd144eaaeaea74363859a811739eb2ce6158b386bdc7ad01917841a9d8d2c7b1",
+  "hunks": [
+    {
+      "before": "  private fun configureDataBinding() {\n",
+      "after": "  private fun configureDataBinding() {\n    if (dataBindingConfig == null) return\n    val bindingConfig = dataBindingConfig\n    if (bindingConfig is DataBindingConfig.AutoBind && !bindingConfig.autoBind) {\n      shouldBeReloaded = true\n      return\n    }\n"
+    },
+    {
+      "before": "import com.facebook.react.uimanager.events.RCTEventEmitter",
+      "after": "import com.facebook.react.uimanager.UIManagerHelper\nimport com.facebook.react.uimanager.events.Event"
+    },
+    {
+      "before": "  fun onPlay(animationName: String, isStateMachine: Boolean = false) {",
+      "after": "  // Dispatch through Fabric instead of the legacy JS-module event emitter.\n  private fun dispatchRiveEvent(reactContext: ReactContext, eventName: String, data: WritableMap) {\n    UIManagerHelper.getEventDispatcher(reactContext)?.dispatchEvent(\n      RiveCallbackEvent(UIManagerHelper.getSurfaceId(this), id, eventName, data)\n    )\n  }\n\n  private class RiveCallbackEvent(\n    surfaceId: Int,\n    viewTag: Int,\n    private val callbackName: String,\n    private val payload: WritableMap\n  ) : Event<RiveCallbackEvent>(surfaceId, viewTag) {\n    override fun getEventName(): String = callbackName\n    override fun getEventData(): WritableMap = payload\n    // Every animation/state/error callback matters, including consecutive same-name events.\n    override fun canCoalesce(): Boolean = false\n  }\n\n  fun onPlay(animationName: String, isStateMachine: Boolean = false) {"
+    },
+    {
+      "before": "    reactContext.getJSModule(RCTEventEmitter::class.java)\n      .receiveEvent(id, Events.PLAY.toString(), data)",
+      "after": "    dispatchRiveEvent(reactContext, Events.PLAY.toString(), data)"
+    },
+    {
+      "before": "    reactContext.getJSModule(RCTEventEmitter::class.java)\n      .receiveEvent(id, Events.PAUSE.toString(), data)",
+      "after": "    dispatchRiveEvent(reactContext, Events.PAUSE.toString(), data)"
+    },
+    {
+      "before": "    reactContext.getJSModule(RCTEventEmitter::class.java)\n      .receiveEvent(id, Events.STOP.toString(), data)",
+      "after": "    dispatchRiveEvent(reactContext, Events.STOP.toString(), data)"
+    },
+    {
+      "before": "    reactContext.getJSModule(RCTEventEmitter::class.java)\n      .receiveEvent(id, Events.LOOP_END.toString(), data)",
+      "after": "    dispatchRiveEvent(reactContext, Events.LOOP_END.toString(), data)"
+    },
+    {
+      "before": "    reactContext.getJSModule(RCTEventEmitter::class.java)\n      .receiveEvent(id, Events.STATE_CHANGED.toString(), data)",
+      "after": "    dispatchRiveEvent(reactContext, Events.STATE_CHANGED.toString(), data)"
+    },
+    {
+      "before": "    reactContext.getJSModule(RCTEventEmitter::class.java)\n      .receiveEvent(id, Events.RIVE_EVENT.toString(), topLevelDict)",
+      "after": "    dispatchRiveEvent(reactContext, Events.RIVE_EVENT.toString(), topLevelDict)"
+    },
+    {
+      "before": "    reactContext.getJSModule(RCTEventEmitter::class.java)\n      .receiveEvent(id, Events.ERROR.toString(), data)",
+      "after": "    dispatchRiveEvent(reactContext, Events.ERROR.toString(), data)"
+    }
+  ]
+}

@@ -1,10 +1,20 @@
 import React from "react";
-import { Alert } from "react-native";
+import { Alert, ScrollView, StyleSheet } from "react-native";
 import { act, fireEvent, render, waitFor } from "@testing-library/react-native";
 import NewSessionOptions from "../NewSessionOptions";
 
-const mockAddon = { id: "20", name: "Ultralight II", effectType: "min_pace_increase", effectValue: 3 };
-const mockTrailMix = { id: "8", name: "Trail Mix II", effectType: "pace_increase_value", effectValue: 0.5 };
+const mockAddon = {
+  id: "20",
+  name: "Ultralight II",
+  effectType: "min_pace_increase",
+  effectValue: 3,
+};
+const mockTrailMix = {
+  id: "8",
+  name: "Trail Mix II",
+  effectType: "pace_increase_value",
+  effectValue: 0.5,
+};
 let mockIsProMember = true;
 let mockInventoryListener: (rows: any[]) => void;
 const mockUnsubscribe = jest.fn();
@@ -13,36 +23,77 @@ const mockInventory = [
   { addonId: mockTrailMix.id, quantity: 2, addon: mockTrailMix },
 ];
 const mockUser = {
-  id: "user-1", trailId: "trail-1",
+  id: "user-1",
+  trailId: "trail-1",
   usersAddons: Object.assign(Promise.resolve(mockInventory), {
-    observeWithColumns: jest.fn(() => ({ subscribe: (listener: any) => {
-      mockInventoryListener = listener;
-      listener(mockInventory);
-      return { unsubscribe: mockUnsubscribe };
-    } })),
+    observeWithColumns: jest.fn(() => ({
+      subscribe: (listener: any) => {
+        mockInventoryListener = listener;
+        listener(mockInventory);
+        return { unsubscribe: mockUnsubscribe };
+      },
+    })),
   }),
   calculateTotalMiles: jest.fn(async () => 100),
 };
-const mockDb = { get: () => ({ query: () => ({ fetch: async () => [{ id: "trail-1", park: {} }] }) }) };
+const mockDb = {
+  get: () => ({ query: () => ({ fetch: async () => [{ id: "trail-1", park: {} }] }) }),
+};
 const mockStart = jest.fn();
 const mockManager = {
   requestNewSession: jest.fn(async (_cfg: any): Promise<any> => ({ id: "session-1" })),
   createSessionEngine: jest.fn(async (_cfg: any, _session: any) => ({ start: mockStart })),
 };
 jest.mock("@nozbe/watermelondb/react", () => ({ useDatabase: () => mockDb }));
-jest.mock("../../services/AuthContext", () => ({ useAuthContext: () => ({ user: mockUser, isProMember: mockIsProMember }) }));
-jest.mock("../../contexts/ServiceProvider", () => ({ useServices: () => ({ sessionEngineMgr: mockManager, persistenceService: {} }) }));
+jest.mock("../../services/AuthContext", () => ({
+  useAuthContext: () => ({ user: mockUser, isProMember: mockIsProMember }),
+}));
+jest.mock("../../contexts/ServiceProvider", () => ({
+  useServices: () => ({ sessionEngineMgr: mockManager, persistenceService: {} }),
+}));
 jest.mock("../../components/DistanceProgressBar", () => () => null);
 jest.mock("../../components/Session/SettingsModal", () => {
   const { Button } = require("react-native");
-  return ({ sessionCfg, setSessionCfg }: any) => <Button title="Configure" onPress={() => setSessionCfg({ ...sessionCfg, sessionName: "Focus", sessionCategory: ["cat", "Focus"], totalSets: 5 })} />;
+  return ({ sessionCfg, setSessionCfg }: any) => (
+    <Button
+      title="Configure"
+      onPress={() =>
+        setSessionCfg({
+          ...sessionCfg,
+          sessionName: "Focus",
+          sessionCategory: ["cat", "Focus"],
+          totalSets: 5,
+        })
+      }
+    />
+  );
 });
 jest.mock("../../components/AddOnStore/AddonListItem", () => {
   const { Button, Text } = require("react-native");
   const { isSupportedSessionAddon } = require("../../helpers/Addons/sessionBackpack");
-  return ({ userAddon, selectAddon, sessionOnly }: any) => sessionOnly && !isSupportedSessionAddon(userAddon.addon)
-    ? <Text>Not available for sessions yet</Text>
-    : <Button title={`Equip ${userAddon.addon.name}`} onPress={() => selectAddon(userAddon.addon)} />;
+  return ({ userAddon, selectAddon, sessionOnly }: any) =>
+    sessionOnly && !isSupportedSessionAddon(userAddon.addon) ? (
+      <Text>Not available for sessions yet</Text>
+    ) : (
+      <Button
+        title={`Equip ${userAddon.addon.name}`}
+        onPress={() => selectAddon(userAddon.addon)}
+      />
+    );
+});
+
+test("ready countdown and trail remain in non-shrinking scroll flow above an accessible start action", async () => {
+  const result = render(<NewSessionOptions />);
+  await result.findByTestId("new-session-options");
+  const scroll = result.UNSAFE_getByType(ScrollView);
+  expect(StyleSheet.flatten(scroll.props.style)).toMatchObject({ flex: 1 });
+  expect(StyleSheet.flatten(result.getByTestId("ready-session-timer").props.style)).toMatchObject({
+    flexShrink: 0,
+  });
+  expect(StyleSheet.flatten(result.getByTestId("ready-session-trail").props.style)).toMatchObject({
+    flexShrink: 0,
+  });
+  expect(result.getByRole("button", { name: "Start Session" })).toBeDisabled();
 });
 
 async function prepare() {
@@ -52,7 +103,10 @@ async function prepare() {
   return screen;
 }
 
-beforeEach(() => { jest.clearAllMocks(); mockIsProMember = true; });
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockIsProMember = true;
+});
 
 test("mileage-locked slots cannot take or consume another item", async () => {
   mockUser.calculateTotalMiles.mockResolvedValueOnce(0);
@@ -66,13 +120,31 @@ test("mileage-locked slots cannot take or consume another item", async () => {
     fireEvent.press(screen.getByText("Close"));
     fireEvent.press(screen.getByText("Start Session"));
     await waitFor(() => expect(mockStart).toHaveBeenCalledTimes(1));
-    expect(mockManager.requestNewSession.mock.calls[0][0].backpack.filter((s: any) => s.addon).map((s: any) => s.addon.id)).toEqual([mockAddon.id]);
-  } finally { alert.mockRestore(); }
+    expect(
+      mockManager.requestNewSession.mock.calls[0][0].backpack
+        .filter((s: any) => s.addon)
+        .map((s: any) => s.addon.id),
+    ).toEqual([mockAddon.id]);
+  } finally {
+    alert.mockRestore();
+  }
 });
 
 test("unsupported catalog items are visibly unavailable and cannot be equipped", async () => {
   const screen = await prepare();
-  act(() => mockInventoryListener([{ quantity: 2, addon: { id: "water", name: "Water Bottle II", effectType: "break_time_reduction", effectValue: 0.6 } }]));
+  act(() =>
+    mockInventoryListener([
+      {
+        quantity: 2,
+        addon: {
+          id: "water",
+          name: "Water Bottle II",
+          effectType: "break_time_reduction",
+          effectValue: 0.6,
+        },
+      },
+    ]),
+  );
   expect(screen.queryByText("Equip Water Bottle II")).toBeNull();
   expect(screen.getByText(/not available for sessions yet/i)).toBeTruthy();
 });
@@ -93,8 +165,14 @@ test("non-Pro users cannot place an item into a third slot even with sufficient 
     fireEvent.press(screen.getByText("Close"));
     fireEvent.press(screen.getByText("Start Session"));
     await waitFor(() => expect(mockStart).toHaveBeenCalledTimes(1));
-    expect(mockManager.requestNewSession.mock.calls[0][0].backpack.filter((s: any) => s.addon).map((s: any) => s.addon.id)).toEqual([mockAddon.id, mockTrailMix.id]);
-  } finally { alert.mockRestore(); }
+    expect(
+      mockManager.requestNewSession.mock.calls[0][0].backpack
+        .filter((s: any) => s.addon)
+        .map((s: any) => s.addon.id),
+    ).toEqual([mockAddon.id, mockTrailMix.id]);
+  } finally {
+    alert.mockRestore();
+  }
 });
 
 test("a failed creation retains explicit selection so retry can consume it once", async () => {
@@ -115,7 +193,10 @@ test("a failed creation retains explicit selection so retry can consume it once"
     await waitFor(() => expect(mockStart).toHaveBeenCalledTimes(1));
     expect(mockManager.requestNewSession.mock.calls[1][0].backpack[0].addon).toBe(mockAddon);
     expect(mockManager.createSessionEngine).toHaveBeenCalledTimes(1);
-  } finally { alert.mockRestore(); errorLog.mockRestore(); }
+  } finally {
+    alert.mockRestore();
+    errorLog.mockRestore();
+  }
 });
 
 test("Ultralight II and Trail Mix II apply only after explicit equip, not automatically in the next session", async () => {
@@ -126,7 +207,9 @@ test("Ultralight II and Trail Mix II apply only after explicit equip, not automa
   fireEvent.press(first.getByText("Start Session"));
   await waitFor(() => expect(mockStart).toHaveBeenCalledTimes(1));
   expect(mockManager.createSessionEngine.mock.calls[0][0]).toMatchObject({
-    currentPaceMph: 3, minPaceMph: 3, paceIncreaseValueMph: 0.5,
+    currentPaceMph: 3,
+    minPaceMph: 3,
+    paceIncreaseValueMph: 0.5,
     backpack: [{ addon: mockAddon }, { addon: mockTrailMix }, {}, {}],
   });
   first.unmount();
@@ -138,7 +221,9 @@ test("Ultralight II and Trail Mix II apply only after explicit equip, not automa
   fireEvent.press(second.getByText("Start Session"));
   await waitFor(() => expect(mockStart).toHaveBeenCalledTimes(2));
   expect(mockManager.createSessionEngine.mock.calls[1][0]).toMatchObject({
-    currentPaceMph: 2, minPaceMph: 2, paceIncreaseValueMph: 0.25,
+    currentPaceMph: 2,
+    minPaceMph: 2,
+    paceIncreaseValueMph: 0.25,
     backpack: [{ addon: null }, { addon: null }, { addon: null }, { addon: null }],
   });
   second.unmount();
@@ -150,7 +235,9 @@ test("Ultralight II and Trail Mix II apply only after explicit equip, not automa
   fireEvent.press(third.getByText("Start Session"));
   await waitFor(() => expect(mockStart).toHaveBeenCalledTimes(3));
   expect(mockManager.createSessionEngine.mock.calls[2][0]).toMatchObject({
-    currentPaceMph: 3, minPaceMph: 3, paceIncreaseValueMph: 0.5,
+    currentPaceMph: 3,
+    minPaceMph: 3,
+    paceIncreaseValueMph: 0.5,
   });
 });
 
@@ -176,7 +263,11 @@ test("applies the equipped pace on first start without resetting configured sets
   fireEvent.press(screen.getByText("Close"));
   fireEvent.press(screen.getByText("Start Session"));
   await waitFor(() => expect(mockStart).toHaveBeenCalledTimes(1));
-  expect(mockManager.createSessionEngine.mock.calls[0][0]).toMatchObject({ minPaceMph: 3, currentPaceMph: 3, totalSets: 5 });
+  expect(mockManager.createSessionEngine.mock.calls[0][0]).toMatchObject({
+    minPaceMph: 3,
+    currentPaceMph: 3,
+    totalSets: 5,
+  });
 });
 
 test("observes inventory changes and removes depleted inventory from selection", async () => {
@@ -191,7 +282,12 @@ test("observes inventory changes and removes depleted inventory from selection",
 
 test("repeated start taps during persistence consume only once", async () => {
   let resolve: (session: any) => void = () => {};
-  mockManager.requestNewSession.mockImplementationOnce(() => new Promise(done => { resolve = done; }));
+  mockManager.requestNewSession.mockImplementationOnce(
+    () =>
+      new Promise(done => {
+        resolve = done;
+      }),
+  );
   const screen = await prepare();
   fireEvent.press(screen.getByText("Close"));
   fireEvent.press(screen.getByText("Start Session"));
@@ -215,7 +311,10 @@ test("engine startup retries reuse the committed session and effects without con
     expect(mockManager.requestNewSession).toHaveBeenCalledTimes(1);
     expect(mockManager.createSessionEngine).toHaveBeenCalledTimes(2);
     expect(mockManager.createSessionEngine.mock.calls[1][0]).toMatchObject({
-      currentPaceMph: 3, backpack: [{ addon: mockAddon }, {}, {}, {}],
+      currentPaceMph: 3,
+      backpack: [{ addon: mockAddon }, {}, {}, {}],
     });
-  } finally { errorLog.mockRestore(); }
+  } finally {
+    errorLog.mockRestore();
+  }
 });

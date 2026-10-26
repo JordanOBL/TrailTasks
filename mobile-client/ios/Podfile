@@ -15,6 +15,10 @@ if linkage != nil
 end
 
 target 'TrailTasks' do
+  # Keep explicit pods in the same target scope as autolinked React Native pods.
+  # Root-level react-native-config created a second React-Core variant and
+  # duplicate React-Core privacy-bundle archive products.
+  pod 'simdjson', path: '../node_modules/@nozbe/simdjson', modular_headers: true
   config = use_native_modules!
 
   use_react_native!(
@@ -37,6 +41,14 @@ target 'TrailTasks' do
       # :ccache_enabled => true
     )
     installer.pods_project.targets.each do |target|
+      # Xcode 27 rejects old resource-bundle deployment floors (13/14).
+      # Raise only unsupported floors; never lower a pod's declared minimum.
+      target.build_configurations.each do |build_config|
+        floor = build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if floor.nil? || Gem::Version.new(floor) < Gem::Version.new(min_ios_version_supported)
+          build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version_supported
+        end
+      end
       if target.name == 'react-native-config'
         target.shell_script_build_phases.each do |phase|
           next unless phase.name.include?('Config codegen')
@@ -49,46 +61,30 @@ python3 "${PODS_ROOT}/../../scripts/check-native-env.py" "${PODS_ROOT}/../.." io
           phase.always_out_of_date = '1'
         end
       end
-      target.build_configurations.each do |config|
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
-      end
-
-      targets_to_ignore = %w(RCT-Folly-RCT-Folly_privacy React-Core-React-Core_privacy)
-
-      if targets_to_ignore.include? target.name
-          target.remove_from_project
-      end
-        # 1. Completely remove RCT-Folly_privacy.bundle outputs
-      if target.name == 'RCT-Folly' || target.name.include?('RCT-Folly')
-        target.build_phases.each do |phase|
-          next unless phase.respond_to?(:files)
-          phase.files.each do |file|
-            if file.display_name.include?('RCT-Folly_privacy.bundle')
-              phase.remove_file_reference(file.file_ref)
-            end
-          end
-        end
-      end
-        # 2. Also remove the React-Core-RCTI18nStrings target if needed
-      if target.name == "React-Core-RCTI18nStrings"
-        target.remove_from_project
-      end
     end
 
-    # RevenueCat 5.22.2 exposes a stored property layout that Xcode 27 / Swift 6
-    # treats as a synthesized memberwise initializer collision. Patch the
-    # generated Pods source during install so clean checkouts build reliably.
+    # RN's post-install keeps the supported iOS floor without lowering pods
+    # that declare a higher minimum. Keep generated privacy/resource targets.
+
+    # Swift 6.4 synthesizes an ambiguous optional-var memberwise initializer.
+    # Verified on these exact RevenueCat releases; do not mutate unknown SDKs.
     revenuecat_paywall_color = File.join(
       installer.sandbox.root.to_s,
       'RevenueCat/Sources/Paywalls/PaywallColor.swift'
     )
-    if File.exist?(revenuecat_paywall_color)
+    needs_color_compat = installer.pod_targets.any? do |pod_target|
+      pod_target.root_spec.name == 'RevenueCat' &&
+        ['5.22.2', '5.67.1'].include?(pod_target.root_spec.version.to_s)
+    end
+    if needs_color_compat
       old_line = '    fileprivate var _underlyingColor: (any Sendable)?'
       new_line = '    fileprivate let _underlyingColor: (any Sendable)?'
       paywall_color_contents = File.read(revenuecat_paywall_color)
-      if paywall_color_contents.include?(old_line)
+      if paywall_color_contents.scan(old_line).length == 1 && !paywall_color_contents.include?(new_line)
         File.chmod(0644, revenuecat_paywall_color)
         File.write(revenuecat_paywall_color, paywall_color_contents.sub(old_line, new_line))
+      elsif paywall_color_contents.scan(new_line).length != 1 || paywall_color_contents.include?(old_line)
+        raise 'Unknown RevenueCat PaywallColor source; review Swift compatibility before building'
       end
     end
   end
@@ -100,8 +96,3 @@ end
 # WatermelonDB dependency, should not be needed on modern React Native
 # (please file an issue if this causes issues for you)
 # pod 'React-jsi', path: '../node_modules/react-native/ReactCommon/jsi', modular_headers: true
-
-# WatermelonDB dependency
-pod 'simdjson', path: '../node_modules/@nozbe/simdjson', modular_headers: true
-pod 'react-native-config', :path => '../node_modules/react-native-config'
-

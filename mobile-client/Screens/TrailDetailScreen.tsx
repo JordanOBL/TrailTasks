@@ -13,6 +13,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { darkTheme, lightTheme } from "../theme";
 import { useDatabase } from "@nozbe/watermelondb/react";
 import { useFocusEffect } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import BuyTrailModal from "../components/Trails/BuyTrailModal";
 import FullTrailDetails from "../types/fullTrailDetails";
@@ -251,16 +252,35 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
 
   const handleBuyTrail = () => setShowBuyTrailModal(true);
 
+  // Both modal routes hide the navigator header. Keep dismissal pinned above
+  // the card so scrolling, large text and edge-to-edge layout cannot hide it.
+  const closeHeader = (
+    <View style={styles.closeHeader}>
+      <TouchableOpacity
+        accessibilityLabel="Close trail details"
+        accessibilityRole="button"
+        onPress={() => navigation.goBack()}
+        style={styles.closeButton}>
+        <Text style={styles.closeButtonText}>× Close</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   if (!trail) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: theme.text }}>Loading…</Text>
-      </View>
+      <SafeAreaView edges={["top"]} style={styles.container}>
+        {closeHeader}
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ color: theme.text }}>Loading…</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
+      {closeHeader}
+      <ScrollView style={{ flex: 1 }} contentInsetAdjustmentBehavior="never">
       <Modal transparent visible={showReplaceTrailModal}>
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
@@ -321,13 +341,6 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
               )}
             </View>
 
-            <TouchableOpacity
-              accessibilityLabel="Close trail details"
-              accessibilityRole="button"
-              onPress={() => navigation.goBack()}
-              style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>×</Text>
-            </TouchableOpacity>
           </View>
 
           <View style={styles.heroTitleBlock}>
@@ -493,7 +506,8 @@ const TrailDetailScreen = ({ route, navigation }: Props) => {
           )}
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -540,12 +554,12 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       overflow: "hidden",
     },
     trailImage: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       height: "100%",
       width: "100%",
     },
     imageOverlay: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: "rgba(0, 0, 0, 0.36)",
     },
     topBadgeRow: {
@@ -564,21 +578,27 @@ const getStyles = (theme: typeof lightTheme | typeof darkTheme) =>
       gap: 8,
       paddingRight: 10,
     },
+    closeHeader: {
+      alignItems: "flex-end",
+      paddingHorizontal: 16,
+      paddingVertical: 4,
+    },
     closeButton: {
       alignItems: "center",
       backgroundColor: "rgba(18, 18, 18, 0.68)",
       borderColor: "rgba(255, 255, 255, 0.28)",
       borderRadius: 999,
       borderWidth: 1,
-      height: 36,
+      minHeight: 48,
       justifyContent: "center",
-      width: 36,
+      minWidth: 48,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
     },
     closeButtonText: {
       color: "#ffffff",
-      fontSize: 26,
+      fontSize: 16,
       fontWeight: "700",
-      lineHeight: 28,
     },
     statusPill: {
       borderRadius: 999,
