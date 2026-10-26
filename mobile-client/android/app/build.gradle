@@ -83,9 +83,6 @@ def enableProguardInReleaseBuilds = false
  * this variant is about 6MiB larger per architecture than default.
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
-def computeVersionCode() {
-    return (System.currentTimeMillis() / 1000).toInteger()
-}
 
 
 
@@ -101,8 +98,9 @@ android {
         applicationId "app.trailtasks"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode computeVersionCode()
-        versionName "1.0.${computeVersionCode()}"
+        // Increment for each new Play upload; keep stable across local rebuilds.
+        versionCode 1
+        versionName "1.0.0"
         resValue "string", "build_config_package", "app.trailtasks"
     }
     signingConfigs {

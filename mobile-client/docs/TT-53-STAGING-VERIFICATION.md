@@ -1,6 +1,29 @@
 # TT-53 staging verification and outstanding release gates
 
-## Android device-QA follow-up (latest evidence)
+## First Play upload: sequential Android versioning (latest artifacts)
+
+User confirmed no previous Play release and has not confirmed the timestamp-code
+internal-test draft. Removed Unix-time version generation. Current first-upload
+candidate is `versionCode 1`, `versionName 1.0.0`; increment the explicit code for
+future new uploads. Play Console acceptance of code 1 is NOT yet verified; do not
+claim that removing an unconfirmed draft automatically resets store constraints.
+
+Two versioning regression tests observed RED then GREEN. Full release gate passed
+again (58 Jest suites, 345 passed, 5 TODO, plus native/env tests). Staging APK/AAB
+rebuilt; both manifests explicitly verified as package `app.trailtasks`, code 1,
+name 1.0.0. Signature/configuration/API36/Billing8/native64/16KB checks passed.
+Latest hashes (supersede historical hashes below):
+- APK: `0bdb0f1afb69512ea03268020ed1796e35db3b8da38408230f37f6650dd7299b`.
+- AAB: `4a152e350cd17dc882478aec6fb3fe97c055fe1a3d6eec526ccc774a4e43e54a`.
+
+Previous high-code APK/AAB preserved outside the repo under
+`~/.config/trailtasks/tt53-before-sequential-version.7qnb4oag/` on the Mac.
+No lower-code APK was installed over an existing high-code device install; a
+version downgrade may be rejected. Do not uninstall or clear app data to bypass it.
+No uploads, draft deletions or rollouts performed by the agent. User must replace
+the unconfirmed Play draft artifact and verify store acceptance before rollout.
+
+## Android device-QA follow-up (latest runtime evidence)
 
 User-reported Samsung QA found missing background strikes, an inline quit dialog,
 and an inaccessible trail-detail close control. The login keyboard layout passed
