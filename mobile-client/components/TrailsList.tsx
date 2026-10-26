@@ -132,6 +132,8 @@ const TrailsList = ({
     [handleTrailPress, queuedTrailMap],
   );
 
+  // Invoke this render helper below: passing its changing function identity as
+  // a component type remounts the TextInput and dismisses the keyboard on typing.
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <Text style={styles.eyebrow}>Explore</Text>
@@ -186,7 +188,7 @@ const TrailsList = ({
         data={filteredTrails}
         renderItem={renderTrailItem}
         keyExtractor={(item, index) => `${item.id}-${index}`}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={renderHeader()}
         ListEmptyComponent={
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>No trails found</Text>

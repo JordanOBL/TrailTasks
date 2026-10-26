@@ -79,7 +79,14 @@ const LogbookScreen = ({ navigation }: Props) => {
   }, [parksWilds]);
 
   const parkCardData: ParkCardData[] = React.useMemo(() => {
-    return parksWilds.map(pw => {
+    // A Logbook card is identified by its park, not by a join-row ID. Repeated
+    // local catalog relations must not repeat the grid or collide on list keys.
+    // Keep this a read-only projection; do not delete or rewrite synced records.
+    const relationByPark = new Map<string, Park_Wild>();
+    parksWilds.forEach(pw => {
+      if (!relationByPark.has(pw.parkId)) relationByPark.set(pw.parkId, pw);
+    });
+    return Array.from(relationByPark.values()).map(pw => {
       return {
         parkId: pw.parkId,
         parkName: parks.find(p => p.id === pw.parkId)?.parkName || "",

@@ -1,6 +1,35 @@
 # TT-53 staging verification and outstanding release gates
 
-## First Play upload: sequential Android versioning (latest artifacts)
+## Tester follow-up: repeated Logbook cards and search keyboard (latest artifacts)
+
+- User clarified that the entire Logbook card list repeats. The grid now builds
+  one card per park ID before rendering, keeping first-occurrence order and the
+  existing navigation/completion/unlock flags. Distinct duplicate relation row
+  IDs cannot repeat cards or collide on the park-ID list key. This is a read-only
+  display projection: no records, backups, migrations or devices were reset.
+- Root cause of duplicate relations on the tester's device is not proven. Earlier
+  staging catalog evidence had 63 unique parks and 63 unique park/Wild relations;
+  this change handles repeated local rows without silently deleting or rewriting
+  synced catalog data. Testers must confirm the original repeated-list symptom.
+- Trail search header was passed as a newly created component function on every
+  keystroke. Passing the rendered element preserves input identity across typing,
+  debounce, clearing and filter updates, preventing that remount/focus-loss path.
+  Regression observed RED (old header) then GREEN (fixed header). Logbook repeated
+  relation fixture also observed RED then GREEN. Native keyboard acceptance on
+  the tester's device remains outstanding; the old high-code emulator/phone
+  installations were not downgraded or uninstalled to install this candidate.
+- Both fixes independently reviewed with no blocking security or logic findings.
+  Latest release gate: 60 Jest suites, 349 passed, 5 TODO, plus native/env tests.
+  Staging APK/AAB rebuilt; signature/staging config/API36/Billing8/native64/16KB
+  checks passed. Android next-upload candidate: code 2, name 1.0.0. Confirm code 2
+  is unused in Play before upload; no upload/rollout performed by the agent.
+- Latest APK SHA-256: `8e2ec3abf41e390b58e1d855462bc2b10e8090a30d353f2269270cc483e30396`.
+- Latest AAB SHA-256: `ec986596766dd65b20ce22b89a23b572c8e554fd0898d8d67550de08716674e8`.
+- Previous code-1 artifacts preserved at Mac
+  `~/.config/trailtasks/tt53-before-tester-bugfix.heoetwuh/`.
+  Latest logs: `/tmp/tt53-tester-bugs-quality.log`, `/tmp/tt53-tester-bugs-android.log`.
+
+## First Play upload: sequential Android versioning (historical artifacts)
 
 User confirmed no previous Play release and has not confirmed the timestamp-code
 internal-test draft. Removed Unix-time version generation. Current first-upload
