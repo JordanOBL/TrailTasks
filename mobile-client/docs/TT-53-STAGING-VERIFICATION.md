@@ -1,5 +1,47 @@
 # TT-53 staging verification and outstanding release gates
 
+## Android device-QA follow-up (latest evidence)
+
+User-reported Samsung QA found missing background strikes, an inline quit dialog,
+and an inaccessible trail-detail close control. The login keyboard layout passed
+user QA and is unchanged by this follow-up.
+
+- Added account-scoped AppState handling for the current solo engine, reusing its
+  existing pause policy: one focus strike per departure, no break strike, no extra
+  strike or auto-resume for an already manually paused session. Foreground resume
+  is restricted to the same engine paused by the lifecycle bridge.
+- Quit confirmation now uses a centered native full-screen transparent Modal,
+  safe-area layout and bounded scrolling. Android Back cancels/resumes, not quits.
+- Pinned an accessible >=48-point Close control above the trail detail scroller,
+  including loading state. Fixed the underlying RN 0.86 incompatibility:
+  `StyleSheet.absoluteFillObject` no longer exists; image/overlay now use the
+  supported `StyleSheet.absoluteFill` so artwork does not displace hero controls.
+- Regression tests observed RED then GREEN. Latest `quality:release`: 58 suites,
+  345 passed, 5 TODO; includes the real engine + AppState/provider integration.
+  Core lifecycle/modal/navigation diff independently reviewed with no blockers;
+  the later two-line artwork compatibility correction was test/runtime verified
+  but its supplemental independent review was unavailable (provider HTTP 429).
+- Latest staging APK/AAB rebuilt successfully; signatures, staging configuration,
+  target36/Billing8, native64 parity and 16 KB verification passed again.
+  APK SHA-256: `980de20e70cfd63184b385d8d3a273004154c18635b916555dda5f97e70cbec0`.
+  AAB SHA-256: `8bd0396a808564f86befe8a3841712e7795027d32df239a14b62014dc9d75848`.
+- Latest APK installed in place ONLY on dedicated emulator-5562. Actual native
+  background/foreground changed visible strikes 0 -> 1. Manual pause added the
+  existing policy strike (2); background/return left it paused with strikes still 2.
+  Native quit dialog visually centered over the entire app, Android Back resumed,
+  confirmed quit reached results. Test session `TT53BackgroundFix`: 47 sec,
+  0.02 miles, 0 completed sets, 0 awarded tokens. Trail detail title/badges and
+  pinned Close visible; Close returned Home. Existing phone was not modified.
+- Latest local logs: `/tmp/tt53-device-followup-quality.log` and
+  `/tmp/tt53-device-followup-final-android.log` on the Mac. Private runtime
+  screenshots remain outside the repository. Latest evidence above supersedes
+  earlier "final" counts/hashes below; earlier baseline evidence remains historical.
+
+User subsequently reported the staging iOS archive succeeded locally, then clarified
+there is no physical iPhone available. The signing failure below is historical
+agent-run evidence, not a claim their latest archive failed. Their successful
+archive has not been independently inspected; physical iOS acceptance is still open.
+
 ## Scope
 
 React Native 0.86.3 / React 19.2.3 dependency alignment, RevenueCat / Play Billing 8,

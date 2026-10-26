@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import React from "react";
 import { SessionSnapshot } from "../../sessionEngine/sessionEngine";
@@ -18,8 +19,16 @@ const QuitSessionModal = ({ isVisible, sessionDetails, cancel, quit }: Props) =>
   }
 
   return (
-    <View style={styles.modalBackground} testID="quit-session-modal">
-      <View style={styles.modalContainer}>
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="fade"
+      presentationStyle="overFullScreen"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={cancel}>
+      <SafeAreaView style={styles.modalBackground} testID="quit-session-modal">
+        <ScrollView style={styles.modalContainer} contentContainerStyle={styles.modalContent}>
         <Text style={styles.titleText}>Quit Session Early!?</Text>
 
         {sessionDetails.completedSets < 3 && (
@@ -32,35 +41,44 @@ const QuitSessionModal = ({ isVisible, sessionDetails, cancel, quit }: Props) =>
         <TouchableOpacity
           style={styles.buttonEndSession}
           testID="confirm-quit-button"
+          accessibilityRole="button"
+          accessibilityLabel="Confirm quit session"
           onPress={() => quit()}>
           <Text style={styles.buttonText}>Quit Session</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           testID="confirm-cancel-button"
+          accessibilityRole="button"
+          accessibilityLabel="Cancel and resume session"
           style={styles.buttonNewSet}
           onPress={() => cancel()}>
           <Text style={styles.buttonText}>Cancel (Resume)</Text>
         </TouchableOpacity>
-      </View>
-    </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   modalBackground: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 100,
-    elevation: 100,
+    padding: 20,
   },
   modalContainer: {
     backgroundColor: "white",
-    padding: 20,
     borderRadius: 10,
-    width: "80%",
+    width: "100%",
+    maxWidth: 420,
+    maxHeight: "90%",
+    flexGrow: 0,
+  },
+  modalContent: {
+    padding: 20,
     alignItems: "center",
   },
   titleText: {
