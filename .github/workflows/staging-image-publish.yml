@@ -2,7 +2,7 @@ name: Staging deployment
 
 on:
   push:
-    branches: [dev]
+    branches: [staging]
     # Keep aligned with scripts/ci/staging_source.py deployment inputs.
     paths:
       - 'api-server/**'
@@ -62,7 +62,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/dev" --jq .object.sha)"
+          current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/staging" --jq .object.sha)"
           # Fetch only this exact tree, using the ephemeral GitHub token without
           # persisting credentials. An unrelated mobile/docs head is still safe.
           git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
@@ -162,7 +162,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/dev" --jq .object.sha)"
+          current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/staging" --jq .object.sha)"
           # Fetch only this exact tree, using the ephemeral GitHub token without
           # persisting credentials. An unrelated mobile/docs head is still safe.
           git -c credential.helper= -c 'credential.helper=!gh auth git-credential' \
