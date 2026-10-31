@@ -127,7 +127,13 @@ export class SessionEngine {
     };
     this.activeModifiers = (cfg.backpack ?? []).flatMap(({ addon }) =>
       addon && Object.prototype.hasOwnProperty.call(appliedEffects, addon.effectType)
-        ? [{ name: addon.name, effectType: addon.effectType, effectValue: appliedEffects[addon.effectType] }]
+        ? [
+            {
+              name: addon.name,
+              effectType: addon.effectType,
+              effectValue: appliedEffects[addon.effectType],
+            },
+          ]
         : [],
     );
   }
@@ -219,7 +225,7 @@ export class SessionEngine {
       console.error("Error: Missing information for trail completion in SessionEngine.");
       return;
     }
-    const isProMember = this.user.isProMember ?? false; // Default to false if undefined
+    const isProMember = this.isProMember ?? false; // Default to false if undefined
     this.completedTrails.push({ id: trailId, distance: this.currentTrailDistance });
     this.bus.emit("SESSION_TRAIL_COMPLETED", {
       completedTrailId: trailId,
@@ -237,7 +243,7 @@ export class SessionEngine {
     this.bus.emit("SESSION_BREAK_SKIPPED", { snapshot: this.buildSnapshot() });
   }
 
-  async increaseDistance() {
+  increaseDistance() {
     this.totalDistanceMiles += 0.01;
     //check if trail complete
 
