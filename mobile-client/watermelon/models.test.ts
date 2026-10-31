@@ -68,10 +68,11 @@ describe("assign new trail", () => {
       return queued;
     });
 
-    await user.assignNewTrail({ completedTrailId: "1", isProMember: true });
+    const newDistance = await user.assignNewTrail({ completedTrailId: "1", isProMember: true });
     const currentlyQueued = await user.usersQueuedTrails;
     expect(user.trailId).toEqual(queued.trailId);
     expect(currentlyQueued.length).toBe(0);
+    expect(typeof newDistance).toEqual("number");
   });
 
   test("non pro users doesnt use queued trail", async () => {
@@ -87,10 +88,11 @@ describe("assign new trail", () => {
       return queued;
     });
 
-    await user.assignNewTrail({ completedTrailId: "1", isProMember: false });
+    const newDistance = await user.assignNewTrail({ completedTrailId: "1", isProMember: false });
     const currentlyQueued = await user.usersQueuedTrails;
     // We dont check if the users new trail isnt the queued trail because there
     // could be a lucky case were their queueded trail is randomly chosen but not from their queue
     expect(currentlyQueued.length).toBe(1);
+    expect(typeof newDistance).toEqual("number");
   });
 });

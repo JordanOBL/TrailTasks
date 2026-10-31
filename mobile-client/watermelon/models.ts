@@ -495,7 +495,7 @@ WHERE DATE(date_added) = DATE('now', 'localtime') AND user_id  = ?;
           }),
           queuedTrail.prepareDestroyPermanently(), // destroy the QUEUE ITEM, not the Trail
         );
-        return queuedTrailRecord.trailDistance;
+        return Number(queuedTrailRecord.trailDistance);
       }
       // Fallthrough to random if nothing queued
     }
