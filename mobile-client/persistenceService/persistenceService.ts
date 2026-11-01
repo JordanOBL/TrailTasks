@@ -127,7 +127,8 @@ export default class PersistenceService {
   //--------------USER SESSION--------------//
 
   public async createNewSession(cfg: SessionCfg): Promise<User_Session> {
-    const { newSession } = await this.user.startNewSession(cfg);
+    const { newSession }: { newSession: User_Session; status: boolean } =
+      await this.user.startNewSession(cfg);
     if (!newSession) {
       throw new Error("Error creating new session in persistenceService");
     }

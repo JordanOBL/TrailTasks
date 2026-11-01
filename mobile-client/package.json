@@ -9,7 +9,7 @@
     "android:test": "ENVFILE=.env.test react-native run-android",
     "android:prod": "ENVFILE=.env.production react-native run-android --mode=release",
     "build-android-prod": "cd android && ENVFILE=.env.production ./gradlew clean bundleRelease --no-configuration-cache",
-    "ios:dev": "bash ./update-ip.sh ios-simulator && ENVFILE=.env.development python3 scripts/check-native-env.py && ENVFILE=.env.development react-native run-ios --scheme=\"Copy of TrailTasks\" --port=8081 --extra-params=\"ENVFILE=.env.development\"",
+    "ios:dev": "bash ./update-ip.sh ios-simulator && ENVFILE=.env.development python3 scripts/check-native-env.py && ENVFILE=.env.development react-native run-ios --scheme=\"Copy of TrailTasks\" --port=8081 --extra-params=\"ENVFILE=.env.development\" --simulator=\"trailtasks development\" ",
     "ios:test": "ENVFILE=.env.test python3 scripts/check-native-env.py && ENVFILE=.env.test react-native run-ios --scheme=\"Copy of TrailTasks\" --extra-params=\"ENVFILE=.env.test\"",
     "ios:prod": "ENVFILE=.env.production python3 scripts/check-native-env.py && ENVFILE=.env.production react-native run-ios --scheme=TrailTasks --mode=Release --extra-params=\"ENVFILE=.env.production\"",
     "android:dev": "npm run android:device:dev",

@@ -3,7 +3,7 @@ name: Staging AWS Authentication
 on:
   push:
     branches:
-      - dev
+      - staging
     paths:
       - .github/workflows/staging-aws-auth.yml
       - infra/terraform/environments/staging/.terraform.lock.hcl

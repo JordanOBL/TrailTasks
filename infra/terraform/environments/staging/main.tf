@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "github_staging_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:JordanOBL/TrailTasks:ref:refs/heads/dev"]
+      values   = ["repo:JordanOBL/TrailTasks:ref:refs/heads/staging"]
     }
   }
 }
