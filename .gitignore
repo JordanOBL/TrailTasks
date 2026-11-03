@@ -92,10 +92,7 @@ SubscriptionKey_AE0C1931.p8
 ios/build/
 build/
 
-*.png
 *.db
-images/
-*/images/
 
 # Local database exports and pre-replacement safety backups contain private data.
 *.dump
